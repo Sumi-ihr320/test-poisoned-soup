@@ -9,6 +9,8 @@ from tkinter import simpledialog
 DISPLAY_SIZE = (800, 600)
 BLACK = (0,0,0)
 WHITE = (255,255,255)
+GRAY = (73,74,65)
+
 SHEET_COLOR = (189,183,107)
 
 # パスの指定
@@ -20,6 +22,7 @@ MUSIC = "/Music/"
 FONT_PATH = os.path.join(PATH,"HGRKK.TTC")
 # FONT_NAME = "hgskyokashotai"
 FONT_SIZ = 22
+SKILL_SIZ = 18
 TITLE = "毒入りスープ"
 
 # 初期化,
@@ -40,9 +43,43 @@ CharaStatus = {"name":"", "age":0, "sex":True,
                "STR":0, "CON":0, "SIZ":0, "DEX":0,
                "APP":0, "EDU":0, "INT":0, "POW":0,
                "Luck":0, "Dura":0, "MOV":8,
-               "DB":"", "MP":0, "SAN":0,}
+               "DB":"", "MP":0, "SAN":0,
+               "Profession1":"未選択","Profession2":"","skill":{}}
+
+ProfessionList = {"未選択":[],
+                  "医師":["アニマルセラピスト","看護師","救急救命士","形成外科医","精神科医","闇医者"],
+                  "エンジニア":[],"狂信者":[],
+                  "警察官":["海上保安官","科学捜査研究員","山岳救助隊員","消防士"],
+                  "芸術家":["芸術家","ダンサー","デザイナー","ファッション系芸術家"],
+                  "古物研究家":[],"コンピューター技術者":[],"作家":[],
+                  "自衛官":["陸上自衛隊員","海上自衛隊員(艦上勤務)","自衛隊パイロット(陸海空)","民間軍事会社メンバー"],
+                  "ジャーナリスト":[],"宗教家":[],"商店主／店員":[],
+                  "私立探偵":[],"水産業従事者":[],"スポーツ選手":[],
+                  "大学教授":["冒険家教授","評論家"],
+                  "タレント":["アイドル、音楽タレント","アナウンサー","コメディアン","スポーツタレント","テレビ・コメンテーター","俳優","プロデューサー、マネージャー"],
+                  "超心理学者":["ゴーストハンター","占い師、スピリチュアリスト、霊媒師"],
+                  "ディレッタント":[],"ドライバー":[],"農林業従事者":[],"パイロット":[],
+                  "ビジネスマン":["執事・メイド","セールスマン"],
+                  "法律家":[],"放浪者":[],
+                  "暴力団組員":[],"ミュージシャン":[],"メンタルセラピスト":[]}
+
+SkillList = {"言いくるめ":5,"医学":5,"運転(自動車)":20,"応急手当":30,"オカルト":5,"回避":2,
+             "化学":1,"鍵開け":1,"隠す":15,"隠れる":15,"機械修理":20,
+             "聞き耳":25,"クトゥルフ神話":0,"芸術":5,"経理":10,"考古学":1,
+             "コンピューター":1,"忍び歩き":10,"写真術":10,"重機械操作":1,"乗馬":5,
+             "信用":15,"心理学":5,"人類学":1,"水泳":25,"製作":5,
+             "精神分析":1,"生物学":1,"説得":15,"操縦":1,"地質学":1,
+             "跳躍":25,"追跡":10,"電気修理":10,"電子工学":1,"天文学":1,
+             "投擲":25,"登攀":40,"図書館":25,"ナビゲート":10,"値切り":5,
+             "博物学":10,"物理学":1,"変装":1,"法律":5,
+             "他の言語(英語)":1,"他の言語(ラテン語)":1,"他の言語(ドイツ語)":1,"他の言語(中国語)":1,"他の言語(韓国語)":1,"他の言語(ロシア語)":1,"他の言語(日本語)":1,
+             "母国語":5,"マーシャルアーツ":1,"目星":25,"薬学":1,"歴史":20,
+             "キック":25,"組みつき":25,"こぶし":50,"頭突き":10,
+             "拳銃":20,"サブマシンガン":15,"ショットガン":30,"マシンガン":15,"ライフル":25}
 
 CharaPage = True # ページ変更用フラグ
+PullDownFlag = False # プルダウン表示フラグ
+PullDown2Flag = False
 
 # ファイルの読み込み
 #f = open(PATH + SCENARIO + '\CharacterSheet_01.txt', 'r', encoding='UTF-8')
@@ -65,12 +102,12 @@ def Close():
 class Status:
     def __init__(self, name, x, y, w, h, status_name="", text="",  Button_flag=True, Input_flag=True, Box_flag=True,  Dice_text=""):
         self.name = name
-        self.x = x
-        self.y = y
+        #self.x = x
+        #self.y = y
         self.text = text
         self.status_name = status_name
         self.dice_text = Dice_text
-        self.Label_rect = self.Label(name,x,y)
+        self.Label_rect = Label(name,x,y)
         if Box_flag:
             self.Input_rect = self.InputBox((x,y,w,h),Input_flag)
             if status_name != "sex":
@@ -103,14 +140,6 @@ class Status:
         else:
             self.Button_rect = self.Input_rect
         
-    # ラベル作るよ
-    def Label(self, name, x, y):
-        color = BLACK
-        surface = font.render(name, True, color)
-        rect = surface.get_rect(left=x, top=y)
-        screen.blit(surface, rect)
-        return Rect(rect)
-
     # 入力ボックス作るよ
     def InputBox(self, rect, flag=True):
         if flag:
@@ -139,7 +168,7 @@ class Status:
 
     # ダイスボタン作るよ    
     def DiceButton(self, rect, text):
-        out_color = (73,74,65)
+        out_color = GRAY
         in_color = (181,181,174)
         text_color = BLACK
         surface = font.render(text, True, text_color,in_color)
@@ -160,20 +189,17 @@ class Status:
         CharaStatus[self.status_name] = val
         self.InputLabel(str(val))
 
-
 # 選んだ性別によって画像が変わるようにするよ
 class SexChange:
     def __init__(self, x, y, flag):
-        self.x = x
-        self.y = y
         self.sex_flag = flag
-        if self.sex_flag:
+        if flag:
             self.man_rect = self.Butoon("男",x,y,True)
             self.woman_rect = self.Butoon("女",x+40,y,False)
         else:
             self.man_rect = self.Butoon("男",x,y,False)
             self.woman_rect = self.Butoon("女",x+40,y,True)
-        self.Image()
+        self.Image(flag)
 
     # ボタン作るよ
     def Butoon(self, name, x, y, flag):
@@ -191,8 +217,8 @@ class SexChange:
         return Rect(rect)
 
     # 画像表示するよ    
-    def Image(self):
-        if self.sex_flag:
+    def Image(self,flag):
+        if flag:
             img = "silhouette_man.png"
         else:
             img = "silhouette_woman.png"
@@ -279,10 +305,67 @@ class PageNavigation:
             pygame.draw.polygon(screen,BLACK,[[50,180],[30,200],[50,220]])
         return navi_rect
 
- 
+# ラベル作成を分離するよ
+def Label(name, x, y):
+    color = BLACK
+    surface = font.render(name, True, color)
+    rect = surface.get_rect(left=x, top=y)
+    screen.blit(surface, rect)
+    return Rect(rect)
+
+# 職業選択画面作るよ
+class Profession:
+    def __init__(self, name, x, y, w, h):
+        self.Name = name
+        self.Label_rect = Label(name,x,y)
+        self.PullDown_rect = self.PullDownBox((x+self.Label_rect.w+5,y-4,w,h))
+        self.Box_text = self.BoxLabel(CharaStatus["Profession1"],self.PullDown_rect)
+        self.PullDown2_rect = self.PullDownBox((self.PullDown_rect.x + self.PullDown_rect.w+5,y-4,w,h))
+        if CharaStatus["Profession2"] != "":
+            self.Box2_text = self.BoxLabel(CharaStatus["Profession2"],self.PullDown2_rect)
+
+    # プルダウンボックス作るよ
+    def PullDownBox(self, rect):
+        x = rect[0] + 5
+        y = rect[1]
+        w = rect[2]
+        h = rect[3]
+        pygame.draw.rect(screen,GRAY,(x,y,w,h))
+        pygame.draw.rect(screen, WHITE, (x+1, y+1, w-2, h-2))
+
+        # 三角作るよ
+        triangle = font.render("▼",True,BLACK)
+        tri_rect = triangle.get_rect(right=x+w-2,top=y+4)
+        screen.blit(triangle, tri_rect)
+
+        return Rect(x,y,w,h)
+    
+    # プルダウンボックスに表示される文字列を描画するよ
+    def BoxLabel(self,text,rect):
+        surface = font.render(str(text),True,BLACK)
+        rect = surface.get_rect(left=rect[0]+4,top=rect[1]+4)
+        screen.blit(surface, rect)
+        return text
+
+
+# プルダウン押した時に表示されるボックス作りたいよ
+def PullDown(rect):
+    x = rect[0]
+    y = rect[1] + rect[3]
+    w = rect[2]
+    h = rect[3] + 200
+    pygame.draw.rect(screen,GRAY,(x,y,w,h))
+    pygame.draw.rect(screen, WHITE, (x+1, y+1, w-2, h-2))
+
+
+
+# キャラクターシート作成画面
 def CharacterSheet():
     global CharaStatus
     global CharaPage
+    global PullDownFlag
+    global PullDown2Flag
+
     Sheet_exit = False # キャラシ作成画面を終わるフラグ（未実装）
     # clock = pygame.time.Clock()
 
@@ -313,9 +396,22 @@ def CharacterSheet():
         MP = Status("MP(ﾏｼﾞｯｸﾎﾟｲﾝﾄ)",500,282,50,28,"MP","",False)
         SAN = Status("SAN値(正気度) ",500,314,50,28,"SAN","",False)
     else:
-        SexChange.Image(CharaStatus["sex"])
-        # Profession = Status("職業",250,50,150,28,"")
-        
+        Profe = Profession("職業",70,50,300,32)
+        Skill_rect = Label("技能",70,90)
+        pygame.draw.line(screen,BLACK,(120,100),(750,100),2)
+
+        # 文字サイズを小さくする
+        skill_font = pygame.font.Font(FONT_PATH,SKILL_SIZ)
+        # 技能一覧を描写する
+        for skill in SkillList:
+            pass
+
+        # プルダウンどうやったら表示される？
+        if PullDownFlag:
+            PullDown(Profe.PullDown_rect)
+        if PullDown2Flag:
+            PullDown(Profe.PullDown2_rect)
+
     
     for event in pygame.event.get():
         # マウスクリック時
@@ -324,8 +420,11 @@ def CharacterSheet():
             if event.button == 1:
                 # １ページ目だったら
                 if CharaPage:
+                    # ページ移動
+                    if page_navi.navi_rect.collidepoint(event.pos):
+                        CharaPage = False
                     # 男ボタン
-                    if Sex_Button.man_rect.collidepoint(event.pos):
+                    elif Sex_Button.man_rect.collidepoint(event.pos):
                         CharaStatus["sex"] = True
                     # 女ボタン
                     elif Sex_Button.woman_rect.collidepoint(event.pos):
@@ -398,15 +497,23 @@ def CharacterSheet():
                     elif MP.Input_rect.collidepoint(event.pos):
                         MP.InputProcess('ﾏｼﾞｯｸﾎﾟｲﾝﾄ')
                     '''
-                # ページ移動
-                elif page_navi.navi_rect.collidepoint(event.pos):
-                    CharaPage = False
                 else:
-                    break
-            else:
-                # ページ移動
-                if page_navi.navi_rect.collidepoint(event.pos):
-                    CharaPage = True
+                    # ページ移動
+                    if page_navi.navi_rect.collidepoint(event.pos):
+                        CharaPage = True
+
+                    # プルダウン表示うまくいってません
+                    if Profe.PullDown_rect.collidepoint(event.pos):
+                        if PullDownFlag:
+                            PullDownFlag = False
+                        else:
+                            PullDownFlag == True
+                    if Profe.PullDown2_rect.collidepoint(event.pos):
+                        if PullDownFlag:
+                            PullDownFlag = False
+                        else:
+                            PullDownFlag == True
+            
         if event.type == MOUSEMOTION:
             if CharaPage:
                 pass
@@ -418,9 +525,11 @@ def CharacterSheet():
             if event.key == K_ESCAPE:
                 Close()
 
+
 def frame():
     pygame.draw.rect(screen, WHITE, Rect(30,420,580,150),3)
 
+# ダイスを表示する為のフレーム
 def DiceFrame():
     pygame.draw.rect(screen, WHITE, Rect(620,420,150,150),3)
 
