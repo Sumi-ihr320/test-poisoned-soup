@@ -1,5 +1,6 @@
 import sys, random, os
 import pygame
+import pygame.draw
 from pygame.locals import *
 import tkinter as tk
 from tkinter import messagebox
@@ -22,7 +23,10 @@ PICTURE ="/Picture/"
 MUSIC = "/Music/"
 
 FONT_PATH = os.path.join(PATH,"HGRKK.TTC")
+TITLE_FONT_PATH = os.path.join(PATH,"genkai-mincho.ttf")
 FONT_SIZ = 22
+TITLE_SIZ = 60
+OPENING_SIZ = 30
 SKILL_SIZ = 18
 TITLE_TEXT = "毒入りスープ"
 
@@ -49,8 +53,8 @@ ProfessionList = {"未選択":[],
                   "ジャーナリスト":[],"宗教家":[],"商店主／店員":[],
                   "私立探偵":[],"水産業従事者":[],"スポーツ選手":[],
                   "大学教授":["冒険家教授","評論家"],
-                  "タレント":["アイドル、音楽タレント","アナウンサー","コメディアン","スポーツタレント","テレビ・コメンテーター","俳優","プロデューサー、マネージャー"],
-                  "超心理学者":["ゴーストハンター","占い師、スピリチュアリスト、霊媒師"],
+                  "タレント":["アイドル、音楽タレント","アナウンサー","コメディアン","スポーツタレント","テレビ・コメンテーター","俳優","ﾌﾟﾛﾃﾞｭｰｻｰ、ﾏﾈｰｼﾞｬｰ"],
+                  "超心理学者":["ゴーストハンター","占い師、ｽﾋﾟﾘﾁｭｱﾘｽﾄ、霊媒師"],
                   "ディレッタント":[],"ドライバー":[],"農林業従事者":[],"パイロット":[],
                   "ビジネスマン":["執事・メイド","セールスマン"],
                   "法律家":[],"放浪者":[],
@@ -58,20 +62,27 @@ ProfessionList = {"未選択":[],
 
 SkillList = {"言いくるめ":5,"医学":5,"運転(自動車)":20,"応急手当":30,"オカルト":5,"回避":2,
              "化学":1,"鍵開け":1,"隠す":15,"隠れる":15,"機械修理":20,
-             "聞き耳":25,"クトゥルフ神話":0,"芸術":5,"経理":10,"考古学":1,
-             "コンピューター":1,"忍び歩き":10,"写真術":10,"重機械操作":1,"乗馬":5,
+             "聞き耳":25,"ｸﾄｩﾙﾌ神話":0,"芸術":5,"経理":10,"考古学":1,
+             "ｺﾝﾋﾟｭｰﾀｰ":1,"忍び歩き":10,"写真術":10,"重機械操作":1,"乗馬":5,
              "信用":15,"心理学":5,"人類学":1,"水泳":25,"製作":5,
              "精神分析":1,"生物学":1,"説得":15,"操縦":1,"地質学":1,
              "跳躍":25,"追跡":10,"電気修理":10,"電子工学":1,"天文学":1,
              "投擲":25,"登攀":40,"図書館":25,"ナビゲート":10,"値切り":5,
              "博物学":10,"物理学":1,"変装":1,"法律":5,
-             "他の言語(英語)":1,"他の言語(ラテン語)":1,"他の言語(ドイツ語)":1,"他の言語(中国語)":1,"他の言語(韓国語)":1,"他の言語(ロシア語)":1,"他の言語(日本語)":1,
-             "母国語":5,"マーシャルアーツ":1,"目星":25,"薬学":1,"歴史":20,
-             "キック":25,"組みつき":25,"こぶし":50,"頭突き":10,
-             "拳銃":20,"サブマシンガン":15,"ショットガン":30,"マシンガン":15,"ライフル":25}
+             "他の言語":{"英語":1,"ラテン語":1,"ドイツ語":1,"中国語":1,"韓国語":1,"ロシア語":1,"日本語":1},
+             "母国語":{"英語":5,"ラテン語":5,"ドイツ語":5,"中国語":5,"韓国語":5,"ロシア語":5,"日本語":5},
+             "ﾏｰｼｬﾙｱｰﾂ":1,"目星":25,"薬学":1,"歴史":20,
+             "戦闘":{"キック":25,"組みつき":25,"こぶし":50,"頭突き":10},
+             "銃火器":{"拳銃":20,"サブマシンガン":15,"ショットガン":30,"マシンガン":15,"ライフル":25},
+             }
 
 CharaPage = True # ページ変更用フラグ
-PullDownFlag = 0
+PullDownFlag = 0    # プルダウン用フラグ
+DropFlag = False    # ドロップ＆ドラッグフラグ
+SY = 102 # スクロールバー用
+SY_TOP = 102
+SY_DOWN = 320
+ScrollFlag = False
 
 # tkinterの起動
 root = tk.Tk()
@@ -109,10 +120,9 @@ font = pygame.font.Font(FONT_PATH, FONT_SIZ)
 def Title():
     global SCENE_FLAG
     # タイトル用のフォント
-    font_path = os.path.join(PATH,"genkai-mincho.ttf")
-    title_font = pygame.font.Font(font_path,60)
+    title_font = pygame.font.Font(TITLE_FONT_PATH,TITLE_SIZ)
     # タイトル画面用に基本フォントのサイズ変更
-    opening_font = pygame.font.Font(FONT_PATH,30)
+    opening_font = pygame.font.Font(FONT_PATH,OPENING_SIZ)
     
     # タイトル
     title_rect = TitleRender(TITLE_TEXT,title_font,RED,150)
@@ -174,11 +184,11 @@ class Status:
             self.label_name = self.name
         self.text = text    # 説明文
         self.dice_text = Dice_text  # ダイスボタンに表示するテキスト
-        self.Label_rect = Label(self.label_name,x,y)    # ラベル作成
+        self.Label_rect = Label(self.label_name,x,y,font)    # ラベル作成
         self.Input_flag = Input_flag    # インプットボタンの入力ができるかのフラグ
         max_flag = False    # 最大値と現在値が存在するフラグ
         if Box_flag:    # インプットボックスを作るかのフラグ
-            self.Input_rect = self.InputBox((x+self.Label_rect.w,y,w,h),self.Input_flag)
+            self.Input_rect = InputBox((x+self.Label_rect.w,y,w,h),self.Input_flag)
             if status_name != "sex":
                 if status_name in CharaStatus:
                     if status_name == "DB":
@@ -217,7 +227,7 @@ class Status:
                         self.status = CharaStatus[status_name]
                     if max_flag:
                         rect = (x+self.Label_rect.w+self.Input_rect.w,y,w,h)
-                        self.Input2_rect = self.InputBox(rect,False)
+                        self.Input2_rect = InputBox(rect,False)
                         self.InputLabel(str(self.status),self.Input2_rect.x,self.Input2_rect.y)
                         if CharaStatus[self.status_name] == 0:
                             self.status = self.status
@@ -237,20 +247,6 @@ class Status:
         else:
             self.Button_rect = self.Input_rect
         
-    # 入力ボックス作るよ
-    def InputBox(self, rect, flag=True):
-        if flag:
-            # color = (255,248,220)
-            color = WHITE
-        else:
-            color = SHEET_COLOR
-        x = rect[0] + 5
-        y = rect[1] - 4
-        w = rect[2] 
-        h = rect[3] 
-        pygame.draw.rect(screen, color, (x, y, w, h))
-        pygame.draw.line(screen,BLACK,(x,y+h-1),(x+w-1,y+h-1),2)
-        return Rect(x,y,w,h)
     
     # 値を表示したいよ
     def InputLabel(self, text, x, y):
@@ -427,45 +423,49 @@ class PageNavigation:
         return navi_rect
 
 # ラベル作成を分離するよ
-def Label(name, x, y):
+def Label(name, x, y, font):
     color = BLACK
     surface = font.render(name, True, color)
     rect = surface.get_rect(left=x, top=y)
     screen.blit(surface, rect)
     return Rect(rect)
 
+# 入力ボックス作成を分離するよ
+def InputBox(rect, flag=True, line_bold=2):
+    if flag:
+        # color = (255,248,220)
+        color = WHITE
+    else:
+        color = SHEET_COLOR
+    x = rect[0] + 5
+    y = rect[1] - 4
+    w = rect[2] 
+    h = rect[3] 
+    pygame.draw.rect(screen, color, (x, y, w, h))
+    pygame.draw.line(screen,BLACK,(x,y+h-1),(x+w-1,y+h-1),line_bold)
+    return Rect(x,y,w,h)
+
 # 職業選択画面作るよ
 class Profession:
     def __init__(self, name, x, y, w, h, flag):
         self.Name = name
-        self.Label_rect = Label(name,x,y)
-        self.PullDown_rect = self.PullDownBox((x+self.Label_rect.w+5,y-4,w,h))
+        self.Label_rect = Label(name,x,y,font)
+        self.PullDown_rect = PullDownBox((x+self.Label_rect.w+5,y-4,w,h))
         self.Box_text = self.BoxLabel(CharaStatus["Profession1"],self.PullDown_rect)
-        self.PullDown2_rect = self.PullDownBox((self.PullDown_rect.x + self.PullDown_rect.w+5,y-4,w,h))
+        self.PullDown2_rect = PullDownBox((self.PullDown_rect.x + self.PullDown_rect.w+5,y-4,w,h))
         self.PullDown_flag = flag
+        self.items = {}
+        self.skills_rect = {}
         if CharaStatus["Profession2"] != "":
             self.Box2_text = self.BoxLabel(CharaStatus["Profession2"],self.PullDown2_rect)
         if PullDownFlag == 1:
-            pd_rect = self.PullDown(self.PullDown_rect)
-            self.PullDownList(pd_rect)
+            self.pd_rect = self.PullDown(self.PullDown_rect)
+            self.PullDownList(self.pd_rect)
         elif PullDownFlag == 2:
-            self.PullDown(self.PullDown2_rect)
-
-
-    # プルダウンボックス作るよ
-    def PullDownBox(self, rect):
-        x = rect[0] + 5
-        y = rect[1]
-        w = rect[2]
-        h = rect[3]
-        Box(x,y,w,h)
-
-        # 三角作るよ
-        triangle = font.render("▼",True,BLACK)
-        tri_rect = triangle.get_rect(right=x+w-2,top=y+4)
-        screen.blit(triangle, tri_rect)
-
-        return Rect(x,y,w,h)
+            if CharaStatus["Profession1"] in ProfessionList:
+                if ProfessionList[CharaStatus["Profession1"]] != []:
+                    self.pd_rect = self.PullDown(self.PullDown2_rect)
+                    self.PullDownList(self.pd_rect)
     
     # プルダウンボックスに表示される文字列を描画するよ
     def BoxLabel(self,text,rect):
@@ -474,27 +474,136 @@ class Profession:
         screen.blit(surface, rect)
         return text
     
-    # プルダウン押した時に表示されるボックス作りたいよ
+    # プルダウン押した時に表示されるボックス作るよ
     def PullDown(self,rect):
         x = rect[0]
         y = rect[1] + rect[3]
-        w = rect[2]
-        h = rect[3] + 250
-        pygame.draw.rect(screen,GRAY,(x,y,w,h))
-        pygame.draw.rect(screen, WHITE, (x+1, y+1, w-2, h-2))
+        w = rect[2] - 20
+        h = rect[3] + 259
+        Box(x,y,w,h)
+        self.ScrollBar(Rect(x,y,w,h))
         return Rect(x,y,w,h)
 
     # プルダウン押した時に表示される項目表示したいよ
     def PullDownList(self,rect):
         x = rect.x + 3
         y = rect.y + 3
-        for profes in ProfessionList:
-            prof = font.render(profes,True,BLACK)
-            pr_rect = prof.get_rect(left=x,top=y)
-            screen.blit(prof,pr_rect)
-            y += pr_rect.h
+        if PullDownFlag == 1:
+            self.ListDraw(ProfessionList,x,y,self.pd_rect.w)
+        elif PullDownFlag == 2:
+            pro = CharaStatus["Profession1"]
+            if ProfessionList[pro] != []:
+                self.ListDraw(ProfessionList[pro],x,y,self.pd_rect.w)
 
-    
+    # 同じ処理だったのでまとめた
+    def ListDraw(self,list,x,y,w):
+        for item in list:
+            # 項目表示
+            surface = font.render(item,True,BLACK)
+            rect = surface.get_rect(left=x,top=y)
+            screen.blit(surface,rect)
+
+            # 項目名とそのrectを辞書に登録していく
+            lis_rect = Rect(rect.x,rect.y,w,rect.h)
+            self.items[item] = lis_rect
+
+            # 表示位置を下にずらす
+            y += rect.h
+
+            # 仕切り線を引く(後で消す)
+            pygame.draw.line(screen,BLACK,(x-2,y),(x+w-4,y))
+
+            # プルダウンボックスより下には表示しない
+            if y >= (self.pd_rect.y+self.pd_rect.h-rect.h):
+                break 
+
+    # スクロールバー作りたい
+    def ScrollBar(self,rect):
+        x = rect.x + rect.w
+        y = rect.y
+        w = 20
+        h = rect.h
+        self.scroll_rect = Rect(x,y,w,h)
+        Box(x,y,w,h)
+
+        if PullDownFlag == 1:
+            # 三角作るよ
+            scrol_font = pygame.font.Font(FONT_PATH,SKILL_SIZ)
+            self.top_triangle_rect = Label("▲",x+1,y+1,scrol_font)
+            self.under_triangle_rect = Label("▼",x+1,y+h-19,scrol_font)
+
+            # 四角作るよ
+            pygame.draw.rect(screen,GRAY,(x+1,SY,18,20))
+
+# プルダウン機能をクラス化できないかな？
+class PullDown:
+    def __init__(self,rect) -> None:
+        self.box_rect = self.Box(rect)
+
+    def Box(self,rect,font=font):
+        x = rect[0] + 5
+        y = rect[1]
+        w = rect[2]
+        h = rect[3]
+        Box(x,y,w,h)
+
+        # 三角作るよ
+        tx = x + w -25
+        ty = y + 6
+        triangle_rect = Label("▼",tx,ty,font)
+
+        return Rect(x,y,w,h)
+
+
+# プルダウンボックス作るの分離するよ
+def PullDownBox(rect, font=font):
+    x = rect[0] + 5
+    y = rect[1]
+    w = rect[2]
+    h = rect[3]
+    Box(x,y,w,h)
+
+    # 三角作るよ
+    triangle_rect = Label("▼",x+w-25,y+4,font)
+
+    return Rect(x,y,w,h)
+
+def Skill():
+    # 文字サイズを小さくする
+    skill_font = pygame.font.Font(FONT_PATH,SKILL_SIZ)
+    skill_input_rect = {}
+    skill_puru_rect = {}
+    x = 75
+    y = 115
+    # 技能一覧を描写する
+    for skill in SkillList:
+        # 項目表示
+        surface = skill_font.render(skill,True,BLACK)
+        rect = surface.get_rect(left=x,top=y)
+        screen.blit(surface,rect)
+
+        if skill == "他の言語" or skill == "母国語":
+            # プルダウン作る
+            px = x + 10
+            y += rect.h
+            pw = 110
+            ph = 24
+            skill_puru_rect[skill] = PullDownBox(Rect(px,y,pw,ph),skill_font)
+            skill_input_rect[skill] = InputBox((px+pw+2,y,30,ph),False,1)
+            # 表示位置を下にずらす
+            y += ph
+        else:
+            skill_input_rect[skill] = InputBox((x+110,y+2,30,rect.h),False,1)
+            # 表示位置を下にずらす
+            y += rect.h
+
+        # シートの一番下に来たら次の行に移る
+        if y >= 365:
+            y = 115
+            x += 170
+        # 仕切り線を引く(あとで消す)
+        pygame.draw.line(screen,BLACK,(x-2,y),(x+w-4,y))
+            
 
 # 入力ボックスっぽい箱作るよ
 def Box(x,y,w,h):
@@ -518,7 +627,8 @@ def CharacterSheet():
     global CharaStatus
     global CharaPage
     global PullDownFlag
-    global PullDown2Flag
+    global SY
+    global ScrollFlag
 
     Sheet_exit = False # キャラシ作成画面を終わるフラグ（未実装）
     # clock = pygame.time.Clock()
@@ -564,15 +674,10 @@ def CharacterSheet():
             elif stat.Button_rect.collidepoint(key):
                 TextDraw("ダイスでランダムに値を決めることができます")
     else:
-        Skill_rect = Label("技能",70,90)
+        Skill_rect = Label("技能",70,90,font)
         pygame.draw.line(screen,BLACK,(120,100),(750,100),2)
-        Profe = Profession("職業",70,50,300,32,PullDownFlag)
-
-        # 文字サイズを小さくする
-        skill_font = pygame.font.Font(FONT_PATH,SKILL_SIZ)
-        # 技能一覧を描写する
-        for skill in SkillList:
-            pass
+        Skill()
+        Profe = Profession("職業",70,50,310,32,PullDownFlag)
 
     
     for event in pygame.event.get():
@@ -606,21 +711,54 @@ def CharacterSheet():
                     if page_navi.navi_rect.collidepoint(event.pos):
                         CharaPage = True
 
-                    # プルダウン表示うまくいってません
-                    if Profe.PullDown_rect.collidepoint(event.pos):
+                    # プルダウン表示
+                    elif Profe.PullDown_rect.collidepoint(event.pos):
                         if PullDownFlag == 1:
-                            PullDownFlag == 0
+                            PullDownFlag = 0
                         else:
                             PullDownFlag = 1
-                    if Profe.PullDown2_rect.collidepoint(event.pos):
+                    elif Profe.PullDown2_rect.collidepoint(event.pos):
                         if PullDownFlag == 2:
                             PullDownFlag = 0
                         else:
                             PullDownFlag = 2
-            
+                    else:
+                        # プルダウンのアイテムを選択
+                        for item in Profe.items:
+                            rect = Rect(Profe.items[item])
+                            if rect.collidepoint(event.pos):
+                                if PullDownFlag == 1:
+                                    if item != CharaStatus["Profession1"]:
+                                        CharaStatus["Profession2"] = ""
+                                    CharaStatus["Profession1"] = item
+                                elif PullDownFlag ==2:
+                                    CharaStatus["Profession2"] = item
+                                PullDownFlag = 0
+                        if PullDownFlag == 1:
+                            # プルダウンのスクロールバーの三角を押した時
+                            if Profe.top_triangle_rect.collidepoint(event.pos):
+                                if SY > SY_TOP:
+                                    SY -= 5
+                            elif Profe.under_triangle_rect.collidepoint(event.pos):
+                                if SY < SY_DOWN:
+                                    SY += 5
+                            elif Profe.scroll_rect.collidepoint(event.pos):
+                                ScrollFlag = True
+        
+        # マウス離した時
+        if event.type == MOUSEBUTTONUP:
+            if event.button == 1:
+                if CharaPage == False:
+                    if PullDownFlag == 1:
+                        ScrollFlag = False
+        
+        # マウスを動かすとき
         if event.type == MOUSEMOTION:
-            if CharaPage:
-                pass
+            if CharaPage == False:
+                if PullDownFlag == 1:
+                    if ScrollFlag:
+                        if SY_DOWN >= SY >= SY_TOP:
+                            SY = (event.pos[1])
 
         # 閉じるボタンで終了
         if event.type == QUIT:
