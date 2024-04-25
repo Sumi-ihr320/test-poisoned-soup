@@ -228,13 +228,13 @@ class Status:
                     if max_flag:
                         rect = (x+self.Label_rect.w+self.Input_rect.w,y,w,h)
                         self.Input2_rect = InputBox(rect,False)
-                        self.InputLabel(str(self.status),self.Input2_rect.x,self.Input2_rect.y)
+                        Label(str(self.status),self.Input2_rect.x+2,self.Input2_rect.y+2,font)
                         if CharaStatus[self.status_name] == 0:
                             self.status = self.status
                         else:
                             self.status = CharaStatus[self.status_name]
                 
-                    self.InputLabel(str(self.status),self.Input_rect.x,self.Input_rect.y)
+                    Label(str(self.status),self.Input_rect.x+2,self.Input_rect.y+2,font)
         else:
             self.Input_rect = self.Label_rect
 
@@ -246,14 +246,7 @@ class Status:
             self.Button_rect = self.DiceButton(self.Input_rect,Dice_text)
         else:
             self.Button_rect = self.Input_rect
-        
     
-    # 値を表示したいよ
-    def InputLabel(self, text, x, y):
-        surface = font.render(str(text),True,BLACK)
-        rect = surface.get_rect(left=x+2,top=y+2)
-        screen.blit(surface, rect)
-
     # 入力ボックスの処理まとめるよ
     def InputProcess(self):
         min=0
@@ -304,7 +297,7 @@ class Status:
     def DiceProcess(self):
         val = DiceRool(self.dice_text)
         CharaStatus[self.status_name] = val
-        self.InputLabel(str(val),self.Input_rect.x,self.Input_rect.y)
+        Label(str(val),self.Input_rect.x+2,self.Input_rect.y+2,font)
 
 # 選んだ性別によって画像が変わるようにするよ
 class SexChange:
@@ -445,23 +438,39 @@ def InputBox(rect, flag=True, line_bold=2):
     pygame.draw.line(screen,BLACK,(x,y+h-1),(x+w-1,y+h-1),line_bold)
     return Rect(x,y,w,h)
 
+
 # 職業選択画面作るよ
 class Profession:
-    def __init__(self, name, x, y, w, h, flag):
+    def __init__(self, name, x, y, w, h):
         self.Name = name
         self.Label_rect = Label(name,x,y,font)
+        # プルダウンボックス作成
         self.PullDown_rect = PullDownBox((x+self.Label_rect.w+5,y-4,w,h))
         self.Box_text = self.BoxLabel(CharaStatus["Profession1"],self.PullDown_rect)
+        # 二つ目のプルダウンボックス作成
         self.PullDown2_rect = PullDownBox((self.PullDown_rect.x + self.PullDown_rect.w+5,y-4,w,h))
-        self.PullDown_flag = flag
+        
+        # プルダウンボックスのアイテムの位置のリスト{item:rect}
         self.items = {}
+
         self.skills_rect = {}
+
+        # もし職業2が入力されていれば文字を表示する
         if CharaStatus["Profession2"] != "":
             self.Box2_text = self.BoxLabel(CharaStatus["Profession2"],self.PullDown2_rect)
+        # もし職業リストで職業1の項目が空でなければ未選択と表示する
+        elif ProfessionList[CharaStatus["Profession1"]] != []:
+            self.Box2_text = self.BoxLabel("未選択",self.PullDown2_rect)
+        else:
+            self.Box2_text = ""
+
         if PullDownFlag == 1:
+            # プルダウンリストを表示する
             self.pd_rect = self.PullDown(self.PullDown_rect)
             self.PullDownList(self.pd_rect)
+
         elif PullDownFlag == 2:
+            # 職業リスト内で職業1の項目が空でなかった時のみプルダウンリストを表示する
             if CharaStatus["Profession1"] in ProfessionList:
                 if ProfessionList[CharaStatus["Profession1"]] != []:
                     self.pd_rect = self.PullDown(self.PullDown2_rect)
@@ -481,7 +490,7 @@ class Profession:
         w = rect[2] - 20
         h = rect[3] + 259
         Box(x,y,w,h)
-        self.ScrollBar(Rect(x,y,w,h))
+        self.bar_rect,self.top_rect,self.under_rect = ScrollBar(Rect(x,y,w,h),SKILL_SIZ)
         return Rect(x,y,w,h)
 
     # プルダウン押した時に表示される項目表示したいよ
@@ -494,6 +503,86 @@ class Profession:
             pro = CharaStatus["Profession1"]
             if ProfessionList[pro] != []:
                 self.ListDraw(ProfessionList[pro],x,y,self.pd_rect.w)
+
+    # 同じ処理だったのでまとめた
+    def ListDraw(self,list,x,y,w):
+        ly = y
+        i = 0
+        for item in list:
+            i += 1
+            # 項目表示
+            surface = font.render(item,True,BLACK)
+            rect = surface.get_rect(left=x,top=y)
+            screen.blit(surface,rect)
+
+            # 項目名とそのrectを辞書に登録していく
+            lis_rect = Rect(rect.x,rect.y,w,rect.h)
+            self.items[item] = lis_rect
+
+            # 表示位置を下にずらす
+            y += rect.h
+
+            # 仕切り線を引く(後で消す)
+            pygame.draw.line(screen,BLACK,(x-2,y),(x+w-4,y))
+
+            # プルダウンボックスより下には表示しない
+            if y >= (self.pd_rect.y+self.pd_rect.h-rect.h):
+                 break
+        lh = y - ly
+        self.List_rect = Rect(x,ly,w,lh)
+        return 
+
+
+# プルダウン機能をクラス化できないかな？(難航中)
+class PullDown:
+    def __init__(self, rect, text, list) -> None:
+        self.box_rect = self.Box(rect)
+        self.box_text = self.Label(text, self.box_rect)
+        self.list = list
+
+    # ボックス作るよ
+    def Box(self,rect,font=font):
+        x = rect[0] + 5
+        y = rect[1]
+        w = rect[2]
+        h = rect[3]
+        Box(x,y,w,h)
+
+        # 三角作るよ
+        tx = x + w -25
+        ty = y + 6
+        triangle_rect = Label("▼",tx,ty,font)
+
+        return Rect(x,y,w,h)
+
+    # プルダウンボックスに表示される文字列を描画するよ
+    def Label(self,text,rect):
+        surface = font.render(str(text),True,BLACK)
+        rect = surface.get_rect(left=rect[0]+4,top=rect[1]+4)
+        screen.blit(surface, rect)
+        return text
+    
+    # プルダウン押した時に表示されるボックス作るよ
+    def PullDown(self, rect, ph):
+        x = rect[0]
+        y = rect[1] + rect[3]
+        w = rect[2] - 20
+        #h = rect[3] + 259
+        h = rect[3] + ph
+        Box(x,y,w,h)
+        self.bar_rect,self.top_rect,self.under_rect = ScrollBar(Rect(x,y,w,h), SKILL_SIZ)
+        self.pd_rect = Rect(x,y,w,h)
+
+    # プルダウン押した時に表示される項目表示したいよ
+    def PullDownList(self, rect):
+        x = rect.x + 3
+        y = rect.y + 3
+        if PullDownFlag == 1:
+            self.ListDraw(self.list,x,y,self.pd_rect.w)
+        elif PullDownFlag == 2:
+            pro = CharaStatus["Profession1"]
+            if ProfessionList[pro] != []:
+                self.ListDraw(self.list,x,y,self.pd_rect.w)
 
     # 同じ処理だったのでまとめた
     def ListDraw(self,list,x,y,w):
@@ -517,43 +606,6 @@ class Profession:
             if y >= (self.pd_rect.y+self.pd_rect.h-rect.h):
                 break 
 
-    # スクロールバー作りたい
-    def ScrollBar(self,rect):
-        x = rect.x + rect.w
-        y = rect.y
-        w = 20
-        h = rect.h
-        self.scroll_rect = Rect(x,y,w,h)
-        Box(x,y,w,h)
-
-        if PullDownFlag == 1:
-            # 三角作るよ
-            scrol_font = pygame.font.Font(FONT_PATH,SKILL_SIZ)
-            self.top_triangle_rect = Label("▲",x+1,y+1,scrol_font)
-            self.under_triangle_rect = Label("▼",x+1,y+h-19,scrol_font)
-
-            # 四角作るよ
-            pygame.draw.rect(screen,GRAY,(x+1,SY,18,20))
-
-# プルダウン機能をクラス化できないかな？
-class PullDown:
-    def __init__(self,rect) -> None:
-        self.box_rect = self.Box(rect)
-
-    def Box(self,rect,font=font):
-        x = rect[0] + 5
-        y = rect[1]
-        w = rect[2]
-        h = rect[3]
-        Box(x,y,w,h)
-
-        # 三角作るよ
-        tx = x + w -25
-        ty = y + 6
-        triangle_rect = Label("▼",tx,ty,font)
-
-        return Rect(x,y,w,h)
-
 
 # プルダウンボックス作るの分離するよ
 def PullDownBox(rect, font=font):
@@ -567,6 +619,27 @@ def PullDownBox(rect, font=font):
     triangle_rect = Label("▼",x+w-25,y+4,font)
 
     return Rect(x,y,w,h)
+
+# スクロールバー分離
+def ScrollBar(rect, siz):
+    x = rect.x + rect.w
+    y = rect.y
+    w = 20
+    h = rect.h
+    scroll_rect = Rect(x,y,w,h)
+    Box(x,y,w,h)
+    top_triangle_rect = None
+    under_triangle_rect = None
+    if PullDownFlag == 1:
+        # 三角作るよ
+        scrol_font = pygame.font.Font(FONT_PATH, siz)
+        top_triangle_rect = Label("▲",x+1,y+1,scrol_font)
+        under_triangle_rect = Label("▼",x+1,y+h-19,scrol_font)
+
+        # 四角作るよ
+        pygame.draw.rect(screen,GRAY,(x+1,SY,18,20))
+
+    return scroll_rect,top_triangle_rect,under_triangle_rect
 
 def Skill():
     # 文字サイズを小さくする
@@ -590,10 +663,22 @@ def Skill():
             ph = 24
             skill_puru_rect[skill] = PullDownBox(Rect(px,y,pw,ph),skill_font)
             skill_input_rect[skill] = InputBox((px+pw+2,y,30,ph),False,1)
+            if skill == "母国語":
+                point = CharaStatus["EDU"] * 5
+            else:
+                point = SkillList[skill]
+            slill_label_rect = Label(str(point),skill_input_rect[skill].x,skill_input_rect[skill].y,skill_font)
+
             # 表示位置を下にずらす
             y += ph
         else:
             skill_input_rect[skill] = InputBox((x+110,y+2,30,rect.h),False,1)
+            if skill == "回避":
+                point = CharaStatus["DEX"] * 2
+            else:
+                point = SkillList[skill]
+            slill_label_rect = Label(str(point),skill_input_rect[skill].x,skill_input_rect[skill].y,skill_font)
+            
             # 表示位置を下にずらす
             y += rect.h
 
@@ -674,10 +759,12 @@ def CharacterSheet():
             elif stat.Button_rect.collidepoint(key):
                 TextDraw("ダイスでランダムに値を決めることができます")
     else:
+        # 職業、技能の表示
         Skill_rect = Label("技能",70,90,font)
         pygame.draw.line(screen,BLACK,(120,100),(750,100),2)
         Skill()
-        Profe = Profession("職業",70,50,310,32,PullDownFlag)
+        # プルダウンの表示の関係で技能より後に表示している
+        Profe = Profession("職業",70,50,310,32)
 
     
     for event in pygame.event.get():
@@ -736,13 +823,13 @@ def CharacterSheet():
                                 PullDownFlag = 0
                         if PullDownFlag == 1:
                             # プルダウンのスクロールバーの三角を押した時
-                            if Profe.top_triangle_rect.collidepoint(event.pos):
+                            if Profe.top_rect.collidepoint(event.pos):
                                 if SY > SY_TOP:
                                     SY -= 5
-                            elif Profe.under_triangle_rect.collidepoint(event.pos):
+                            elif Profe.under_rect.collidepoint(event.pos):
                                 if SY < SY_DOWN:
                                     SY += 5
-                            elif Profe.scroll_rect.collidepoint(event.pos):
+                            elif Profe.bar_rect.collidepoint(event.pos):
                                 ScrollFlag = True
         
         # マウス離した時
