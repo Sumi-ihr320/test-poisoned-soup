@@ -2,6 +2,7 @@ import sys, random, os
 import pygame
 import pygame.draw
 from pygame.locals import *
+import pygame_menu as pgmenu
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import simpledialog
@@ -32,11 +33,11 @@ TITLE_TEXT = "毒入りスープ"
 
 # シーン切り替えフラグ
 TITLE,SETTING,OPENING,CHARASE,PLAY,ENDING,ENDCREDITS = (0,1,2,3,4,5,6)
-#SCENE_FLAG = 0
-SCENE_FLAG = 3
+SCENE_FLAG = 0
+#SCENE_FLAG = 3
 
 # 主人公のステータスデータ
-CharaStatus = {"name":"", "age":0, "sex":True,
+CharaStatus = {"name":"", "age":0, "sex":True,"country":"","language":"",
                "STR":0, "CON":0, "SIZ":0, "DEX":0,
                "APP":0, "EDU":0, "INT":0, "POW":0,
                "Luck":0,"Idea":0,"Know":0,"MOV":8,"DB":"",
@@ -69,20 +70,23 @@ SkillList = {"言いくるめ":5,"医学":5,"運転(自動車)":20,"応急手当
              "跳躍":25,"追跡":10,"電気修理":10,"電子工学":1,"天文学":1,
              "投擲":25,"登攀":40,"図書館":25,"ナビゲート":10,"値切り":5,
              "博物学":10,"物理学":1,"変装":1,"法律":5,
-             "他の言語":{"英語":1,"ラテン語":1,"ドイツ語":1,"中国語":1,"韓国語":1,"ロシア語":1,"日本語":1},
-             "母国語":{"英語":5,"ラテン語":5,"ドイツ語":5,"中国語":5,"韓国語":5,"ロシア語":5,"日本語":5},
+             "他の言語":{"英語":1,"フランス語":1,"ラテン語":1,"ドイツ語":1,"イタリア語":1,"スペイン語":1,"ロシア語":1,"中国語":1,"韓国語":1,"日本語":1},
+             "母国語":5,
              "ﾏｰｼｬﾙｱｰﾂ":1,"目星":25,"薬学":1,"歴史":20,
              "戦闘":{"キック":25,"組みつき":25,"こぶし":50,"頭突き":10},
              "銃火器":{"拳銃":20,"サブマシンガン":15,"ショットガン":30,"マシンガン":15,"ライフル":25},
              }
+CountryList = {"アメリカ":"英語","イギリス":"英語","フランス":"フランス語",
+           "ドイツ":"ドイツ語","イタリア":"イタリア語",
+           "オランダ":"オランダ語","カナダ":["英語","フランス語"],
+           "スペイン":"スペイン語","インド":["英語","ヒンディー語"],
+           "ロシア":"ロシア語","中国":"中国語","香港":"英語","韓国":"韓国語","日本":"日本語"}
 
 CharaPage = True # ページ変更用フラグ
 PullDownFlag = 0    # プルダウン用フラグ
-DropFlag = False    # ドロップ＆ドラッグフラグ
-SY = 102 # スクロールバー用
-SY_TOP = 102
-SY_DOWN = 320
-ScrollFlag = False
+OpeningFlag = 0
+FrameRect = Rect(30,420,580,150)
+DiceFrameRect = Rect(620,420,150,150)
 
 # tkinterの起動
 root = tk.Tk()
@@ -107,7 +111,6 @@ pygame.key.set_repeat(100, 100)
 pygame.display.set_caption(TITLE_TEXT)
 # フォントの設定
 font = pygame.font.Font(FONT_PATH, FONT_SIZ)
-
 
 
 # ファイルの読み込み
@@ -163,7 +166,30 @@ def TitleRender(text,font,color,y):
     return rect
 
 def Opening():
-    pass
+    global SCENE_FLAG
+    global OpeningFlag
+
+    if OpeningFlag == 0:
+        TextDraw("この物語はクトゥルフ神話TRPGを元に作成しています。")
+    elif OpeningFlag == 1:
+        TextDraw("まずは探索者を作成しましょう。")
+    
+    for event in pygame.event.get():
+        # マウスクリック時
+        if event.type == MOUSEBUTTONDOWN:
+            # 左ボタン
+            if event.button == 1:
+                if OpeningFlag == 0:
+                    OpeningFlag = 1
+                elif OpeningFlag == 1:
+                    SCENE_FLAG = CHARASE
+
+        # 閉じるボタンで終了
+        if event.type == QUIT:
+            Close()
+        elif event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                Close()
 
 # 終了処理をまとめるよ
 def Close():
@@ -485,12 +511,16 @@ class Profession:
     
     # プルダウン押した時に表示されるボックス作るよ
     def PullDown(self,rect):
+        if PullDownFlag == 1:
+            pd_h = 302
+        elif PullDownFlag == 2:
+            pd_h = 150
         x = rect[0]
         y = rect[1] + rect[3]
-        w = rect[2] - 20
-        h = rect[3] + 259
+        w = rect[2] 
+        h = rect[3] + pd_h
         Box(x,y,w,h)
-        self.bar_rect,self.top_rect,self.under_rect = ScrollBar(Rect(x,y,w,h),SKILL_SIZ)
+        #self.bar_rect,self.top_rect,self.under_rect = ScrollBar(Rect(x,y,w,h),SKILL_SIZ)
         return Rect(x,y,w,h)
 
     # プルダウン押した時に表示される項目表示したいよ
@@ -522,12 +552,15 @@ class Profession:
             # 表示位置を下にずらす
             y += rect.h
 
-            # 仕切り線を引く(後で消す)
+            # 仕切り線を引く
             pygame.draw.line(screen,BLACK,(x-2,y),(x+w-4,y))
-
-            # プルダウンボックスより下には表示しない
+            
+            # プルダウンボックスより下は隣に表示する
             if y >= (self.pd_rect.y+self.pd_rect.h-rect.h):
-                 break
+                x += x + 183
+                y = ly
+                # 隣にプルダウンボックスを作る
+                self.PullDown(Rect(x-3,self.PullDown_rect.y,self.PullDown_rect.w,self.PullDown_rect.h))
         lh = y - ly
         self.List_rect = Rect(x,ly,w,lh)
         return 
@@ -567,26 +600,22 @@ class PullDown:
         x = rect[0]
         y = rect[1] + rect[3]
         w = rect[2] - 20
-        #h = rect[3] + 259
         h = rect[3] + ph
         Box(x,y,w,h)
-        self.bar_rect,self.top_rect,self.under_rect = ScrollBar(Rect(x,y,w,h), SKILL_SIZ)
         self.pd_rect = Rect(x,y,w,h)
 
     # プルダウン押した時に表示される項目表示したいよ
     def PullDownList(self, rect):
         x = rect.x + 3
         y = rect.y + 3
-        if PullDownFlag == 1:
-            self.ListDraw(self.list,x,y,self.pd_rect.w)
-        elif PullDownFlag == 2:
-            pro = CharaStatus["Profession1"]
-            if ProfessionList[pro] != []:
-                self.ListDraw(self.list,x,y,self.pd_rect.w)
+        self.ListDraw(self.list,x,y,self.pd_rect.w)
 
     # 同じ処理だったのでまとめた
     def ListDraw(self,list,x,y,w):
+        ly = y
+        i = 0
         for item in list:
+            i += 1
             # 項目表示
             surface = font.render(item,True,BLACK)
             rect = surface.get_rect(left=x,top=y)
@@ -599,13 +628,18 @@ class PullDown:
             # 表示位置を下にずらす
             y += rect.h
 
-            # 仕切り線を引く(後で消す)
+            # 仕切り線を引く
             pygame.draw.line(screen,BLACK,(x-2,y),(x+w-4,y))
-
-            # プルダウンボックスより下には表示しない
+            
+            # プルダウンボックスより下は隣に表示する
             if y >= (self.pd_rect.y+self.pd_rect.h-rect.h):
-                break 
-
+                x += x + w
+                y = ly
+                # 隣にプルダウンボックスを作る
+                self.PullDown(Rect(x-3,self.PullDown_rect.y,self.PullDown_rect.w,self.PullDown_rect.h))
+        lh = y - ly
+        self.List_rect = Rect(x,ly,w,lh)
+        return 
 
 # プルダウンボックス作るの分離するよ
 def PullDownBox(rect, font=font):
@@ -620,26 +654,6 @@ def PullDownBox(rect, font=font):
 
     return Rect(x,y,w,h)
 
-# スクロールバー分離
-def ScrollBar(rect, siz):
-    x = rect.x + rect.w
-    y = rect.y
-    w = 20
-    h = rect.h
-    scroll_rect = Rect(x,y,w,h)
-    Box(x,y,w,h)
-    top_triangle_rect = None
-    under_triangle_rect = None
-    if PullDownFlag == 1:
-        # 三角作るよ
-        scrol_font = pygame.font.Font(FONT_PATH, siz)
-        top_triangle_rect = Label("▲",x+1,y+1,scrol_font)
-        under_triangle_rect = Label("▼",x+1,y+h-19,scrol_font)
-
-        # 四角作るよ
-        pygame.draw.rect(screen,GRAY,(x+1,SY,18,20))
-
-    return scroll_rect,top_triangle_rect,under_triangle_rect
 
 def Skill():
     # 文字サイズを小さくする
@@ -717,6 +731,8 @@ def CharacterSheet():
 
     Sheet_exit = False # キャラシ作成画面を終わるフラグ（未実装）
     # clock = pygame.time.Clock()
+    
+    menu = pgmenu.Menu("",740,360)
 
     # シートの描画
     pygame.draw.rect(screen, SHEET_COLOR, Rect(30,30,740,360))
@@ -729,7 +745,9 @@ def CharacterSheet():
         Name = Status("名前","name","",250, 50, 150, 28,"探索者の名前を入力してください", False)
         Sex = Status("性別","sex","性別(       )",250,80,0,0,"探索者の性別をクリックで選択してください",False,False,False)
         Sex_Button = SexChange(310,80,CharaStatus["sex"])
-        Age = Status("年齢","age","",450,80,50,28,"探索者の年齢を入力してください",False)
+        Age = Status("年齢","age","",430,80,50,28,"探索者の年齢を入力してください",False)
+        Country = Status("出身地","country","出身地",550,80,0,0,"探索者の出身地を選択してください",False,False,False)
+        Country_rect = PullDownBox(Rect(615,76,120,28),font)
         STR = Status("筋力","STR","STR(筋力)  ",250,120,40,28,"筋力の値を決めます。\n・3～6:全然筋力がない ・7～10:普通ぐらい\n・11～14:筋力に自身あり ・15～17:筋力を自慢できる\n・18:筋肉モリモリマッチョマン\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
         CON = Status("体力","CON","CON(体力)  ",250,152,40,28,"体力の値を決めます。\n・3～6:まったく体力ない ・7～10:ほどほど体力はある\n・11～14:それなりに体力がある\n・15～17:スポーツマン並にある ・18:元気100倍\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
         SIZ = Status("体格","SIZ","SIZ(体格)  ",250,184,40,28,"体格の値を決めます。\n・8～11:小柄 ・12～15:中肉中背 ・16～18:大柄\nテキスト入力とダイスで決定を選択できます。",Dice_text="2D6+6")
@@ -748,7 +766,7 @@ def CharacterSheet():
         SAN = Status("正気度","SAN","SAN値(正気度)   ",450,346,40,28,"探索者の正気度を表します。\n最大値はPOW x 5で決まります。",False)
 
         # リストに入れて同じ処理はfor文で回せるようにするよ
-        status = [Name,Sex,Age,STR,CON,SIZ,DEX,APP,EDU,INT,POW,
+        status = [Name,Sex,Age,Country,STR,CON,SIZ,DEX,APP,EDU,INT,POW,
                   Luck,Idea,Knowledge,MOV,DB,Durability,MP,SAN]
         
         # マウスオーバーでテキスト表示するよ
@@ -821,31 +839,8 @@ def CharacterSheet():
                                 elif PullDownFlag ==2:
                                     CharaStatus["Profession2"] = item
                                 PullDownFlag = 0
-                        if PullDownFlag == 1:
-                            # プルダウンのスクロールバーの三角を押した時
-                            if Profe.top_rect.collidepoint(event.pos):
-                                if SY > SY_TOP:
-                                    SY -= 5
-                            elif Profe.under_rect.collidepoint(event.pos):
-                                if SY < SY_DOWN:
-                                    SY += 5
-                            elif Profe.bar_rect.collidepoint(event.pos):
-                                ScrollFlag = True
         
-        # マウス離した時
-        if event.type == MOUSEBUTTONUP:
-            if event.button == 1:
-                if CharaPage == False:
-                    if PullDownFlag == 1:
-                        ScrollFlag = False
         
-        # マウスを動かすとき
-        if event.type == MOUSEMOTION:
-            if CharaPage == False:
-                if PullDownFlag == 1:
-                    if ScrollFlag:
-                        if SY_DOWN >= SY >= SY_TOP:
-                            SY = (event.pos[1])
 
         # 閉じるボタンで終了
         if event.type == QUIT:
@@ -856,11 +851,11 @@ def CharacterSheet():
 
 
 def frame():
-    pygame.draw.rect(screen, WHITE, Rect(30,420,580,150),3)
+    pygame.draw.rect(screen, WHITE, FrameRect,3)
 
 # ダイスを表示する為のフレーム
 def DiceFrame():
-    pygame.draw.rect(screen, WHITE, Rect(620,420,150,150),3)
+    pygame.draw.rect(screen, WHITE, DiceFrameRect,3)
 
 def main():
     # 画面の描写
@@ -878,6 +873,8 @@ def main():
             DiceFrame()
             if SCENE_FLAG == CHARASE:
                 CharacterSheet()
+            if SCENE_FLAG == OPENING:
+                Opening()
          
         # 画面を更新
         pygame.display.update() 
