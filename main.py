@@ -240,27 +240,12 @@ class Status:
                             self.status = 99
                     elif status_name == "Dura":
                          self.status = round((CharaStatus["CON"] + CharaStatus["SIZ"]) / 2)
-                         max_flag = True
-                         CharaStatus["Dura_max"] = self.status
                     elif status_name == "SAN":
                         self.status = CharaStatus["POW"] * 5
-                        max_flag = True
-                        CharaStatus["SAN_max"] = self.status
                     elif status_name == "MP":
                         self.status = CharaStatus["POW"]
-                        max_flag = True
-                        CharaStatus["MP_max"] = self.status
                     else:
                         self.status = CharaStatus[status_name]
-                    if max_flag:
-                        rect = (x+self.Label_rect.w+self.Input_rect.w,y,w,h)
-                        self.Input2_rect = InputBox(rect,False)
-                        Label(str(self.status),self.Input2_rect.x+2,self.Input2_rect.y+2,font)
-                        if CharaStatus[self.status_name] == 0:
-                            self.status = self.status
-                        else:
-                            self.status = CharaStatus[self.status_name]
-                
                     Label(str(self.status),self.Input_rect.x+2,self.Input_rect.y+2,font)
         else:
             self.Input_rect = self.Label_rect
@@ -669,79 +654,6 @@ def PullDownBox(rect, font=font):
     triangle_rect = Label("▼",x+w-25,y+4,font)
 
     return Rect(x,y,w,h)
-
-# 技能一覧作るよ
-class Skill:
-    def __init__(self, x, y):
-        # 文字サイズを小さくする
-        self.skill_font = pygame.font.Font(FONT_PATH,SKILL_SIZ)
-        self.skill_input_rect = {}
-        self.skill_puru_rect = {}
-        self.list_draw(x,y)
-
-    def list_draw(self, x ,y):
-        # 技能一覧を描写する
-        for skill in SkillList:
-            if skill == "戦闘" or skill == "銃火器":
-                if skill == "戦闘":
-                    ay = 367
-                else:
-                    ay = 387
-                ax = 75
-                for attack in SkillList[skill]:
-                    surface = self.skill_font.render(attack, True, BLACK)
-                    rect = surface.get_rect(left=ax,top=ay)
-                    screen.blit(surface,rect)
-                    self.skill_input_rect[attack] = InputBox((ax+80,ay+2,30,rect.h),False,1)
-                    point = SkillList[skill][attack]
-                    self.skill_label_rect = Label(str(point),self.skill_input_rect[attack].x,self.skill_input_rect[attack].y,self.skill_font)
-                    ax += 140
-            
-            else:
-                # 項目表示
-                surface = self.skill_font.render(skill, True, BLACK)
-                rect = surface.get_rect(left=x,top=y)
-                screen.blit(surface,rect)
-
-                if skill == "他の言語" or skill == "母国語":
-                    # プルダウン作る
-                    px = x + 10
-                    y += rect.h
-                    pw = 110
-                    ph = 24
-        #            skill_puru_rect[skill] = PullDownBox(Rect(px,y,pw,ph),skill_font)
-                    self.skill_input_rect[skill] = InputBox((px+pw+2,y,30,ph),False,1)
-                    if skill == "母国語":
-                        if type(CharaStatus["language"]) == list:
-                            self.my_language_pull = PullDown(Rect(px,y,pw,ph),CharaStatus["language"][0],CharaStatus["language"],self.skill_font)
-                        else:
-                            self.my_language_pull = PullDown(Rect(px,y,pw,ph),CharaStatus["language"],[],self.skill_font)
-                        point = CharaStatus["EDU"] * 5
-                    
-                    else:
-                        self.language_pull = PullDown(Rect(px,y,pw,ph),"",SkillList["他の言語"],self.skill_font)
-                        language_list = SkillList[skill]
-                        point = language_list["英語"]
-                    self.skill_label_rect = Label(str(point),self.skill_input_rect[skill].x,self.skill_input_rect[skill].y,self.skill_font)
-                    # 表示位置を下にずらす
-                    y += ph                
-                else:
-                    self.skill_input_rect[skill] = InputBox((x+110,y+2,30,rect.h),False,1)
-                    if skill == "回避":
-                        point = CharaStatus["DEX"] * 2
-                    else:
-                        point = SkillList[skill]
-                    self.skill_label_rect = Label(str(point),self.skill_input_rect[skill].x,self.skill_input_rect[skill].y,self.skill_font)
-                    
-                    # 表示位置を下にずらす
-                    y += rect.h
-
-                # シートの一番下に来たら次の行に移る
-                if y >= 330:
-                    y = 108
-                    x += 170
-                # 仕切り線を引く(あとで消す)
-                # pygame.draw.line(screen,BLACK,(x-2,y),(x+w-4,y))
             
 
 # 入力ボックスっぽい箱作るよ
@@ -799,34 +711,27 @@ def CharacterSheet():
         Knowledge = Status("知識","Know","知識       ",250,314,40,28,"探索者が持っている知識量の値です。\n値はEDU x 5で決まります。",False,False)
         MOV = Status("移動率","MOV","MOV(移動率)",250,346,40,28,"探索者の移動率です。",False,False)
         DB = Status("ﾀﾞﾒｰｼﾞ･ﾎﾞｰﾅｽ","DB","DB(ﾀﾞﾒｰｼﾞ･ﾎﾞｰﾅｽ)",450,250,50,28,"小柄で筋力が無い人物だと\n与えるダメージにマイナスの補正が掛かります。\n逆に大柄で筋力がある人物では\n与えるダメージにプラスの補正が掛かります。\n値はSTR+SIZで決まります。",False,False)
-        Durability = Status("耐久力","Dura","耐久力          ",450,282,40,28,"探索者のHPや生命力を表します。\n最大値は(CON+SIZ)÷2で決まります。",False)
-        MP = Status("ﾏｼﾞｯｸﾎﾟｲﾝﾄ","MP","MP(ﾏｼﾞｯｸﾎﾟｲﾝﾄ)  ",450,314,40,28,"探索者のマジックポイントを表します。\n最大値はPOWと同じ数値です。",False)
-        SAN = Status("正気度","SAN","SAN値(正気度)   ",450,346,40,28,"探索者の正気度を表します。\n最大値はPOW x 5で決まります。",False)
-        Country = Status("出身地","country","出身地",550,80,0,0,"探索者の出身地を選択してください",False,False,False)
-        Country_pull = PullDown(Rect(615,76,120,28),CharaStatus["country"],CountryList,font)
+        Durability = Status("耐久力","Dura","耐久力          ",450,282,40,28,"探索者のHPや生命力を表します。\n最大値は(CON+SIZ)÷2で決まります。",False,False)
+        MP = Status("ﾏｼﾞｯｸﾎﾟｲﾝﾄ","MP","MP(ﾏｼﾞｯｸﾎﾟｲﾝﾄ)  ",450,314,40,28,"探索者のマジックポイントを表します。\n最大値はPOWと同じ数値です。",False,False)
+        SAN = Status("正気度","SAN","SAN値(正気度)   ",450,346,40,28,"探索者の正気度を表します。\n最大値はPOW x 5で決まります。",False,False)
 
         # リストに入れて同じ処理はfor文で回せるようにするよ
-        status = [Name,Sex,Age,Country,STR,CON,SIZ,DEX,APP,EDU,INT,POW,
+        status = [Name,Sex,Age,STR,CON,SIZ,DEX,APP,EDU,INT,POW,
                   Luck,Idea,Knowledge,MOV,DB,Durability,MP,SAN]
         
         # マウスオーバーでテキスト表示するよ
         key = pygame.mouse.get_pos()
 
-        # 出身地のプルダウン表示中はその下になってるステータスのテキストを表示しない
-        if PullDownFlag == 3:
-            if Country_pull.pd_rect.collidepoint(key):
-                TextDraw(Country.text)
-        else:
-            for stat in status:
-                if stat.Label_rect.collidepoint(key) or stat.Input_rect.collidepoint(key):
-                    TextDraw(stat.text)
-                elif stat.Button_rect.collidepoint(key):
-                    TextDraw("ダイスでランダムに値を決めることができます")
+        for stat in status:
+            if stat.Label_rect.collidepoint(key) or stat.Input_rect.collidepoint(key):
+                TextDraw(stat.text)
+            elif stat.Button_rect.collidepoint(key):
+                TextDraw("ダイスでランダムに値を決めることができます")
     else:
         # 職業、技能の表示
-        Skill_rect = Label("技能",70,80,font)
-        pygame.draw.line(screen,BLACK,(120,90),(750,90),2)
-        skills = Skill(75,110)
+#        Skill_rect = Label("技能",70,80,font)
+#        pygame.draw.line(screen,BLACK,(120,90),(750,90),2)
+#        skills = Skill(75,110)
         # プルダウンの表示の関係で技能より後に表示している
         Profe = Profession("職業",70,45,310,32)
 
@@ -841,29 +746,13 @@ def CharacterSheet():
                     # ページ移動
                     if page_navi.navi_rect.collidepoint(event.pos):
                         CharaPage = False
-                        PullDownFlag = 0
                     # 男ボタン
                     elif Sex_Button.man_rect.collidepoint(event.pos):
                         CharaStatus["sex"] = True
                     # 女ボタン
                     elif Sex_Button.woman_rect.collidepoint(event.pos):
-                        CharaStatus["sex"] = False
-                    # 出身地プルダウン
-                    elif Country_pull.box_rect.collidepoint(event.pos):
-                        if PullDownFlag == 3:
-                            PullDownFlag = 0
-                        else:
-                            PullDownFlag = 3
-                    
-                    elif PullDownFlag == 3:
-                        # プルダウンのアイテムを選択
-                        for item in Country_pull.items:
-                            rect = Rect(Country_pull.items[item])
-                            if rect.collidepoint(event.pos):
-                                CharaStatus["country"] = item
-                                CharaStatus["language"] = CountryList[item]
-                                PullDownFlag = 0
-                    
+                        CharaStatus["sex"] = False                                        
+
                     else:
                         # 他のステータスをリストでまとめた
                         for stat in status:
@@ -891,37 +780,19 @@ def CharacterSheet():
                             PullDownFlag = 0
                         else:
                             PullDownFlag = 2
-                    elif skills.language_pull.box_rect.collidepoint(event.pos):
-                        if PullDownFlag == 4:
-                            PullDownFlag = 0
-                        else:
-                            PullDownFlag = 4
-                    elif skills.my_language_pull.box_rect.collidepoint(event.pos):
-                        if PullDownFlag == 5:
-                            PullDownFlag = 0
-                        else:
-                            PullDownFlag = 5
                     else:
                         if PullDownFlag != 0:
-                            if PullDownFlag <= 4:
-                                for item in skills.language_pull.items:
-                                    rect = Rect(skills.language_pull.items[item])
-                                    if rect.collidepoint(event.pos):
-                                        if PullDownFlag == 4:
-                                            pass
-
-                            else:
-                                # プルダウンのアイテムを選択
-                                for item in Profe.items:
-                                    rect = Rect(Profe.items[item])
-                                    if rect.collidepoint(event.pos):
-                                        if PullDownFlag == 1:
-                                            if item != CharaStatus["Profession1"]:
-                                                CharaStatus["Profession2"] = ""
-                                            CharaStatus["Profession1"] = item
-                                        elif PullDownFlag ==2:
-                                            CharaStatus["Profession2"] = item
-                                        PullDownFlag = 0
+                            # プルダウンのアイテムを選択
+                            for item in Profe.items:
+                                rect = Rect(Profe.items[item])
+                                if rect.collidepoint(event.pos):
+                                    if PullDownFlag == 1:
+                                        if item != CharaStatus["Profession1"]:
+                                            CharaStatus["Profession2"] = ""
+                                        CharaStatus["Profession1"] = item
+                                    elif PullDownFlag ==2:
+                                        CharaStatus["Profession2"] = item
+                                    PullDownFlag = 0
             
         
 
