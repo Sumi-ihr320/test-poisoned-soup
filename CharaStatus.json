@@ -1,0 +1,53 @@
+{
+    "Hero": {
+        "name":"", "age":0, "sex":true,
+        "STR":0, "CON":0, "SIZ":0, "DEX":0,
+        "APP":0, "EDU":0, "INT":0, "POW":0,
+        "Luck":0,"Idea":0,"Know":0,"DB":"",
+        "HP":0,"MP":0,"Avo":0,"SAN":0,"Profession":"",
+        "skill":{}
+    },
+
+    "Girl":{
+        "name":"下僕の少女", "age":17, "sex":false,
+        "STR":4, "CON":6, "SIZ":10, "DEX":5,
+        "APP":13, "EDU":6, "INT":10, "POW":10,
+        "Luck":50,"Idea":50,"Know":30,"DB":"-1d4",
+        "HP":8,"MP":10,"Avo":10,"SAN":0,"Profession":"放浪者",
+        "skill":{   "目星":55, "聞き耳":55, "忍び歩き":40, "隠れる":40,
+                    "応急手当":50, "中国語(母国語)":40, "追跡":50, "その他言語(主人公の母国語)":31,
+                    "クトゥルフ神話":15, "拳銃":20}
+    },
+
+    "Formless_Spawn":{
+        "name":"ツァトゥグァの無形の落とし子", "age":0, "sex":true,
+        "STR":23, "CON":18, "SIZ":20, "DEX":16,
+        "APP":0, "EDU":0, "INT":15, "POW":7,
+        "Luck":35,"Idea":75,"Know":0,"DB":"+2d6",
+        "HP":19,"MP":7,"Avo":32,"SAN":0,"Profession":"",
+        "skill":{   "隠れる":50, "忍び歩き":50,
+                    "鞭":90,"触肢":60,"打突":20,"噛みつき":30}
+    },
+
+    "Hunting_Horrors":{
+        "name":"狩り立てる恐怖", "age":0, "sex":true,
+        "STR":36, "CON":15, "SIZ":50, "DEX":19,
+        "APP":0, "EDU":0, "INT":17, "POW":25,
+        "Luck":0,"Idea":0,"Know":0,"DB":"",
+        "HP":33,"MP":25, "Avo":38,"SAN":0,"Profession":"",
+        "skill":{   "聞き耳":35, "目星":35, "追跡":35,
+                    "噛みつき":65,"尾(組み付き)":90},
+        "armor":9
+    },
+
+    "Chaugnar_Faugn":{
+        "name":"チャウグナー・フォーン", "age":0, "sex":true,
+        "STR":65, "CON":140, "SIZ":40, "DEX":30,
+        "APP":0, "EDU":0, "INT":25, "POW":35,
+        "Luck":0,"Idea":0,"Know":0,"DB":"+6d6",
+        "HP":90,"MP":35,"Avo":60,"SAN":0,"Profession":"",
+        "skill":{   "組付き":80, "噛みつきと吸収":100, "心霊波を送る":100,
+                    "心臓への攻撃":100},
+        "armor":10
+    }
+}

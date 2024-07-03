@@ -1,4 +1,4 @@
-import sys, random, os
+import sys, random, os, json
 import pygame
 import pygame.draw
 from pygame.locals import *
@@ -24,6 +24,11 @@ SCENARIO = "/Scenario/"
 PICTURE ="/Picture/"
 MUSIC = "/Music/"
 
+STATUS_JSON_PATH = os.path.join(PATH,"CharaStatus.json")
+PROF_JSON_PATH = os.path.join(PATH,"Profession.json")
+SKILL_JSOM_PATH = os.path.join(PATH,"SkillList.json")
+HOBBY_JSON_PATH = os.path.join(PATH,"Hobby.json")
+
 FONT_PATH = os.path.join(PATH,"HGRKK.TTC")
 TITLE_FONT_PATH = os.path.join(PATH,"genkai-mincho.ttf")
 FONT_SIZ = 22
@@ -37,54 +42,27 @@ TITLE,SETTING,OPENING,CHARASE,PLAY,ENDING,ENDCREDITS = (0,1,2,3,4,5,6)
 #SCENE_FLAG = 0
 SCENE_FLAG = 3
 
-# 主人公のステータスデータ
-CharaStatus = {"name":"", "age":0, "sex":True,"country":"","language":"",
-               "STR":0, "CON":0, "SIZ":0, "DEX":0,
-               "APP":0, "EDU":0, "INT":0, "POW":0,
-               "Luck":0,"Idea":0,"Know":0,"MOV":8,"DB":"",
-               "Dura":0,"Dura_max":0,"MP":0,"MP_max":0,"SAN":0,"SAN_max":0,
-               "Profession1":"未選択","Profession2":"","skill":{}}
+# キャラクターのステータスデータ
+with open(STATUS_JSON_PATH,"r",encoding="utf-8_sig")as f:
+    STATUS = json.load(f)
+    CharaStatus = STATUS["Hero"]
 
-ProfessionList = {"未選択":[],
-                  "医師":["アニマルセラピスト","看護師","救急救命士","形成外科医","精神科医","闇医者"],
-                  "エンジニア":[],"狂信者":[],
-                  "警察官":["海上保安官","科学捜査研究員","山岳救助隊員","消防士"],
-                  "芸術家":["芸術家","ダンサー","デザイナー","ファッション系芸術家"],
-                  "古物研究家":[],"コンピューター技術者":[],"作家":[],
-                  "自衛官":["陸上自衛隊員","海上自衛隊員(艦上勤務)","自衛隊パイロット(陸海空)","民間軍事会社メンバー"],
-                  "ジャーナリスト":[],"宗教家":[],"商店主／店員":[],
-                  "私立探偵":[],"水産業従事者":[],"スポーツ選手":[],
-                  "大学教授":["冒険家教授","評論家"],
-                  "タレント":["アイドル、音楽タレント","アナウンサー","コメディアン","スポーツタレント","テレビ・コメンテーター","俳優","ﾌﾟﾛﾃﾞｭｰｻｰ、ﾏﾈｰｼﾞｬｰ"],
-                  "超心理学者":["ゴーストハンター","占い師、ｽﾋﾟﾘﾁｭｱﾘｽﾄ、霊媒師"],
-                  "ディレッタント":[],"ドライバー":[],"農林業従事者":[],"パイロット":[],
-                  "ビジネスマン":["執事・メイド","セールスマン"],
-                  "法律家":[],"放浪者":[],
-                  "暴力団組員":[],"ミュージシャン":[],"メンタルセラピスト":[]}
+# 職業リスト
+with open(PROF_JSON_PATH,"r",encoding="utf-8_sig") as f:
+    ProfessionList = json.load(f)
 
-SkillList = {"言いくるめ":5,"医学":5,"運転(自動車)":20,"応急手当":30,"オカルト":5,"回避":2,
-             "化学":1,"鍵開け":1,"隠す":15,"隠れる":15,"機械修理":20,
-             "聞き耳":25,"ｸﾄｩﾙﾌ神話":0,"芸術":5,"経理":10,"考古学":1,
-             "ｺﾝﾋﾟｭｰﾀｰ":1,"忍び歩き":10,"写真術":10,"重機械操作":1,"乗馬":5,
-             "信用":15,"心理学":5,"人類学":1,"水泳":25,"製作":5,
-             "精神分析":1,"生物学":1,"説得":15,"操縦":1,"地質学":1,
-             "跳躍":25,"追跡":10,"電気修理":10,"電子工学":1,"天文学":1,
-             "投擲":25,"登攀":40,"図書館":25,"ナビゲート":10,"値切り":5,
-             "博物学":10,"物理学":1,"変装":1,"法律":5,
-             "他の言語":{"英語":1,"フランス語":1,"ラテン語":1,"ドイツ語":1,"イタリア語":1,"スペイン語":1,"ロシア語":1,"中国語":1,"韓国語":1,"日本語":1},
-             "母国語":5,
-             "ﾏｰｼｬﾙｱｰﾂ":1,"目星":25,"薬学":1,"歴史":20,
-             "戦闘":{"キック":25,"組みつき":25,"こぶし":50,"頭突き":10},
-             "銃火器":{"拳銃":20,"ｻﾌﾞﾏｼﾝｶﾞﾝ":15,"ｼｮｯﾄｶﾞﾝ":30,"ﾏｼﾝｶﾞﾝ":15,"ﾗｲﾌﾙ":25},
-             }
-CountryList = {"アメリカ":"英語","イギリス":"英語","フランス":"フランス語",
-           "ドイツ":"ドイツ語","イタリア":"イタリア語",
-           "オランダ":"オランダ語","カナダ":["英語","フランス語"],
-           "スペイン":"スペイン語","インド":["英語","ヒンディー語"],
-           "ロシア":"ロシア語","中国":"中国語","香港":"英語","韓国":"韓国語","日本":"日本語"}
+# 技能リスト
+with open(SKILL_JSOM_PATH,"r",encoding="utf-8_sig") as f:
+    SkillList = json.load(f)
 
-CharaPage = True # ページ変更用フラグ
-PullDownFlag = 0    # プルダウン用フラグ
+# 趣味リスト
+with open(HOBBY_JSON_PATH,"r",encoding="utf-8_sig") as f:
+    HobbyList = json.load(f)
+
+
+CharaPage = True    # ページ変更用フラグ
+PullDownFlag = False    # プルダウン用フラグ
+PullDownItem = ""       # プルダウンアイテム記憶用
 OpeningFlag = 0
 FrameRect = Rect(30,420,580,150)
 DiceFrameRect = Rect(620,420,150,150)
@@ -112,12 +90,6 @@ pygame.key.set_repeat(100, 100)
 pygame.display.set_caption(TITLE_TEXT)
 # フォントの設定
 font = pygame.font.Font(FONT_PATH, FONT_SIZ)
-
-
-# ファイルの読み込み
-#f = open(PATH + SCENARIO + '\CharacterSheet_01.txt', 'r', encoding='UTF-8')
-#Parameter_list = f.read()
-#f.close
 
 
 # タイトル画面作るよ
@@ -200,6 +172,30 @@ def Close():
     else:
         pass
 
+# ページ移動用の矢印表示するよ
+class PageNavigation:
+    def __init__(self, page_flag):
+        # ナビゲーションの位置
+        self.navi_rect = self.image(page_flag)
+
+    def image(self, page_flag):
+        img = "navigate.png"
+        navi_img = pygame.image.load(PATH + PICTURE + img).convert_alpha()
+        navi_img = pygame.transform.scale(navi_img, (40,355))
+        navi_rect = navi_img.get_rect()
+        if page_flag: # ステータス画面の時
+            navi_rect.centerx += 750
+            navi_rect.centery += 40
+            screen.blit(navi_img, navi_rect)
+            # 三角形の描画
+            pygame.draw.polygon(screen,BLACK,[[760,190],[780,210],[760,230]])
+        else: # 職業画面の時
+            navi_rect.centerx += 20
+            navi_rect.centery += 40
+            screen.blit(navi_img, navi_rect)
+            pygame.draw.polygon(screen,BLACK,[[50,190],[30,210],[50,230]])
+        return navi_rect
+
 # ステータス作るよ
 class Status:
     def __init__(self, name, status_name, label_name, x, y, w, h, text="",  Button_flag=True, Input_flag=True, Box_flag=True,  Dice_text=""):
@@ -211,7 +207,7 @@ class Status:
             self.label_name = self.name
         self.text = text    # 説明文
         self.dice_text = Dice_text  # ダイスボタンに表示するテキスト
-        self.Label_rect = Label(self.label_name,x,y,font)    # ラベル作成
+        self.Label_rect = Label(self.label_name,x,y)    # ラベル作成
         self.Input_flag = Input_flag    # インプットボタンの入力ができるかのフラグ
         max_flag = False    # 最大値と現在値が存在するフラグ
         if Box_flag:    # インプットボックスを作るかのフラグ
@@ -238,7 +234,9 @@ class Status:
                         self.status = CharaStatus["EDU"] * 5
                         if self.status > 99:
                             self.status = 99
-                    elif status_name == "Dura":
+                    elif status_name == "Avo":
+                        self.status = CharaStatus["DEX"] * 2
+                    elif status_name == "HP":
                          self.status = round((CharaStatus["CON"] + CharaStatus["SIZ"]) / 2)
                     elif status_name == "SAN":
                         self.status = CharaStatus["POW"] * 5
@@ -246,7 +244,7 @@ class Status:
                         self.status = CharaStatus["POW"]
                     else:
                         self.status = CharaStatus[status_name]
-                    Label(str(self.status),self.Input_rect.x+2,self.Input_rect.y+2,font)
+                    Label(str(self.status),self.Input_rect.x+2,self.Input_rect.y+2)
         else:
             self.Input_rect = self.Label_rect
 
@@ -285,7 +283,7 @@ class Status:
                     
         val = InputGet(self.status_name,self.name,'あなたの' + self.name + 'を入力してください',min,max)
         if val != None:
-            Label(str(val),self.Input_rect.x+2, self.Input_rect.y+2,font)
+            Label(str(val),self.Input_rect.x+2, self.Input_rect.y+2)
             CharaStatus[self.status_name] = val
 
     # ダイスボタン作るよ    
@@ -309,7 +307,7 @@ class Status:
     def DiceProcess(self):
         val = DiceRool(self.dice_text)
         CharaStatus[self.status_name] = val
-        Label(str(val),self.Input_rect.x+2,self.Input_rect.y+2,font)
+        Label(str(val),self.Input_rect.x+2,self.Input_rect.y+2)
 
 # 選んだ性別によって画像が変わるようにするよ
 class SexChange:
@@ -344,19 +342,8 @@ class SexChange:
             img = "silhouette_man.png"
         else:
             img = "silhouette_woman.png"
-        # 画像の読み込み＆アルファ化(透明化)
-        chara = pygame.image.load(PATH + PICTURE + img).convert_alpha()
-        # 画像の縮小
-        chara = pygame.transform.rotozoom(chara, 0, 0.5)
-        # 画像の位置取得
-        rect = chara.get_rect()
-        #画像の位置を変更する
-        rect.centerx += 40
-        rect.centery += 40
-        # 画像の描写
-        screen.blit(chara, rect)
-        # プレイヤー画像の枠の描画
-        pygame.draw.rect(screen, BLACK, rect, 2)
+        img_path = PATH + PICTURE + img
+        self.image_rect = image(img_path,0.5,40,40,True,2)
 
 # インプットボックスの処理をまとめるよ
 def InputGet(name, title, text, min=0, max=100):
@@ -403,158 +390,48 @@ def DiceRool(dice_text=""):
         pygame.time.delay(100)
         return val
 
-# ページ移動用の矢印表示するよ
-class PageNavigation:
-    def __init__(self, page_flag):
-        # ナビゲーションの位置
-        self.navi_rect = self.image(page_flag)
-
-    def image(self, page_flag):
-        img = "navigate.png"
-        navi_img = pygame.image.load(PATH + PICTURE + img).convert_alpha()
-        navi_img = pygame.transform.scale(navi_img, (40,355))
-        navi_rect = navi_img.get_rect()
-        if page_flag: # ステータス画面の時
-            navi_rect.centerx += 750
-            navi_rect.centery += 40
-            screen.blit(navi_img, navi_rect)
-            # 三角形の描画
-            pygame.draw.polygon(screen,BLACK,[[760,190],[780,210],[760,230]])
-        else: # 職業画面の時
-            navi_rect.centerx += 20
-            navi_rect.centery += 40
-            screen.blit(navi_img, navi_rect)
-            pygame.draw.polygon(screen,BLACK,[[50,190],[30,210],[50,230]])
-        return navi_rect
-
-# ラベル作成を分離するよ
-def Label(name, x, y, font):
-    color = BLACK
-    surface = font.render(name, True, color)
-    rect = surface.get_rect(left=x, top=y)
-    screen.blit(surface, rect)
-    return Rect(rect)
-
-# 入力ボックス作成を分離するよ
-def InputBox(rect, flag=True, line_bold=2):
-    if flag:
-        # color = (255,248,220)
-        color = WHITE
-    else:
-        color = SHEET_COLOR
-    x = rect[0] + 5
-    y = rect[1] - 4
-    w = rect[2] 
-    h = rect[3] 
-    pygame.draw.rect(screen, color, (x, y, w, h))
-    pygame.draw.line(screen,BLACK,(x,y+h-1),(x+w-1,y+h-1),line_bold)
-    return Rect(x,y,w,h)
-
-
 # 職業選択画面作るよ
 class Profession:
-    def __init__(self, name, x, y, w, h):
-        self.Name = name
-        self.Label_rect = Label(name,x,y,font)
-        # プルダウンボックス作成
-        self.PullDown_rect = PullDownBox((x+self.Label_rect.w+5,y-4,w,h))
-        self.Box_text = self.BoxLabel(CharaStatus["Profession1"],self.PullDown_rect)
-        # 二つ目のプルダウンボックス作成
-        self.PullDown2_rect = PullDownBox((self.PullDown_rect.x + self.PullDown_rect.w+5,y-4,w,h))
-        
-        # プルダウンボックスのアイテムの位置のリスト{item:rect}
-        self.items = {}
+    def __init__(self, prof):
+        self.list_image()
+        if prof != "":
+            self.image(prof)
 
-        self.skills_rect = {}
+    def list_image(self):
+        x,y = 160,230
+        self.prof_list = ProfessionList
+        for prof in list(self.prof_list):
+            name = self.prof_list[prof]["name"]
+            img_path = PATH + PICTURE + "prof_" + name + ".png"
+            rect = image(img_path, 0.1, x, y, line=True, background=True)
+            self.prof_list[prof]["rect"] = rect
+            x += 55
+            if x >= 650:
+                y += 55
+                x = 160
 
-        # もし職業2が入力されていれば文字を表示する
-        if CharaStatus["Profession2"] != "":
-            self.Box2_text = self.BoxLabel(CharaStatus["Profession2"],self.PullDown2_rect)
-        # もし職業リストで職業1の項目が空でなければ未選択と表示する
-        elif ProfessionList[CharaStatus["Profession1"]] != []:
-            self.Box2_text = self.BoxLabel("未選択",self.PullDown2_rect)
+    def image(self, prof):
+        data = self.prof_list[prof]
+        name = data["name"]
+        img_path = PATH + PICTURE + "prof_" + name + ".png"
+        x,y = 160,40
+        rect = image(img_path, 0.35 , x, y, line=True, background=True)
+        lrx = rect.x + rect.w + 5
+        label_rect = Label(f"【{prof}】", lrx, y, font)
+
+# 趣味選択画面作るよ
+class Hobby:
+    def __init__(self):
+        skill_font = pygame.font.Font(FONT_PATH, SKILL_SIZ)
+        if PullDownItem == "":
+            self.listitem = "趣味"
         else:
-            self.Box2_text = ""
+            self.listitem = PullDownItem
+        self.pull = PullDown((495,200,150,25),self.listitem,list(HobbyList),skill_font,207)
 
-        if PullDownFlag == 1:
-            # プルダウンリストを表示する
-            self.pd_rect = self.PullDown(self.PullDown_rect)
-            self.PullDownList(self.pd_rect)
-
-        elif PullDownFlag == 2:
-            # 職業リスト内で職業1の項目が空でなかった時のみプルダウンリストを表示する
-            if CharaStatus["Profession1"] in ProfessionList:
-                if ProfessionList[CharaStatus["Profession1"]] != []:
-                    self.pd_rect = self.PullDown(self.PullDown2_rect)
-                    self.PullDownList(self.pd_rect)
-    
-    # プルダウンボックスに表示される文字列を描画するよ
-    def BoxLabel(self,text,rect):
-        surface = font.render(str(text),True,BLACK)
-        rect = surface.get_rect(left=rect[0]+4,top=rect[1]+4)
-        screen.blit(surface, rect)
-        return text
-    
-    # プルダウン押した時に表示されるボックス作るよ
-    def PullDown(self,rect):
-        if PullDownFlag == 1:
-            pd_h = 302
-        elif PullDownFlag == 2:
-            pd_h = 150
-        x = rect[0]
-        y = rect[1] + rect[3]
-        w = rect[2] 
-        h = rect[3] + pd_h
-        Box(x,y,w,h)
-        #self.bar_rect,self.top_rect,self.under_rect = ScrollBar(Rect(x,y,w,h),SKILL_SIZ)
-        return Rect(x,y,w,h)
-
-    # プルダウン押した時に表示される項目表示したいよ
-    def PullDownList(self,rect):
-        x = rect.x + 3
-        y = rect.y + 3
-        if PullDownFlag == 1:
-            self.ListDraw(ProfessionList,x,y,self.pd_rect.w)
-        elif PullDownFlag == 2:
-            pro = CharaStatus["Profession1"]
-            if ProfessionList[pro] != []:
-                self.ListDraw(ProfessionList[pro],x,y,self.pd_rect.w)
-
-    # 同じ処理だったのでまとめた
-    def ListDraw(self,list,x,y,w):
-        ly = y
-        i = 0
-        for item in list:
-            i += 1
-            # 項目表示
-            surface = font.render(item,True,BLACK)
-            rect = surface.get_rect(left=x,top=y)
-            screen.blit(surface,rect)
-
-            # 項目名とそのrectを辞書に登録していく
-            lis_rect = Rect(rect.x,rect.y,w,rect.h)
-            self.items[item] = lis_rect
-
-            # 表示位置を下にずらす
-            y += rect.h
-
-            # 仕切り線を引く
-            pygame.draw.line(screen,BLACK,(x-2,y),(x+w-4,y))
-            
-            # プルダウンボックスより下は隣に表示する
-            if y >= (self.pd_rect.y+self.pd_rect.h-rect.h):
-                x += x + 183
-                y = ly
-                # 隣にプルダウンボックスを作る
-                self.PullDown(Rect(x-3,self.PullDown_rect.y,self.PullDown_rect.w,self.PullDown_rect.h))
-        lh = y - ly
-        self.List_rect = Rect(x,ly,w,lh)
-        return 
-
-
-# プルダウン機能をクラス化できないかな？(難航中)
+# プルダウン機能をクラス化できないかな？
 class PullDown:
-    def __init__(self, rect, text, list, font):
+    def __init__(self, rect, text, list, font=font, pd_h=285):
         self.font = font
         self.box_rect = self.Box(rect)
         self.box_text = self.Label(text, self.box_rect)
@@ -563,16 +440,9 @@ class PullDown:
         # プルダウンボックスのアイテムの位置のリスト{item:rect}
         self.items = {}
 
-        if PullDownFlag != 0:
-            if PullDownFlag == 3:
-                self.pd_rect = self.PullDown(self.box_rect, 285)
-                self.PullDownList(self.pd_rect)
-            elif PullDownFlag == 4:
-                self.pd_rect = self.PullDown(self.box_rect, 100)
-                self.PullDownList(self.pd_rect)
-            elif PullDownFlag == 5:
-                self.pd_rect = self.PullDown(self.box_rect, 50)
-                self.PullDownList(self.pd_rect)
+        if PullDownFlag:
+            self.pd_rect = self.PullDown(self.box_rect, pd_h)
+            self.PullDownList(self.pd_rect)
 
     # ボックス作るよ
     def Box(self,rect):
@@ -627,7 +497,7 @@ class PullDown:
             self.items[item] = lis_rect
 
             # 表示位置を下にずらす
-            y += rect.h
+            y += rect.h + 1
 
             # 仕切り線を引く
             pygame.draw.line(screen,BLACK,(x-2,y),(x+w-4,y))
@@ -642,6 +512,51 @@ class PullDown:
         self.List_rect = Rect(x,ly,w,lh)
         return 
 
+# ラベル作成を分離するよ
+def Label(name, x, y, font=font):
+    color = BLACK
+    surface = font.render(name, True, color)
+    rect = surface.get_rect(left=x, top=y)
+    screen.blit(surface, rect)
+    return Rect(rect)
+
+# 入力ボックス作成を分離するよ
+def InputBox(rect, flag=True, line_bold=2):
+    if flag:
+        # color = (255,248,220)
+        color = WHITE
+    else:
+        color = SHEET_COLOR
+    x = rect[0] + 5
+    y = rect[1] - 4
+    w = rect[2] 
+    h = rect[3] 
+    pygame.draw.rect(screen, color, (x, y, w, h))
+    pygame.draw.line(screen,BLACK,(x,y+h-1),(x+w-1,y+h-1),line_bold)
+    return Rect(x,y,w,h)
+
+# 画像表示を分離するよ        
+def image(path, size, x, y, line=False, line_width=1, background=False):
+    # 画像の読み込み＆アルファ化(透明化)
+    img = pygame.image.load(path).convert_alpha()
+    # 画像の縮小
+    img = pygame.transform.rotozoom(img, 0, size)
+    # 画像の位置取得
+    rect = img.get_rect()
+    # 画像の位置を変更する
+    rect.centerx += x
+    rect.centery += y
+    # 背景を白にする場合
+    if background == True:
+        pygame.draw.rect(screen,WHITE,rect)
+    # 画像の描写
+    screen.blit(img, rect)
+    # 画像の枠を描画する場合
+    if line == True:
+        pygame.draw.rect(screen,BLACK,rect,line_width)
+
+    return rect
+
 # プルダウンボックス作るの分離するよ
 def PullDownBox(rect, font=font):
     x = rect[0] + 5
@@ -655,12 +570,10 @@ def PullDownBox(rect, font=font):
 
     return Rect(x,y,w,h)
             
-
 # 入力ボックスっぽい箱作るよ
 def Box(x,y,w,h):
     pygame.draw.rect(screen,GRAY,(x,y,w,h))
     pygame.draw.rect(screen, WHITE, (x+1, y+1, w-2, h-2))
-
 
 # テキストフレームに文字を表示するよ
 def TextDraw(text):
@@ -673,13 +586,58 @@ def TextDraw(text):
         screen.blit(surface,rect)
         y += 25
 
+# 選択した職業から主人公のステータスにデータを入れるよ
+def ProfDataIn():
+    global CharaStatus
+
+    CharaStatus["skill"] = {}
+    prof = CharaStatus["Profession"]
+    skills = ProfessionList[prof]["skill"]
+    max = CharaStatus["EDU"] * 20
+    if max > 0:
+        i = max
+        for skill in skills:
+            percent = skills[skill] / 100
+            bonus = int(max * percent)
+            if skill == "回避":
+                data = CharaStatus["Avo"]
+            data = SkillList[skill]
+            result = data + bonus
+            surplus = 0
+            if result > 90:
+                surplus = result - 90
+                result = 90
+            if skill == "回避":
+                CharaStatus["Avo"] = result
+            else:
+                CharaStatus["skill"][skill] = result
+            i -= bonus + surplus
+            if i < 0:
+                print("数字が足りません")
+        
+        if i > 0:
+            lists = {}
+            for skill in CharaStatus["skill"]:
+                value = CharaStatus["skill"][skill]
+                if value != 90:
+                    if value + i < 90:
+                        lists[skill] = value
+            select = random.choice(list(lists))
+            CharaStatus["skill"][select] += i
+            
+# 選択した趣味から主人公のステータスにデータを入れるよ
+def HobyDataIn():
+    hobby = PullDownItem
+    my_skills = CharaStatus["skill"]
+    skills = HobbyList[hobby]
+    max = CharaStatus["INT"] * 10
+
 # キャラクターシート作成画面
 def CharacterSheet():
     global CharaStatus
     global CharaPage
     global PullDownFlag
-    global SY
-    global ScrollFlag
+    global PullDownItem
 
     Sheet_exit = False # キャラシ作成画面を終わるフラグ（未実装）
     # clock = pygame.time.Clock()
@@ -709,15 +667,15 @@ def CharacterSheet():
         Luck = Status("幸運","Luck","幸運       ",250,250,40,28,"探索者の幸運度を表します。\n値はPOW x 5で決まります。",False,False)
         Idea = Status("アイデア","Idea","アイデア   ",250,282,40,28,"アイデアは直感的な能力です。\n特殊な雰囲気など、普通では気がつかないであろう物に\n気付けるかどうかの能力になります\n値はINT x 5で決まります。",False,False)
         Knowledge = Status("知識","Know","知識       ",250,314,40,28,"探索者が持っている知識量の値です。\n値はEDU x 5で決まります。",False,False)
-        MOV = Status("移動率","MOV","MOV(移動率)",250,346,40,28,"探索者の移動率です。",False,False)
+        Avo = Status("回避","Avo","回避       ",250,346,40,28,"探索者の回避技能値です。\n値はDEX x 2で決まります。",False,False)
         DB = Status("ﾀﾞﾒｰｼﾞ･ﾎﾞｰﾅｽ","DB","DB(ﾀﾞﾒｰｼﾞ･ﾎﾞｰﾅｽ)",450,250,50,28,"小柄で筋力が無い人物だと\n与えるダメージにマイナスの補正が掛かります。\n逆に大柄で筋力がある人物では\n与えるダメージにプラスの補正が掛かります。\n値はSTR+SIZで決まります。",False,False)
-        Durability = Status("耐久力","Dura","耐久力          ",450,282,40,28,"探索者のHPや生命力を表します。\n最大値は(CON+SIZ)÷2で決まります。",False,False)
+        HP = Status("耐久力","HP","耐久力          ",450,282,40,28,"探索者のHPや生命力を表します。\n最大値は(CON+SIZ)÷2で決まります。",False,False)
         MP = Status("ﾏｼﾞｯｸﾎﾟｲﾝﾄ","MP","MP(ﾏｼﾞｯｸﾎﾟｲﾝﾄ)  ",450,314,40,28,"探索者のマジックポイントを表します。\n最大値はPOWと同じ数値です。",False,False)
         SAN = Status("正気度","SAN","SAN値(正気度)   ",450,346,40,28,"探索者の正気度を表します。\n最大値はPOW x 5で決まります。",False,False)
 
         # リストに入れて同じ処理はfor文で回せるようにするよ
         status = [Name,Sex,Age,STR,CON,SIZ,DEX,APP,EDU,INT,POW,
-                  Luck,Idea,Knowledge,MOV,DB,Durability,MP,SAN]
+                  Luck,Idea,Knowledge,Avo,DB,HP,MP,SAN]
         
         # マウスオーバーでテキスト表示するよ
         key = pygame.mouse.get_pos()
@@ -728,12 +686,17 @@ def CharacterSheet():
             elif stat.Button_rect.collidepoint(key):
                 TextDraw("ダイスでランダムに値を決めることができます")
     else:
-        # 職業、技能の表示
-#        Skill_rect = Label("技能",70,80,font)
-#        pygame.draw.line(screen,BLACK,(120,90),(750,90),2)
-#        skills = Skill(75,110)
-        # プルダウンの表示の関係で技能より後に表示している
-        Profe = Profession("職業",70,45,310,32)
+        # 職業選択画面
+        Profe = Profession(CharaStatus["Profession"])
+        # 趣味選択画面
+        Hoby = Hobby()
+
+        key = pygame.mouse.get_pos()
+        for prof in Profe.prof_list:
+            if Profe.prof_list[prof]["rect"].collidepoint(key):
+                TextDraw(f"あなたの職業を選択してください\n【{prof}】")
+        if Hoby.pull.box_rect.collidepoint(key):
+            TextDraw("あなたの趣味を選択してください")
 
     
     for event in pygame.event.get():
@@ -770,29 +733,24 @@ def CharacterSheet():
                         PullDownFlag = 0
 
                     # プルダウン表示
-                    elif Profe.PullDown_rect.collidepoint(event.pos):
-                        if PullDownFlag == 1:
-                            PullDownFlag = 0
+                    elif Hoby.pull.box_rect.collidepoint(event.pos):
+                        if PullDownFlag:
+                            PullDownFlag = False
                         else:
-                            PullDownFlag = 1
-                    elif Profe.PullDown2_rect.collidepoint(event.pos):
-                        if PullDownFlag == 2:
-                            PullDownFlag = 0
-                        else:
-                            PullDownFlag = 2
+                            PullDownFlag = True
+
+                    elif PullDownFlag:
+                        for item in Hoby.pull.items:
+                            if Hoby.pull.items[item].collidepoint(event.pos):
+                                PullDownItem = item
+                                PullDownFlag = False
+                        PullDownFlag = False
                     else:
-                        if PullDownFlag != 0:
-                            # プルダウンのアイテムを選択
-                            for item in Profe.items:
-                                rect = Rect(Profe.items[item])
-                                if rect.collidepoint(event.pos):
-                                    if PullDownFlag == 1:
-                                        if item != CharaStatus["Profession1"]:
-                                            CharaStatus["Profession2"] = ""
-                                        CharaStatus["Profession1"] = item
-                                    elif PullDownFlag ==2:
-                                        CharaStatus["Profession2"] = item
-                                    PullDownFlag = 0
+                        for prof in Profe.prof_list:
+                            rect = Profe.prof_list[prof]["rect"]
+                            if rect.collidepoint(event.pos):
+                                CharaStatus["Profession"] = prof
+                                ProfDataIn()
             
         
 
