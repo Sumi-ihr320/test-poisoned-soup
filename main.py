@@ -6,7 +6,7 @@ import pygame_menu as pgmenu
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import simpledialog
-
+import datetime as dt
 
 DISPLAY_SIZE = (800, 600)
 BLACK = (0,0,0)
@@ -23,6 +23,7 @@ PATH = os.path.dirname(__file__)
 SCENARIO = "/Scenario/"
 PICTURE ="/Picture/"
 MUSIC = "/Music/"
+SAVE = "/Save/"
 
 STATUS_JSON_PATH = os.path.join(PATH,"CharaStatus.json")
 PROF_JSON_PATH = os.path.join(PATH,"Profession.json")
@@ -32,9 +33,10 @@ HOBBY_JSON_PATH = os.path.join(PATH,"Hobby.json")
 FONT_PATH = os.path.join(PATH,"HGRKK.TTC")
 TITLE_FONT_PATH = os.path.join(PATH,"genkai-mincho.ttf")
 FONT_SIZ = 22
+SMALL_SIZ = 18
+BIG_SIZ = 25
 TITLE_SIZ = 60
 OPENING_SIZ = 30
-SKILL_SIZ = 18
 TITLE_TEXT = "毒入りスープ"
 
 # シーン切り替えフラグ
@@ -90,6 +92,8 @@ pygame.key.set_repeat(100, 100)
 pygame.display.set_caption(TITLE_TEXT)
 # フォントの設定
 font = pygame.font.Font(FONT_PATH, FONT_SIZ)
+small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
+big_font = pygame.font.Font(FONT_PATH, BIG_SIZ)
 
 
 # タイトル画面作るよ
@@ -214,36 +218,7 @@ class Status:
             self.Input_rect = InputBox((x+self.Label_rect.w,y,w,h),self.Input_flag)
             if status_name != "sex":
                 if status_name in CharaStatus:
-                    if status_name == "DB":
-                        st = CharaStatus["STR"] + CharaStatus["SIZ"]
-                        if 2 <= st <= 12:
-                            self.status = "-1D6"
-                        elif 13 <= st <= 16:
-                            self.status = "-1D4"
-                        elif 25 <= st <= 32:
-                            self.status = "+1D4"
-                        elif 33 <= st <= 40:
-                            self.status = "+1D6"                        
-                        else:
-                            self.status = "0"
-                    elif status_name == "Luck":
-                        self.status = CharaStatus["POW"] * 5
-                    elif status_name == "Idea":
-                        self.status = CharaStatus["INT"] * 5
-                    elif status_name == "Know":
-                        self.status = CharaStatus["EDU"] * 5
-                        if self.status > 99:
-                            self.status = 99
-                    elif status_name == "Avo":
-                        self.status = CharaStatus["DEX"] * 2
-                    elif status_name == "HP":
-                         self.status = round((CharaStatus["CON"] + CharaStatus["SIZ"]) / 2)
-                    elif status_name == "SAN":
-                        self.status = CharaStatus["POW"] * 5
-                    elif status_name == "MP":
-                        self.status = CharaStatus["POW"]
-                    else:
-                        self.status = CharaStatus[status_name]
+                    self.status = CharaStatus[status_name]
                     Label(str(self.status),self.Input_rect.x+2,self.Input_rect.y+2)
         else:
             self.Input_rect = self.Label_rect
@@ -253,10 +228,57 @@ class Status:
 
         # ダイスボタンを表示するフラグ
         if Button_flag:
-            self.Button_rect = self.DiceButton(self.Input_rect,Dice_text)
+            self.Button_rect = Button(self.Input_rect,Dice_text)
         else:
             self.Button_rect = self.Input_rect
     
+    # ステータスの自動計算
+    def AutoCalculation(self, name):
+        if name == "STR" or name == "SIZ" or name == "CON":
+            if name != "CON":
+                # ダメージボーナスの計算
+                st = CharaStatus["STR"] + CharaStatus["SIZ"]
+                if 2 <= st <= 12:
+                    val = "-1D6"
+                elif 13 <= st <= 16:
+                    val = "-1D4"
+                elif 25 <= st <= 32:
+                    val = "+1D4"
+                elif 33 <= st <= 40:
+                    val = "+1D6"
+                else:
+                    val = "0"
+                CharaStatus["DB"] = val
+
+            if name != "STR":
+                # HPの計算
+                val = round((CharaStatus["CON"] + CharaStatus["SIZ"]) / 2)
+                CharaStatus["HP"] = val
+
+        elif name == "POW":
+            # MP、幸運、SAN値の計算
+            CharaStatus["MP"] = CharaStatus["POW"]
+            val = CharaStatus["POW"] * 5
+            CharaStatus["Luck"] = val
+            CharaStatus["SAN"] = val
+
+        elif name == "INT":
+            # アイデアの計算
+            val = CharaStatus["INT"] * 5
+            CharaStatus["Idea"] = val
+
+        elif name == "EDU":
+            # 知識の計算
+            val = CharaStatus["EDU"] * 5
+            if val > 99:
+                val = 99
+            CharaStatus["Know"] = val
+        
+        elif name == "DEX":
+           # 回避の計算
+           val = CharaStatus["DEX"] * 2
+           CharaStatus["Avo"] = val
+ 
     # 入力ボックスの処理まとめるよ
     def InputProcess(self):
         min=0
@@ -264,12 +286,6 @@ class Status:
         # 最大値最小値を決めるよ
         if self.status_name == "age":
             min = CharaStatus["EDU"] + 6
-        elif self.status_name == "Dura":
-            max = CharaStatus["Dura_max"]
-        elif self.status_name == "MP":
-            max = CharaStatus["MP_max"]
-        elif self.status_name == "SAN":
-            max = CharaStatus["SAN_max"]
         elif self.dice_text != "":
             min = int(self.dice_text[0])
             max = int(self.dice_text[2]) * min
@@ -285,28 +301,13 @@ class Status:
         if val != None:
             Label(str(val),self.Input_rect.x+2, self.Input_rect.y+2)
             CharaStatus[self.status_name] = val
+            self.AutoCalculation(self.status_name)
 
-    # ダイスボタン作るよ    
-    def DiceButton(self, rect, text):
-        out_color = GRAY
-        in_color = (181,181,174)
-        text_color = BLACK
-        surface = font.render(text, True, text_color,in_color)
-        x = rect[0] + rect[2] + 5
-        y = rect[1] -2 
-        w = surface.get_rect().w + 8
-        h = surface.get_rect().h + 8
-        pygame.draw.rect(screen, out_color, (x, y, w, h))
-        pygame.draw.line(screen, in_color, (x, y), (x+w,y+h))
-        pygame.draw.line(screen, in_color, (x,y+h), (x+w,y))
-        text_rect = surface.get_rect(left=x+4, top=y+4)
-        screen.blit(surface, text_rect)
-        return Rect(x,y,w,h)
-    
     # ダイス処理まとめるよ
     def DiceProcess(self):
         val = DiceRool(self.dice_text)
         CharaStatus[self.status_name] = val
+        self.AutoCalculation(self.status_name)
         Label(str(val),self.Input_rect.x+2,self.Input_rect.y+2)
 
 # 選んだ性別によって画像が変わるようにするよ
@@ -398,7 +399,7 @@ class Profession:
             self.image(prof)
 
     def list_image(self):
-        x,y = 160,230
+        x,y = 100,230
         self.prof_list = ProfessionList
         for prof in list(self.prof_list):
             name = self.prof_list[prof]["name"]
@@ -406,28 +407,39 @@ class Profession:
             rect = image(img_path, 0.1, x, y, line=True, background=True)
             self.prof_list[prof]["rect"] = rect
             x += 55
-            if x >= 650:
+            if x >= 590:
                 y += 55
-                x = 160
+                x = 100
 
     def image(self, prof):
         data = self.prof_list[prof]
         name = data["name"]
+        skill_list = data["skill"]
         img_path = PATH + PICTURE + "prof_" + name + ".png"
-        x,y = 160,40
+        x,y = 100,40
         rect = image(img_path, 0.35 , x, y, line=True, background=True)
         lrx = rect.x + rect.w + 5
-        label_rect = Label(f"【{prof}】", lrx, y, font)
+        name_rect = Label(f"【{prof}】", lrx, y, font)
+        skill_x, skill_y = lrx + 10, y + 30
+        skill_rect = Label("所持技能： ", skill_x, skill_y, small_font)
+        sk_x, sk_y = skill_x + 10, skill_y + skill_rect.h + 10
+        sx, sy = sk_x, sk_y
+        for skill in skill_list:
+            rect = Label(skill, sx, sy, small_font)
+            sx += rect.w + 10
+            if sx > 530:
+                sx = sk_x
+                sy += rect.h + 10
 
 # 趣味選択画面作るよ
 class Hobby:
     def __init__(self):
-        skill_font = pygame.font.Font(FONT_PATH, SKILL_SIZ)
+        self.label_rect = Label("趣味", 545, 175)
         if PullDownItem == "":
-            self.listitem = "趣味"
+            self.listitem = "未選択"
         else:
             self.listitem = PullDownItem
-        self.pull = PullDown((495,200,150,25),self.listitem,list(HobbyList),skill_font,207)
+        self.pull = PullDown((435,200,150,25),self.listitem,list(HobbyList),small_font,207)
 
 # プルダウン機能をクラス化できないかな？
 class PullDown:
@@ -520,8 +532,41 @@ def Label(name, x, y, font=font):
     screen.blit(surface, rect)
     return Rect(rect)
 
+# ボタン作成を分離
+def Button(rect, text, font=font):
+    out_color = GRAY
+    in_color = (181,181,174)
+    text_color = BLACK
+    texts = text.splitlines()
+    surfaces = []
+    rects = []
+    x = rect[0] + rect[2] + 5
+    y = rect[1] -2
+    tx,ty = 0,y
+    bw,bh = 0,0
+    for txt in texts:
+        surface = font.render(txt, True, text_color)
+        w = surface.get_rect().w + 8
+        if bw < w:
+            bw = w
+        h = surface.get_rect().h + 8
+        bh += h
+        tx = x + int(bw / 2)
+        ty += int(h / 2)
+        text_rect = surface.get_rect(center=(tx,ty))
+        ty += int(h / 2)
+        surfaces.append(surface)
+        rects.append(text_rect)
+    pygame.draw.rect(screen, out_color, (x, y, bw, bh))
+    pygame.draw.line(screen, in_color, (x, y), (x+bw,y+bh))
+    pygame.draw.line(screen, in_color, (x,y+bh), (x+bw,y))
+    pygame.draw.rect(screen,in_color,(x+4, y+4, bw-8, bh-8))
+    for i in range(len(surfaces)):
+        screen.blit(surfaces[i], rects[i])
+    return Rect(x,y,bw,bh)
+
 # 入力ボックス作成を分離するよ
-def InputBox(rect, flag=True, line_bold=2):
+def InputBox(rect, flag=True, line_bold=2): 
     if flag:
         # color = (255,248,220)
         color = WHITE
@@ -590,47 +635,151 @@ def TextDraw(text):
 def ProfDataIn():
     global CharaStatus
 
+    # 入力されている技能をリセット
     CharaStatus["skill"] = {}
+    CharaStatus["Avo"] = CharaStatus["DEX"] * 2
+    # 職業から設定されている技能一覧を取得
     prof = CharaStatus["Profession"]
     skills = ProfessionList[prof]["skill"]
+    # 加算できる技能ポイントを算出する
     max = CharaStatus["EDU"] * 20
     if max > 0:
         i = max
         for skill in skills:
-            percent = skills[skill] / 100
-            bonus = int(max * percent)
+            # 各技能に割り振られているパーセンテージを出す
+            percent = skills[skill]
+            # 技能ポイントをパーセンテージ分算出
+            bonus = int(max * (percent / 100))
+            # 基本技能ポイント
             if skill == "回避":
                 data = CharaStatus["Avo"]
-            data = SkillList[skill]
-            result = data + bonus
-            surplus = 0
-            if result > 90:
-                surplus = result - 90
-                result = 90
+            else:
+                data = SkillList[skill]
+            # 計算する
+            result, surplus = Calculation(data, bonus, 90)
+            # 主人公のステータスにポイントを入力
             if skill == "回避":
                 CharaStatus["Avo"] = result
             else:
                 CharaStatus["skill"][skill] = result
-            i -= bonus + surplus
+            # 技能ポイント - 使用した技能ポイント + 余りの技能ポイント
+            i = i - bonus + surplus
+
+            # 技能ポイントが足りなかった場合
             if i < 0:
-                print("数字が足りません")
-        
+                print("技能ポイントが足りません")
+                break
+
+        # 全ての技能ポイント割り振り後にポイントが余った場合
         if i > 0:
-            lists = {}
-            for skill in CharaStatus["skill"]:
-                value = CharaStatus["skill"][skill]
-                if value != 90:
-                    if value + i < 90:
-                        lists[skill] = value
-            select = random.choice(list(lists))
-            CharaStatus["skill"][select] += i
+            # ポイントが0になるまで繰り返す
+            while i > 0:
+                lists = {}
+                # スキルリストから90以下のスキルをリスト化する
+                for skill in CharaStatus["skill"]:
+                    point = CharaStatus["skill"][skill]
+                    if point < 90:
+                        lists[skill] = point
+                if len(lists) > 0:
+                    # リストの数よりポイントが多い場合
+                    if len(lists) < i:
+                        # リストの数でポイントを割る
+                        quotient = int(i / len(lists))
+                        
+                        # 計算していく
+                        for skill in lists:
+                            point = lists[skill]
+                            result, surplus = Calculation(point, quotient, 90)
+                            CharaStatus["skill"][skill] = result
+                            i = i - quotient + surplus
+                    else:
+                        select = random.choice(list(lists))
+                        CharaStatus["skill"][select]  += i
+                        i -= i
             
+# 答えと余りを算出する計算式を関数にしてみた
+def Calculation(a, b, max=None):
+    surplus = 0
+    result = a + b
+    if max is not None:
+        if result > max:
+            surplus = result - max
+            result = max
+    return result, surplus
+        
 # 選択した趣味から主人公のステータスにデータを入れるよ
 def HobyDataIn():
+    global CharaStatus
+
     hobby = PullDownItem
     my_skills = CharaStatus["skill"]
     skills = HobbyList[hobby]
     max = CharaStatus["INT"] * 10
+    percent = [70,30]
+    if max > 0:
+        point = max
+        for i in range(len(skills)):
+            skill = skills[i]
+            # 基本技能ポイント
+            if skill in my_skills:
+                data = my_skills[skill]
+            else:
+                data = SkillList[skill]
+            # 技能ポイントをパーセンテージ分算出
+            bonus = int(max * (percent[i] / 100))
+            # 計算する
+            result, surplus = Calculation(data,bonus,90)
+            # スキルに値を入れる
+            CharaStatus["skill"][skill] = result
+            # 残りのポイントを算出
+            point = point - bonus + surplus
+
+        if point > 0:
+            for i in range(len(skills)):
+                skill = skills[i]
+                data = my_skills[skill]
+                result,surplus = Calculation(data,point,90)
+                CharaStatus["skill"][skills[i]] = result
+                point = surplus
+
+# キャラ作成終了ボタンを押した際の挙動を作るよ
+def CharaEndButton():
+    texts = []
+    for status in CharaStatus:
+        if CharaStatus[status] == "" or CharaStatus[status] == 0:
+            if status == "name":
+                texts.append("名前が入力されていません")
+            elif status == "age":
+                texts.append("年齢が入力されていません")
+            elif status == "STR" or status == "CON" or status == "SIZ" or status == "DEX" or status == "APP" or status == "EDU" or status == "INT" or status == "POW":
+                texts.append(status + "が入力されていません")
+            elif status == "Profession":
+                texts.append("職業が選択されていません")
+    if PullDownItem == "":
+        texts.append("趣味が選択されていません")
+    else:
+        HobyDataIn()
+    if texts != []:
+        text = "\n".join(texts)
+        messagebox.showerror("未入力",text)
+    else:
+        Save()
+
+# データセーブ
+def Save():
+    now = dt.datetime.now()
+    str_now = now.strftime("%Y-%m-%d_%H-%M-%S")
+    file_name = PATH + SAVE + CharaStatus["name"] + " " + str_now + ".json"
+    data = {}
+    data["CharaStatus"] = CharaStatus
+    with open(file_name,"w",encoding="utf-8_sig") as f:
+        json.dump(data,f,indent=2,ensure_ascii=False)
+    SCENE_FLAG = PLAY
+        
+# データロード
+def Load():
+    pass
+    
 
 # キャラクターシート作成画面
 def CharacterSheet():
@@ -690,11 +839,14 @@ def CharacterSheet():
         Profe = Profession(CharaStatus["Profession"])
         # 趣味選択画面
         Hoby = Hobby()
+        # キャラ作成終了ボタン
+        enter_rect = Button((530,330,100,100),"キャラ作成\n終了")
 
         key = pygame.mouse.get_pos()
-        for prof in Profe.prof_list:
-            if Profe.prof_list[prof]["rect"].collidepoint(key):
-                TextDraw(f"あなたの職業を選択してください\n【{prof}】")
+        if PullDownFlag == False:
+            for prof in Profe.prof_list:
+                if Profe.prof_list[prof]["rect"].collidepoint(key):
+                    TextDraw(f"あなたの職業を選択してください\n【{prof}】")
         if Hoby.pull.box_rect.collidepoint(key):
             TextDraw("あなたの趣味を選択してください")
 
@@ -745,6 +897,10 @@ def CharacterSheet():
                                 PullDownItem = item
                                 PullDownFlag = False
                         PullDownFlag = False
+
+                    elif enter_rect.collidepoint(event.pos):
+                        CharaEndButton()
+
                     else:
                         for prof in Profe.prof_list:
                             rect = Profe.prof_list[prof]["rect"]
@@ -787,6 +943,7 @@ def main():
                 CharacterSheet()
             if SCENE_FLAG == OPENING:
                 Opening()
+            
          
         # 画面を更新
         pygame.display.update() 
