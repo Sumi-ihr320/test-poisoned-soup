@@ -8,41 +8,11 @@ from tkinter import messagebox
 from tkinter import simpledialog
 import datetime as dt
 
-DISPLAY_SIZE = (800, 600)
-BLACK = (0,0,0)
-WHITE = (255,255,255)
-GRAY = (73,74,65)
-RED = (183,40,46)
+from data import *
 
-SHEET_COLOR = (189,183,107)
-# SHEET_COLOR = (237,228,205)
-SHEET_RECT = Rect(30,30,740,375)
 
-# パスの指定
-PATH = os.path.dirname(__file__)
-SCENARIO = "/Scenario/"
-PICTURE ="/Picture/"
-MUSIC = "/Music/"
-SAVE = "/Save/"
-
-STATUS_JSON_PATH = os.path.join(PATH,"CharaStatus.json")
-PROF_JSON_PATH = os.path.join(PATH,"Profession.json")
-SKILL_JSOM_PATH = os.path.join(PATH,"SkillList.json")
-HOBBY_JSON_PATH = os.path.join(PATH,"Hobby.json")
-
-FONT_PATH = os.path.join(PATH,"HGRKK.TTC")
-TITLE_FONT_PATH = os.path.join(PATH,"genkai-mincho.ttf")
-FONT_SIZ = 22
-SMALL_SIZ = 18
-BIG_SIZ = 25
-TITLE_SIZ = 60
-OPENING_SIZ = 30
-TITLE_TEXT = "毒入りスープ"
-
-# シーン切り替えフラグ
-TITLE,SETTING,OPENING,CHARASE,PLAY,ENDING,ENDCREDITS = (0,1,2,3,4,5,6)
 #SCENE_FLAG = 0
-SCENE_FLAG = 3
+SCENE_FLAG = 4
 
 # キャラクターのステータスデータ
 with open(STATUS_JSON_PATH,"r",encoding="utf-8_sig")as f:
@@ -69,6 +39,14 @@ OpeningFlag = 0
 FrameRect = Rect(30,420,580,150)
 DiceFrameRect = Rect(620,420,150,150)
 
+PlaySceneFlag = 0   # 本編中のシーンフラグ
+RoomFlag = 0        # どの部屋にいるかフラグ
+DirectionFlag = 1   # どの方角を向いてるかフラグ
+Center,North,East,West,South = (0,1,2,3,4)
+DiscoveryFlag = False   # 東の部屋奥が見えるかフラグ
+BookFlag = False        # 本を見つけてるかフラグ
+
+
 # tkinterの起動
 root = tk.Tk()
 # 画面中央に配置したい
@@ -94,6 +72,8 @@ pygame.display.set_caption(TITLE_TEXT)
 font = pygame.font.Font(FONT_PATH, FONT_SIZ)
 small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
 big_font = pygame.font.Font(FONT_PATH, BIG_SIZ)
+
+clock = pygame.time.Clock()
 
 
 # タイトル画面作るよ
@@ -146,6 +126,7 @@ def Opening():
     global SCENE_FLAG
     global OpeningFlag
 
+    clock.tick(60)
     if OpeningFlag == 0:
         TextDraw("この物語はクトゥルフ神話TRPGを元に作成しています。")
     elif OpeningFlag == 1:
@@ -178,9 +159,14 @@ def Close():
 
 # ページ移動用の矢印表示するよ
 class PageNavigation:
-    def __init__(self, page_flag):
-        # ナビゲーションの位置
-        self.navi_rect = self.image(page_flag)
+    def __init__(self, page_flag=True):
+
+        if SCENE_FLAG == CHARASE:
+            # ナビゲーションの位置
+            self.navi_rect = self.image(page_flag)
+        elif SCENE_FLAG == PLAY:
+            self.right_rect = self.image(True)
+            self.left_rect = self.image(False)
 
     def image(self, page_flag):
         img = "navigate.png"
@@ -188,11 +174,11 @@ class PageNavigation:
         navi_img = pygame.transform.scale(navi_img, (40,355))
         navi_rect = navi_img.get_rect()
         if page_flag: # ステータス画面の時
-            navi_rect.centerx += 750
+            navi_rect.centerx += 740
             navi_rect.centery += 40
             screen.blit(navi_img, navi_rect)
             # 三角形の描画
-            pygame.draw.polygon(screen,BLACK,[[760,190],[780,210],[760,230]])
+            pygame.draw.polygon(screen,BLACK,[[750,190],[770,210],[750,230]])
         else: # 職業画面の時
             navi_rect.centerx += 20
             navi_rect.centery += 40
@@ -767,14 +753,27 @@ def CharaEndButton():
 
 # データセーブ
 def Save():
+    global SCENE_FLAG
+
+    # 今日の日付と時間を取得
     now = dt.datetime.now()
     str_now = now.strftime("%Y-%m-%d_%H-%M-%S")
-    file_name = PATH + SAVE + CharaStatus["name"] + " " + str_now + ".json"
+
+    # セーブフォルダが無ければ作る
+    dir_name = PATH + SAVE
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+
+    # キャラクター名、日時でセーブデータを作る
+    file_name = dir_name + CharaStatus["name"] + " " + str_now + ".json"
     data = {}
     data["CharaStatus"] = CharaStatus
     with open(file_name,"w",encoding="utf-8_sig") as f:
         json.dump(data,f,indent=2,ensure_ascii=False)
-    SCENE_FLAG = PLAY
+
+    # キャラシ画面からセーブした際は本編に進む
+    if SCENE_FLAG == CHARASE:
+        SCENE_FLAG = PLAY
         
 # データロード
 def Load():
@@ -791,8 +790,6 @@ def CharacterSheet():
     Sheet_exit = False # キャラシ作成画面を終わるフラグ（未実装）
     # clock = pygame.time.Clock()
     
-    menu = pgmenu.Menu("",740,375)
-
     # シートの描画
     pygame.draw.rect(screen, SHEET_COLOR, SHEET_RECT)
 
@@ -917,6 +914,180 @@ def CharacterSheet():
             if event.key == K_ESCAPE:
                 Close()
 
+# 部屋を作るよ
+class Room:
+    def __init__(self):
+        img_paths = self.file_path()
+        self.room_img, self.room_rect = self.image(img_paths["Room"],SHEET_RECT.y,area=Rect(0,0,820,375),center_flag=True,room_flag=True)
+        self.item(img_paths)
+        
+    def file_path(self):
+        paths = {}
+        path = PATH + PICTURE
+        if RoomFlag == Center:
+            room_path = path + "central-room_"
+            paths["Light"] = room_path + "Light.png"
+            paths["Soup"] = room_path + "Soup.png"
+            if DirectionFlag == North:
+                room_direct_path = room_path + "north"
+                paths["Door1"] = room_direct_path + "_WestDoor.png"
+                paths["Door2"] = room_direct_path + "_NorthDoor.png"
+                paths["Door3"] = room_direct_path + "_EastDoor.png"
+            elif DirectionFlag == East:
+                room_direct_path = room_path + "east"
+                paths["Door1"] = room_direct_path + "_NorthDoor.png"
+                paths["Door2"] = room_direct_path + "_EastDoor.png"
+                paths["Door3"] = room_direct_path + "_SouthDoor.png"
+            elif DirectionFlag == West:
+                room_direct_path = room_path + "west"
+                paths["Door1"] = room_direct_path + "_SouthDoor.png"
+                paths["Door2"] = room_direct_path + "_WestDoor.png"
+                paths["Door3"] = room_direct_path + "_NorthDoor.png"
+            elif DirectionFlag == South:
+                room_direct_path = room_path + "south"
+                paths["Door1"] = room_direct_path + "_EastDoor.png"
+                paths["Door2"] = room_direct_path + "_SouthDoor.png"
+                paths["Door3"] = room_direct_path + "_WestDoor.png"
+            paths["Room"] = room_direct_path + ".jpg"
+            paths["Memo"] = room_direct_path + "_Memo.png"
+            paths["Table"] = room_direct_path + "_Table.png"
+        else:
+            if RoomFlag == North:
+                room_path = path + "north-room"
+                paths["Cooktop"] = room_path + "_Cooktop.png"
+                paths["Pot"] = room_path + "_Pot.png"
+                paths["CupBoard"] = room_path + "_CupBoard.png"
+                paths["Fridge"] = room_path + "_Fridge.png"
+                paths["Sink"] = room_path + "_Sink.png"
+                paths["Storage"] = room_path + "_Storage.png"
+                paths["TopSinkStorage"] = room_path + "_TopSinkStorage.png"
+                paths["UnderSinkStorage"] = room_path + "_UnderSinkStorage.png"
+                
+            elif RoomFlag == East:
+                if DiscoveryFlag:
+                    room_path = path + "east-room"
+                    paths["Corpse"] = room_path + "_Corpse.png"
+                    paths["Memo"] = room_path + "_Memo.png"
+                else:
+                    room_path = path + "black-room"
+            elif RoomFlag == South:
+                room_path = path + "south-room"
+                paths["StoneStatue"] = room_path + "_StoneStatue.png"
+                paths["Slate1"] = room_path + "_Slate_01.png"
+                paths["Slate2"] = room_path + "_Slate_02.png"
+            elif RoomFlag == West:
+                room_path = path + "west-room"
+                paths["BookShelf"] = room_path + "_BookShelf.png"
+                paths["Candle"] = room_path + "_Candle.png"
+            if BookFlag:
+                room_path + "_PicupBook"
+                paths["Book"] = room_path + "_Book.png"
+            paths["Room"] = room_path + ".jpg"
+
+
+        return paths
+
+    def image(self, path, y, x=0, area=None, center_flag=False, room_flag=False):
+        size = 0.19
+
+        # 画像の読み込み＆アルファ化(透明化)
+        img = pygame.image.load(path).convert_alpha()
+        # 画像の縮小
+        img = pygame.transform.rotozoom(img, 0, size)
+
+        # 画像の位置取得
+        rect = img.get_rect()
+        # 画像の位置を変更する
+        if center_flag:
+            # 画面中央に置きたい場合
+            rect.centerx = screen.get_width() / 2
+        else:
+            rect.centerx += x
+        rect.centery += y
+
+        # 部屋のimgの場合はメインsurfaceに、部屋のアイテムは部屋のsurfaceに
+        if room_flag:
+            screen.blit(img, rect, area=area)
+            return img, rect
+        else:
+            self.room_img.blit(img, rect, area=area)
+        
+        
+        return rect
+
+    def item(self, paths):
+        if RoomFlag == Center:
+            self.left_door_rect = self.image(paths["Door1"],93,121)
+            self.center_door_rect = self.image(paths["Door2"],112,center_flag=True)
+            self.right_door_rect = self.image(paths["Door3"],94,603)
+            self.light_rect = self.image(paths["Light"],54,center_flag=True)
+            tablex,memox = 0,0
+            table_flag,memo_flag = False,False
+            if DirectionFlag == North:
+                tabley, table_flag = 219, True
+                memoy, memox = 267, 341
+            elif DirectionFlag == East:
+                tabley, tablex = 242, 264
+                memoy, memo_flag = 283, True
+            elif DirectionFlag == South:
+                tabley, table_flag = 253, True
+                memoy, memox = 267, 427
+            elif DirectionFlag == West:
+                tabley, tablex = 243, 295
+                memoy, memo_flag = 253, True
+            self.table_rect = self.image(paths["Table"],tabley,tablex,center_flag=table_flag)
+            self.memo_rect = self.image(paths["Memo"],memoy,memox,center_flag=memo_flag)
+            self.soup_rect = self.image(paths["Soup"],254,center_flag=True)
+            
+
+
+# プレイ画面
+def MainPlay():
+    global PlaySceneFlag
+    global DirectionFlag
+    global DiscoveryFlag
+
+
+    if PlaySceneFlag == 0:
+        pygame.time.wait(500)
+    
+    room = Room()
+    if RoomFlag == Center:
+        page_navi = PageNavigation()
+
+
+    for event in pygame.event.get():
+        # マウスクリック時
+        if event.type == MOUSEBUTTONDOWN:
+            # 左ボタン
+            if event.button == 1:
+                # 部屋の向き移動
+                if page_navi.right_rect.collidepoint(event.pos):
+                    if DirectionFlag == North:
+                        DirectionFlag = East
+                    elif DirectionFlag == East:
+                        DirectionFlag = South
+                    elif DirectionFlag == South:
+                        DirectionFlag = West
+                    else:
+                        DirectionFlag = North
+                elif page_navi.left_rect.collidepoint(event.pos):
+                    if DirectionFlag == North:
+                        DirectionFlag = West
+                    elif DirectionFlag == East:
+                        DirectionFlag = North
+                    elif DirectionFlag == South:
+                        DirectionFlag = East
+                    else:
+                        DirectionFlag = South
+
+
+        # 閉じるボタンで終了
+        if event.type == QUIT:
+            Close()
+        elif event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                Close()
 
 def frame():
     pygame.draw.rect(screen, WHITE, FrameRect,3)
@@ -929,7 +1100,7 @@ def main():
     # 画面の描写
     while True:
         # 画面を黒で塗りつぶす
-        screen.fill(BLACK) 
+        screen.fill(BLACK)
         if SCENE_FLAG == TITLE:
             Title()
         elif SCENE_FLAG == SETTING:
@@ -939,12 +1110,13 @@ def main():
         else:
             frame()
             DiceFrame()
+            if SCENE_FLAG == PLAY:
+                MainPlay()
             if SCENE_FLAG == CHARASE:
                 CharacterSheet()
             if SCENE_FLAG == OPENING:
                 Opening()
-            
-         
+                     
         # 画面を更新
         pygame.display.update() 
 
