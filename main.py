@@ -11,14 +11,13 @@ import datetime as dt
 from data import *
 
 
-#SCENE_FLAG = 0
-SCENE_FLAG = 4
+#SCENE_FLAG = TITLE
+SCENE_FLAG = PLAY
 
 # キャラクターのステータスデータ
 with open(STATUS_JSON_PATH,"r",encoding="utf-8_sig")as f:
     STATUS = json.load(f)
-    CharaStatus = STATUS["Hero"]
-
+    
 # 職業リスト
 with open(PROF_JSON_PATH,"r",encoding="utf-8_sig") as f:
     ProfessionList = json.load(f)
@@ -31,21 +30,31 @@ with open(SKILL_JSOM_PATH,"r",encoding="utf-8_sig") as f:
 with open(HOBBY_JSON_PATH,"r",encoding="utf-8_sig") as f:
     HobbyList = json.load(f)
 
+# ステータス
+CharaStatus = STATUS["Hero"]    # 主人公
+GirlStatus = STATUS["Girl"]     # 少女
 
 CharaPage = True    # ページ変更用フラグ
+
 PullDownFlag = False    # プルダウン用フラグ
 PullDownItem = ""       # プルダウンアイテム記憶用
-OpeningFlag = 0
+
+
 FrameRect = Rect(30,420,580,150)
 DiceFrameRect = Rect(620,420,150,150)
 
-PlaySceneFlag = 0   # 本編中のシーンフラグ
-RoomFlag = 0        # どの部屋にいるかフラグ
-DirectionFlag = 1   # どの方角を向いてるかフラグ
-Center,North,East,West,South = (0,1,2,3,4)
-DiscoveryFlag = False   # 東の部屋奥が見えるかフラグ
-BookFlag = False        # 本を見つけてるかフラグ
+TEXT = ""   # テキストフレームに入れるデータ
 
+OpeningFlag = 0     # オープニングの進行フラグ
+
+PlaySceneFlag = 0   # 本編中のシーンフラグ
+RoomFlag = CENTER       # どの部屋にいるかフラグ
+DirectionFlag = NORTH   # どの方角を向いてるかフラグ
+DiscoveryFlag = True    # 東の部屋奥が見えるかフラグ
+KeyOpenFlag = False     # 東の部屋カギが開いてるかフラグ
+BookFlag = True         # 本を見つけてるかフラグ
+PoisonFlag = False      # 毒を入手してるかフラグ
+inPoisonFlag = False    # スープに毒が入ってるかフラグ
 
 # tkinterの起動
 root = tk.Tk()
@@ -126,21 +135,21 @@ def Opening():
     global SCENE_FLAG
     global OpeningFlag
 
-    clock.tick(60)
-    if OpeningFlag == 0:
-        TextDraw("この物語はクトゥルフ神話TRPGを元に作成しています。")
-    elif OpeningFlag == 1:
-        TextDraw("まずは探索者を作成しましょう。")
+    file_path = PATH + SCENARIO + "00_Opening.txt"
+    with open(file_path,"r",encoding="utf-8_sig") as f:
+        txts = f.readlines()
     
+    if OpeningFlag < 2:
+        TextDraw(txts[OpeningFlag])
+    else:
+        SCENE_FLAG = CHARASE
+
     for event in pygame.event.get():
         # マウスクリック時
         if event.type == MOUSEBUTTONDOWN:
             # 左ボタン
             if event.button == 1:
-                if OpeningFlag == 0:
-                    OpeningFlag = 1
-                elif OpeningFlag == 1:
-                    SCENE_FLAG = CHARASE
+                OpeningFlag += 1
 
         # 閉じるボタンで終了
         if event.type == QUIT:
@@ -159,31 +168,38 @@ def Close():
 
 # ページ移動用の矢印表示するよ
 class PageNavigation:
-    def __init__(self, page_flag=True):
+    def __init__(self, page_flag=0):
 
-        if SCENE_FLAG == CHARASE:
-            # ナビゲーションの位置
-            self.navi_rect = self.image(page_flag)
-        elif SCENE_FLAG == PLAY:
-            self.right_rect = self.image(True)
-            self.left_rect = self.image(False)
-
+        self.navi_rect = self.image(page_flag)
+            
     def image(self, page_flag):
         img = "navigate.png"
         navi_img = pygame.image.load(PATH + PICTURE + img).convert_alpha()
-        navi_img = pygame.transform.scale(navi_img, (40,355))
+        if page_flag == UNDER:
+            navi_img = pygame.transform.rotate(navi_img,90)
+            navi_img = pygame.transform.scale(navi_img,(500,40))
+        else:
+            navi_img = pygame.transform.scale(navi_img, (40,355))
         navi_rect = navi_img.get_rect()
-        if page_flag: # ステータス画面の時
-            navi_rect.centerx += 740
-            navi_rect.centery += 40
-            screen.blit(navi_img, navi_rect)
-            # 三角形の描画
-            pygame.draw.polygon(screen,BLACK,[[750,190],[770,210],[750,230]])
-        else: # 職業画面の時
-            navi_rect.centerx += 20
-            navi_rect.centery += 40
-            screen.blit(navi_img, navi_rect)
-            pygame.draw.polygon(screen,BLACK,[[50,190],[30,210],[50,230]])
+        if page_flag == RIGHT: # 右側のナビゲーション
+            navi_x = 740
+            navi_y = 40
+            triangle = [[750,190],[770,210],[750,230]]
+        elif page_flag == LEFT: # 左側のナビゲーション
+            navi_x = 20
+            navi_y = 40
+            triangle = [[50,190],[30,210],[50,230]]
+        else:   # 下側のナビゲーション
+            navi_x = screen.get_width() / 2 - navi_rect.centerx
+            navi_y = 350
+            triangle = [[380,360],[400,380],[420,360]]
+
+        navi_rect.centerx += navi_x
+        navi_rect.centery += navi_y
+        screen.blit(navi_img, navi_rect)
+        # 三角形の描画
+        pygame.draw.polygon(screen,BLACK,triangle)
+
         return navi_rect
 
 # ステータス作るよ
@@ -787,17 +803,15 @@ def CharacterSheet():
     global PullDownFlag
     global PullDownItem
 
-    Sheet_exit = False # キャラシ作成画面を終わるフラグ（未実装）
-    # clock = pygame.time.Clock()
     
     # シートの描画
     pygame.draw.rect(screen, SHEET_COLOR, SHEET_RECT)
 
-    # ページ変更ゾーン
-    page_navi = PageNavigation(CharaPage)
-
     # ステータスの表示
     if CharaPage:
+        # ページ変更ゾーン
+        page_navi = PageNavigation(RIGHT)
+
         Name = Status("名前","name","",250, 50, 150, 28,"探索者の名前を入力してください", False)
         Sex = Status("性別","sex","性別(       )",250,80,0,0,"探索者の性別をクリックで選択してください",False,False,False)
         Sex_Button = SexChange(310,80,CharaStatus["sex"])
@@ -832,6 +846,9 @@ def CharacterSheet():
             elif stat.Button_rect.collidepoint(key):
                 TextDraw("ダイスでランダムに値を決めることができます")
     else:
+        # ページ変更ゾーン
+        page_navi = PageNavigation(LEFT)
+
         # 職業選択画面
         Profe = Profession(CharaStatus["Profession"])
         # 趣味選択画面
@@ -844,6 +861,8 @@ def CharacterSheet():
             for prof in Profe.prof_list:
                 if Profe.prof_list[prof]["rect"].collidepoint(key):
                     TextDraw(f"あなたの職業を選択してください\n【{prof}】")
+            if enter_rect.collidepoint(key):
+                TextDraw("キャラクター作成を終了します")
         if Hoby.pull.box_rect.collidepoint(key):
             TextDraw("あなたの趣味を選択してください")
 
@@ -924,26 +943,26 @@ class Room:
     def file_path(self):
         paths = {}
         path = PATH + PICTURE
-        if RoomFlag == Center:
+        if RoomFlag == CENTER:
             room_path = path + "central-room_"
             paths["Light"] = room_path + "Light.png"
             paths["Soup"] = room_path + "Soup.png"
-            if DirectionFlag == North:
+            if DirectionFlag == NORTH:
                 room_direct_path = room_path + "north"
                 paths["Door1"] = room_direct_path + "_WestDoor.png"
                 paths["Door2"] = room_direct_path + "_NorthDoor.png"
                 paths["Door3"] = room_direct_path + "_EastDoor.png"
-            elif DirectionFlag == East:
+            elif DirectionFlag == EAST:
                 room_direct_path = room_path + "east"
                 paths["Door1"] = room_direct_path + "_NorthDoor.png"
                 paths["Door2"] = room_direct_path + "_EastDoor.png"
                 paths["Door3"] = room_direct_path + "_SouthDoor.png"
-            elif DirectionFlag == West:
+            elif DirectionFlag == WEST:
                 room_direct_path = room_path + "west"
                 paths["Door1"] = room_direct_path + "_SouthDoor.png"
                 paths["Door2"] = room_direct_path + "_WestDoor.png"
                 paths["Door3"] = room_direct_path + "_NorthDoor.png"
-            elif DirectionFlag == South:
+            elif DirectionFlag == SOUTH:
                 room_direct_path = room_path + "south"
                 paths["Door1"] = room_direct_path + "_EastDoor.png"
                 paths["Door2"] = room_direct_path + "_SouthDoor.png"
@@ -952,7 +971,7 @@ class Room:
             paths["Memo"] = room_direct_path + "_Memo.png"
             paths["Table"] = room_direct_path + "_Table.png"
         else:
-            if RoomFlag == North:
+            if RoomFlag == NORTH:
                 room_path = path + "north-room"
                 paths["Cooktop"] = room_path + "_Cooktop.png"
                 paths["Pot"] = room_path + "_Pot.png"
@@ -963,25 +982,25 @@ class Room:
                 paths["TopSinkStorage"] = room_path + "_TopSinkStorage.png"
                 paths["UnderSinkStorage"] = room_path + "_UnderSinkStorage.png"
                 
-            elif RoomFlag == East:
+            elif RoomFlag == EAST:
                 if DiscoveryFlag:
                     room_path = path + "east-room"
                     paths["Corpse"] = room_path + "_Corpse.png"
                     paths["Memo"] = room_path + "_Memo.png"
                 else:
                     room_path = path + "black-room"
-            elif RoomFlag == South:
+            elif RoomFlag == SOUTH:
                 room_path = path + "south-room"
                 paths["StoneStatue"] = room_path + "_StoneStatue.png"
                 paths["Slate1"] = room_path + "_Slate_01.png"
                 paths["Slate2"] = room_path + "_Slate_02.png"
-            elif RoomFlag == West:
+            elif RoomFlag == WEST:
                 room_path = path + "west-room"
                 paths["BookShelf"] = room_path + "_BookShelf.png"
                 paths["Candle"] = room_path + "_Candle.png"
-            if BookFlag:
-                room_path + "_PicupBook"
-                paths["Book"] = room_path + "_Book.png"
+                if BookFlag:
+                    paths["Book"] = room_path + "_Book.png"
+                    room_path += "_PicupBook"
             paths["Room"] = room_path + ".jpg"
 
 
@@ -1011,49 +1030,82 @@ class Room:
             return img, rect
         else:
             self.room_img.blit(img, rect, area=area)
-        
-        
         return rect
 
     def item(self, paths):
-        if RoomFlag == Center:
+        if RoomFlag == CENTER:
             self.left_door_rect = self.image(paths["Door1"],93,121)
             self.center_door_rect = self.image(paths["Door2"],112,center_flag=True)
             self.right_door_rect = self.image(paths["Door3"],94,603)
             self.light_rect = self.image(paths["Light"],54,center_flag=True)
             tablex,memox = 0,0
             table_flag,memo_flag = False,False
-            if DirectionFlag == North:
+            if DirectionFlag == NORTH:
                 tabley, table_flag = 219, True
                 memoy, memox = 267, 341
-            elif DirectionFlag == East:
+            elif DirectionFlag == EAST:
                 tabley, tablex = 242, 264
                 memoy, memo_flag = 283, True
-            elif DirectionFlag == South:
+            elif DirectionFlag == SOUTH:
                 tabley, table_flag = 253, True
                 memoy, memox = 267, 427
-            elif DirectionFlag == West:
+            elif DirectionFlag == WEST:
                 tabley, tablex = 243, 295
                 memoy, memo_flag = 253, True
             self.table_rect = self.image(paths["Table"],tabley,tablex,center_flag=table_flag)
             self.memo_rect = self.image(paths["Memo"],memoy,memox,center_flag=memo_flag)
             self.soup_rect = self.image(paths["Soup"],254,center_flag=True)
-            
+        elif RoomFlag == NORTH:
+            self.under_storage_rect = self.image(paths["UnderSinkStorage"],250,325)
+            self.cooktop_rect = self.image(paths["Cooktop"],226,225)
+            self.sink_rect = self.image(paths["Sink"],216,468)
+            self.top_storage_rect = self.image(paths["TopSinkStorage"],100,325)
+            self.pot_rect = self.image(paths["Pot"],203,290)
+            self.storage_rect = self.image(paths["Storage"],225,560)
+            self.cupboard_rect = self.image(paths["CupBoard"],30,36)
+            self.fridge_rect = self.image(paths["Fridge"],39,628)
+        elif RoomFlag == EAST:
+            if DiscoveryFlag:
+                self.corpse_rect = self.image(paths["Corpse"],218,437)
+                self.memo_rect = self.image(paths["Memo"],259,277)
+        elif RoomFlag == WEST:
+            self.bookshelf_rect = self.image(paths["BookShelf"],30,36)
+            self.chandle_rect = self.image(paths["Candle"],223,350)
+            if BookFlag:
+                self.book_rect = self.image(paths["Book"],246,298)
+        else:
+            self.statue_rect = self.image(paths["StoneStatue"],69,287)
+            self.slate1_rect = self.image(paths["Slate1"],156,213)
+            self.slate2_rect = self.image(paths["Slate2"],156,479)
+
+def item_event(name):
+
+    pass
 
 
 # プレイ画面
 def MainPlay():
+    global RoomFlag
     global PlaySceneFlag
     global DirectionFlag
     global DiscoveryFlag
 
 
-    if PlaySceneFlag == 0:
-        pygame.time.wait(500)
-    
+    #if PlaySceneFlag == 0:
+    #    pygame.time.wait(500)
+
+    #if RoomFlag == 0:
+    #    pygame.draw.rect(screen,BLACK,)
+
+    # 部屋の表示
     room = Room()
-    if RoomFlag == Center:
-        page_navi = PageNavigation()
+
+    # ナビゲーションバーの表示
+    if RoomFlag == CENTER:
+        right_navi = PageNavigation(RIGHT)
+        left_navi = PageNavigation(LEFT)
+    else:
+        under_nave = PageNavigation(UNDER)
 
 
     for event in pygame.event.get():
@@ -1061,25 +1113,61 @@ def MainPlay():
         if event.type == MOUSEBUTTONDOWN:
             # 左ボタン
             if event.button == 1:
-                # 部屋の向き移動
-                if page_navi.right_rect.collidepoint(event.pos):
-                    if DirectionFlag == North:
-                        DirectionFlag = East
-                    elif DirectionFlag == East:
-                        DirectionFlag = South
-                    elif DirectionFlag == South:
-                        DirectionFlag = West
-                    else:
-                        DirectionFlag = North
-                elif page_navi.left_rect.collidepoint(event.pos):
-                    if DirectionFlag == North:
-                        DirectionFlag = West
-                    elif DirectionFlag == East:
-                        DirectionFlag = North
-                    elif DirectionFlag == South:
-                        DirectionFlag = East
-                    else:
-                        DirectionFlag = South
+                if RoomFlag == CENTER:
+                    # 部屋の向き移動
+                    if right_navi.navi_rect.collidepoint(event.pos):
+                        if DirectionFlag == NORTH:
+                            DirectionFlag = EAST
+                        elif DirectionFlag == EAST:
+                            DirectionFlag = SOUTH
+                        elif DirectionFlag == SOUTH:
+                            DirectionFlag = WEST
+                        else:
+                            DirectionFlag = NORTH
+                    elif left_navi.navi_rect.collidepoint(event.pos):
+                        if DirectionFlag == NORTH:
+                            DirectionFlag = WEST
+                        elif DirectionFlag == EAST:
+                            DirectionFlag = NORTH
+                        elif DirectionFlag == SOUTH:
+                            DirectionFlag = EAST
+                        else:
+                            DirectionFlag = SOUTH
+                    # 真ん中のドア
+                    elif room.center_door_rect.collidepoint(event.pos):
+                        if DirectionFlag == NORTH:
+                            RoomFlag = NORTH
+                        elif DirectionFlag == WEST:
+                            RoomFlag = WEST
+                        elif DirectionFlag == EAST:
+                            RoomFlag = EAST
+                        else:
+                            RoomFlag = SOUTH
+                    # 左のドア
+                    elif room.left_door_rect.collidepoint(event.pos):
+                        if DirectionFlag == NORTH:
+                            RoomFlag = WEST
+                        elif DirectionFlag == WEST:
+                            RoomFlag = SOUTH
+                        elif DirectionFlag == EAST:
+                            RoomFlag = NORTH
+                        else:
+                            RoomFlag = EAST
+                    # 右のドア
+                    elif room.right_door_rect.collidepoint(event.pos):
+                        if DirectionFlag == NORTH:
+                            RoomFlag = EAST
+                        elif DirectionFlag == WEST:
+                            RoomFlag = NORTH
+                        elif DirectionFlag == EAST:
+                            RoomFlag = SOUTH
+                        else:
+                            RoomFlag = WEST
+                else:
+                    if under_nave.navi_rect.collidepoint(event.pos):
+                        # 真ん中の部屋に戻る
+                        RoomFlag = CENTER
+
 
 
         # 閉じるボタンで終了
@@ -1108,6 +1196,8 @@ def main():
         elif SCENE_FLAG == ENDCREDITS:
             pass
         else:
+            clock = pygame.time.Clock()
+            clock.tick(60)
             frame()
             DiceFrame()
             if SCENE_FLAG == PLAY:
