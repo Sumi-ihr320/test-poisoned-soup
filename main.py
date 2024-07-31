@@ -1,6 +1,7 @@
 import sys, random, os, json
 import pygame
 import pygame.draw
+import pygame.draw
 from pygame.locals import *
 import pygame_menu as pgmenu
 import tkinter as tk
@@ -11,13 +12,42 @@ import datetime as dt
 from data import *
 
 
-#SCENE_FLAG = TITLE
-SCENE_FLAG = PLAY
+SCENE_FLAG = TITLE
+#SCENE_FLAG = PLAY
 
 # キャラクターのステータスデータ
 with open(STATUS_JSON_PATH,"r",encoding="utf-8_sig")as f:
     STATUS = json.load(f)
     
+CharaStatus = STATUS["Hero"]    # 主人公
+GirlStatus = STATUS["Girl"]     # 少女
+
+
+TEXT = ""   # テキストフレームに入れるデータ
+
+maxAlpha = 255      # alpha値 不透明
+minAlpha = 0        # alpha値 透明
+AlphaFlag = 0   # ブラックインアウトフラグ  0=無し 1=In 2=Out
+
+
+# ロード画面（セーブ画面） -------------------------------------
+
+# セーブファイルリスト
+SavePath = PATH + SAVE
+SaveFiles = os.listdir(SavePath)
+
+# 選択されたデータ
+SelectSaveData = ""
+
+# オープニング画面 --------------------------------------------
+OpeningFlag = 0     # オープニングの進行フラグ
+
+# キャラクターシート画面 ---------------------------------------
+CharaPage = True    # ページ変更用フラグ
+
+PullDownFlag = False    # プルダウン用フラグ
+PullDownItem = ""       # プルダウンアイテム記憶用
+
 # 職業リスト
 with open(PROF_JSON_PATH,"r",encoding="utf-8_sig") as f:
     ProfessionList = json.load(f)
@@ -30,23 +60,7 @@ with open(SKILL_JSOM_PATH,"r",encoding="utf-8_sig") as f:
 with open(HOBBY_JSON_PATH,"r",encoding="utf-8_sig") as f:
     HobbyList = json.load(f)
 
-# ステータス
-CharaStatus = STATUS["Hero"]    # 主人公
-GirlStatus = STATUS["Girl"]     # 少女
-
-CharaPage = True    # ページ変更用フラグ
-
-PullDownFlag = False    # プルダウン用フラグ
-PullDownItem = ""       # プルダウンアイテム記憶用
-
-
-FrameRect = Rect(30,420,580,150)
-DiceFrameRect = Rect(620,420,150,150)
-
-TEXT = ""   # テキストフレームに入れるデータ
-
-OpeningFlag = 0     # オープニングの進行フラグ
-
+# 本編 -------------------------------------------------------
 PlaySceneFlag = 0   # 本編中のシーンフラグ
 RoomFlag = CENTER       # どの部屋にいるかフラグ
 DirectionFlag = NORTH   # どの方角を向いてるかフラグ
@@ -55,6 +69,8 @@ KeyOpenFlag = False     # 東の部屋カギが開いてるかフラグ
 BookFlag = True         # 本を見つけてるかフラグ
 PoisonFlag = False      # 毒を入手してるかフラグ
 inPoisonFlag = False    # スープに毒が入ってるかフラグ
+# -----------------------------------------------------------
+
 
 # tkinterの起動
 root = tk.Tk()
@@ -77,10 +93,16 @@ screen = pygame.display.set_mode(DISPLAY_SIZE)
 pygame.key.set_repeat(100, 100)
 # タイトルバーキャプション
 pygame.display.set_caption(TITLE_TEXT)
+
 # フォントの設定
 font = pygame.font.Font(FONT_PATH, FONT_SIZ)
 small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
 big_font = pygame.font.Font(FONT_PATH, BIG_SIZ)
+# タイトル用のフォント
+title_font = pygame.font.Font(TITLE_FONT_PATH,TITLE_SIZ)
+# メニュー用フォント
+contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)
+
 
 clock = pygame.time.Clock()
 
@@ -88,17 +110,21 @@ clock = pygame.time.Clock()
 # タイトル画面作るよ
 def Title():
     global SCENE_FLAG
-    # タイトル用のフォント
-    title_font = pygame.font.Font(TITLE_FONT_PATH,TITLE_SIZ)
-    # タイトル画面用に基本フォントのサイズ変更
-    opening_font = pygame.font.Font(FONT_PATH,OPENING_SIZ)
     
     # タイトル
-    title_rect = TitleRender(TITLE_TEXT,title_font,RED,150)
-    start_rect = TitleRender("はじめる",opening_font,WHITE,280)
-    load_rect = TitleRender("つづきから",opening_font,WHITE,350)
-    setting_rect = TitleRender("設定",opening_font,WHITE,420)
-    close_rect = TitleRender("おわる",opening_font,WHITE,490)
+    title_rect = TitleRender(TITLE_TEXT,150,RED,title_font)
+    start_rect = TitleRender("はじめる",280,WHITE,contents_font)
+    load_rect = TitleRender("つづきから",350,WHITE,contents_font)
+    setting_rect = TitleRender("設定",420,WHITE,contents_font)
+    close_rect = TitleRender("おわる",490,WHITE,contents_font)
+    
+    contents_list = [start_rect,load_rect,setting_rect,close_rect]
+
+    # マウスオーバーで枠を表示するよ
+    key = pygame.mouse.get_pos()
+    for content in contents_list:
+        if content.collidepoint(key):
+            pygame.draw.rect(screen,WHITE,content,1)
 
     for event in pygame.event.get():
         # マウスクリック時
@@ -108,7 +134,7 @@ def Title():
                 if start_rect.collidepoint(event.pos):
                     SCENE_FLAG = OPENING
                 elif load_rect.collidepoint(event.pos):
-                    pass
+                    SCENE_FLAG = LOAD
                 elif setting_rect.collidepoint(event.pos):
                     SCENE_FLAG = SETTING
                 elif close_rect.collidepoint(event.pos):
@@ -122,10 +148,10 @@ def Title():
                 Close()
 
 # タイトル画面の文字表示用
-def TitleRender(text,font,color,y):
+def TitleRender(text, y, color, font):
     surface = font.render(text,True,color)
     rect = surface.get_rect()
-    # 画面の中央に表示する
+    # 画面の中央に表示する0
     rect.centerx = DISPLAY_SIZE[0] / 2
     rect.y = y
     screen.blit(surface,rect)
@@ -793,8 +819,83 @@ def Save():
         
 # データロード
 def Load():
-    pass
+    global SCENE_FLAG
+    global SelectSaveData
+
+    window = LoadWindow(SaveFiles)
+
+    # マウスオーバーで枠を表示するよ
+    key = pygame.mouse.get_pos()
+    for rect in window.rect_list:
+        if rect.collidepoint(key):
+            pygame.draw.rect(screen,BLACK,rect,1)
     
+    for rect in window.data_rect_list:
+        if rect.collidepoint(key):
+            pygame.draw.rect(screen,BLACK,rect,1)
+
+    for event in pygame.event.get():
+        # マウスクリック時
+        if event.type == MOUSEBUTTONDOWN:
+            # 左ボタン
+            if event.button == 1:
+                if window.close_rect.collidepoint(event.pos):
+                    SCENE_FLAG = TITLE
+
+                for i in range(len(window.data_rect_list)):
+                    if window.data_rect_list[i].collidepoint(event.pos):
+                        SelectSaveData = SaveFiles[i]
+                        print(SelectSaveData)
+                        
+
+        # 閉じるボタンで終了
+        if event.type == QUIT:
+            Close()
+        elif event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                Close()
+
+    
+class LoadWindow:
+    def __init__(self, list):
+        self.draw()
+        self.list = list
+        self.data_set(self.list)
+
+    def draw(self):
+        w = 400
+        h = 500
+        x = (screen.get_width() / 2) - (w / 2)
+        y = (screen.get_height() / 2) - (h / 2)
+        self.window_rect = Rect(x,y,w,h)
+        pygame.draw.rect(screen,SHEET_COLOR,self.window_rect)
+        pygame.draw.rect(screen,BLACK,self.window_rect,2)
+
+        self.top_rect = TitleRender("ロード", 80, BLACK, contents_font)
+        self.start_rect = Label("開始", 250, 500, contents_font)
+        self.close_rect = Label("CLOSE", 480, 500, contents_font)
+        self.rect_list = [self.start_rect,self.close_rect]
+       
+    def data_set(self,datas):
+        x = (screen.get_width() / 2) - 150
+        start_y = 150
+        y = start_y
+        color = SHEET_COLOR
+        self.data_rect_list = []
+        for data in datas:
+            if SelectSaveData == data:
+                color = WHITE
+            data_name = data.replace(".json", "")
+            self.data_rect_list.append(Label(data_name, x, y, font))
+            y += 30
+
+    def label(name, x, y, color):
+        color = BLACK
+        surface = font.render(name, True, color)
+        rect = surface.get_rect(left=x, top=y)
+        screen.blit(surface, rect)
+        return Rect(rect)
+
 
 # キャラクターシート作成画面
 def CharacterSheet():
@@ -1078,10 +1179,16 @@ class Room:
             self.slate1_rect = self.image(paths["Slate1"],156,213)
             self.slate2_rect = self.image(paths["Slate2"],156,479)
 
-def item_event(name):
+    def event(self):
+        pass
 
-    pass
-
+def BlackSurface():
+    black = pygame.Surface(DISPLAY_SIZE)
+    if AlphaFlag == 1:
+        black.set_alpha(minAlpha)
+    elif AlphaFlag == 2:
+        black.set_alpha(maxAlpha)
+    black.blit(screen, FILL_RECT)
 
 # プレイ画面
 def MainPlay():
@@ -1089,16 +1196,17 @@ def MainPlay():
     global PlaySceneFlag
     global DirectionFlag
     global DiscoveryFlag
-
+    global AlphaFlag
 
     #if PlaySceneFlag == 0:
     #    pygame.time.wait(500)
 
-    #if RoomFlag == 0:
-    #    pygame.draw.rect(screen,BLACK,)
-
     # 部屋の表示
     room = Room()
+
+    if RoomFlag == 0:
+        AlphaFlag = 1
+        BlackSurface()
 
     # ナビゲーションバーの表示
     if RoomFlag == CENTER:
@@ -1106,7 +1214,6 @@ def MainPlay():
         left_navi = PageNavigation(LEFT)
     else:
         under_nave = PageNavigation(UNDER)
-
 
     for event in pygame.event.get():
         # マウスクリック時
@@ -1178,19 +1285,25 @@ def MainPlay():
                 Close()
 
 def frame():
-    pygame.draw.rect(screen, WHITE, FrameRect,3)
+    pygame.draw.rect(screen, WHITE, FRAME_RECT,3)
 
 # ダイスを表示する為のフレーム
 def DiceFrame():
-    pygame.draw.rect(screen, WHITE, DiceFrameRect,3)
+    pygame.draw.rect(screen, WHITE, DICE_FRAME_RECT,3)
 
 def main():
+    global AlphaFlag
+    global minAlpha
+    global maxAlpha
+
     # 画面の描写
     while True:
         # 画面を黒で塗りつぶす
         screen.fill(BLACK)
         if SCENE_FLAG == TITLE:
             Title()
+        elif SCENE_FLAG == LOAD:
+            Load()
         elif SCENE_FLAG == SETTING:
             pass
         elif SCENE_FLAG == ENDCREDITS:
@@ -1200,13 +1313,26 @@ def main():
             clock.tick(60)
             frame()
             DiceFrame()
+
             if SCENE_FLAG == PLAY:
                 MainPlay()
             if SCENE_FLAG == CHARASE:
                 CharacterSheet()
             if SCENE_FLAG == OPENING:
                 Opening()
-                     
+        
+        """
+        if AlphaFlag == 1:
+            minAlpha += 5
+            if minAlpha >= 255:
+                AlphaFlag = 0
+                min_alpha = 0
+        elif AlphaFlag == 2:
+            maxAlpha -= 5
+            if maxAlpha <= 0:
+                AlphaFlag = 0
+                maxAlpha = 255
+        """
         # 画面を更新
         pygame.display.update() 
 

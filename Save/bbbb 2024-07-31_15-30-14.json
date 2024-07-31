@@ -1,0 +1,28 @@
+﻿{
+  "CharaStatus": {
+    "name": "bbbb",
+    "age": 50,
+    "sex": true,
+    "STR": 12,
+    "CON": 10,
+    "SIZ": 14,
+    "DEX": 7,
+    "APP": 10,
+    "EDU": 16,
+    "INT": 13,
+    "POW": 3,
+    "Luck": 15,
+    "Idea": 65,
+    "Know": 80,
+    "DB": "+1D4",
+    "HP": 12,
+    "MP": 3,
+    "Avo": 14,
+    "SAN": 15,
+    "Profession": "伝道者",
+    "skill": {
+      "水泳": 90,
+      "ナビゲート": 90
+    }
+  }
+}
