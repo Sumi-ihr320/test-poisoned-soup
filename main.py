@@ -1,123 +1,51 @@
-import sys, random, os, json
+import random, os, json
 import pygame
 import pygame.draw
-import pygame.draw
 from pygame.locals import *
-import pygame_menu as pgmenu
 import tkinter as tk
 from tkinter import messagebox
-from tkinter import simpledialog
 import datetime as dt
 
 from data import *
+from fanction import *
+from class_summary import *
 
 
-SCENE_FLAG = TITLE
-#SCENE_FLAG = PLAY
-
-# キャラクターのステータスデータ
-with open(STATUS_JSON_PATH,"r",encoding="utf-8_sig")as f:
-    STATUS = json.load(f)
-    
-CharaStatus = STATUS["Hero"]    # 主人公
-GirlStatus = STATUS["Girl"]     # 少女
-
-
-TEXT = ""   # テキストフレームに入れるデータ
-
-maxAlpha = 255      # alpha値 不透明
-minAlpha = 0        # alpha値 透明
-AlphaFlag = 0   # ブラックインアウトフラグ  0=無し 1=In 2=Out
-
-
-# ロード画面（セーブ画面） -------------------------------------
-
-# セーブファイルリスト
-SavePath = PATH + SAVE
-SaveFiles = os.listdir(SavePath)
-
-# 選択されたデータ
-SelectSaveData = ""
-
-# オープニング画面 --------------------------------------------
-OpeningFlag = 0     # オープニングの進行フラグ
-
-# キャラクターシート画面 ---------------------------------------
-CharaPage = True    # ページ変更用フラグ
-
-PullDownFlag = False    # プルダウン用フラグ
-PullDownItem = ""       # プルダウンアイテム記憶用
-
-# 職業リスト
-with open(PROF_JSON_PATH,"r",encoding="utf-8_sig") as f:
-    ProfessionList = json.load(f)
-
-# 技能リスト
-with open(SKILL_JSOM_PATH,"r",encoding="utf-8_sig") as f:
-    SkillList = json.load(f)
-
-# 趣味リスト
-with open(HOBBY_JSON_PATH,"r",encoding="utf-8_sig") as f:
-    HobbyList = json.load(f)
-
-# 本編 -------------------------------------------------------
-PlaySceneFlag = 0   # 本編中のシーンフラグ
-RoomFlag = CENTER       # どの部屋にいるかフラグ
-DirectionFlag = NORTH   # どの方角を向いてるかフラグ
-DiscoveryFlag = True    # 東の部屋奥が見えるかフラグ
-KeyOpenFlag = False     # 東の部屋カギが開いてるかフラグ
-BookFlag = True         # 本を見つけてるかフラグ
-PoisonFlag = False      # 毒を入手してるかフラグ
-inPoisonFlag = False    # スープに毒が入ってるかフラグ
-# -----------------------------------------------------------
-
+#SCENE_FLAG = TITLE
+SCENE_FLAG = PLAY
 
 # tkinterの起動
 root = tk.Tk()
 # 画面中央に配置したい
-sw = root.winfo_screenmmwidth()
-sh = root.winfo_screenmmheight()
-w = root.winfo_width()
-h = root.winfo_height()
+sw, sh = root.winfo_screenmmwidth(), root.winfo_screenmmheight()
+w, h = root.winfo_width(), root.winfo_height()
 x = (sw/2) - (w/2)
 y = (sh/2) - (h/2)
 root.geometry("+%d+%d" % (x,y))
 # tkinterの非表示
 root.withdraw()
 
-# pygame初期化,
-pygame.init()
-# 画面サイズ
-screen = pygame.display.set_mode(DISPLAY_SIZE)
-# キーリピート設定
-pygame.key.set_repeat(100, 100)
-# タイトルバーキャプション
-pygame.display.set_caption(TITLE_TEXT)
-
-# フォントの設定
-font = pygame.font.Font(FONT_PATH, FONT_SIZ)
-small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
-big_font = pygame.font.Font(FONT_PATH, BIG_SIZ)
-# タイトル用のフォント
-title_font = pygame.font.Font(TITLE_FONT_PATH,TITLE_SIZ)
-# メニュー用フォント
-contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)
-
-
-clock = pygame.time.Clock()
-
+opning_flag = False
 
 # タイトル画面作るよ
 def Title():
     global SCENE_FLAG
-    
+    global opning_flag
+
+    if opning_flag == False:
+        #back_img = PATH + PICTURE + "black.png"
+        back_img = PATH + PICTURE + "central-room_north.jpg"
+        background = pygame.image.load(back_img).convert_alpha()
+        FadeIn(screen, background,2)
+        opning_flag = True
+
     # タイトル
-    title_rect = TitleRender(TITLE_TEXT,150,RED,title_font)
-    start_rect = TitleRender("はじめる",280,WHITE,contents_font)
-    load_rect = TitleRender("つづきから",350,WHITE,contents_font)
-    setting_rect = TitleRender("設定",420,WHITE,contents_font)
-    close_rect = TitleRender("おわる",490,WHITE,contents_font)
-    
+    title_rect = Label(TITLE_TEXT,y=150,font=title_font,color=RED,center_flag=True,background=BLACK)
+    start_rect = Label("はじめる",y=280,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
+    load_rect = Label("つづきから",y=350,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
+    setting_rect = Label("設定",y=420,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
+    close_rect = Label("おわる",y=490,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
+
     contents_list = [start_rect,load_rect,setting_rect,close_rect]
 
     # マウスオーバーで枠を表示するよ
@@ -147,21 +75,11 @@ def Title():
             if event.key == K_ESCAPE:
                 Close()
 
-# タイトル画面の文字表示用
-def TitleRender(text, y, color, font):
-    surface = font.render(text,True,color)
-    rect = surface.get_rect()
-    # 画面の中央に表示する0
-    rect.centerx = DISPLAY_SIZE[0] / 2
-    rect.y = y
-    screen.blit(surface,rect)
-    return rect
-
 def Opening():
     global SCENE_FLAG
     global OpeningFlag
 
-    file_path = PATH + SCENARIO + "00_Opening.txt"
+    file_path = PATH + SCENARIO + "Opening.txt"
     with open(file_path,"r",encoding="utf-8_sig") as f:
         txts = f.readlines()
     
@@ -183,481 +101,6 @@ def Opening():
         elif event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 Close()
-
-# 終了処理をまとめるよ
-def Close():
-    if messagebox.askokcancel("確認","本当に終了しますか？"):
-        pygame.quit()
-        sys.exit()
-    else:
-        pass
-
-# ページ移動用の矢印表示するよ
-class PageNavigation:
-    def __init__(self, page_flag=0):
-
-        self.navi_rect = self.image(page_flag)
-            
-    def image(self, page_flag):
-        img = "navigate.png"
-        navi_img = pygame.image.load(PATH + PICTURE + img).convert_alpha()
-        if page_flag == UNDER:
-            navi_img = pygame.transform.rotate(navi_img,90)
-            navi_img = pygame.transform.scale(navi_img,(500,40))
-        else:
-            navi_img = pygame.transform.scale(navi_img, (40,355))
-        navi_rect = navi_img.get_rect()
-        if page_flag == RIGHT: # 右側のナビゲーション
-            navi_x = 740
-            navi_y = 40
-            triangle = [[750,190],[770,210],[750,230]]
-        elif page_flag == LEFT: # 左側のナビゲーション
-            navi_x = 20
-            navi_y = 40
-            triangle = [[50,190],[30,210],[50,230]]
-        else:   # 下側のナビゲーション
-            navi_x = screen.get_width() / 2 - navi_rect.centerx
-            navi_y = 350
-            triangle = [[380,360],[400,380],[420,360]]
-
-        navi_rect.centerx += navi_x
-        navi_rect.centery += navi_y
-        screen.blit(navi_img, navi_rect)
-        # 三角形の描画
-        pygame.draw.polygon(screen,BLACK,triangle)
-
-        return navi_rect
-
-# ステータス作るよ
-class Status:
-    def __init__(self, name, status_name, label_name, x, y, w, h, text="",  Button_flag=True, Input_flag=True, Box_flag=True,  Dice_text=""):
-        self.name = name    # ステータスの名前
-        self.status_name = status_name  # CharaStatusでの名前
-        if label_name != "":    # 実際に表示する名前（スペースなどで位置調整する場合があるため）
-            self.label_name = label_name
-        else:
-            self.label_name = self.name
-        self.text = text    # 説明文
-        self.dice_text = Dice_text  # ダイスボタンに表示するテキスト
-        self.Label_rect = Label(self.label_name,x,y)    # ラベル作成
-        self.Input_flag = Input_flag    # インプットボタンの入力ができるかのフラグ
-        max_flag = False    # 最大値と現在値が存在するフラグ
-        if Box_flag:    # インプットボックスを作るかのフラグ
-            self.Input_rect = InputBox((x+self.Label_rect.w,y,w,h),self.Input_flag)
-            if status_name != "sex":
-                if status_name in CharaStatus:
-                    self.status = CharaStatus[status_name]
-                    Label(str(self.status),self.Input_rect.x+2,self.Input_rect.y+2)
-        else:
-            self.Input_rect = self.Label_rect
-
-        if max_flag:
-            self.Input2_rect = self.Input_rect
-
-        # ダイスボタンを表示するフラグ
-        if Button_flag:
-            self.Button_rect = Button(self.Input_rect,Dice_text)
-        else:
-            self.Button_rect = self.Input_rect
-    
-    # ステータスの自動計算
-    def AutoCalculation(self, name):
-        if name == "STR" or name == "SIZ" or name == "CON":
-            if name != "CON":
-                # ダメージボーナスの計算
-                st = CharaStatus["STR"] + CharaStatus["SIZ"]
-                if 2 <= st <= 12:
-                    val = "-1D6"
-                elif 13 <= st <= 16:
-                    val = "-1D4"
-                elif 25 <= st <= 32:
-                    val = "+1D4"
-                elif 33 <= st <= 40:
-                    val = "+1D6"
-                else:
-                    val = "0"
-                CharaStatus["DB"] = val
-
-            if name != "STR":
-                # HPの計算
-                val = round((CharaStatus["CON"] + CharaStatus["SIZ"]) / 2)
-                CharaStatus["HP"] = val
-
-        elif name == "POW":
-            # MP、幸運、SAN値の計算
-            CharaStatus["MP"] = CharaStatus["POW"]
-            val = CharaStatus["POW"] * 5
-            CharaStatus["Luck"] = val
-            CharaStatus["SAN"] = val
-
-        elif name == "INT":
-            # アイデアの計算
-            val = CharaStatus["INT"] * 5
-            CharaStatus["Idea"] = val
-
-        elif name == "EDU":
-            # 知識の計算
-            val = CharaStatus["EDU"] * 5
-            if val > 99:
-                val = 99
-            CharaStatus["Know"] = val
-        
-        elif name == "DEX":
-           # 回避の計算
-           val = CharaStatus["DEX"] * 2
-           CharaStatus["Avo"] = val
- 
-    # 入力ボックスの処理まとめるよ
-    def InputProcess(self):
-        min=0
-        max=99
-        # 最大値最小値を決めるよ
-        if self.status_name == "age":
-            min = CharaStatus["EDU"] + 6
-        elif self.dice_text != "":
-            min = int(self.dice_text[0])
-            max = int(self.dice_text[2]) * min
-            if len(self.dice_text) > 3:
-                if self.dice_text[3] == "+":
-                    min += int(self.dice_text[4])
-                    max += int(self.dice_text[4])
-                else:
-                    min -= int(self.dice_text[4])
-                    max -= int(self.dice_text[4])
-                    
-        val = InputGet(self.status_name,self.name,'あなたの' + self.name + 'を入力してください',min,max)
-        if val != None:
-            Label(str(val),self.Input_rect.x+2, self.Input_rect.y+2)
-            CharaStatus[self.status_name] = val
-            self.AutoCalculation(self.status_name)
-
-    # ダイス処理まとめるよ
-    def DiceProcess(self):
-        val = DiceRool(self.dice_text)
-        CharaStatus[self.status_name] = val
-        self.AutoCalculation(self.status_name)
-        Label(str(val),self.Input_rect.x+2,self.Input_rect.y+2)
-
-# 選んだ性別によって画像が変わるようにするよ
-class SexChange:
-    def __init__(self, x, y, flag):
-        self.sex_flag = flag
-        if flag:
-            self.man_rect = self.Butoon("男",x,y,True)
-            self.woman_rect = self.Butoon("女",x+40,y,False)
-        else:
-            self.man_rect = self.Butoon("男",x,y,False)
-            self.woman_rect = self.Butoon("女",x+40,y,True)
-        self.Image(flag)
-
-    # ボタン作るよ
-    def Butoon(self, name, x, y, flag):
-        push_color = (106,93,33)
-        no_push_color = SHEET_COLOR
-        if flag:
-            background = push_color
-            color = WHITE
-        else:
-            background = no_push_color
-            color = BLACK
-        surface = font.render(name, True, color, background)
-        rect = surface.get_rect(left=x, top=y)
-        screen.blit(surface, rect)
-        return Rect(rect)
-
-    # 画像表示するよ    
-    def Image(self,flag):
-        if flag:
-            img = "silhouette_man.png"
-        else:
-            img = "silhouette_woman.png"
-        img_path = PATH + PICTURE + img
-        self.image_rect = image(img_path,0.5,40,40,True,2)
-
-# インプットボックスの処理をまとめるよ
-def InputGet(name, title, text, min=0, max=100):
-    txt = CharaStatus[name]
-    if type(txt) == str:
-        val = simpledialog.askstring(title,text,initialvalue=txt)
-    elif type(txt) == int:
-        val = simpledialog.askinteger(title,text,initialvalue=txt,minvalue=min,maxvalue=max)
-    if val != None:
-        CharaStatus[name] = val
-    return val
-
-# ダイスの挙動をまとめるよ
-def DiceRool(dice_text=""):
-    if dice_text != "":
-        pieces = int(dice_text[0])
-        dice = int(dice_text[2])
-        if dice == 3 or dice == 4:
-            img = "dice_3-4.png"
-        elif dice == 6:
-            img = "dice_6.png"
-        elif dice == 10:
-            img = "dice_6.png"
-        else:
-            img = "dice_8-20.png"
-        # ダイスの画像を表示したいけどうまくいかないのでとりあえず放置
-        dice_img = pygame.image.load(PATH + PICTURE + img).convert_alpha()
-        dice_img = pygame.transform.rotozoom(dice_img, 0, 0.5)
-        rect = dice_img.get_rect()
-        x = 500
-        y = 700
-        w = rect.w
-        h = rect.h
-        val = 0
-        for i in range(pieces):
-            val += random.randint(1, dice)
-            screen.blit(dice_img, (x,y,w,h))
-            x -= w + 10
-        if len(dice_text) > 3:
-            if dice_text[3] == "+":
-                val += int(dice_text[4])
-            else:
-                val -= int(dice_text[4])
-        pygame.time.delay(100)
-        return val
-
-# 職業選択画面作るよ
-class Profession:
-    def __init__(self, prof):
-        self.list_image()
-        if prof != "":
-            self.image(prof)
-
-    def list_image(self):
-        x,y = 100,230
-        self.prof_list = ProfessionList
-        for prof in list(self.prof_list):
-            name = self.prof_list[prof]["name"]
-            img_path = PATH + PICTURE + "prof_" + name + ".png"
-            rect = image(img_path, 0.1, x, y, line=True, background=True)
-            self.prof_list[prof]["rect"] = rect
-            x += 55
-            if x >= 590:
-                y += 55
-                x = 100
-
-    def image(self, prof):
-        data = self.prof_list[prof]
-        name = data["name"]
-        skill_list = data["skill"]
-        img_path = PATH + PICTURE + "prof_" + name + ".png"
-        x,y = 100,40
-        rect = image(img_path, 0.35 , x, y, line=True, background=True)
-        lrx = rect.x + rect.w + 5
-        name_rect = Label(f"【{prof}】", lrx, y, font)
-        skill_x, skill_y = lrx + 10, y + 30
-        skill_rect = Label("所持技能： ", skill_x, skill_y, small_font)
-        sk_x, sk_y = skill_x + 10, skill_y + skill_rect.h + 10
-        sx, sy = sk_x, sk_y
-        for skill in skill_list:
-            rect = Label(skill, sx, sy, small_font)
-            sx += rect.w + 10
-            if sx > 530:
-                sx = sk_x
-                sy += rect.h + 10
-
-# 趣味選択画面作るよ
-class Hobby:
-    def __init__(self):
-        self.label_rect = Label("趣味", 545, 175)
-        if PullDownItem == "":
-            self.listitem = "未選択"
-        else:
-            self.listitem = PullDownItem
-        self.pull = PullDown((435,200,150,25),self.listitem,list(HobbyList),small_font,207)
-
-# プルダウン機能をクラス化できないかな？
-class PullDown:
-    def __init__(self, rect, text, list, font=font, pd_h=285):
-        self.font = font
-        self.box_rect = self.Box(rect)
-        self.box_text = self.Label(text, self.box_rect)
-        self.list = list
-
-        # プルダウンボックスのアイテムの位置のリスト{item:rect}
-        self.items = {}
-
-        if PullDownFlag:
-            self.pd_rect = self.PullDown(self.box_rect, pd_h)
-            self.PullDownList(self.pd_rect)
-
-    # ボックス作るよ
-    def Box(self,rect):
-        x = rect[0] + 5
-        y = rect[1]
-        w = rect[2]
-        h = rect[3]
-        Box(x,y,w,h)
-
-        # 三角作るよ
-        tx = x + w -25
-        ty = y + 3
-        triangle_rect = Label("▼",tx,ty,self.font)
-
-        return Rect(x,y,w,h)
-
-    # プルダウンボックスに表示される文字列を描画するよ
-    def Label(self,text,rect):
-        surface = self.font.render(str(text),True,BLACK)
-        rect = surface.get_rect(left=rect[0]+4,top=rect[1]+4)
-        screen.blit(surface, rect)
-        return text
-    
-    # プルダウン押した時に表示されるボックス作るよ
-    def PullDown(self, rect, ph):
-        x = rect[0]
-        y = rect[1] + rect[3]
-        w = rect[2] 
-        h = rect[3] + ph
-        Box(x,y,w,h)
-        return Rect(x,y,w,h)
-
-    # プルダウン押した時に表示される項目表示したいよ
-    def PullDownList(self, rect):
-        x = rect.x + 3
-        y = rect.y + 3
-        self.ListDraw(self.list,x,y,self.pd_rect.w)
-
-    # 同じ処理だったのでまとめた
-    def ListDraw(self,list,x,y,w):
-        ly = y
-        i = 0
-        for item in list:
-            i += 1
-            # 項目表示
-            surface = self.font.render(item,True,BLACK)
-            rect = surface.get_rect(left=x,top=y)
-            screen.blit(surface,rect)
-
-            # 項目名とそのrectを辞書に登録していく
-            lis_rect = Rect(rect.x,rect.y,w,rect.h)
-            self.items[item] = lis_rect
-
-            # 表示位置を下にずらす
-            y += rect.h + 1
-
-            # 仕切り線を引く
-            pygame.draw.line(screen,BLACK,(x-2,y),(x+w-4,y))
-            
-            # プルダウンボックスより下は隣に表示する
-            if y >= (self.pd_rect.y+self.pd_rect.h-rect.h):
-                x += x + w
-                y = ly
-                # 隣にプルダウンボックスを作る
-                self.PullDown(Rect(x-3,self.box_rect.y,self.box_rect.w,self.box_rect.h),150)
-        lh = y - ly
-        self.List_rect = Rect(x,ly,w,lh)
-        return 
-
-# ラベル作成を分離するよ
-def Label(name, x, y, font=font):
-    color = BLACK
-    surface = font.render(name, True, color)
-    rect = surface.get_rect(left=x, top=y)
-    screen.blit(surface, rect)
-    return Rect(rect)
-
-# ボタン作成を分離
-def Button(rect, text, font=font):
-    out_color = GRAY
-    in_color = (181,181,174)
-    text_color = BLACK
-    texts = text.splitlines()
-    surfaces = []
-    rects = []
-    x = rect[0] + rect[2] + 5
-    y = rect[1] -2
-    tx,ty = 0,y
-    bw,bh = 0,0
-    for txt in texts:
-        surface = font.render(txt, True, text_color)
-        w = surface.get_rect().w + 8
-        if bw < w:
-            bw = w
-        h = surface.get_rect().h + 8
-        bh += h
-        tx = x + int(bw / 2)
-        ty += int(h / 2)
-        text_rect = surface.get_rect(center=(tx,ty))
-        ty += int(h / 2)
-        surfaces.append(surface)
-        rects.append(text_rect)
-    pygame.draw.rect(screen, out_color, (x, y, bw, bh))
-    pygame.draw.line(screen, in_color, (x, y), (x+bw,y+bh))
-    pygame.draw.line(screen, in_color, (x,y+bh), (x+bw,y))
-    pygame.draw.rect(screen,in_color,(x+4, y+4, bw-8, bh-8))
-    for i in range(len(surfaces)):
-        screen.blit(surfaces[i], rects[i])
-    return Rect(x,y,bw,bh)
-
-# 入力ボックス作成を分離するよ
-def InputBox(rect, flag=True, line_bold=2): 
-    if flag:
-        # color = (255,248,220)
-        color = WHITE
-    else:
-        color = SHEET_COLOR
-    x = rect[0] + 5
-    y = rect[1] - 4
-    w = rect[2] 
-    h = rect[3] 
-    pygame.draw.rect(screen, color, (x, y, w, h))
-    pygame.draw.line(screen,BLACK,(x,y+h-1),(x+w-1,y+h-1),line_bold)
-    return Rect(x,y,w,h)
-
-# 画像表示を分離するよ        
-def image(path, size, x, y, line=False, line_width=1, background=False):
-    # 画像の読み込み＆アルファ化(透明化)
-    img = pygame.image.load(path).convert_alpha()
-    # 画像の縮小
-    img = pygame.transform.rotozoom(img, 0, size)
-    # 画像の位置取得
-    rect = img.get_rect()
-    # 画像の位置を変更する
-    rect.centerx += x
-    rect.centery += y
-    # 背景を白にする場合
-    if background == True:
-        pygame.draw.rect(screen,WHITE,rect)
-    # 画像の描写
-    screen.blit(img, rect)
-    # 画像の枠を描画する場合
-    if line == True:
-        pygame.draw.rect(screen,BLACK,rect,line_width)
-
-    return rect
-
-# プルダウンボックス作るの分離するよ
-def PullDownBox(rect, font=font):
-    x = rect[0] + 5
-    y = rect[1]
-    w = rect[2]
-    h = rect[3]
-    Box(x,y,w,h)
-
-    # 三角作るよ
-    triangle_rect = Label("▼",x+w-25,y+4,font)
-
-    return Rect(x,y,w,h)
-            
-# 入力ボックスっぽい箱作るよ
-def Box(x,y,w,h):
-    pygame.draw.rect(screen,GRAY,(x,y,w,h))
-    pygame.draw.rect(screen, WHITE, (x+1, y+1, w-2, h-2))
-
-# テキストフレームに文字を表示するよ
-def TextDraw(text):
-    texts = []
-    y = 435
-    texts = text.splitlines()
-    for txt in texts:
-        surface = font.render(txt,True,WHITE)
-        rect = surface.get_rect(left=45,top=y)
-        screen.blit(surface,rect)
-        y += 25
 
 # 選択した職業から主人公のステータスにデータを入れるよ
 def ProfDataIn():
@@ -724,17 +167,7 @@ def ProfDataIn():
                         select = random.choice(list(lists))
                         CharaStatus["skill"][select]  += i
                         i -= i
-            
-# 答えと余りを算出する計算式を関数にしてみた
-def Calculation(a, b, max=None):
-    surplus = 0
-    result = a + b
-    if max is not None:
-        if result > max:
-            surplus = result - max
-            result = max
-    return result, surplus
-        
+                   
 # 選択した趣味から主人公のステータスにデータを入れるよ
 def HobyDataIn():
     global CharaStatus
@@ -806,10 +239,25 @@ def Save():
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
 
+    # 10個程度の保存領域からどのデータにセーブするか選択できるようにしたい
+
     # キャラクター名、日時でセーブデータを作る
     file_name = dir_name + CharaStatus["name"] + " " + str_now + ".json"
     data = {}
     data["CharaStatus"] = CharaStatus
+    data["flag"] = {"CenterRoomFlag":CenterRoomFlag,
+                    "MemoFlag":MemoFlag,
+                    "EastRoomFlag":EastRoomFlag,
+                    "RoomFlag":RoomFlag,
+                    "DirectionFlag":DirectionFlag,
+                    "DiscoveryFlag":DiscoveryFlag,
+                    "KeyOpenFlag":KeyOpenFlag,
+                    "BookFlag":BookFlag,
+                    "PoisonFlag":PoisonFlag,
+                    "SoupFlag":SoupFlag,
+                    "SoupIdeaFlag":SoupIdeaFlag,
+                    "GirlFlag":GirlFlag}
+    
     with open(file_name,"w",encoding="utf-8_sig") as f:
         json.dump(data,f,indent=2,ensure_ascii=False)
 
@@ -822,8 +270,10 @@ def Load():
     global SCENE_FLAG
     global SelectSaveData
 
-    window = LoadWindow(SaveFiles)
 
+    window = DataWindow(SaveFiles)
+
+    """
     # マウスオーバーで枠を表示するよ
     key = pygame.mouse.get_pos()
     for rect in window.rect_list:
@@ -833,6 +283,7 @@ def Load():
     for rect in window.data_rect_list:
         if rect.collidepoint(key):
             pygame.draw.rect(screen,BLACK,rect,1)
+    """
 
     for event in pygame.event.get():
         # マウスクリック時
@@ -840,7 +291,10 @@ def Load():
             # 左ボタン
             if event.button == 1:
                 if window.close_rect.collidepoint(event.pos):
-                    SCENE_FLAG = TITLE
+                    if SCENE_FLAG == LOAD:
+                        SCENE_FLAG = TITLE
+                    else:
+                        SCENE_FLAG == PLAY
 
                 for i in range(len(window.data_rect_list)):
                     if window.data_rect_list[i].collidepoint(event.pos):
@@ -855,8 +309,8 @@ def Load():
             if event.key == K_ESCAPE:
                 Close()
 
-    
-class LoadWindow:
+# セーブロード画面作るよ
+class DataWindow:
     def __init__(self, list):
         self.draw()
         self.list = list
@@ -871,31 +325,36 @@ class LoadWindow:
         pygame.draw.rect(screen,SHEET_COLOR,self.window_rect)
         pygame.draw.rect(screen,BLACK,self.window_rect,2)
 
-        self.top_rect = TitleRender("ロード", 80, BLACK, contents_font)
-        self.start_rect = Label("開始", 250, 500, contents_font)
+        if SCENE_FLAG == SAVE:
+            top_text = "セーブ"
+            enter_text = "保存"
+        else:
+            top_text = "ロード"
+            enter_text = "開始"
+        self.top_rect = Label(top_text, y=80, font=contents_font, center_flag=True)
+        self.enter_rect = Label(enter_text, 250, 500, contents_font)
         self.close_rect = Label("CLOSE", 480, 500, contents_font)
-        self.rect_list = [self.start_rect,self.close_rect]
-       
-    def data_set(self,datas):
+        self.rect_list = [self.enter_rect,self.close_rect]
+
+        # マウスオーバーで枠を表示するよ
+        key = pygame.mouse.get_pos()
+        for rect in self.rect_list:
+            if rect.collidepoint(key):
+                pygame.draw.rect(screen,BLACK,rect,1)
+
+    def data_set(self, datas):
         x = (screen.get_width() / 2) - 150
         start_y = 150
         y = start_y
-        color = SHEET_COLOR
         self.data_rect_list = []
         for data in datas:
             if SelectSaveData == data:
                 color = WHITE
+            else:
+                color = SHEET_COLOR
             data_name = data.replace(".json", "")
-            self.data_rect_list.append(Label(data_name, x, y, font))
+            self.data_rect_list.append(Label(data_name, x, y, background=color))
             y += 30
-
-    def label(name, x, y, color):
-        color = BLACK
-        surface = font.render(name, True, color)
-        rect = surface.get_rect(left=x, top=y)
-        screen.blit(surface, rect)
-        return Rect(rect)
-
 
 # キャラクターシート作成画面
 def CharacterSheet():
@@ -1037,15 +496,25 @@ def CharacterSheet():
 # 部屋を作るよ
 class Room:
     def __init__(self):
-        img_paths = self.file_path()
-        self.room_img, self.room_rect = self.image(img_paths["Room"],SHEET_RECT.y,area=Rect(0,0,820,375),center_flag=True,room_flag=True)
-        self.item(img_paths)
-        
+        # 現在地のファイル名一覧
+        self.img_paths = self.file_path()
+        # 部屋画像を表示するエリア
+        self.area_rect = Rect(0,0,820,375)
+        # 部屋画像の表示
+        self.room_img, self.room_rect = self.image(self.img_paths["Room"],SHEET_RECT.y,area=self.area_rect,center_flag=True,room_flag=True)
+        # 電気が消えているときは暗い画像を表示する
+        if LightFlag == False:
+            black_img, black_rect = self.image(self.img_paths["LightOff"],SHEET_RECT.y,area=self.area_rect,center_flag=True,room_flag=True)
+        # 部屋にあるアイテムの配置
+        self.item(self.img_paths)
+    
+    # ファイル名取得するよ
     def file_path(self):
         paths = {}
         path = PATH + PICTURE
         if RoomFlag == CENTER:
             room_path = path + "central-room_"
+            paths["LightOff"] = room_path + "LightOff.png"
             paths["Light"] = room_path + "Light.png"
             paths["Soup"] = room_path + "Soup.png"
             if DirectionFlag == NORTH:
@@ -1107,9 +576,8 @@ class Room:
 
         return paths
 
-    def image(self, path, y, x=0, area=None, center_flag=False, room_flag=False):
-        size = 0.19
-
+    # 画像表示するよ
+    def image(self, path, y, x=0, size=0.19, area=None, center_flag=False, room_flag=False, line_flag=False):
         # 画像の読み込み＆アルファ化(透明化)
         img = pygame.image.load(path).convert_alpha()
         # 画像の縮小
@@ -1128,11 +596,16 @@ class Room:
         # 部屋のimgの場合はメインsurfaceに、部屋のアイテムは部屋のsurfaceに
         if room_flag:
             screen.blit(img, rect, area=area)
+            # 枠を描写する場合
+            if line_flag:
+                if line_flag == True:
+                    pygame.draw.rect(screen, BLACK, rect, 2)
             return img, rect
         else:
             self.room_img.blit(img, rect, area=area)
-        return rect
+            return rect
 
+    # アイテム表示するよ
     def item(self, paths):
         if RoomFlag == CENTER:
             self.left_door_rect = self.image(paths["Door1"],93,121)
@@ -1179,21 +652,49 @@ class Room:
             self.slate1_rect = self.image(paths["Slate1"],156,213)
             self.slate2_rect = self.image(paths["Slate2"],156,479)
 
-    def event(self):
-        pass
+    # アイテムクリックのイベント決めるよ
+    def event(self, rect):
+        if rect == self.soup_rect:
+            img_path = PATH + PICTURE + "soup_" + SoupFlag + ".png"
+            y = self.area_rect.y + (self.area_rect / 2)
+            img, img_rect = self.image(img_path, y, size=0.5, center_flag=True, line_flag=True)
+            
 
-def BlackSurface():
-    black = pygame.Surface(DISPLAY_SIZE)
-    if AlphaFlag == 1:
-        black.set_alpha(minAlpha)
-    elif AlphaFlag == 2:
-        black.set_alpha(maxAlpha)
-    black.blit(screen, FILL_RECT)
+# フェードイン試し用
+def FadeIn(screen, background, speed=1):
+    alpha = 255
+    while alpha >= 0:
+        background.set_alpha(alpha)
+        screen.fill(BLACK)
+        screen.blit(background,(20,20))
+        pygame.display.flip()
+        alpha -= speed
+        clock.tick(60)
+
+# シナリオ表示用
+def Scenario():
+    text = ""
+    room_number = str(RoomFlag)
+    item_name = ""
+    flag_name = ""
+    if RoomFlag == CENTER:
+        room_name = "_Center_room_"
+        if CenterRoomFlag < 5:
+            flag_name = str(CenterRoomFlag)
+        else:
+            pass
+
+    file_name = ScenarioPath + room_number + room_name + item_name + flag_name + ".txt"
+    if os.path.isfile(file_name):
+        with open(file_name,"r",encoding="utf-8_sig") as f:
+            text = f.read()
+    TextDraw(text)
 
 # プレイ画面
 def MainPlay():
     global RoomFlag
-    global PlaySceneFlag
+    global CenterRoomFlag
+    global EastRoomFlag
     global DirectionFlag
     global DiscoveryFlag
     global AlphaFlag
@@ -1204,9 +705,8 @@ def MainPlay():
     # 部屋の表示
     room = Room()
 
-    if RoomFlag == 0:
-        AlphaFlag = 1
-        BlackSurface()
+    # 文章の表示
+    Scenario()
 
     # ナビゲーションバーの表示
     if RoomFlag == CENTER:
@@ -1215,61 +715,73 @@ def MainPlay():
     else:
         under_nave = PageNavigation(UNDER)
 
+    """
+    if CenterRoomFlag == 0:
+        # フェードイン試し用
+        back_img = PATH + PICTURE + "black.png"
+        background = pygame.image.load(back_img).convert_alpha()
+        FadeIn(screen, background,2)
+        CenterRoomFlag += 1
+    """
+
     for event in pygame.event.get():
         # マウスクリック時
         if event.type == MOUSEBUTTONDOWN:
             # 左ボタン
             if event.button == 1:
                 if RoomFlag == CENTER:
-                    # 部屋の向き移動
-                    if right_navi.navi_rect.collidepoint(event.pos):
-                        if DirectionFlag == NORTH:
-                            DirectionFlag = EAST
-                        elif DirectionFlag == EAST:
-                            DirectionFlag = SOUTH
-                        elif DirectionFlag == SOUTH:
-                            DirectionFlag = WEST
-                        else:
-                            DirectionFlag = NORTH
-                    elif left_navi.navi_rect.collidepoint(event.pos):
-                        if DirectionFlag == NORTH:
-                            DirectionFlag = WEST
-                        elif DirectionFlag == EAST:
-                            DirectionFlag = NORTH
-                        elif DirectionFlag == SOUTH:
-                            DirectionFlag = EAST
-                        else:
-                            DirectionFlag = SOUTH
-                    # 真ん中のドア
-                    elif room.center_door_rect.collidepoint(event.pos):
-                        if DirectionFlag == NORTH:
-                            RoomFlag = NORTH
-                        elif DirectionFlag == WEST:
-                            RoomFlag = WEST
-                        elif DirectionFlag == EAST:
-                            RoomFlag = EAST
-                        else:
-                            RoomFlag = SOUTH
-                    # 左のドア
-                    elif room.left_door_rect.collidepoint(event.pos):
-                        if DirectionFlag == NORTH:
-                            RoomFlag = WEST
-                        elif DirectionFlag == WEST:
-                            RoomFlag = SOUTH
-                        elif DirectionFlag == EAST:
-                            RoomFlag = NORTH
-                        else:
-                            RoomFlag = EAST
-                    # 右のドア
-                    elif room.right_door_rect.collidepoint(event.pos):
-                        if DirectionFlag == NORTH:
-                            RoomFlag = EAST
-                        elif DirectionFlag == WEST:
-                            RoomFlag = NORTH
-                        elif DirectionFlag == EAST:
-                            RoomFlag = SOUTH
-                        else:
-                            RoomFlag = WEST
+                    if CenterRoomFlag < 5:
+                        CenterRoomFlag += 1
+                    else:
+                        # 部屋の向き移動
+                        if right_navi.navi_rect.collidepoint(event.pos):
+                            if DirectionFlag == NORTH:
+                                DirectionFlag = EAST
+                            elif DirectionFlag == EAST:
+                                DirectionFlag = SOUTH
+                            elif DirectionFlag == SOUTH:
+                                DirectionFlag = WEST
+                            else:
+                                DirectionFlag = NORTH
+                        elif left_navi.navi_rect.collidepoint(event.pos):
+                            if DirectionFlag == NORTH:
+                                DirectionFlag = WEST
+                            elif DirectionFlag == EAST:
+                                DirectionFlag = NORTH
+                            elif DirectionFlag == SOUTH:
+                                DirectionFlag = EAST
+                            else:
+                                DirectionFlag = SOUTH
+                        # 真ん中のドア
+                        elif room.center_door_rect.collidepoint(event.pos):
+                            if DirectionFlag == NORTH:
+                                RoomFlag = NORTH
+                            elif DirectionFlag == WEST:
+                                RoomFlag = WEST
+                            elif DirectionFlag == EAST:
+                                RoomFlag = EAST
+                            else:
+                                RoomFlag = SOUTH
+                        # 左のドア
+                        elif room.left_door_rect.collidepoint(event.pos):
+                            if DirectionFlag == NORTH:
+                                RoomFlag = WEST
+                            elif DirectionFlag == WEST:
+                                RoomFlag = SOUTH
+                            elif DirectionFlag == EAST:
+                                RoomFlag = NORTH
+                            else:
+                                RoomFlag = EAST
+                        # 右のドア
+                        elif room.right_door_rect.collidepoint(event.pos):
+                            if DirectionFlag == NORTH:
+                                RoomFlag = EAST
+                            elif DirectionFlag == WEST:
+                                RoomFlag = NORTH
+                            elif DirectionFlag == EAST:
+                                RoomFlag = SOUTH
+                            else:
+                                RoomFlag = WEST
                 else:
                     if under_nave.navi_rect.collidepoint(event.pos):
                         # 真ん中の部屋に戻る
@@ -1310,29 +822,16 @@ def main():
             pass
         else:
             clock = pygame.time.Clock()
-            clock.tick(60)
             frame()
             DiceFrame()
-
             if SCENE_FLAG == PLAY:
                 MainPlay()
             if SCENE_FLAG == CHARASE:
                 CharacterSheet()
             if SCENE_FLAG == OPENING:
                 Opening()
+            clock.tick(60)
         
-        """
-        if AlphaFlag == 1:
-            minAlpha += 5
-            if minAlpha >= 255:
-                AlphaFlag = 0
-                min_alpha = 0
-        elif AlphaFlag == 2:
-            maxAlpha -= 5
-            if maxAlpha <= 0:
-                AlphaFlag = 0
-                maxAlpha = 255
-        """
         # 画面を更新
         pygame.display.update() 
 
