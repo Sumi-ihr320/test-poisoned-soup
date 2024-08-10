@@ -3,13 +3,71 @@ import pygame.draw
 from pygame.locals import *
 
 from data import *
-from fanction import *
+from fanction_summary import *
 
+
+# セーブロード画面作るよ
+class DataWindow:
+    def __init__(self, screen, flag, list):
+        # 基本データ
+        self.screen = screen
+        self.flag = flag
+        self.list = list
+
+        # フォントの設定
+        self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)                    # 基本フォント
+        self.contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)        # メニュー用フォント
+
+        # 画面表示       
+        self.draw()
+        self.data_set(self.list)
+
+    # データ表示ボックスを表示
+    def draw(self):
+        w = 400
+        h = 500
+        x = (self.screen.get_width() / 2) - (w / 2)
+        y = (self.screen.get_height() / 2) - (h / 2)
+        self.window_rect = Rect(x,y,w,h)
+        pygame.draw.rect(self.screen, SHEET_COLOR,self.window_rect)
+        pygame.draw.rect(self.screen, BLACK,self.window_rect,2)
+
+        if self.flag == "save":
+            top_text = "セーブ"
+            enter_text = "保存"
+        else:
+            top_text = "ロード"
+            enter_text = "開始"
+
+        self.top_rect = Label(self.screen, self.contents_font, top_text, y=80, center_flag=True)
+        self.enter_rect = Label(self.screen, self.contents_font, enter_text, 250, 500)
+        self.close_rect = Label(self.screen, self.contents_font, "CLOSE", 480, 500)
+        self.rect_list = [self.enter_rect,self.close_rect]
+
+        # マウスオーバーで枠を表示するよ
+        key = pygame.mouse.get_pos()
+        for rect in self.rect_list:
+            if rect.collidepoint(key):
+                pygame.draw.rect(self.screen, BLACK,rect,1)
+
+    def data_set(self, datas):
+        x = (self.screen.get_width() / 2) - 150
+        start_y = 150
+        y = start_y
+        self.data_rect_list = []
+        for data in datas:
+            if SelectSaveData == data:
+                color = WHITE
+            else:
+                color = SHEET_COLOR
+            data_name = data.replace(".json", "")
+            self.data_rect_list.append(Label(self.screen, self.font, data_name, x, y, background=color))
+            y += 30
 
 # ページ移動用の矢印表示するよ
 class PageNavigation:
-    def __init__(self, page_flag=0):
-
+    def __init__(self, screen, page_flag=0):
+        self.screen = screen
         self.navi_rect = self.image(page_flag)
             
     def image(self, page_flag):
@@ -30,21 +88,22 @@ class PageNavigation:
             navi_y = 40
             triangle = [[50,190],[30,210],[50,230]]
         else:   # 下側のナビゲーション
-            navi_x = screen.get_width() / 2 - navi_rect.centerx
+            navi_x = self.screen.get_width() / 2 - navi_rect.centerx
             navi_y = 350
             triangle = [[380,360],[400,380],[420,360]]
 
         navi_rect.centerx += navi_x
         navi_rect.centery += navi_y
-        screen.blit(navi_img, navi_rect)
+        self.screen.blit(navi_img, navi_rect)
         # 三角形の描画
-        pygame.draw.polygon(screen,BLACK,triangle)
+        pygame.draw.polygon(self.screen, BLACK,triangle)
 
         return navi_rect
 
 # プルダウン機能をクラス化できないかな？
 class PullDown:
-    def __init__(self, rect, text, list, font=font, pd_h=285):
+    def __init__(self, screen, font, rect, text, list, pd_h=285):
+        self.screen = screen
         self.font = font
         self.box_rect = self.Box(rect)
         self.box_text = self.Label(text, self.box_rect)
@@ -68,15 +127,15 @@ class PullDown:
         # 三角作るよ
         tx = x + w -25
         ty = y + 3
-        triangle_rect = Label("▼",tx,ty,self.font,background=WHITE)
+        triangle_rect = Label(self.screen, self.font, "▼", tx, ty, background=WHITE)
 
         return Rect(x,y,w,h)
 
     # プルダウンボックスに表示される文字列を描画するよ
-    def Label(self,text,rect):
+    def Label(self, text, rect):
         surface = self.font.render(str(text),True,BLACK)
         rect = surface.get_rect(left=rect[0]+4,top=rect[1]+4)
-        screen.blit(surface, rect)
+        self.screen.blit(surface, rect)
         return text
     
     # プルダウン押した時に表示されるボックス作るよ
@@ -103,7 +162,7 @@ class PullDown:
             # 項目表示
             surface = self.font.render(item,True,BLACK)
             rect = surface.get_rect(left=x,top=y)
-            screen.blit(surface,rect)
+            self.screen.blit(surface,rect)
 
             # 項目名とそのrectを辞書に登録していく
             lis_rect = Rect(rect.x,rect.y,w,rect.h)
@@ -113,7 +172,7 @@ class PullDown:
             y += rect.h + 1
 
             # 仕切り線を引く
-            pygame.draw.line(screen,BLACK,(x-2,y),(x+w-4,y))
+            pygame.draw.line(self.screen, BLACK,(x-2,y),(x+w-4,y))
             
             # プルダウンボックスより下は隣に表示する
             if y >= (self.pd_rect.y+self.pd_rect.h-rect.h):
@@ -127,7 +186,11 @@ class PullDown:
 
 # ステータス作るよ
 class Status:
-    def __init__(self, name, status_name, label_name, x, y, w, h, text="",  Button_flag=True, Input_flag=True, Box_flag=True,  Dice_text=""):
+    def __init__(self, screen, name, status_name, label_name, x, y, w, h, text="",  Button_flag=True, Input_flag=True, Box_flag=True,  Dice_text=""):
+
+        self.screen = screen
+        self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
+
         self.name = name    # ステータスの名前
         self.status_name = status_name  # CharaStatusでの名前
         if label_name != "":    # 実際に表示する名前（スペースなどで位置調整する場合があるため）
@@ -136,11 +199,11 @@ class Status:
             self.label_name = self.name
         self.text = text    # 説明文
         self.dice_text = Dice_text  # ダイスボタンに表示するテキスト
-        self.Label_rect = Label(self.label_name,x,y)    # ラベル作成
+        self.Label_rect = Label(self.screen, self.font, self.label_name, x, y)    # ラベル作成
         self.Input_flag = Input_flag    # インプットボタンの入力ができるかのフラグ
         max_flag = False    # 最大値と現在値が存在するフラグ
         if Box_flag:    # インプットボックスを作るかのフラグ
-            self.Input_rect = InputBox((x+self.Label_rect.w,y,w,h),self.Input_flag)
+            self.Input_rect = InputBox(screen, (x+self.Label_rect.w,y,w,h), self.Input_flag)
             if status_name != "sex":
                 if status_name in CharaStatus:
                     self.status = CharaStatus[status_name]
@@ -148,7 +211,7 @@ class Status:
                         background = WHITE
                     else:
                         background = SHEET_COLOR
-                    Label(str(self.status),self.Input_rect.x+2,self.Input_rect.y+2,background=background)
+                    Label(screen,self.font,str(self.status),self.Input_rect.x+2,self.Input_rect.y+2,background=background)
         else:
             self.Input_rect = self.Label_rect
 
@@ -157,7 +220,7 @@ class Status:
 
         # ダイスボタンを表示するフラグ
         if Button_flag:
-            self.Button_rect = Button(self.Input_rect,Dice_text)
+            self.Button_rect = Button(screen, self.font, self.Input_rect, Dice_text)
         else:
             self.Button_rect = self.Input_rect
     
@@ -228,7 +291,7 @@ class Status:
                     
         val = InputGet(self.status_name,self.name,'あなたの' + self.name + 'を入力してください',min,max)
         if val != None:
-            Label(str(val),self.Input_rect.x+2, self.Input_rect.y+2)
+            Label(self.screen, self.font, str(val), self.Input_rect.x+2, self.Input_rect.y+2)
             CharaStatus[self.status_name] = val
             self.AutoCalculation(self.status_name)
 
@@ -237,11 +300,13 @@ class Status:
         val = DiceRool(self.dice_text)
         CharaStatus[self.status_name] = val
         self.AutoCalculation(self.status_name)
-        Label(str(val),self.Input_rect.x+2,self.Input_rect.y+2)
+        Label(self.screen, self.font, str(val), self.Input_rect.x+2, self.Input_rect.y+2)
 
 # 選んだ性別によって画像が変わるようにするよ
 class SexChange:
-    def __init__(self, x, y, flag):
+    def __init__(self, screen, x, y, flag):
+        self.screen = screen
+        self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
         self.sex_flag = flag
         if flag:
             self.man_rect = self.Butoon("男",x,y,True)
@@ -261,9 +326,9 @@ class SexChange:
         else:
             background = no_push_color
             color = BLACK
-        surface = font.render(name, True, color, background)
+        surface = self.font.render(name, True, color, background)
         rect = surface.get_rect(left=x, top=y)
-        screen.blit(surface, rect)
+        self.screen.blit(surface, rect)
         return Rect(rect)
 
     # 画像表示するよ    
@@ -273,11 +338,15 @@ class SexChange:
         else:
             img = "silhouette_woman.png"
         img_path = PATH + PICTURE + img
-        self.image_rect = Image(img_path,0.5,40,40,True,2)
+        self.image_rect = Image(self.screen,img_path,0.5,40,40,True,2)
 
 # 職業選択画面作るよ
 class Profession:
-    def __init__(self, prof):
+    def __init__(self, screen, prof):
+        self.screen = screen
+        self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
+        self.small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
+
         self.list_image()
         if prof != "":
             self.image(prof)
@@ -301,15 +370,15 @@ class Profession:
         skill_list = data["skill"]
         img_path = PATH + PICTURE + "prof_" + name + ".png"
         x,y = 100,40
-        rect = Image(img_path, 0.35 , x, y, line=True, background=True)
+        rect = Image(self.screen, img_path, 0.35 , x, y, line=True, background=True)
         lrx = rect.x + rect.w + 5
-        name_rect = Label(f"【{prof}】", lrx, y, font)
+        name_rect = Label(self.screen, self.font, f"【{prof}】", lrx, y)
         skill_x, skill_y = lrx + 10, y + 30
-        skill_rect = Label("所持技能： ", skill_x, skill_y, small_font)
+        skill_rect = Label(self.screen, self.small_font, "所持技能： ", skill_x, skill_y)
         sk_x, sk_y = skill_x + 10, skill_y + skill_rect.h + 10
         sx, sy = sk_x, sk_y
         for skill in skill_list:
-            rect = Label(skill, sx, sy, small_font)
+            rect = Label(self.screen, self.small_font, skill, sx, sy)
             sx += rect.w + 10
             if sx > 530:
                 sx = sk_x
@@ -317,11 +386,15 @@ class Profession:
 
 # 趣味選択画面作るよ
 class Hobby:
-    def __init__(self):
-        self.label_rect = Label("趣味", 545, 175)
+    def __init__(self, screen):
+        # フォントの設定
+        font = pygame.font.Font(FONT_PATH, FONT_SIZ)
+        small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
+
+        self.label_rect = Label(screen, font, "趣味", 545, 175)
         if PullDownItem == "":
             self.listitem = "未選択"
         else:
             self.listitem = PullDownItem
-        self.pull = PullDown((435,200,150,25),self.listitem,list(HobbyList),small_font,207)
+        self.pull = PullDown(screen, small_font, (435,200,150,25), self.listitem, list(HobbyList), 207)
 

@@ -53,26 +53,14 @@ CENTER,NORTH,EAST,WEST,SOUTH = (0,1,2,3,4)
 
 
 # 基本データ --------------------------------------------
-
-# pygame初期化
-pygame.init()
-# 画面サイズ
-screen = pygame.display.set_mode(DISPLAY_SIZE)
-# キーリピート設定
-pygame.key.set_repeat(100, 100)
-# タイトルバーキャプション
-pygame.display.set_caption(TITLE_TEXT)
-
-clock = pygame.time.Clock()
-
+"""
 # フォントの設定
 font = pygame.font.Font(FONT_PATH, FONT_SIZ)
 small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
 big_font = pygame.font.Font(FONT_PATH, BIG_SIZ)
-# タイトル用のフォント
-title_font = pygame.font.Font(TITLE_FONT_PATH,TITLE_SIZ)
 # メニュー用フォント
 contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)
+"""
 
 # キャラクターのステータスデータ
 with open(STATUS_JSON_PATH,"r",encoding="utf-8_sig")as f:
@@ -80,10 +68,6 @@ with open(STATUS_JSON_PATH,"r",encoding="utf-8_sig")as f:
     
 CharaStatus = STATUS["Hero"]    # 主人公
 GirlStatus = STATUS["Girl"]     # 少女
-
-maxAlpha = 255      # alpha値 不透明
-minAlpha = 0        # alpha値 透明
-AlphaFlag = 0   # ブラックインアウトフラグ  0=無し 1=In 2=Out
 
 
 # ロード画面（セーブ画面） -------------------------------------

@@ -16,9 +16,16 @@ def Close():
     else:
         pass
 
+# フレームの表示
+def Frame(screen):
+    # テキストフレーム
+    pygame.draw.rect(screen, WHITE, FRAME_RECT,3)
+    # ダイスフレーム
+    pygame.draw.rect(screen, WHITE, DICE_FRAME_RECT,3)
+
 # ラベル作成を分離するよ
-def Label(name, x=0, y=0, font=font, color=BLACK, center_flag=False, background=SHEET_COLOR):
-    surface = font.render(name, True, color, background)
+def Label(screen, font, text, x=0, y=0, color=BLACK, center_flag=False, background=SHEET_COLOR):
+    surface = font.render(text, True, color, background)
     rect = surface.get_rect(left=x, top=y)
     if center_flag:
         rect.centerx = DISPLAY_SIZE[0] / 2
@@ -26,7 +33,7 @@ def Label(name, x=0, y=0, font=font, color=BLACK, center_flag=False, background=
     return Rect(rect)
 
 # ボタン作成を分離
-def Button(rect, text, font=font):
+def Button(screen, font, rect, text):
     out_color = GRAY
     in_color = (181,181,174)
     text_color = BLACK
@@ -53,13 +60,13 @@ def Button(rect, text, font=font):
     pygame.draw.rect(screen, out_color, (x, y, bw, bh))
     pygame.draw.line(screen, in_color, (x, y), (x+bw,y+bh))
     pygame.draw.line(screen, in_color, (x,y+bh), (x+bw,y))
-    pygame.draw.rect(screen,in_color,(x+4, y+4, bw-8, bh-8))
+    pygame.draw.rect(screen, in_color,(x+4, y+4, bw-8, bh-8))
     for i in range(len(surfaces)):
         screen.blit(surfaces[i], rects[i])
     return Rect(x,y,bw,bh)
 
 # 入力ボックス作成を分離するよ
-def InputBox(rect, flag=True, line_bold=2): 
+def InputBox(screen, rect, flag=True, line_bold=2): 
     if flag:
         # color = (255,248,220)
         color = WHITE
@@ -70,11 +77,11 @@ def InputBox(rect, flag=True, line_bold=2):
     w = rect[2] 
     h = rect[3] 
     pygame.draw.rect(screen, color, (x, y, w, h))
-    pygame.draw.line(screen,BLACK,(x,y+h-1),(x+w-1,y+h-1),line_bold)
+    pygame.draw.line(screen, BLACK,(x,y+h-1),(x+w-1,y+h-1),line_bold)
     return Rect(x,y,w,h)
 
 # 画像表示を分離するよ
-def Image(path, size, x, y, line_flag=False, line_width=1, background=False, center_flag=False):
+def Image(screen, path, size, x, y, line_flag=False, line_width=1, background=False, center_flag=False):
     # 画像の読み込み＆アルファ化(透明化)
     img = pygame.image.load(path).convert_alpha()
     # 画像の縮小
@@ -89,17 +96,17 @@ def Image(path, size, x, y, line_flag=False, line_width=1, background=False, cen
     rect.centery += y
     # 背景を白にする場合
     if background == True:
-        pygame.draw.rect(screen,WHITE,rect)
+        pygame.draw.rect(screen, WHITE,rect)
     # 画像の描写
     screen.blit(img, rect)
     # 画像の枠を描画する場合
     if line_flag == True:
-        pygame.draw.rect(screen,BLACK,rect,line_width)
+        pygame.draw.rect(screen, BLACK,rect,line_width)
 
     return rect
 
 # プルダウンボックス作るの分離するよ
-def PullDownBox(rect, font=font):
+def PullDownBox(screen, rect, font):
     x = rect[0] + 5
     y = rect[1]
     w = rect[2]
@@ -107,17 +114,20 @@ def PullDownBox(rect, font=font):
     Box(x,y,w,h)
 
     # 三角作るよ
-    triangle_rect = Label("▼",x+w-25,y+4,background=WHITE)
+    triangle_rect = Label(screen,font,"▼",x+w-25,y+4,background=WHITE)
 
     return Rect(x,y,w,h)
 
 # 入力ボックスっぽい箱作るよ
-def Box(x,y,w,h):
-    pygame.draw.rect(screen,GRAY,(x,y,w,h))
+def Box(screen, x,y,w,h):
+    pygame.draw.rect(screen, GRAY,(x,y,w,h))
     pygame.draw.rect(screen, WHITE, (x+1, y+1, w-2, h-2))
 
 # テキストフレームに文字を表示するよ
-def TextDraw(text):
+def TextDraw(screen, text):
+    # フォントの設定
+    font = pygame.font.Font(FONT_PATH, FONT_SIZ)
+
     texts = []
     y = 435
     texts = text.splitlines()
@@ -139,7 +149,7 @@ def InputGet(name, title, text, min=0, max=100):
     return val
 
 # ダイスの挙動をまとめるよ
-def DiceRool(dice_text=""):
+def DiceRool(screen, dice_text=""):
     if dice_text != "":
         pieces = int(dice_text[0])
         dice = int(dice_text[2])

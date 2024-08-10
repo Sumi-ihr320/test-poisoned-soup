@@ -4,17 +4,21 @@ import pygame.draw
 from pygame.locals import *
 import tkinter as tk
 from tkinter import messagebox
-import datetime as dt
 
 from data import *
-from fanction import *
+from fanction_summary import *
 from class_summary import *
 
+from title import Title
+from load import Load
+from save import Save
+from opening import Opening
+from character_sheet import CharacterSheet
 
-#SCENE_FLAG = TITLE
-SCENE_FLAG = PLAY
+SCENE_FLAG = TITLE
+#SCENE_FLAG = PLAY
 
-# tkinterの起動
+# tkinterの起動 ---------------------------------------------------
 root = tk.Tk()
 # 画面中央に配置したい
 sw, sh = root.winfo_screenmmwidth(), root.winfo_screenmmheight()
@@ -25,10 +29,22 @@ root.geometry("+%d+%d" % (x,y))
 # tkinterの非表示
 root.withdraw()
 
+# pygame初期化 -----------------------------------------------
+#pygame.init()
+# 画面サイズ
+#screen = pygame.display.set_mode(DISPLAY_SIZE)
+# キーリピート設定
+#pygame.key.set_repeat(100, 100)
+# タイトルバーキャプション
+#pygame.display.set_caption(TITLE_TEXT)
+
+#clock = pygame.time.Clock()
+
+"""
 opning_flag = False
 
 # タイトル画面作るよ
-def Title():
+def Title(screen):
     global SCENE_FLAG
     global opning_flag
 
@@ -40,11 +56,11 @@ def Title():
         opning_flag = True
 
     # タイトル
-    title_rect = Label(TITLE_TEXT,y=150,font=title_font,color=RED,center_flag=True,background=BLACK)
-    start_rect = Label("はじめる",y=280,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
-    load_rect = Label("つづきから",y=350,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
-    setting_rect = Label("設定",y=420,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
-    close_rect = Label("おわる",y=490,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
+    title_rect = Label(screen, TITLE_TEXT,y=150,font=title_font,color=RED,center_flag=True,background=BLACK)
+    start_rect = Label(screen, "はじめる",y=280,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
+    load_rect = Label(screen, "つづきから",y=350,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
+    setting_rect = Label(screen, "設定",y=420,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
+    close_rect = Label(screen, "おわる",y=490,font=contents_font,color=WHITE,center_flag=True,background=BLACK)
 
     contents_list = [start_rect,load_rect,setting_rect,close_rect]
 
@@ -52,7 +68,7 @@ def Title():
     key = pygame.mouse.get_pos()
     for content in contents_list:
         if content.collidepoint(key):
-            pygame.draw.rect(screen,WHITE,content,1)
+            pygame.draw.rect(screen, WHITE,content,1)
 
     for event in pygame.event.get():
         # マウスクリック時
@@ -84,7 +100,7 @@ def Opening():
         txts = f.readlines()
     
     if OpeningFlag < 2:
-        TextDraw(txts[OpeningFlag])
+        TextDraw(screen, txts[OpeningFlag])
     else:
         SCENE_FLAG = CHARASE
 
@@ -264,26 +280,14 @@ def Save():
     # キャラシ画面からセーブした際は本編に進む
     if SCENE_FLAG == CHARASE:
         SCENE_FLAG = PLAY
-        
+
 # データロード
 def Load():
     global SCENE_FLAG
     global SelectSaveData
 
 
-    window = DataWindow(SaveFiles)
-
-    """
-    # マウスオーバーで枠を表示するよ
-    key = pygame.mouse.get_pos()
-    for rect in window.rect_list:
-        if rect.collidepoint(key):
-            pygame.draw.rect(screen,BLACK,rect,1)
-    
-    for rect in window.data_rect_list:
-        if rect.collidepoint(key):
-            pygame.draw.rect(screen,BLACK,rect,1)
-    """
+    window = DataWindow(screen, SaveFiles)
 
     for event in pygame.event.get():
         # マウスクリック時
@@ -311,7 +315,8 @@ def Load():
 
 # セーブロード画面作るよ
 class DataWindow:
-    def __init__(self, list):
+    def __init__(self, screen, list):
+        self.screen = screen
         self.draw()
         self.list = list
         self.data_set(self.list)
@@ -319,11 +324,11 @@ class DataWindow:
     def draw(self):
         w = 400
         h = 500
-        x = (screen.get_width() / 2) - (w / 2)
-        y = (screen.get_height() / 2) - (h / 2)
+        x = (self.screen.get_width() / 2) - (w / 2)
+        y = (self.screen.get_height() / 2) - (h / 2)
         self.window_rect = Rect(x,y,w,h)
-        pygame.draw.rect(screen,SHEET_COLOR,self.window_rect)
-        pygame.draw.rect(screen,BLACK,self.window_rect,2)
+        pygame.draw.rect(self.screen, SHEET_COLOR,self.window_rect)
+        pygame.draw.rect(self.screen, BLACK,self.window_rect,2)
 
         if SCENE_FLAG == SAVE:
             top_text = "セーブ"
@@ -331,19 +336,19 @@ class DataWindow:
         else:
             top_text = "ロード"
             enter_text = "開始"
-        self.top_rect = Label(top_text, y=80, font=contents_font, center_flag=True)
-        self.enter_rect = Label(enter_text, 250, 500, contents_font)
-        self.close_rect = Label("CLOSE", 480, 500, contents_font)
+        self.top_rect = Label(self.screen, top_text, y=80, font=contents_font, center_flag=True)
+        self.enter_rect = Label(self.screen, enter_text, 250, 500, contents_font)
+        self.close_rect = Label(self.screen, "CLOSE", 480, 500, contents_font)
         self.rect_list = [self.enter_rect,self.close_rect]
 
         # マウスオーバーで枠を表示するよ
         key = pygame.mouse.get_pos()
         for rect in self.rect_list:
             if rect.collidepoint(key):
-                pygame.draw.rect(screen,BLACK,rect,1)
+                pygame.draw.rect(self.screen, BLACK,rect,1)
 
     def data_set(self, datas):
-        x = (screen.get_width() / 2) - 150
+        x = (self.screen.get_width() / 2) - 150
         start_y = 150
         y = start_y
         self.data_rect_list = []
@@ -353,11 +358,11 @@ class DataWindow:
             else:
                 color = SHEET_COLOR
             data_name = data.replace(".json", "")
-            self.data_rect_list.append(Label(data_name, x, y, background=color))
+            self.data_rect_list.append(Label(self.screen, data_name, x, y, background=color))
             y += 30
 
 # キャラクターシート作成画面
-def CharacterSheet():
+def CharacterSheet(screen):
     global CharaStatus
     global CharaPage
     global PullDownFlag
@@ -372,26 +377,26 @@ def CharacterSheet():
         # ページ変更ゾーン
         page_navi = PageNavigation(RIGHT)
 
-        Name = Status("名前","name","",250, 50, 150, 28,"探索者の名前を入力してください", False)
-        Sex = Status("性別","sex","性別(       )",250,80,0,0,"探索者の性別をクリックで選択してください",False,False,False)
-        Sex_Button = SexChange(310,80,CharaStatus["sex"])
-        Age = Status("年齢","age","",430,80,50,28,"探索者の年齢を入力してください",False)
-        STR = Status("筋力","STR","STR(筋力)  ",250,120,40,28,"筋力の値を決めます。\n・3～6:全然筋力がない ・7～10:普通ぐらい\n・11～14:筋力に自身あり ・15～17:筋力を自慢できる\n・18:筋肉モリモリマッチョマン\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
-        CON = Status("体力","CON","CON(体力)  ",250,152,40,28,"体力の値を決めます。\n・3～6:まったく体力ない ・7～10:ほどほど体力はある\n・11～14:それなりに体力がある\n・15～17:スポーツマン並にある ・18:元気100倍\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
-        SIZ = Status("体格","SIZ","SIZ(体格)  ",250,184,40,28,"体格の値を決めます。\n・8～11:小柄 ・12～15:中肉中背 ・16～18:大柄\nテキスト入力とダイスで決定を選択できます。",Dice_text="2D6+6")
-        DEX = Status("俊敏性","DEX","DEX(俊敏性)",250,216,40,28,"俊敏性の値を決めます。\n・3～6:鈍重 ・7～10:問題なく動ける\n・11～14:素早い動作が得意 ・15～17:その道のプロ\n・18:電光石火\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
-        APP = Status("外見","APP","APP(外見)  ",500,120,40,28,"外見の値を決めます。\n・3～6:醜悪な容姿 ・7～10:一般的\n・11～14:整った顔立ち ・15～17:モデル並み\n・18:傾城傾国\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
-        EDU = Status("教育","EDU","EDU(教育)  ",500,152,40,28,"教育の値を決めます。\n・6～8:中学卒業程度 ・9～11:高校卒業\n・12～15:大学卒業 ・16～19:大学院生卒業\n・20～21:研究者や科学者\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6+3")
-        INT = Status("知性","INT","INT(知性)  ",500,184,40,28,"知力の値を決めます。\n・3～6:頭が悪い ・7～10:普通 ・11～14:発想豊か\n・15～17:頭脳明晰 ・18:英俊豪傑\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
-        POW = Status("精神力","POW","POW(精神力)",500,216,40,28,"精神力の値を決めます。\n・3～6:精神に問題あり ・7～10:人並みの心臓\n・11～14:精神的にタフ ・15～17:修行僧\n・18:黄金の精神\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
-        Luck = Status("幸運","Luck","幸運       ",250,250,40,28,"探索者の幸運度を表します。\n値はPOW x 5で決まります。",False,False)
-        Idea = Status("アイデア","Idea","アイデア   ",250,282,40,28,"アイデアは直感的な能力です。\n特殊な雰囲気など、普通では気がつかないであろう物に\n気付けるかどうかの能力になります\n値はINT x 5で決まります。",False,False)
-        Knowledge = Status("知識","Know","知識       ",250,314,40,28,"探索者が持っている知識量の値です。\n値はEDU x 5で決まります。",False,False)
-        Avo = Status("回避","Avo","回避       ",250,346,40,28,"探索者の回避技能値です。\n値はDEX x 2で決まります。",False,False)
-        DB = Status("ﾀﾞﾒｰｼﾞ･ﾎﾞｰﾅｽ","DB","DB(ﾀﾞﾒｰｼﾞ･ﾎﾞｰﾅｽ)",450,250,50,28,"小柄で筋力が無い人物だと\n与えるダメージにマイナスの補正が掛かります。\n逆に大柄で筋力がある人物では\n与えるダメージにプラスの補正が掛かります。\n値はSTR+SIZで決まります。",False,False)
-        HP = Status("耐久力","HP","耐久力          ",450,282,40,28,"探索者のHPや生命力を表します。\n最大値は(CON+SIZ)÷2で決まります。",False,False)
-        MP = Status("ﾏｼﾞｯｸﾎﾟｲﾝﾄ","MP","MP(ﾏｼﾞｯｸﾎﾟｲﾝﾄ)  ",450,314,40,28,"探索者のマジックポイントを表します。\n最大値はPOWと同じ数値です。",False,False)
-        SAN = Status("正気度","SAN","SAN値(正気度)   ",450,346,40,28,"探索者の正気度を表します。\n最大値はPOW x 5で決まります。",False,False)
+        Name = Status(screen,"名前","name","",250, 50, 150, 28,"探索者の名前を入力してください", False)
+        Sex = Status(screen,"性別","sex","性別(       )",250,80,0,0,"探索者の性別をクリックで選択してください",False,False,False)
+        Sex_Button = SexChange(screen,310,80,CharaStatus["sex"])
+        Age = Status(screen,"年齢","age","",430,80,50,28,"探索者の年齢を入力してください",False)
+        STR = Status(screen,"筋力","STR","STR(筋力)  ",250,120,40,28,"筋力の値を決めます。\n・3～6:全然筋力がない ・7～10:普通ぐらい\n・11～14:筋力に自身あり ・15～17:筋力を自慢できる\n・18:筋肉モリモリマッチョマン\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
+        CON = Status(screen,"体力","CON","CON(体力)  ",250,152,40,28,"体力の値を決めます。\n・3～6:まったく体力ない ・7～10:ほどほど体力はある\n・11～14:それなりに体力がある\n・15～17:スポーツマン並にある ・18:元気100倍\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
+        SIZ = Status(screen,"体格","SIZ","SIZ(体格)  ",250,184,40,28,"体格の値を決めます。\n・8～11:小柄 ・12～15:中肉中背 ・16～18:大柄\nテキスト入力とダイスで決定を選択できます。",Dice_text="2D6+6")
+        DEX = Status(screen,"俊敏性","DEX","DEX(俊敏性)",250,216,40,28,"俊敏性の値を決めます。\n・3～6:鈍重 ・7～10:問題なく動ける\n・11～14:素早い動作が得意 ・15～17:その道のプロ\n・18:電光石火\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
+        APP = Status(screen,"外見","APP","APP(外見)  ",500,120,40,28,"外見の値を決めます。\n・3～6:醜悪な容姿 ・7～10:一般的\n・11～14:整った顔立ち ・15～17:モデル並み\n・18:傾城傾国\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
+        EDU = Status(screen,"教育","EDU","EDU(教育)  ",500,152,40,28,"教育の値を決めます。\n・6～8:中学卒業程度 ・9～11:高校卒業\n・12～15:大学卒業 ・16～19:大学院生卒業\n・20～21:研究者や科学者\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6+3")
+        INT = Status(screen,"知性","INT","INT(知性)  ",500,184,40,28,"知力の値を決めます。\n・3～6:頭が悪い ・7～10:普通 ・11～14:発想豊か\n・15～17:頭脳明晰 ・18:英俊豪傑\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
+        POW = Status(screen,"精神力","POW","POW(精神力)",500,216,40,28,"精神力の値を決めます。\n・3～6:精神に問題あり ・7～10:人並みの心臓\n・11～14:精神的にタフ ・15～17:修行僧\n・18:黄金の精神\nテキスト入力とダイスで決定を選択できます。",Dice_text="3D6")
+        Luck = Status(screen,"幸運","Luck","幸運       ",250,250,40,28,"探索者の幸運度を表します。\n値はPOW x 5で決まります。",False,False)
+        Idea = Status(screen,"アイデア","Idea","アイデア   ",250,282,40,28,"アイデアは直感的な能力です。\n特殊な雰囲気など、普通では気がつかないであろう物に\n気付けるかどうかの能力になります\n値はINT x 5で決まります。",False,False)
+        Knowledge = Status(screen,"知識","Know","知識       ",250,314,40,28,"探索者が持っている知識量の値です。\n値はEDU x 5で決まります。",False,False)
+        Avo = Status(screen,"回避","Avo","回避       ",250,346,40,28,"探索者の回避技能値です。\n値はDEX x 2で決まります。",False,False)
+        DB = Status(screen,"ﾀﾞﾒｰｼﾞ･ﾎﾞｰﾅｽ","DB","DB(ﾀﾞﾒｰｼﾞ･ﾎﾞｰﾅｽ)",450,250,50,28,"小柄で筋力が無い人物だと\n与えるダメージにマイナスの補正が掛かります。\n逆に大柄で筋力がある人物では\n与えるダメージにプラスの補正が掛かります。\n値はSTR+SIZで決まります。",False,False)
+        HP = Status(screen,"耐久力","HP","耐久力          ",450,282,40,28,"探索者のHPや生命力を表します。\n最大値は(CON+SIZ)÷2で決まります。",False,False)
+        MP = Status(screen,"ﾏｼﾞｯｸﾎﾟｲﾝﾄ","MP","MP(ﾏｼﾞｯｸﾎﾟｲﾝﾄ)  ",450,314,40,28,"探索者のマジックポイントを表します。\n最大値はPOWと同じ数値です。",False,False)
+        SAN = Status(screen,"正気度","SAN","SAN値(正気度)   ",450,346,40,28,"探索者の正気度を表します。\n最大値はPOW x 5で決まります。",False,False)
 
         # リストに入れて同じ処理はfor文で回せるようにするよ
         status = [Name,Sex,Age,STR,CON,SIZ,DEX,APP,EDU,INT,POW,
@@ -402,31 +407,30 @@ def CharacterSheet():
 
         for stat in status:
             if stat.Label_rect.collidepoint(key) or stat.Input_rect.collidepoint(key):
-                TextDraw(stat.text)
+                TextDraw(screen, stat.text)
             elif stat.Button_rect.collidepoint(key):
-                TextDraw("ダイスでランダムに値を決めることができます")
+                TextDraw(screen, "ダイスでランダムに値を決めることができます")
     else:
         # ページ変更ゾーン
         page_navi = PageNavigation(LEFT)
 
         # 職業選択画面
-        Profe = Profession(CharaStatus["Profession"])
+        Profe = Profession(screen, CharaStatus["Profession"])
         # 趣味選択画面
         Hoby = Hobby()
         # キャラ作成終了ボタン
-        enter_rect = Button((530,330,100,100),"キャラ作成\n終了")
+        enter_rect = Button(screen,(530,330,100,100),"キャラ作成\n終了")
 
         key = pygame.mouse.get_pos()
         if PullDownFlag == False:
             for prof in Profe.prof_list:
                 if Profe.prof_list[prof]["rect"].collidepoint(key):
-                    TextDraw(f"あなたの職業を選択してください\n【{prof}】")
+                    TextDraw(screen,f"あなたの職業を選択してください\n【{prof}】")
             if enter_rect.collidepoint(key):
-                TextDraw("キャラクター作成を終了します")
+                TextDraw(screen,"キャラクター作成を終了します")
         if Hoby.pull.box_rect.collidepoint(key):
-            TextDraw("あなたの趣味を選択してください")
+            TextDraw(screen,"あなたの趣味を選択してください")
 
-    
     for event in pygame.event.get():
         # マウスクリック時
         if event.type == MOUSEBUTTONDOWN:
@@ -483,19 +487,19 @@ def CharacterSheet():
                             if rect.collidepoint(event.pos):
                                 CharaStatus["Profession"] = prof
                                 ProfDataIn()
-            
         
-
         # 閉じるボタンで終了
         if event.type == QUIT:
             Close()
         elif event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 Close()
+"""
 
 # 部屋を作るよ
 class Room:
-    def __init__(self):
+    def __init__(self, screen):
+        self.screen = screen
         # 現在地のファイル名一覧
         self.img_paths = self.file_path()
         # 部屋画像を表示するエリア
@@ -588,18 +592,18 @@ class Room:
         # 画像の位置を変更する
         if center_flag:
             # 画面中央に置きたい場合
-            rect.centerx = screen.get_width() / 2
+            rect.centerx = self.screen.get_width() / 2
         else:
             rect.centerx += x
         rect.centery += y
 
         # 部屋のimgの場合はメインsurfaceに、部屋のアイテムは部屋のsurfaceに
         if room_flag:
-            screen.blit(img, rect, area=area)
+            self.screen.blit(img, rect, area=area)
             # 枠を描写する場合
             if line_flag:
                 if line_flag == True:
-                    pygame.draw.rect(screen, BLACK, rect, 2)
+                    pygame.draw.rect(self.screen, BLACK, rect, 2)
             return img, rect
         else:
             self.room_img.blit(img, rect, area=area)
@@ -659,9 +663,8 @@ class Room:
             y = self.area_rect.y + (self.area_rect / 2)
             img, img_rect = self.image(img_path, y, size=0.5, center_flag=True, line_flag=True)
             
-
 # フェードイン試し用
-def FadeIn(screen, background, speed=1):
+def FadeIn(screen, clock, background, speed=1):
     alpha = 255
     while alpha >= 0:
         background.set_alpha(alpha)
@@ -672,8 +675,9 @@ def FadeIn(screen, background, speed=1):
         clock.tick(60)
 
 # シナリオ表示用
-def Scenario():
+def Scenario(screen):
     text = ""
+    room_name = ""
     room_number = str(RoomFlag)
     item_name = ""
     flag_name = ""
@@ -688,10 +692,10 @@ def Scenario():
     if os.path.isfile(file_name):
         with open(file_name,"r",encoding="utf-8_sig") as f:
             text = f.read()
-    TextDraw(text)
+    TextDraw(screen, text)
 
 # プレイ画面
-def MainPlay():
+def MainPlay(screen):
     global RoomFlag
     global CenterRoomFlag
     global EastRoomFlag
@@ -710,10 +714,10 @@ def MainPlay():
 
     # ナビゲーションバーの表示
     if RoomFlag == CENTER:
-        right_navi = PageNavigation(RIGHT)
-        left_navi = PageNavigation(LEFT)
+        right_navi = PageNavigation(screen, RIGHT)
+        left_navi = PageNavigation(screen,LEFT)
     else:
-        under_nave = PageNavigation(UNDER)
+        under_nave = PageNavigation(screen,UNDER)
 
     """
     if CenterRoomFlag == 0:
@@ -796,24 +800,41 @@ def MainPlay():
             if event.key == K_ESCAPE:
                 Close()
 
-def frame():
-    pygame.draw.rect(screen, WHITE, FRAME_RECT,3)
-
-# ダイスを表示する為のフレーム
-def DiceFrame():
-    pygame.draw.rect(screen, WHITE, DICE_FRAME_RECT,3)
 
 def main():
-    global AlphaFlag
-    global minAlpha
-    global maxAlpha
+    # pygame初期化    
+    pygame.init()
+    # 画面サイズ
+    screen = pygame.display.set_mode(DISPLAY_SIZE)
+    # キーリピート設定
+    pygame.key.set_repeat(100, 100)
+    # タイトルバーキャプション
+    pygame.display.set_caption(TITLE_TEXT)
+
+    clock = pygame.time.Clock()
+
+    event_name = "title"
+    event_flag = ""
 
     # 画面の描写
     while True:
         # 画面を黒で塗りつぶす
         screen.fill(BLACK)
+
+        if event_name == "title":
+            event_name, event_flag = Title(screen)
+        elif event_name == "load":
+            event_name = Load(screen, event_flag, SelectSaveData)
+        elif event_name == "save":
+            event_name = Save(screen, event_flag, SelectSaveData)
+        elif event_name == "opening":
+            event_name = Opening(screen)
+        elif event_name == "charasheet":
+            event_name, event_flag = CharacterSheet(screen)
+
+        """
         if SCENE_FLAG == TITLE:
-            Title()
+            Title(screen)
         elif SCENE_FLAG == LOAD:
             Load()
         elif SCENE_FLAG == SETTING:
@@ -831,19 +852,14 @@ def main():
             if SCENE_FLAG == OPENING:
                 Opening()
             clock.tick(60)
-        
+
+        """
+        clock.tick(60)
+
         # 画面を更新
         pygame.display.update() 
 
-        # イベント取得
-        for event in pygame.event.get():
-            # 閉じるボタンで終了
-            if event.type == QUIT:
-                Close()
-            elif event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    Close()
-                    
+
             
 if __name__ == "__main__":
     main()
