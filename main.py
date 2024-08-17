@@ -14,6 +14,7 @@ from load import Load
 from save import Save
 from opening import Opening
 from character_sheet import CharacterSheet
+from playing import MainPlay
 
 SCENE_FLAG = TITLE
 #SCENE_FLAG = PLAY
@@ -494,7 +495,7 @@ def CharacterSheet(screen):
         elif event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 Close()
-"""
+
 
 # 部屋を作るよ
 class Room:
@@ -719,15 +720,6 @@ def MainPlay(screen):
     else:
         under_nave = PageNavigation(screen,UNDER)
 
-    """
-    if CenterRoomFlag == 0:
-        # フェードイン試し用
-        back_img = PATH + PICTURE + "black.png"
-        background = pygame.image.load(back_img).convert_alpha()
-        FadeIn(screen, background,2)
-        CenterRoomFlag += 1
-    """
-
     for event in pygame.event.get():
         # マウスクリック時
         if event.type == MOUSEBUTTONDOWN:
@@ -799,7 +791,7 @@ def MainPlay(screen):
         elif event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 Close()
-
+"""
 
 def main():
     # pygame初期化    
@@ -831,6 +823,8 @@ def main():
             event_name = Opening(screen)
         elif event_name == "charasheet":
             event_name, event_flag = CharacterSheet(screen)
+        elif event_name == "play":
+            event_name, event_flag = MainPlay(screen)
 
         """
         if SCENE_FLAG == TITLE:
