@@ -1,8 +1,8 @@
 {
     "center":{
-        "all":[     "Light",
-                    "LightOff",
-                    "Soup"],
+        "all":[ "Light",
+                "LightOff",
+                "Soup"],
         "north":[   "WestDoor",
                     "NorthDoor",
                     "EastDoor",

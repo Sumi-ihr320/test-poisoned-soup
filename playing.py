@@ -1,4 +1,4 @@
-import random, os, json
+import random, os, json, glob
 import pygame
 import pygame.draw
 from pygame.locals import *
@@ -9,35 +9,35 @@ from data import *
 from fanction_summary import *
 from class_summary import *
 
-from title import Title
-from load import Load
-from save import Save
-from opening import Opening
-from character_sheet import CharacterSheet
-
 # プレイヤーの場所と向きの情報
 player = {}
 player["room"] = "center"
 player["direction"] = "north"
+
+# 部屋画像の縮小パーセンテージ
+SIZE = 0.19
 
 # プレイ画面
 def MainPlay(screen):
     global CenterRoomFlag
     global EastRoomFlag
     global DiscoveryFlag
-    global AlphaFlag
+    global player
 
-    #if PlaySceneFlag == 0:
-    #    pygame.time.wait(500)
+    room_flag = player["room"]
+    direction_flag = player["direction"]
 
     # 部屋の表示
     room = create_room(screen, player)
 
+    # テキストフレームの表示
+    Frame(screen)
+
     # 文章の表示
-    Scenario()
+    Scenario(screen)
 
     # ナビゲーションバーの表示
-    if RoomFlag == CENTER:
+    if room_flag == "center":
         right_navi = PageNavigation(screen, RIGHT)
         left_navi = PageNavigation(screen,LEFT)
     else:
@@ -48,29 +48,30 @@ def MainPlay(screen):
         if event.type == MOUSEBUTTONDOWN:
             # 左ボタン
             if event.button == 1:
-                if RoomFlag == CENTER:
+                if room_flag == "center":
                     if CenterRoomFlag < 5:
                         CenterRoomFlag += 1
                     else:
                         # 部屋の向き移動
                         if right_navi.navi_rect.collidepoint(event.pos):
-                            if DirectionFlag == NORTH:
-                                DirectionFlag = EAST
-                            elif DirectionFlag == EAST:
-                                DirectionFlag = SOUTH
-                            elif DirectionFlag == SOUTH:
-                                DirectionFlag = WEST
+                            if direction_flag == "north":
+                                player["direction"] = "east"
+                            elif direction_flag == "east":
+                                player["direction"] = "south"
+                            elif direction_flag == "south":
+                                player["direction"] = "west"
                             else:
-                                DirectionFlag = NORTH
+                                player["direction"] = "north"
                         elif left_navi.navi_rect.collidepoint(event.pos):
-                            if DirectionFlag == NORTH:
-                                DirectionFlag = WEST
-                            elif DirectionFlag == EAST:
-                                DirectionFlag = NORTH
-                            elif DirectionFlag == SOUTH:
-                                DirectionFlag = EAST
+                            if direction_flag == "north":
+                                player["direction"] = "west"
+                            elif direction_flag == "east":
+                                player["direction"] = "north"
+                            elif direction_flag == "south":
+                                player["direction"] = "east"
                             else:
-                                DirectionFlag = SOUTH
+                                player["direction"] = "south"
+                        """
                         # 真ん中のドア
                         elif room.center_door_rect.collidepoint(event.pos):
                             if DirectionFlag == NORTH:
@@ -101,10 +102,11 @@ def MainPlay(screen):
                                 RoomFlag = SOUTH
                             else:
                                 RoomFlag = WEST
+                        """
                 else:
                     if under_nave.navi_rect.collidepoint(event.pos):
                         # 真ん中の部屋に戻る
-                        RoomFlag = CENTER
+                        player["room"] = "center"
 
         # 閉じるボタンで終了
         if event.type == QUIT:
@@ -113,6 +115,21 @@ def MainPlay(screen):
             if event.key == K_ESCAPE:
                 Close()
 
+    return "play", "" 
+
+# 部屋を作るよ
+class create_room:
+    def __init__(self, screen, player):
+        # 部屋に置いてあるアイテムリスト
+        file_path = PATH + "/room_item.json"
+        with open(file_path, "r", encoding="utf-8_sig") as f:
+            self.data = json.load(f)
+        self.player_data = player
+        self.room_flag = self.player_data["room"]
+        self.direction_flag = self.player_data["direction"]
+
+        # 各部屋を作ります
+        self.now_room = Room(screen,self.room_flag, self.data[self.room_flag], self.direction_flag)
 
 # 部屋の型を作るよ
 class Room:
@@ -129,111 +146,144 @@ class Room:
         self.img_paths = create_file_path(self.room_flag, self.data, direction_flag)
 
         # 部屋画像の表示
-        self.room_view(self.img_paths["room"])
+        self.room_view(self.img_paths["room"], area=self.area_rect)
+
+        # 部屋にあるアイテムの作成
+        self.create_item(self.room_flag, self.data)
         
         # 部屋の説明
 
     # 画像表示するよ
-    def room_view(self, path, x=0, y=0, size=0.19, area=None):
- 
-        # 画像の読み込み＆アルファ化(透明化)
-        self.img = pygame.image.load(path).convert_alpha()
-        # 画像の縮小
-        self.img = pygame.transform.rotozoom(self.img, 0, size)
-
-        # 画像の位置取得
-        self.rect = self.img.get_rect()
+    def room_view(self, path, size=SIZE, area=None):
+        # 画像の読み込みと位置取得
+        self.img, rect = CreateImage(path, size)
 
         # 画像の位置を変更する
-        self.rect.centerx = self.screen.get_width() / 2  # 画面中央に置く
-        self.rect.centery += y
+        self.rect = SetRect(self.screen, rect, y=30, x_center=True)
 
         # 表示
         self.screen.blit(self.img, self.rect, area=self.area_rect)
 
-    def create_item(self):
-        if type(self.data) is "directry":
-            for item in self.data["all"]:
-                self.img_paths[item]
-            for item in self.data[self.direction_flag]:
-                self.img_paths[item]
+    def create_item(self, room, data):
+        self.items = {}
+        if type(data) is "directry":
+            self.items = data["all"] + data[self.direction_flag]
         else:
-            # アイテムの表示
-            for item in self.data:
-                self.img_paths[item]
+            self.items = data
 
-        if self.room_flag == "center":              
-            self.soup = Item(self.screen,"soup", "center", 254, self.img_paths["soup"])
+        for item in data:
+            self.items[item] = Item(self.screen, item, path=self.img_paths[item])
 
+        if self.room_flag == "center":
+            pass
 
+# 実際にアイテムを作っていくよ
+class CreateItem:
+    def __init__(self):
+        pass
+    
+    def create_item(self):
+        self.light = Item("light", "center", "", "center", 54)
+        self.soup = Item("soup", "center", "", "center", 254)
+        directions = ["north","east","south","west"]
+        self.center_door = []
+        self.left_door = []
+        self.right_door = []
+        i = 0
+        for direction in directions:
+            door_name = direction + "Door"
+            self.center_door.append(Item(door_name, "center", direction, "center", 112))
+            left_num = i + 1
+            if left_num > len(directions):
+                left_num = 0
+            self.left_door.append(Item(door_name, "center", directions[left_num], 121, 93))
+            right_num = i - 1
+            self.north_door_right = Item("NorthDoor", "center", directions[right_num], 603, 94)
+            i += 1
+        self.north_door_center = Item("NorthDoor", "center", "north", "center", 112)
+        self.north_door_left = Item("NorthDoor", "center", "east", 121, 93)
+        self.north_door_right = Item("NorthDoor", "center", "north", 603, 94)
+        self.east_door_center = item("EastDoor", "center", "east", "center", 112)
+        
+
+            self.left_door_rect = self.image(paths["Door1"],93,121)
+            self.center_door_rect = self.image(paths["Door2"],112,center_flag=True)
+            self.right_door_rect = self.image(paths["Door3"],94,603)
+            tablex,memox = 0,0
+            table_flag,memo_flag = False,False
+            if DirectionFlag == NORTH:
+                tabley, table_flag = 219, True
+                memoy, memox = 267, 341
+            elif DirectionFlag == EAST:
+                tabley, tablex = 242, 264
+                memoy, memo_flag = 283, True
+            elif DirectionFlag == SOUTH:
+                tabley, table_flag = 253, True
+                memoy, memox = 267, 427
+            elif DirectionFlag == WEST:
+                tabley, tablex = 243, 295
+                memoy, memo_flag = 253, True
+            self.table_rect = self.image(paths["Table"],tabley,tablex,center_flag=table_flag)
+            self.memo_rect = self.image(paths["Memo"],memoy,memox,center_flag=memo_flag)
 
 # アイテムの型を作るよ
 class Item:
-    def __init__(self, screen, name, x, y, path):
-        self.screen = screen
+    def __init__(self, name, room, direction, x, y):
         # 名前
         self.name = name
+        # ファイルパス
+        self.path = create_file_path(name, room, direction)
         # 座標
-        self.x = x
-        self.y = y
-        # 画像ファイルパス
-        self.path = path
-        # 画像
+        self.x, self.y = x, y
+        # シナリオファイルパス
+        self.scenario_path_list = create_scenario_path(name, room)
+        # クリック時画像パス
+        self.big_img_path_list = create_item_path(name)
+
+    """
+    def item_view(self, path, x, y, x_flag, y_flag):
+        # 座標
+        self.rect = Image(self.screen, path, SIZE, x, y, x_center=x_flag, y_center=y_flag)
 
         # 表示するテキスト
+    
         # 起こるイベント
+    """
 
-class create_room:
-    def __init__(self, screen, player):
-        # 部屋に置いてあるアイテムリスト
-        file_path = PATH + "room_item.json"
-        with open(file_path, "r", encoding="utf-8_sig") as f:
-            self.data = json.load(f)
-        self.player_data = player
-        self.room_flag = self.player_data["room"]
-        self.direction_flag = self.player_data["direction"]
+# シナリオのパスを作って返す
+def create_scenario_path(item, room):
+    path = "." + SCENARIO
+    room_path = path + room + "-room"
+    item_path = room_path + "_" + item
+    search_text = item_path + "*.txt"
+    return glob.glob(search_text)
 
-        # 各部屋を作ります
-        self.center_room_north = Room(screen,"center", self.data["center"],"north")
-        self.center_room_south = Room(screen,"center", self.data["center"],"south")
-        self.center_room_east = Room(screen, "center", self.data["center"], "east")
-        self.center_room_west = Room(screen, "center", self.data["center"], "west")
-        self.north_room = Room(screen, "north", self.data["north"])
-        self.east_room = Room(screen, "east", self.data["east"])
-        self.south_room = Room(screen, "south", self.data["south"])
-        self.west_room = Room(screen, "west", self.data["west"])
-        
+# アイテムファイルのパス名を作って返す
+def create_item_path(item):
+    path = "." + PICTURE
+    search_text = path + item + "*.png"
+    return glob.glob(search_text)
 
-# 画像のファイル名を作成する
-def create_file_path(room, item_list, direction_flag):
-    paths = {}
+# 画像のファイル名を作って返す
+def create_file_path(item, room, direction):
     path = PATH + PICTURE
     room_path = path + room + "-room"
     if room == "center":
-        room_path += "_" + direction_flag
-    room_img_path = room_path + ".jpg"
-    paths["room"] = room_img_path
+        room_path += "_" + direction
 
-    if room == "east":
-        black_room_img_path = "black_room.jpg"
-        paths["room2"] = black_room_img_path
-    if room == "west":
-        pickupbook_room_img_path = "west-room_PicupBook.jpg"
-        paths["room2"] = pickupbook_room_img_path
-    else:
-        paths["room2"] = ""
+    if item == "room":
+        return room_path + ".jpg"
 
-    if room == "center":
-        item_l = item_list["all"] + item_list[direction_flag]
-    else:
-        item_l = item_list
+    if item == "room2":
+        if room == "east":
+            return "black_room.jpg"
+        elif room == "west":
+            return "west-room_PicupBook.jpg"
 
-    # アイテムリストのパスを作っていく
-    for item in item_l:
-        img_path = room_path + "_" + item + ".png"
-        paths[item] = img_path
+    # アイテムのパスを作っていく
+    img_path = room_path + "_" + item + ".png"
 
-    return paths
+    return img_path
 
 """
 class Room:
@@ -251,72 +301,6 @@ class Room:
         # 部屋にあるアイテムの配置
         self.item(self.img_paths)
     
-    # ファイル名取得するよ
-    def file_path(self):
-        paths = {}
-        path = PATH + PICTURE
-        if RoomFlag == CENTER:
-            room_path = path + "central-room_"
-            paths["LightOff"] = room_path + "LightOff.png"
-            paths["Light"] = room_path + "Light.png"
-            paths["Soup"] = room_path + "Soup.png"
-            if DirectionFlag == NORTH:
-                room_direct_path = room_path + "north"
-                paths["Door1"] = room_direct_path + "_WestDoor.png"
-                paths["Door2"] = room_direct_path + "_NorthDoor.png"
-                paths["Door3"] = room_direct_path + "_EastDoor.png"
-            elif DirectionFlag == EAST:
-                room_direct_path = room_path + "east"
-                paths["Door1"] = room_direct_path + "_NorthDoor.png"
-                paths["Door2"] = room_direct_path + "_EastDoor.png"
-                paths["Door3"] = room_direct_path + "_SouthDoor.png"
-            elif DirectionFlag == WEST:
-                room_direct_path = room_path + "west"
-                paths["Door1"] = room_direct_path + "_SouthDoor.png"
-                paths["Door2"] = room_direct_path + "_WestDoor.png"
-                paths["Door3"] = room_direct_path + "_NorthDoor.png"
-            elif DirectionFlag == SOUTH:
-                room_direct_path = room_path + "south"
-                paths["Door1"] = room_direct_path + "_EastDoor.png"
-                paths["Door2"] = room_direct_path + "_SouthDoor.png"
-                paths["Door3"] = room_direct_path + "_WestDoor.png"
-            paths["Room"] = room_direct_path + ".jpg"
-            paths["Memo"] = room_direct_path + "_Memo.png"
-            paths["Table"] = room_direct_path + "_Table.png"
-        else:
-            if RoomFlag == NORTH:
-                room_path = path + "north-room"
-                paths["Cooktop"] = room_path + "_Cooktop.png"
-                paths["Pot"] = room_path + "_Pot.png"
-                paths["CupBoard"] = room_path + "_CupBoard.png"
-                paths["Fridge"] = room_path + "_Fridge.png"
-                paths["Sink"] = room_path + "_Sink.png"
-                paths["Storage"] = room_path + "_Storage.png"
-                paths["TopSinkStorage"] = room_path + "_TopSinkStorage.png"
-                paths["UnderSinkStorage"] = room_path + "_UnderSinkStorage.png"
-                
-            elif RoomFlag == EAST:
-                if DiscoveryFlag:
-                    room_path = path + "east-room"
-                    paths["Corpse"] = room_path + "_Corpse.png"
-                    paths["Memo"] = room_path + "_Memo.png"
-                else:
-                    room_path = path + "black-room"
-            elif RoomFlag == SOUTH:
-                room_path = path + "south-room"
-                paths["StoneStatue"] = room_path + "_StoneStatue.png"
-                paths["Slate1"] = room_path + "_Slate_01.png"
-                paths["Slate2"] = room_path + "_Slate_02.png"
-            elif RoomFlag == WEST:
-                room_path = path + "west-room"
-                paths["BookShelf"] = room_path + "_BookShelf.png"
-                paths["Candle"] = room_path + "_Candle.png"
-                if BookFlag:
-                    paths["Book"] = room_path + "_Book.png"
-                    room_path += "_PicupBook"
-            paths["Room"] = room_path + ".jpg"
-
-
         return paths
 
     # 画像表示するよ

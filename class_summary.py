@@ -338,7 +338,7 @@ class SexChange:
         else:
             img = "silhouette_woman.png"
         img_path = PATH + PICTURE + img
-        self.image_rect = Image(self.screen,img_path,0.5,40,40,True,2)
+        self.image_rect = Image(self.screen, img_path, 0.5, 40, 40, line=True, line_width=2)
 
 # 職業選択画面作るよ
 class Profession:
@@ -357,7 +357,7 @@ class Profession:
         for prof in list(self.prof_list):
             name = self.prof_list[prof]["name"]
             img_path = PATH + PICTURE + "prof_" + name + ".png"
-            rect = Image(img_path, 0.1, x, y, line=True, background=True)
+            rect = Image(img_path, 0.1, x, y, line=True, bg=True)
             self.prof_list[prof]["rect"] = rect
             x += 55
             if x >= 590:
@@ -370,7 +370,7 @@ class Profession:
         skill_list = data["skill"]
         img_path = PATH + PICTURE + "prof_" + name + ".png"
         x,y = 100,40
-        rect = Image(self.screen, img_path, 0.35 , x, y, line=True, background=True)
+        rect = Image(self.screen, img_path, 0.35 , x, y, line=True, bg=True)
         lrx = rect.x + rect.w + 5
         name_rect = Label(self.screen, self.font, f"【{prof}】", lrx, y)
         skill_x, skill_y = lrx + 10, y + 30

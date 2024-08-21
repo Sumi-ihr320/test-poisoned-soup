@@ -81,29 +81,50 @@ def InputBox(screen, rect, flag=True, line_bold=2):
     return Rect(x,y,w,h)
 
 # 画像表示を分離するよ
-def Image(screen, path, size, x, y, line_flag=False, line_width=1, background=False, center_flag=False):
+def Image(screen, path, size, x, y, line=False, line_width=1, bg=False, x_center=False, y_center=False):
+    img, rect = CreateImage(path, size)
+    rect = SetRect(screen, rect, x, y, x_center,y_center)
+    ImageView(screen, img, rect, bg, line, line_width)
+    return rect
+
+# 画像を表示するよ
+def ImageView(screen, img, rect, bg=False, line=False, line_width=1):
+    # 背景を白にする場合
+    if bg:
+        pygame.draw.rect(screen, WHITE, rect)
+
+    # 画像の描写
+    screen.blit(img, rect)
+
+    # 画像の枠を描画する場合
+    if line:
+        pygame.draw.rect(screen, BLACK, rect, line_width)
+
+# 位置を真ん中にしたい場合等
+def SetRect(screen, rect, x=0, y=0, x_center=False, y_center=False):
+    # 位置を変更する
+    if x_center:
+        rect.centerx = screen.get_width() / 2
+    else:
+        rect.centerx += x
+    if y_center:
+        rect.centery = screen.get_height() / 2
+    else:
+        rect.centery += y
+    return rect
+
+# 画像表示のsurface作成とrect.getまでをまとめる ※描画前に配置等変更したいパターンが多いため
+def CreateImage(path, size):
+
     # 画像の読み込み＆アルファ化(透明化)
     img = pygame.image.load(path).convert_alpha()
     # 画像の縮小
     img = pygame.transform.rotozoom(img, 0, size)
     # 画像の位置取得
     rect = img.get_rect()
-    # 画像の位置を変更する
-    if center_flag:
-        rect.centerx = screen.get_width() / 2
-    else:
-        rect.centerx += x
-    rect.centery += y
-    # 背景を白にする場合
-    if background == True:
-        pygame.draw.rect(screen, WHITE,rect)
-    # 画像の描写
-    screen.blit(img, rect)
-    # 画像の枠を描画する場合
-    if line_flag == True:
-        pygame.draw.rect(screen, BLACK,rect,line_width)
 
-    return rect
+    return img, rect
+
 
 # プルダウンボックス作るの分離するよ
 def PullDownBox(screen, rect, font):
