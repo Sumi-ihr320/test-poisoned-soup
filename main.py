@@ -65,28 +65,6 @@ def main():
         elif event_name == "play":
             event_name, event_flag = MainPlay(screen)
 
-        """
-        if SCENE_FLAG == TITLE:
-            Title(screen)
-        elif SCENE_FLAG == LOAD:
-            Load()
-        elif SCENE_FLAG == SETTING:
-            pass
-        elif SCENE_FLAG == ENDCREDITS:
-            pass
-        else:
-            clock = pygame.time.Clock()
-            frame()
-            DiceFrame()
-            if SCENE_FLAG == PLAY:
-                MainPlay()
-            if SCENE_FLAG == CHARASE:
-                CharacterSheet()
-            if SCENE_FLAG == OPENING:
-                Opening()
-            clock.tick(60)
-
-        """
         clock.tick(60)
 
         # 画面を更新

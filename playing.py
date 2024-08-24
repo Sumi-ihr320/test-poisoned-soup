@@ -13,6 +13,8 @@ from class_summary import *
 player = {}
 player["room"] = "center"
 player["direction"] = "north"
+player["flag"] = True
+player["center_room_flag"] = 0
 
 # 部屋画像の縮小パーセンテージ
 SIZE = 0.19
@@ -34,7 +36,7 @@ def MainPlay(screen):
     Frame(screen)
 
     # 文章の表示
-    Scenario(screen)
+    #Scenario(screen)
 
     # ナビゲーションバーの表示
     if room_flag == "center":
@@ -71,42 +73,53 @@ def MainPlay(screen):
                                 player["direction"] = "east"
                             else:
                                 player["direction"] = "south"
-                        """
+                        
                         # 真ん中のドア
-                        elif room.center_door_rect.collidepoint(event.pos):
-                            if DirectionFlag == NORTH:
-                                RoomFlag = NORTH
-                            elif DirectionFlag == WEST:
-                                RoomFlag = WEST
-                            elif DirectionFlag == EAST:
-                                RoomFlag = EAST
+                        elif room.now_room.room_item.center_door.rect.collidepoint(event.pos):
+                            player["direction"] = ""
+                            if direction_flag == "north":
+                                player["room"] = "north"
+                            elif direction_flag == "east":
+                                player["room"] = "east"
+                            elif direction_flag == "south":
+                                player["room"] = "south"
                             else:
-                                RoomFlag = SOUTH
+                                player["room"] = "west"
                         # 左のドア
-                        elif room.left_door_rect.collidepoint(event.pos):
-                            if DirectionFlag == NORTH:
-                                RoomFlag = WEST
-                            elif DirectionFlag == WEST:
-                                RoomFlag = SOUTH
-                            elif DirectionFlag == EAST:
-                                RoomFlag = NORTH
+                        elif room.now_room.room_item.left_door.rect.collidepoint(event.pos):
+                            player["direction"] = ""
+                            if direction_flag == "north":
+                                player["room"] = "west"
+                            elif direction_flag == "east":
+                                player["room"] = "north"
+                            elif direction_flag == "south":
+                                player["room"] = "east"
                             else:
-                                RoomFlag = EAST
+                                player["room"] = "south"
                         # 右のドア
-                        elif room.right_door_rect.collidepoint(event.pos):
-                            if DirectionFlag == NORTH:
-                                RoomFlag = EAST
-                            elif DirectionFlag == WEST:
-                                RoomFlag = NORTH
-                            elif DirectionFlag == EAST:
-                                RoomFlag = SOUTH
+                        elif room.now_room.room_item.right_door.rect.collidepoint(event.pos):
+                            player["direction"] = ""
+                            if direction_flag == "north":
+                                player["room"] = "east"
+                            elif direction_flag == "east":
+                                player["room"] = "south"
+                            elif direction_flag == "south":
+                                player["room"] = "west"
                             else:
-                                RoomFlag = WEST
-                        """
+                                player["room"] = "north"
+                        
                 else:
                     if under_nave.navi_rect.collidepoint(event.pos):
                         # 真ん中の部屋に戻る
                         player["room"] = "center"
+                        if room_flag == "north":
+                            player["direction"] = "south"
+                        elif room_flag == "east":
+                            player["direction"] = "west"
+                        elif room_flag == "south":
+                            player["direction"] = "north"
+                        else:
+                            player["direction"] = "east"
 
         # 閉じるボタンで終了
         if event.type == QUIT:
@@ -120,36 +133,40 @@ def MainPlay(screen):
 # 部屋を作るよ
 class create_room:
     def __init__(self, screen, player):
-        # 部屋に置いてあるアイテムリスト
-        file_path = PATH + "/room_item.json"
-        with open(file_path, "r", encoding="utf-8_sig") as f:
-            self.data = json.load(f)
         self.player_data = player
         self.room_flag = self.player_data["room"]
         self.direction_flag = self.player_data["direction"]
+        self.flag = self.player_data["flag"]
 
         # 各部屋を作ります
-        self.now_room = Room(screen,self.room_flag, self.data[self.room_flag], self.direction_flag)
+        self.now_room = Room(screen, self.room_flag, direction=self.direction_flag, flag=self.flag)
 
 # 部屋の型を作るよ
 class Room:
-    def __init__(self, screen, room_flag, data, direction_flag=""):
+    def __init__(self, screen, room, direction="", flag=False):
         self.screen = screen
+
         # 部屋画像を表示するエリア
         self.area_rect = Rect(0,0,820,375)
-        # 部屋にあるアイテム一覧
-        self.data = data
         
-        self.room_flag = room_flag
-        self.direction_flag = direction_flag
         # ファイル名一覧
-        self.img_paths = create_file_path(self.room_flag, self.data, direction_flag)
+        self.room_path = create_file_path("room", room, direction)
+        self.room2_path = create_file_path("room2", room, direction)
+        self.scenario_list = create_scenario_path("", room)
 
         # 部屋画像の表示
-        self.room_view(self.img_paths["room"], area=self.area_rect)
+        path = self.room_path
+        if self.room2_path != "":
+            if flag:
+                path = self.room2_path
+        self.room_view(path, area=self.area_rect)
 
         # 部屋にあるアイテムの作成
-        self.create_item(self.room_flag, self.data)
+        self.create_item(self.img, room, direction)
+
+        # 部屋のシナリオが存在する場合
+        if self.scenario_list != []:
+            Scenario(self.screen, self.scenario_list)
         
         # 部屋の説明
 
@@ -161,74 +178,73 @@ class Room:
         # 画像の位置を変更する
         self.rect = SetRect(self.screen, rect, y=30, x_center=True)
 
-        # 表示
+        # area内に表示
         self.screen.blit(self.img, self.rect, area=self.area_rect)
 
-    def create_item(self, room, data):
-        self.items = {}
-        if type(data) is "directry":
-            self.items = data["all"] + data[self.direction_flag]
-        else:
-            self.items = data
-
-        for item in data:
-            self.items[item] = Item(self.screen, item, path=self.img_paths[item])
-
-        if self.room_flag == "center":
-            pass
+    def create_item(self, screen, room, direction):
+        self.room_item = CreateItem(screen, room, direction)
 
 # 実際にアイテムを作っていくよ
 class CreateItem:
-    def __init__(self):
-        pass
-    
-    def create_item(self):
-        self.light = Item("light", "center", "", "center", 54)
-        self.soup = Item("soup", "center", "", "center", 254)
-        directions = ["north","east","south","west"]
-        self.center_door = []
-        self.left_door = []
-        self.right_door = []
-        i = 0
-        for direction in directions:
-            door_name = direction + "Door"
-            self.center_door.append(Item(door_name, "center", direction, "center", 112))
-            left_num = i + 1
-            if left_num > len(directions):
-                left_num = 0
-            self.left_door.append(Item(door_name, "center", directions[left_num], 121, 93))
-            right_num = i - 1
-            self.north_door_right = Item("NorthDoor", "center", directions[right_num], 603, 94)
-            i += 1
-        self.north_door_center = Item("NorthDoor", "center", "north", "center", 112)
-        self.north_door_left = Item("NorthDoor", "center", "east", 121, 93)
-        self.north_door_right = Item("NorthDoor", "center", "north", 603, 94)
-        self.east_door_center = item("EastDoor", "center", "east", "center", 112)
-        
+    def __init__(self, screen, room, direction):
 
-            self.left_door_rect = self.image(paths["Door1"],93,121)
-            self.center_door_rect = self.image(paths["Door2"],112,center_flag=True)
-            self.right_door_rect = self.image(paths["Door3"],94,603)
-            tablex,memox = 0,0
-            table_flag,memo_flag = False,False
-            if DirectionFlag == NORTH:
-                tabley, table_flag = 219, True
-                memoy, memox = 267, 341
-            elif DirectionFlag == EAST:
-                tabley, tablex = 242, 264
-                memoy, memo_flag = 283, True
-            elif DirectionFlag == SOUTH:
-                tabley, table_flag = 253, True
-                memoy, memox = 267, 427
-            elif DirectionFlag == WEST:
-                tabley, tablex = 243, 295
-                memoy, memo_flag = 253, True
-            self.table_rect = self.image(paths["Table"],tabley,tablex,center_flag=table_flag)
-            self.memo_rect = self.image(paths["Memo"],memoy,memox,center_flag=memo_flag)
+        self.create_item(screen, room, direction)
+    
+    def create_item(self, screen, room, direction):
+        if room == "center":
+            self.light = Item(screen, "Light", room, "", "center", 54)
+            self.soup = Item(screen, "Soup", room, "", "center", 254)
+            directions = ["north","east","south","west"]
+            position = {"north":{"tablex":"center","tabley":219,
+                                 "memox":341,"memoy":267},
+                        "east":{"tablex":264,"tabley":242,
+                                "memox":"center","memoy":283},
+                        "south":{"tablex":"center","tabley":253,
+                                 "memox":427,"memoy":267},
+                        "west":{"tablex":295,"tabley":243,
+                                "memox":"center","memoy":253}
+            }
+            center_door_name = direction + "Door"
+            index = directions.index(direction)
+            left_index = index - 1
+            left_direct = directions[left_index]
+            left_door_name = left_direct + "Door"
+            right_index = index + 1
+            if right_index > len(directions) - 1:
+                right_index = 0
+            right_direct = directions[right_index]
+            rigth_door_name = right_direct + "Door"
+            
+            self.center_door = Item(screen, center_door_name, room, direction, "center", 112)
+            self.left_door = Item(screen, left_door_name, room, direction, 121, 93)
+            self.right_door = Item(screen, rigth_door_name, room, direction, 603, 94)
+            self.table = Item(screen, "Table", "center", direction, position[direction]["tablex"], position[direction]["tabley"])
+            self.center_memo = Item(screen, "Memo", "center", direction, position[direction]["memox"], position[direction]["memoy"])
+        elif room == "north":
+            self.under_storage = Item(screen, "UnderSinkStorage", "north", "", 325, 250)
+            self.cooktop = Item(screen, "Cooktop", "north", "", 225, 226)
+            self.sink = Item(screen, "Sink", "north", "", 468, 216)
+            self.top_storage = Item(screen, "TopSinkStorage", "north", "", 325, 100)
+            self.pot = Item(screen, "Pot", "north", "", 290, 203)
+            self.storage = Item(screen, "Storage", "north", "", 560, 225)
+            self.cupboard = Item(screen, "CupBoard", "north", "", 36, 30)
+            self.fridge = Item(screen, "Fridge", "north", "", 628, 39)
+        elif room == "east":
+            self.corpse = Item(screen, "Corpse", "east", "", 437, 218)
+            self.east_memo = Item(screen, "Memo", "east", "", 277, 259)
+        elif room == "south":
+            self.statue = Item(screen, "StoneStatue", "south", "",287, 69)
+            self.slate1 = Item(screen, "Slate1", "south", "", 213, 156)
+            self.slate2 = Item(screen, "Slate2", "south", "", 479, 156)
+        else:
+            self.bookshelf = Item(screen, "BookShelf", "west", "", 36, 30)
+            self.chandle = Item(screen, "Candle", "west", "", 350, 223)
+            self.book = Item(screen, "Book", "west", "", 298, 246)
 
 # アイテムの型を作るよ
 class Item:
-    def __init__(self, name, room, direction, x, y):
+    def __init__(self, screen, name, room, direction, x, y):
+        self.screen = screen
         # 名前
         self.name = name
         # ファイルパス
@@ -240,22 +256,33 @@ class Item:
         # クリック時画像パス
         self.big_img_path_list = create_item_path(name)
 
-    """
-    def item_view(self, path, x, y, x_flag, y_flag):
+        self.item_view(self.screen, self.path, self.x, self.y)
+    
+    def item_view(self, screen, path, x, y):
         # 座標
-        self.rect = Image(self.screen, path, SIZE, x, y, x_center=x_flag, y_center=y_flag)
+        x_flag, y_flag = False, False
+        if x == "center":
+            x == 0
+            x_flag = True
+        if y == "center":
+            y = 0
+            y_flag = True
+        self.rect = Image(screen, path, SIZE, x, y, x_center=x_flag, y_center=y_flag)
 
         # 表示するテキスト
     
         # 起こるイベント
-    """
-
+    
 # シナリオのパスを作って返す
 def create_scenario_path(item, room):
     path = "." + SCENARIO
     room_path = path + room + "-room"
-    item_path = room_path + "_" + item
-    search_text = item_path + "*.txt"
+    item_path = room_path
+    if item != "":
+        item_path = room_path + "_" + item
+        search_text = item_path + "*.txt"
+    else:
+        search_text = item_path + "?.txt"
     return glob.glob(search_text)
 
 # アイテムファイルのパス名を作って返す
@@ -269,134 +296,46 @@ def create_file_path(item, room, direction):
     path = PATH + PICTURE
     room_path = path + room + "-room"
     if room == "center":
-        room_path += "_" + direction
+        if direction != "":
+            room_path += "_" + direction
 
     if item == "room":
         return room_path + ".jpg"
 
     if item == "room2":
         if room == "east":
-            return "black_room.jpg"
+            return path + "black-room.jpg"
         elif room == "west":
-            return "west-room_PicupBook.jpg"
+            return room_path + "_PicupBook.jpg"
+        else:
+            return ""
 
     # アイテムのパスを作っていく
     img_path = room_path + "_" + item + ".png"
 
     return img_path
 
+# シナリオの表示システムを作るよ
+class Scenario:
+    def __init__(self, screen, scenario_list):
+
+        self.view(screen, scenario_list)
+
+    def view(self, screen, scenario_list):
+        for path in scenario_list:
+            
+            pass
+#        if os.path.isfile(path):
+#            with open(path,"r",encoding="utf-8_sig") as f:
+#                text = f.read()
+#        TextDraw(screen, text)
+
+
 """
-class Room:
-    def __init__(self, screen):
-        self.screen = screen
-        # 現在地のファイル名一覧
-        self.img_paths = self.file_path()
-        # 部屋画像を表示するエリア
-        self.area_rect = Rect(0,0,820,375)
-        # 部屋画像の表示
-        self.room_img, self.room_rect = self.image(self.img_paths["Room"],SHEET_RECT.y,area=self.area_rect,center_flag=True,room_flag=True)
-        # 電気が消えているときは暗い画像を表示する
-        if LightFlag == False:
-            black_img, black_rect = self.image(self.img_paths["LightOff"],SHEET_RECT.y,area=self.area_rect,center_flag=True,room_flag=True)
-        # 部屋にあるアイテムの配置
-        self.item(self.img_paths)
-    
-        return paths
-
-    # 画像表示するよ
-    def image(self, path, y, x=0, size=0.19, area=None, center_flag=False, room_flag=False, line_flag=False):
-        # 画像の読み込み＆アルファ化(透明化)
-        img = pygame.image.load(path).convert_alpha()
-        # 画像の縮小
-        img = pygame.transform.rotozoom(img, 0, size)
-
-        # 画像の位置取得
-        rect = img.get_rect()
-        # 画像の位置を変更する
-        if center_flag:
-            # 画面中央に置きたい場合
-            rect.centerx = self.screen.get_width() / 2
-        else:
-            rect.centerx += x
-        rect.centery += y
-
-        # 部屋のimgの場合はメインsurfaceに、部屋のアイテムは部屋のsurfaceに
-        if room_flag:
-            self.screen.blit(img, rect, area=area)
-            # 枠を描写する場合
-            if line_flag:
-                if line_flag == True:
-                    pygame.draw.rect(self.screen, BLACK, rect, 2)
-            return img, rect
-        else:
-            self.room_img.blit(img, rect, area=area)
-            return rect
-
-    # アイテム表示するよ
-    def item(self, paths):
-        if RoomFlag == CENTER:
-            self.left_door_rect = self.image(paths["Door1"],93,121)
-            self.center_door_rect = self.image(paths["Door2"],112,center_flag=True)
-            self.right_door_rect = self.image(paths["Door3"],94,603)
-            self.light_rect = self.image(paths["Light"],54,center_flag=True)
-            tablex,memox = 0,0
-            table_flag,memo_flag = False,False
-            if DirectionFlag == NORTH:
-                tabley, table_flag = 219, True
-                memoy, memox = 267, 341
-            elif DirectionFlag == EAST:
-                tabley, tablex = 242, 264
-                memoy, memo_flag = 283, True
-            elif DirectionFlag == SOUTH:
-                tabley, table_flag = 253, True
-                memoy, memox = 267, 427
-            elif DirectionFlag == WEST:
-                tabley, tablex = 243, 295
-                memoy, memo_flag = 253, True
-            self.table_rect = self.image(paths["Table"],tabley,tablex,center_flag=table_flag)
-            self.memo_rect = self.image(paths["Memo"],memoy,memox,center_flag=memo_flag)
-            self.soup_rect = self.image(paths["Soup"],254,center_flag=True)
-        elif RoomFlag == NORTH:
-            self.under_storage_rect = self.image(paths["UnderSinkStorage"],250,325)
-            self.cooktop_rect = self.image(paths["Cooktop"],226,225)
-            self.sink_rect = self.image(paths["Sink"],216,468)
-            self.top_storage_rect = self.image(paths["TopSinkStorage"],100,325)
-            self.pot_rect = self.image(paths["Pot"],203,290)
-            self.storage_rect = self.image(paths["Storage"],225,560)
-            self.cupboard_rect = self.image(paths["CupBoard"],30,36)
-            self.fridge_rect = self.image(paths["Fridge"],39,628)
-        elif RoomFlag == EAST:
-            if DiscoveryFlag:
-                self.corpse_rect = self.image(paths["Corpse"],218,437)
-                self.memo_rect = self.image(paths["Memo"],259,277)
-        elif RoomFlag == WEST:
-            self.bookshelf_rect = self.image(paths["BookShelf"],30,36)
-            self.chandle_rect = self.image(paths["Candle"],223,350)
-            if BookFlag:
-                self.book_rect = self.image(paths["Book"],246,298)
-        else:
-            self.statue_rect = self.image(paths["StoneStatue"],69,287)
-            self.slate1_rect = self.image(paths["Slate1"],156,213)
-            self.slate2_rect = self.image(paths["Slate2"],156,479)
-
-    # アイテムクリックのイベント決めるよ
-    def event(self, rect):
-        if rect == self.soup_rect:
-            img_path = PATH + PICTURE + "soup_" + SoupFlag + ".png"
-            y = self.area_rect.y + (self.area_rect / 2)
-            img, img_rect = self.image(img_path, y, size=0.5, center_flag=True, line_flag=True)
-"""
-
-# シナリオの型を作るよ
-#class Scenario:
-#    def __init__(self) -> None:
-#        pass    
-
 # シナリオ表示用
-def Scenario(screen):
+def Scenario(screen, room):
     text = ""
-    room_name = ""
-    room_number = str(RoomFlag)
+    room_name = room + "_room"
     item_name = ""
     flag_name = ""
     if RoomFlag == CENTER:
@@ -406,12 +345,12 @@ def Scenario(screen):
         else:
             pass
 
-    file_name = ScenarioPath + room_number + room_name + item_name + flag_name + ".txt"
+    file_name = ScenarioPath + room_name + item_name + flag_name + ".txt"
     if os.path.isfile(file_name):
         with open(file_name,"r",encoding="utf-8_sig") as f:
             text = f.read()
     TextDraw(screen, text)
-
+"""
 
 # フェードイン試し用
 def FadeIn(screen, clock, background, speed=1):
