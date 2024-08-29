@@ -7,48 +7,54 @@ from fanction_summary import *
 from class_summary import *
 
 
-# タイトル画面作るよ
-def Title(screen):
-    # フォントの設定
-    title_font = pygame.font.Font(TITLE_FONT_PATH,TITLE_SIZ)    # タイトル用のフォント
-    contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)    # メニュー用フォント
+# タイトル関数をクラス化    (chatGPT指南)
+class Title:
+    def __init__(self, screen):
+        self.screen = screen
+        # フォントの設定
+        self.title_font = pygame.font.Font(TITLE_FONT_PATH,TITLE_SIZ)    # タイトル用のフォント
+        self.contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)    # メニュー用フォント
 
-    # タイトル
-    title_rect = Label(screen, title_font, TITLE_TEXT, y=150, color=RED, center_flag=True, background=BLACK)
-    start_rect = Label(screen, contents_font, "はじめる", y=280, color=WHITE, center_flag=True, background=BLACK)
-    load_rect = Label(screen, contents_font, "つづきから", y=350, color=WHITE, center_flag=True, background=BLACK)
-    setting_rect = Label(screen, contents_font, "設定", y=420, color=WHITE, center_flag=True, background=BLACK)
-    close_rect = Label(screen, contents_font, "おわる", y=490, color=WHITE, center_flag=True, background=BLACK)
+        # タイトル
+        self.title = Label(self.screen, self.title_font, TITLE_TEXT, y=150, color=RED, center_flag=True, background=BLACK)
+        self.start = Label(self.screen, self.contents_font, "はじめる", y=280, color=WHITE, center_flag=True, background=BLACK)
+        self.load = Label(self.screen, self.contents_font, "つづきから", y=350, color=WHITE, center_flag=True, background=BLACK)
+        self.setting = Label(self.screen, self.contents_font, "設定", y=420, color=WHITE, center_flag=True, background=BLACK)
+        self.close = Label(self.screen, self.contents_font, "おわる", y=490, color=WHITE, center_flag=True, background=BLACK)
 
-    contents_list = [start_rect,load_rect,setting_rect,close_rect]
+        self.contents_list = [self.start, self.load, self.setting, self.close]
 
-    # マウスオーバーで枠を表示するよ
-    key = pygame.mouse.get_pos()
-    for content in contents_list:
-        if content.collidepoint(key):
-            pygame.draw.rect(screen, WHITE,content,1)
+    def draw(self):
+        # タイトルとメニューを描画
+        self.title.draw()
+        for content in self.contents_list:
+            content.draw()
 
-    for event in pygame.event.get():
-        # マウスクリック時
-        if event.type == MOUSEBUTTONDOWN:
-            # 左ボタン
-            if event.button == 1:
-                if start_rect.collidepoint(event.pos):
+    def handle_mouse_hover(self):
+        # マウスオーバーで枠を表示するよ
+        key = pygame.mouse.get_pos()
+        for content in self.contents_list:
+            if content.collidepoint(key):
+                pygame.draw.rect(self.screen, WHITE, content, 1)
+
+    def handle_events(self):
+        for event in pygame.event.get():
+            # 左マウスクリック時
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                if self.start.rect.collidepoint(event.pos):
                     return "opening", ""
-                elif load_rect.collidepoint(event.pos):
+                elif self.load.rect.collidepoint(event.pos):
                     return "load", "title"
-                elif setting_rect.collidepoint(event.pos):
+                elif self.setting.rect.collidepoint(event.pos):
                     return "setting", ""
-                elif close_rect.collidepoint(event.pos):
+                elif self.close.rect.collidepoint(event.pos):
                     Close()
                 else:
                     pass
+            
+        return "title", ""
 
-        # 閉じるボタンで終了
-        if event.type == QUIT:
-            Close()
-        elif event.type == KEYDOWN:
-            if event.key == K_ESCAPE:
-                Close()
-    
-    return "title", ""
+    def update(self):
+        self.draw()
+        self.handle_mouse_hover()
+        return self.handle_events()

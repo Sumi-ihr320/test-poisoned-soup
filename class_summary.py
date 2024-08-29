@@ -5,7 +5,6 @@ from pygame.locals import *
 from data import *
 from fanction_summary import *
 
-
 # セーブロード画面作るよ
 class DataWindow:
     def __init__(self, screen, flag, list):
@@ -199,11 +198,11 @@ class Status:
             self.label_name = self.name
         self.text = text    # 説明文
         self.dice_text = Dice_text  # ダイスボタンに表示するテキスト
-        self.Label_rect = Label(self.screen, self.font, self.label_name, x, y)    # ラベル作成
+        self.Label = Label(self.screen, self.font, self.label_name, x, y)    # ラベル作成
         self.Input_flag = Input_flag    # インプットボタンの入力ができるかのフラグ
         max_flag = False    # 最大値と現在値が存在するフラグ
         if Box_flag:    # インプットボックスを作るかのフラグ
-            self.Input_rect = InputBox(screen, (x+self.Label_rect.w,y,w,h), self.Input_flag)
+            self.Input_rect = InputBox(screen, (x+self.Label.rect.w,y,w,h), self.Input_flag)
             if status_name != "sex":
                 if status_name in CharaStatus:
                     self.status = CharaStatus[status_name]
@@ -211,16 +210,17 @@ class Status:
                         background = WHITE
                     else:
                         background = SHEET_COLOR
-                    Label(screen,self.font,str(self.status),self.Input_rect.x+2,self.Input_rect.y+2,background=background)
+                    stat_label = Label(screen,self.font,str(self.status),self.Input_rect.x+2,self.Input_rect.y+2,background=background)
         else:
-            self.Input_rect = self.Label_rect
+            self.Input_rect = self.Label.rect
 
         if max_flag:
             self.Input2_rect = self.Input_rect
 
         # ダイスボタンを表示するフラグ
         if Button_flag:
-            self.Button_rect = Button(screen, self.font, self.Input_rect, Dice_text)
+            self.Button = Button(screen, self.font, self.Input_rect, Dice_text)
+            self.Button_rect = self.Button.rect
         else:
             self.Button_rect = self.Input_rect
     

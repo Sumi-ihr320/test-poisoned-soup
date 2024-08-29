@@ -23,6 +23,7 @@ def Frame(screen):
     # ダイスフレーム
     pygame.draw.rect(screen, WHITE, DICE_FRAME_RECT,3)
 
+""""
 # ラベル作成を分離するよ
 def Label(screen, font, text, x=0, y=0, color=BLACK, center_flag=False, background=SHEET_COLOR):
     surface = font.render(text, True, color, background)
@@ -31,8 +32,38 @@ def Label(screen, font, text, x=0, y=0, color=BLACK, center_flag=False, backgrou
         rect.centerx = DISPLAY_SIZE[0] / 2
     screen.blit(surface, rect)
     return Rect(rect)
+"""
+# ラベル作成をクラス化するよ    (chatGPT指南)
+class Label:
+    def __init__(self, screen, font, text, x=0, y=0, color=BLACK, center_flag=False, background=SHEET_COLOR):
+        self.screen = screen
+        self.font = font
+        self.text = text
+        self.color = color
+        self.background = background
+        self.rect = self.create_label(x, y, center_flag)
 
+    # ラベルを作る
+    def create_label(self, x, y, center_flag):
+        surface = self.font.render(self.text, True, self.color, self.background)
+        rect = surface.get_rect(left=x, top=y)
+        if center_flag:
+            rect.centerx = DISPLAY_SIZE[0] / 2
+        self.screen.blit(surface, rect)
+        return rect
+
+    # ラベルを描画する
+    def draw(self):
+        # 必要に応じて再描画をできる
+        surface = self.font.render(self.text, True, self.color, self.background)
+        self.screen.blit(surface, self.rect)
+
+    # 指定した点が描画内かをチェック
+    def collidepoint(self, pos):
+        return self.rect.collidepoint(pos)
+    
 # ボタン作成を分離
+"""
 def Button(screen, font, rect, text):
     out_color = GRAY
     in_color = (181,181,174)
@@ -64,7 +95,87 @@ def Button(screen, font, rect, text):
     for i in range(len(surfaces)):
         screen.blit(surfaces[i], rects[i])
     return Rect(x,y,bw,bh)
+"""
+# ボタン作成をクラス化 やってみた     (chatGPT修正)
+class Button:
+    def __init__(self, screen, font, rect, text, on_click=None):
+        self.screen = screen
+        self.font = font
+        self.texts = text.splitlines()
 
+        self.x = rect[0] + rect[2] + 5
+        self.y = rect[1] -2
+
+        # 色情報
+        self.out_color = GRAY
+        self.in_color = (181,181,174)
+        self.on_color = BLUE
+        self.text_color = BLACK
+
+        # ボタンの幅高さ
+        self.bw = 0
+        self.bh = 0
+        # ボタンのrect
+        self.rect = None
+
+        # テキスト表示用
+        self.surfaces = []
+        self.rects = []
+
+        self.create_button()
+
+        # コールバック関数
+        self.on_click = on_click
+
+    def create_button(self):
+        self.create_text()
+        self.draw_button()
+        self.draw_text()
+
+    # テキストの作成
+    def create_text(self):
+        tx,ty = 0, self.y
+        for txt in self.texts:
+            surface = self.font.render(txt, True, self.text_color)
+            w = surface.get_rect().w + 8
+            if self.bw < w:
+                self.bw = w
+            h = surface.get_rect().h + 8
+            self.bh += h
+            tx = self.x + int(self.bw / 2)
+            ty += int(h / 2)
+            text_rect = surface.get_rect(center=(tx,ty))
+            ty += int(h / 2)
+            self.surfaces.append(surface)
+            self.rects.append(text_rect)
+
+    # ボタンの描画
+    def draw_button(self, hover=False):
+        pygame.draw.rect(self.screen, self.out_color, (self.x, self.y, self.bw, self.bh))
+        if hover:
+            pygame.draw.rect(self.screen, self.on_color, (self.x, self.y, self.bw, self.bh))
+        pygame.draw.line(self.screen, self.in_color, (self.x, self.y), (self.x+self.bw, self.y+self.bh))
+        pygame.draw.line(self.screen, self.in_color, (self.x, self.y+self.bh), (self.x+self.bw, self.y))
+        pygame.draw.rect(self.screen, self.in_color,(self.x+4, self.y+4, self.bw-8, self.bh-8))
+        self.rect = Rect(self.x, self.y, self.bw, self.bh)
+
+    # テキストの描画
+    def draw_text(self):
+        for i in range(len(self.surfaces)):
+            self.screen.blit(self.surfaces[i], self.rects[i])
+    
+    # クリックされたときTrueを返す
+    def is_clicked(self, pos):
+        return self.rect.collidepoint(pos) if self.rect else False
+
+    # 更新
+    def update(self, pos, click):
+        hover = self.is_clicked(pos)
+        self.draw_button(hover)
+        if hover and click:
+            if self.on_click:
+                self.on_click() # コールバック関数を呼び出す
+        
 # 入力ボックス作成を分離するよ
 def InputBox(screen, rect, flag=True, line_bold=2): 
     if flag:

@@ -1,9 +1,7 @@
-import random, os, json
 import pygame
 import pygame.draw
 from pygame.locals import *
 import tkinter as tk
-from tkinter import messagebox
 
 from data import *
 from fanction_summary import *
@@ -16,61 +14,92 @@ from opening import Opening
 from character_sheet import CharacterSheet
 from playing import MainPlay
 
-SCENE_FLAG = TITLE
-#SCENE_FLAG = PLAY
 
 # tkinterの起動 ---------------------------------------------------
 root = tk.Tk()
 # 画面中央に配置したい
 sw, sh = root.winfo_screenmmwidth(), root.winfo_screenmmheight()
 w, h = root.winfo_width(), root.winfo_height()
-x = (sw/2) - (w/2)
-y = (sh/2) - (h/2)
-root.geometry("+%d+%d" % (x,y))
+x = (sw - w) // 2
+y = (sh - h) // 2
+root.geometry(f"+{x}+{y}")
 # tkinterの非表示
 root.withdraw()
 
+# main関数をクラス化    (chatGPT指南)
+class MainApp:
+    def __init__(self):
+        # pygame初期化    
+        pygame.init()
+        # 画面サイズ
+        self.screen = pygame.display.set_mode(DISPLAY_SIZE)
+        # キーリピート設定
+        pygame.key.set_repeat(100, 100)
+        # タイトルバーキャプション
+        pygame.display.set_caption(TITLE_TEXT)
 
-def main():
-    # pygame初期化    
-    pygame.init()
-    # 画面サイズ
-    screen = pygame.display.set_mode(DISPLAY_SIZE)
-    # キーリピート設定
-    pygame.key.set_repeat(100, 100)
-    # タイトルバーキャプション
-    pygame.display.set_caption(TITLE_TEXT)
+        self.clock = pygame.time.Clock()
 
-    clock = pygame.time.Clock()
+        # イベントマップ
+        self.event_map = {"title": Title(self.screen),
+                          "load": Load,
+                          "save": Save,
+                          "opening": Opening(self.screen),
+                          "charasheet": CharacterSheet,
+                          "play": MainPlay}
 
-    #event_name = "title"
-    event_name = "play"
-    event_flag = ""
+        self.event_name = "title"
+        #self.event_name = "play"
+        self.event_flag = ""
 
     # 画面の描写
-    while True:
-        # 画面を黒で塗りつぶす
-        screen.fill(BLACK)
+    def run(self):
+        while True:
+            self.handle_events()
 
-        if event_name == "title":
-            event_name, event_flag = Title(screen)
-        elif event_name == "load":
-            event_name = Load(screen, event_flag, SelectSaveData)
-        elif event_name == "save":
-            event_name = Save(screen, event_flag, SelectSaveData)
-        elif event_name == "opening":
-            event_name = Opening(screen)
-        elif event_name == "charasheet":
-            event_name, event_flag = CharacterSheet(screen)
-        elif event_name == "play":
-            event_name, event_flag = MainPlay(screen)
+            # 画面を黒で塗りつぶす
+            self.screen.fill(BLACK)
+            
+            # 現在のイベントを処理
+            self.process_event()
 
-        clock.tick(60)
+            self.update_display()
 
-        # 画面を更新
+            self.clock.tick(60)
+
+    # イベント取得確認
+    def handle_events(self):
+        for event in pygame.event.get():
+            # 閉じるボタンで終了
+            if event.type == QUIT:
+                self.close()
+            elif event.type == KEYDOWN and event.key == K_ESCAPE:
+                self.close()
+
+    # 現在のイベントを処理
+    def process_event(self):
+        if self.event_name in self.event_map:
+            event = self.event_map[self.event_name]
+            if self.event_name in ["title", "opening"]:
+                self.event_name, self.event_flag = event.update()                           
+            elif self.event_name in ["save", "load"]:
+                self.event_name = event(self.screen, self.event_flag, SelectSaveData)
+            else:
+                self.event_name, self.event_flag = event(self.screen)
+
+    # 画面を更新
+    def update_display(self):
         pygame.display.update() 
 
-
+    # 終了処理
+    def close(self):
+        if messagebox.askokcancel("確認","本当に終了しますか？"):
+            pygame.quit()
+            sys.exit()
+        else:
+            pass
             
 if __name__ == "__main__":
-    main()
+    #main()
+    app = MainApp()
+    app.run()
