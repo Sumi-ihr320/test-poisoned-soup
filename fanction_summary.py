@@ -1,6 +1,5 @@
 import sys, random
 import pygame
-import pygame.draw
 from pygame.locals import *
 from tkinter import simpledialog
 from tkinter import messagebox
@@ -177,6 +176,7 @@ class Button:
                 self.on_click() # コールバック関数を呼び出す
         
 # 入力ボックス作成を分離するよ
+"""
 def InputBox(screen, rect, flag=True, line_bold=2): 
     if flag:
         # color = (255,248,220)
@@ -190,7 +190,30 @@ def InputBox(screen, rect, flag=True, line_bold=2):
     pygame.draw.rect(screen, color, (x, y, w, h))
     pygame.draw.line(screen, BLACK,(x,y+h-1),(x+w-1,y+h-1),line_bold)
     return Rect(x,y,w,h)
+"""
+# インプットボックスをクラス化するよ
+class InputBox:
+    def __init__(self, screen, rect, input_flag=True, line_bold=2):
+        self.screen = screen
+        # ボックスのカラーの設定
+        self.color = WHITE if input_flag else SHEET_COLOR
+        self.x = rect[0] + 5
+        self.y = rect[1] - 4
+        self.w, self.h = rect[2], rect[3]
+        self.rect = Rect(self.x, self.y, self.w, self.h)
+        self.line_bold = line_bold
+        
+        self.draw_box()
+    
+    # ボックスの描画
+    def draw_box(self):
+        # 入力ボックス
+        pygame.draw.rect(self.screen, self.color, self.rect)
+        # 下線
+        pygame.draw.line(self.screen, BLACK, (self.x, self.y+self.h-1), (self.x+self.w-1, self.y+self.h-1),
+                         self.line_bold)
 
+""""
 # 画像表示を分離するよ
 def Image(screen, path, size, x, y, line=False, line_width=1, bg=False, x_center=False, y_center=False):
     img, rect = CreateImage(path, size)
@@ -235,6 +258,53 @@ def CreateImage(path, size):
     rect = img.get_rect()
 
     return img, rect
+"""
+# 画像表示をクラス化するよ
+class Image:
+    def __init__(self, screen, path, size, x, y, line_flag=False, line_width=1, bg_flag=False):
+        self.screen = screen
+
+        # 初期化
+        self.img = None
+        self.rect = None
+
+        self.create_image(path, size)
+        self.set_rect(x, y)
+        self.view_image(bg_flag, line_flag, line_width)
+
+    # イメージを作成するよ
+    def create_image(self, path, size):
+        # 画像の読み込み＆アルファ化(透明化)
+        self.img = pygame.image.load(path).convert_alpha()
+        # 画像の縮小
+        self.img = pygame.transform.rotozoom(self.img, 0, size)
+        # 画像の位置取得
+        self.rect = self.img.get_rect()
+        
+    # 配置をセットするよ
+    def set_rect(self, x, y):
+        # 位置を変更する
+        if x == "center":
+            self.rect.centerx = self.screen.get_width() // 2 
+        else:
+            self.rect.centerx += x
+        if y == "center":
+            self.rect.centery = self.screen.get_height() // 2
+        else:
+            self.rect.centery += y
+
+    # 画像を表示するよ
+    def view_image(self, bg_flag, line_flag, line_width):
+        # 背景を白にする場合
+        if bg_flag:
+            pygame.draw.rect(self.screen, WHITE, self.rect)
+
+        # 画像の描写
+        self.screen.blit(self.img, self.rect)
+
+        # 画像の枠を描画する場合
+        if line_flag:
+            pygame.draw.rect(self.screen, BLACK, self.rect, line_width)
 
 
 # プルダウンボックス作るの分離するよ

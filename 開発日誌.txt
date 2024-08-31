@@ -134,3 +134,9 @@
 
 2024/08/29
 	chatGPTに頼って関数をクラス化に挑戦
+
+2024/08/31
+	functhion_summary.py
+	インプットボックスをクラス化
+	画像表示をクラス化
+	class_summary.pyを手直し中

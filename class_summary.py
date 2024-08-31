@@ -185,44 +185,36 @@ class PullDown:
 
 # ステータス作るよ
 class Status:
-    def __init__(self, screen, name, status_name, label_name, x, y, w, h, text="",  Button_flag=True, Input_flag=True, Box_flag=True,  Dice_text=""):
-
+    def __init__(self, screen, name, status_name, label_name, x, y, w, h, text="",  button_flag=True, input_flag=True, box_flag=True,  dice_text=""):
         self.screen = screen
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
 
-        self.name = name    # ステータスの名前
+        self.name = name                # ステータスの名前
         self.status_name = status_name  # CharaStatusでの名前
-        if label_name != "":    # 実際に表示する名前（スペースなどで位置調整する場合があるため）
-            self.label_name = label_name
-        else:
-            self.label_name = self.name
-        self.text = text    # 説明文
-        self.dice_text = Dice_text  # ダイスボタンに表示するテキスト
-        self.Label = Label(self.screen, self.font, self.label_name, x, y)    # ラベル作成
-        self.Input_flag = Input_flag    # インプットボタンの入力ができるかのフラグ
-        max_flag = False    # 最大値と現在値が存在するフラグ
-        if Box_flag:    # インプットボックスを作るかのフラグ
-            self.Input_rect = InputBox(screen, (x+self.Label.rect.w,y,w,h), self.Input_flag)
-            if status_name != "sex":
-                if status_name in CharaStatus:
-                    self.status = CharaStatus[status_name]
-                    if self.Input_flag:
-                        background = WHITE
-                    else:
-                        background = SHEET_COLOR
-                    stat_label = Label(screen,self.font,str(self.status),self.Input_rect.x+2,self.Input_rect.y+2,background=background)
-        else:
-            self.Input_rect = self.Label.rect
+        self.label_name = label_name if label_name != "" else self.name     # 実際に表示する名前（スペースなどで位置調整する場合があるため）
+        self.text = text                # 説明文
+        self.dice_text = dice_text      # ダイスに表示するテキスト
+        self.label = Label(self.screen, self.font, self.label_name, x, y)    # ラベル作成
 
-        if max_flag:
-            self.Input2_rect = self.Input_rect
+        if box_flag:    # インプットボックスを作るかのフラグ
+            self.create_input(input_flag)
+        
+        if button_flag: # ダイスボタンを作るかのフラグ
+            self.create_dice_button(dice_text)
 
-        # ダイスボタンを表示するフラグ
-        if Button_flag:
-            self.Button = Button(screen, self.font, self.Input_rect, Dice_text)
-            self.Button_rect = self.Button.rect
-        else:
-            self.Button_rect = self.Input_rect
+    # インプットボックスを作成
+    def create_input(self, x, y, w, h, input_flag):
+        self.input = InputBox(self.screen, (x+self.label.rect.w, y, w, h), input_flag)
+        if self.status_name != "sex":
+            if self.status_name in CharaStatus:
+                self.status = CharaStatus[self.status_name]
+                bg = WHITE if input_flag else SHEET_COLOR
+                stat_label = Label(self.screen,self.font, str(self.status), self.input.rect.x+2, self.input.rect.y+2, background=bg)
+
+    # ダイスボタンを作成
+    def create_dice_button(self):
+        rect = self.input.rect if self.input else self.label.rect
+        self.button = Button(self.screen, self.font, rect, self.dice_text)
     
     # ステータスの自動計算
     def AutoCalculation(self, name):
@@ -230,22 +222,16 @@ class Status:
             if name != "CON":
                 # ダメージボーナスの計算
                 st = CharaStatus["STR"] + CharaStatus["SIZ"]
-                if 2 <= st <= 12:
-                    val = "-1D6"
-                elif 13 <= st <= 16:
-                    val = "-1D4"
-                elif 25 <= st <= 32:
-                    val = "+1D4"
-                elif 33 <= st <= 40:
-                    val = "+1D6"
-                else:
-                    val = "0"
+                if 2 <= st <= 12:       val = "-1D6"
+                elif 13 <= st <= 16:    val = "-1D4"
+                elif 25 <= st <= 32:    val = "+1D4"
+                elif 33 <= st <= 40:    val = "+1D6"
+                else:                   val = "0"
                 CharaStatus["DB"] = val
 
             if name != "STR":
                 # HPの計算
-                val = round((CharaStatus["CON"] + CharaStatus["SIZ"]) / 2)
-                CharaStatus["HP"] = val
+                CharaStatus["HP"] = (CharaStatus["CON"] + CharaStatus["SIZ"]) // 2
 
         elif name == "POW":
             # MP、幸運、SAN値の計算
@@ -256,25 +242,20 @@ class Status:
 
         elif name == "INT":
             # アイデアの計算
-            val = CharaStatus["INT"] * 5
-            CharaStatus["Idea"] = val
+            CharaStatus["Idea"] = CharaStatus["INT"] * 5
 
         elif name == "EDU":
             # 知識の計算
             val = CharaStatus["EDU"] * 5
-            if val > 99:
-                val = 99
-            CharaStatus["Know"] = val
+            CharaStatus["Know"] = val if val < 99 else 99
         
         elif name == "DEX":
            # 回避の計算
-           val = CharaStatus["DEX"] * 2
-           CharaStatus["Avo"] = val
+           CharaStatus["Avo"] = CharaStatus["DEX"] * 2
  
     # 入力ボックスの処理まとめるよ
     def InputProcess(self):
-        min=0
-        max=99
+        min, max = 0, 99
         # 最大値最小値を決めるよ
         if self.status_name == "age":
             min = CharaStatus["EDU"] + 6
@@ -288,10 +269,9 @@ class Status:
                 else:
                     min -= int(self.dice_text[4])
                     max -= int(self.dice_text[4])
-                    
-        val = InputGet(self.status_name,self.name,'あなたの' + self.name + 'を入力してください',min,max)
+        val = InputGet(self.status_name, self.name, f"あなたの{self.name}を入力してください", min, max)
         if val != None:
-            Label(self.screen, self.font, str(val), self.Input_rect.x+2, self.Input_rect.y+2)
+            label = Label(self.screen, self.font, f"{val}", self.input.rect.x+2, self.input.rect.y+2)
             CharaStatus[self.status_name] = val
             self.AutoCalculation(self.status_name)
 
@@ -300,45 +280,46 @@ class Status:
         val = DiceRool(self.dice_text)
         CharaStatus[self.status_name] = val
         self.AutoCalculation(self.status_name)
-        Label(self.screen, self.font, str(val), self.Input_rect.x+2, self.Input_rect.y+2)
+        Label(self.screen, self.font, str(val), self.input.rect.x+2, self.input.rect.y+2)
 
 # 選んだ性別によって画像が変わるようにするよ
 class SexChange:
     def __init__(self, screen, x, y, flag):
         self.screen = screen
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
-        self.sex_flag = flag
-        if flag:
-            self.man_rect = self.Butoon("男",x,y,True)
-            self.woman_rect = self.Butoon("女",x+40,y,False)
-        else:
-            self.man_rect = self.Butoon("男",x,y,False)
-            self.woman_rect = self.Butoon("女",x+40,y,True)
-        self.Image(flag)
+        # flag が True なら男、False なら女
+        woman_flag = False if flag else True
+
+        self.man_rect = self.create_butoon(x, y, flag)
+        self.woman_rect = self.create_butoon(x+40, y, woman_flag)
+
+        self.image = None   # 初期化
+        self.view_image(flag)
 
     # ボタン作るよ
-    def Butoon(self, name, x, y, flag):
+    def create_butoon(self, x, y, flag):
         push_color = (106,93,33)
         no_push_color = SHEET_COLOR
-        if flag:
-            background = push_color
-            color = WHITE
-        else:
-            background = no_push_color
-            color = BLACK
-        surface = self.font.render(name, True, color, background)
-        rect = surface.get_rect(left=x, top=y)
-        self.screen.blit(surface, rect)
-        return Rect(rect)
+        
+        # テキストと背景色と文字色をフラグによって変える
+        text = "男" if flag else "女"
+        background = push_color if flag else no_push_color
+        color = WHITE if flag else BLACK
+        
+        return text_view(self.screen, self.font, text, color, background)
 
     # 画像表示するよ    
-    def Image(self,flag):
-        if flag:
-            img = "silhouette_man.png"
-        else:
-            img = "silhouette_woman.png"
-        img_path = PATH + PICTURE + img
-        self.image_rect = Image(self.screen, img_path, 0.5, 40, 40, line=True, line_width=2)
+    def view_image(self,flag):
+        sex = "man" if flag else "woman"
+        img_path = f"{PATH}{PICTURE}silhouette_{sex}.png"
+        self.image = Image(self.screen, img_path, 0.5, 40, 40, line=True, line_width=2)
+
+# テキストを描画
+def text_view(screen, font, text, color, bg, x, y):
+    surface = font.render(text, True, color, bg)
+    rect = surface.get_rect(left=x, top=y)
+    screen.blit(surface, rect)
+    return rect
 
 # 職業選択画面作るよ
 class Profession:
@@ -351,31 +332,36 @@ class Profession:
         if prof != "":
             self.image(prof)
 
+    # 一覧の表示
     def list_image(self):
-        x,y = 100,230
+        x, y = 100, 230
         self.prof_list = ProfessionList
         for prof in list(self.prof_list):
             name = self.prof_list[prof]["name"]
-            img_path = PATH + PICTURE + "prof_" + name + ".png"
-            rect = Image(img_path, 0.1, x, y, line=True, bg=True)
-            self.prof_list[prof]["rect"] = rect
+            img_path = f"{PATH}{PICTURE}prof_{name}.png"
+            img = Image(img_path, 0.1, x, y, line=True, bg=True)
+            self.prof_list[prof]["rect"] = img.rect
             x += 55
             if x >= 590:
                 y += 55
                 x = 100
 
+    # 選択された職業を表示
     def image(self, prof):
         data = self.prof_list[prof]
         name = data["name"]
         skill_list = data["skill"]
-        img_path = PATH + PICTURE + "prof_" + name + ".png"
-        x,y = 100,40
-        rect = Image(self.screen, img_path, 0.35 , x, y, line=True, bg=True)
-        lrx = rect.x + rect.w + 5
-        name_rect = Label(self.screen, self.font, f"【{prof}】", lrx, y)
+        img_path = f"{PATH}{PICTURE}prof_{name}.png"
+        x, y = 100, 40
+
+        # 画像インスタンス
+        img = Image(self.screen, img_path, 0.35 , x, y, line=True, bg=True)
+        lrx = img.rect.x + img.rect.w + 5
+        # ラベルインスタンス
+        lbl_name = Label(self.screen, self.font, f"【{prof}】", lrx, y)
         skill_x, skill_y = lrx + 10, y + 30
-        skill_rect = Label(self.screen, self.small_font, "所持技能： ", skill_x, skill_y)
-        sk_x, sk_y = skill_x + 10, skill_y + skill_rect.h + 10
+        lbl_skill = Label(self.screen, self.small_font, "所持技能： ", skill_x, skill_y)
+        sk_x, sk_y = skill_x + 10, skill_y + lbl_skill.rect.h + 10
         sx, sy = sk_x, sk_y
         for skill in skill_list:
             rect = Label(self.screen, self.small_font, skill, sx, sy)
@@ -391,7 +377,7 @@ class Hobby:
         font = pygame.font.Font(FONT_PATH, FONT_SIZ)
         small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
 
-        self.label_rect = Label(screen, font, "趣味", 545, 175)
+        self.label = Label(screen, font, "趣味", 545, 175)
         if PullDownItem == "":
             self.listitem = "未選択"
         else:
