@@ -1,4 +1,4 @@
-import sys, random
+import sys, re
 import pygame
 from pygame.locals import *
 from tkinter import simpledialog
@@ -15,8 +15,8 @@ def Close():
     else:
         pass
 
-# フレームの表示
-def Frame(screen):
+# フレームの作成
+def create_frame(screen):
     # テキストフレーム
     pygame.draw.rect(screen, WHITE, FRAME_RECT,3)
     # ダイスフレーム
@@ -32,34 +32,6 @@ def Label(screen, font, text, x=0, y=0, color=BLACK, center_flag=False, backgrou
     screen.blit(surface, rect)
     return Rect(rect)
 """
-# ラベル作成をクラス化するよ    (chatGPT指南)
-class Label:
-    def __init__(self, screen, font, text, x=0, y=0, color=BLACK, center_flag=False, background=SHEET_COLOR):
-        self.screen = screen
-        self.font = font
-        self.text = text
-        self.color = color
-        self.background = background
-        self.rect = self.create_label(x, y, center_flag)
-
-    # ラベルを作る
-    def create_label(self, x, y, center_flag):
-        surface = self.font.render(self.text, True, self.color, self.background)
-        rect = surface.get_rect(left=x, top=y)
-        if center_flag:
-            rect.centerx = DISPLAY_SIZE[0] / 2
-        self.screen.blit(surface, rect)
-        return rect
-
-    # ラベルを描画する
-    def draw(self):
-        # 必要に応じて再描画をできる
-        surface = self.font.render(self.text, True, self.color, self.background)
-        self.screen.blit(surface, self.rect)
-
-    # 指定した点が描画内かをチェック
-    def collidepoint(self, pos):
-        return self.rect.collidepoint(pos)
     
 # ボタン作成を分離
 """
@@ -95,85 +67,6 @@ def Button(screen, font, rect, text):
         screen.blit(surfaces[i], rects[i])
     return Rect(x,y,bw,bh)
 """
-# ボタン作成をクラス化 やってみた     (chatGPT修正)
-class Button:
-    def __init__(self, screen, font, rect, text, on_click=None):
-        self.screen = screen
-        self.font = font
-        self.texts = text.splitlines()
-
-        self.x = rect[0] + rect[2] + 5
-        self.y = rect[1] -2
-
-        # 色情報
-        self.out_color = GRAY
-        self.in_color = (181,181,174)
-        self.on_color = BLUE
-        self.text_color = BLACK
-
-        # ボタンの幅高さ
-        self.bw = 0
-        self.bh = 0
-        # ボタンのrect
-        self.rect = None
-
-        # テキスト表示用
-        self.surfaces = []
-        self.rects = []
-
-        self.create_button()
-
-        # コールバック関数
-        self.on_click = on_click
-
-    def create_button(self):
-        self.create_text()
-        self.draw_button()
-        self.draw_text()
-
-    # テキストの作成
-    def create_text(self):
-        tx,ty = 0, self.y
-        for txt in self.texts:
-            surface = self.font.render(txt, True, self.text_color)
-            w = surface.get_rect().w + 8
-            if self.bw < w:
-                self.bw = w
-            h = surface.get_rect().h + 8
-            self.bh += h
-            tx = self.x + int(self.bw / 2)
-            ty += int(h / 2)
-            text_rect = surface.get_rect(center=(tx,ty))
-            ty += int(h / 2)
-            self.surfaces.append(surface)
-            self.rects.append(text_rect)
-
-    # ボタンの描画
-    def draw_button(self, hover=False):
-        pygame.draw.rect(self.screen, self.out_color, (self.x, self.y, self.bw, self.bh))
-        if hover:
-            pygame.draw.rect(self.screen, self.on_color, (self.x, self.y, self.bw, self.bh))
-        pygame.draw.line(self.screen, self.in_color, (self.x, self.y), (self.x+self.bw, self.y+self.bh))
-        pygame.draw.line(self.screen, self.in_color, (self.x, self.y+self.bh), (self.x+self.bw, self.y))
-        pygame.draw.rect(self.screen, self.in_color,(self.x+4, self.y+4, self.bw-8, self.bh-8))
-        self.rect = Rect(self.x, self.y, self.bw, self.bh)
-
-    # テキストの描画
-    def draw_text(self):
-        for i in range(len(self.surfaces)):
-            self.screen.blit(self.surfaces[i], self.rects[i])
-    
-    # クリックされたときTrueを返す
-    def is_clicked(self, pos):
-        return self.rect.collidepoint(pos) if self.rect else False
-
-    # 更新
-    def update(self, pos, click):
-        hover = self.is_clicked(pos)
-        self.draw_button(hover)
-        if hover and click:
-            if self.on_click:
-                self.on_click() # コールバック関数を呼び出す
         
 # 入力ボックス作成を分離するよ
 """
@@ -190,30 +83,7 @@ def InputBox(screen, rect, flag=True, line_bold=2):
     pygame.draw.rect(screen, color, (x, y, w, h))
     pygame.draw.line(screen, BLACK,(x,y+h-1),(x+w-1,y+h-1),line_bold)
     return Rect(x,y,w,h)
-"""
-# インプットボックスをクラス化するよ
-class InputBox:
-    def __init__(self, screen, rect, input_flag=True, line_bold=2):
-        self.screen = screen
-        # ボックスのカラーの設定
-        self.color = WHITE if input_flag else SHEET_COLOR
-        self.x = rect[0] + 5
-        self.y = rect[1] - 4
-        self.w, self.h = rect[2], rect[3]
-        self.rect = Rect(self.x, self.y, self.w, self.h)
-        self.line_bold = line_bold
-        
-        self.draw_box()
-    
-    # ボックスの描画
-    def draw_box(self):
-        # 入力ボックス
-        pygame.draw.rect(self.screen, self.color, self.rect)
-        # 下線
-        pygame.draw.line(self.screen, BLACK, (self.x, self.y+self.h-1), (self.x+self.w-1, self.y+self.h-1),
-                         self.line_bold)
 
-""""
 # 画像表示を分離するよ
 def Image(screen, path, size, x, y, line=False, line_width=1, bg=False, x_center=False, y_center=False):
     img, rect = CreateImage(path, size)
@@ -259,71 +129,18 @@ def CreateImage(path, size):
 
     return img, rect
 """
-# 画像表示をクラス化するよ
-class Image:
-    def __init__(self, screen, path, size, x, y, line_flag=False, line_width=1, bg_flag=False):
-        self.screen = screen
-
-        # 初期化
-        self.img = None
-        self.rect = None
-
-        self.create_image(path, size)
-        self.set_rect(x, y)
-        self.view_image(bg_flag, line_flag, line_width)
-
-    # イメージを作成するよ
-    def create_image(self, path, size):
-        # 画像の読み込み＆アルファ化(透明化)
-        self.img = pygame.image.load(path).convert_alpha()
-        # 画像の縮小
-        self.img = pygame.transform.rotozoom(self.img, 0, size)
-        # 画像の位置取得
-        self.rect = self.img.get_rect()
-        
-    # 配置をセットするよ
-    def set_rect(self, x, y):
-        # 位置を変更する
-        if x == "center":
-            self.rect.centerx = self.screen.get_width() // 2 
-        else:
-            self.rect.centerx += x
-        if y == "center":
-            self.rect.centery = self.screen.get_height() // 2
-        else:
-            self.rect.centery += y
-
-    # 画像を表示するよ
-    def view_image(self, bg_flag, line_flag, line_width):
-        # 背景を白にする場合
-        if bg_flag:
-            pygame.draw.rect(self.screen, WHITE, self.rect)
-
-        # 画像の描写
-        self.screen.blit(self.img, self.rect)
-
-        # 画像の枠を描画する場合
-        if line_flag:
-            pygame.draw.rect(self.screen, BLACK, self.rect, line_width)
-
-
-# プルダウンボックス作るの分離するよ
-def PullDownBox(screen, rect, font):
-    x = rect[0] + 5
-    y = rect[1]
-    w = rect[2]
-    h = rect[3]
-    Box(x,y,w,h)
-
-    # 三角作るよ
-    triangle_rect = Label(screen,font,"▼",x+w-25,y+4,background=WHITE)
-
-    return Rect(x,y,w,h)
-
+       
 # 入力ボックスっぽい箱作るよ
-def Box(screen, x,y,w,h):
-    pygame.draw.rect(screen, GRAY,(x,y,w,h))
+def Box(screen, x, y, w, h):
+    pygame.draw.rect(screen, GRAY,(x, y, w, h))
     pygame.draw.rect(screen, WHITE, (x+1, y+1, w-2, h-2))
+
+# テキストを描画
+def text_view(screen, font, text, color, bg, x, y):
+    surface = font.render(text, True, color, bg)
+    rect = surface.get_rect(left=x, top=y)
+    screen.blit(surface, rect)
+    return rect
 
 # テキストフレームに文字を表示するよ
 def TextDraw(screen, text):
@@ -339,18 +156,29 @@ def TextDraw(screen, text):
         screen.blit(surface,rect)
         y += 25
 
+# テキストファイルのロード
+def load_texts(file_path):
+    with open(file_path, "r", encoding="utf-8_sig") as f:
+        return f.readlines()
+    
+# jsonファイルのロード
+def load_json(file_path):
+    with open(file_path, "r", encoding="utf-8_sig") as f:
+        return json.load(f)
+
 # インプットボックスの処理をまとめるよ
 def InputGet(name, title, text, min=0, max=100):
     txt = CharaStatus[name]
     if type(txt) == str:
-        val = simpledialog.askstring(title,text,initialvalue=txt)
+        val = simpledialog.askstring(title, text, initialvalue=txt)
     elif type(txt) == int:
-        val = simpledialog.askinteger(title,text,initialvalue=txt,minvalue=min,maxvalue=max)
+        val = simpledialog.askinteger(title, text, initialvalue=txt, minvalue=min, maxvalue=max)
     if val != None:
         CharaStatus[name] = val
     return val
 
 # ダイスの挙動をまとめるよ
+""""
 def DiceRool(screen, dice_text=""):
     if dice_text != "":
         pieces = int(dice_text[0])
@@ -383,6 +211,16 @@ def DiceRool(screen, dice_text=""):
                 val -= int(dice_text[4])
         pygame.time.delay(100)
         return val
+"""
+
+# "〇D〇" のテキストから何個のダイスか、何面ダイスか、+〇、-〇が付いてるかを抽出する
+def dice_confirmation(text):
+    # テキストに+か-が入っているか確認
+    plus_item = re.search(r"\+|\-", text)
+    cut_index = plus_item.start-1 if plus_item else 0
+    pieces = text[0]
+    dice = text[2:] if cut_index == 0 else text[2:cut_index]
+    return int(pieces), int(dice), plus_item
 
 # 答えと余りを算出する計算式を関数にしてみた
 def Calculation(a, b, max=None):

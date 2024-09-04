@@ -28,11 +28,12 @@ SCENARIO = "/Scenario/"
 PICTURE ="/Picture/"
 MUSIC = "/Music/"
 SAVE_FOLDER = "/Save/"
+JSON_FOLDER = "/Json/"
 
-STATUS_JSON_PATH = os.path.join(PATH,"CharaStatus.json")
-PROF_JSON_PATH = os.path.join(PATH,"Profession.json")
-SKILL_JSOM_PATH = os.path.join(PATH,"SkillList.json")
-HOBBY_JSON_PATH = os.path.join(PATH,"Hobby.json")
+STATUS_JSON_PATH = f"{PATH}{JSON_FOLDER}CharaStatus.json"
+PROF_JSON_PATH = f"{PATH}{JSON_FOLDER}Profession.json"
+SKILL_JSOM_PATH = f"{PATH}{JSON_FOLDER}SkillList.json"
+HOBBY_JSON_PATH = f"{PATH}{JSON_FOLDER}Hobby.json"
 
 # フォント
 FONT_PATH = os.path.join(PATH,"HGRKK.TTC")

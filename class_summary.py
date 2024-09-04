@@ -1,3 +1,6 @@
+
+import random
+
 import pygame
 import pygame.draw
 from pygame.locals import *
@@ -67,125 +70,306 @@ class DataWindow:
 class PageNavigation:
     def __init__(self, screen, page_flag=0):
         self.screen = screen
-        self.navi_rect = self.image(page_flag)
-            
-    def image(self, page_flag):
-        img = "navigate.png"
-        navi_img = pygame.image.load(PATH + PICTURE + img).convert_alpha()
+        self.navi_rect = self.draw(page_flag)
+
+    # 画像表示
+    def draw(self, page_flag):
+        img = f"{PATH}{PICTURE}navigate.png"
+        navi_img = pygame.image.load(img).convert_alpha()
         if page_flag == UNDER:
-            navi_img = pygame.transform.rotate(navi_img,90)
-            navi_img = pygame.transform.scale(navi_img,(500,40))
+            navi_img = pygame.transform.rotate(navi_img, 90)
+            navi_img = pygame.transform.scale(navi_img, (500,40))
         else:
             navi_img = pygame.transform.scale(navi_img, (40,355))
         navi_rect = navi_img.get_rect()
         if page_flag == RIGHT: # 右側のナビゲーション
-            navi_x = 740
-            navi_y = 40
+            navi_x, navi_y = 740, 40
             triangle = [[750,190],[770,210],[750,230]]
         elif page_flag == LEFT: # 左側のナビゲーション
-            navi_x = 20
-            navi_y = 40
+            navi_x, navi_y = 20, 40
             triangle = [[50,190],[30,210],[50,230]]
         else:   # 下側のナビゲーション
             navi_x = self.screen.get_width() / 2 - navi_rect.centerx
             navi_y = 350
             triangle = [[380,360],[400,380],[420,360]]
 
+        # ナビゲーションの表示
         navi_rect.centerx += navi_x
         navi_rect.centery += navi_y
         self.screen.blit(navi_img, navi_rect)
+
         # 三角形の描画
-        pygame.draw.polygon(self.screen, BLACK,triangle)
+        pygame.draw.polygon(self.screen, BLACK, triangle)
 
         return navi_rect
 
+# ラベル作成をクラス化するよ    (chatGPT指南)
+class Label:
+    def __init__(self, screen, font, text, x=0, y=0, color=BLACK, center_flag=False, background=SHEET_COLOR):
+        self.screen = screen
+        self.font = font
+        self.text = text
+        self.color = color
+        self.background = background
+        self.rect = self.create_label(x, y, center_flag)
+
+    # ラベルを作る
+    def create_label(self, x, y, center_flag):
+        surface = self.font.render(self.text, True, self.color, self.background)
+        rect = surface.get_rect(left=x, top=y)
+        if center_flag:
+            rect.centerx = DISPLAY_SIZE[0] / 2
+        self.screen.blit(surface, rect)
+        return rect
+
+    # ラベルを描画する
+    def draw(self):
+        # 必要に応じて再描画をできる
+        surface = self.font.render(self.text, True, self.color, self.background)
+        self.screen.blit(surface, self.rect)
+
+    # 指定した点が描画内かをチェック
+    def collidepoint(self, pos):
+        return self.rect.collidepoint(pos)
+
+# ボタン作成をクラス化 やってみた     (chatGPT修正)
+class Button:
+    def __init__(self, screen, font, rect, text, on_click=None):
+        self.screen = screen
+        self.font = font
+        self.texts = text.splitlines()
+
+        self.x = rect[0] + rect[2] + 5
+        self.y = rect[1] -2
+
+        # 色情報
+        self.out_color = GRAY
+        self.in_color = (181,181,174)
+        self.on_color = BLUE
+        self.text_color = BLACK
+
+        # ボタンの幅高さ
+        self.bw = 0
+        self.bh = 0
+        # ボタンのrect
+        self.rect = None
+
+        # テキスト表示用
+        self.surfaces = []
+        self.rects = []
+
+        self.create_button()
+
+        # コールバック関数
+        self.on_click = on_click
+
+    def create_button(self):
+        self.create_text()
+        self.draw_button()
+        self.draw_text()
+
+    # テキストの作成
+    def create_text(self):
+        tx,ty = 0, self.y
+        for txt in self.texts:
+            surface = self.font.render(txt, True, self.text_color)
+            w = surface.get_rect().w + 8
+            if self.bw < w:
+                self.bw = w
+            h = surface.get_rect().h + 8
+            self.bh += h
+            tx = self.x + int(self.bw / 2)
+            ty += int(h / 2)
+            text_rect = surface.get_rect(center=(tx,ty))
+            ty += int(h / 2)
+            self.surfaces.append(surface)
+            self.rects.append(text_rect)
+
+    # ボタンの描画
+    def draw_button(self, hover=False):
+        pygame.draw.rect(self.screen, self.out_color, (self.x, self.y, self.bw, self.bh))
+        if hover:
+            pygame.draw.rect(self.screen, self.on_color, (self.x, self.y, self.bw, self.bh))
+        pygame.draw.line(self.screen, self.in_color, (self.x, self.y), (self.x+self.bw, self.y+self.bh))
+        pygame.draw.line(self.screen, self.in_color, (self.x, self.y+self.bh), (self.x+self.bw, self.y))
+        pygame.draw.rect(self.screen, self.in_color,(self.x+4, self.y+4, self.bw-8, self.bh-8))
+        self.rect = Rect(self.x, self.y, self.bw, self.bh)
+
+    # テキストの描画
+    def draw_text(self):
+        for i in range(len(self.surfaces)):
+            self.screen.blit(self.surfaces[i], self.rects[i])
+    
+    # クリックされたときTrueを返す
+    def is_clicked(self, pos):
+        return self.rect.collidepoint(pos) if self.rect else False
+
+    # 更新
+    def update(self, pos, click):
+        hover = self.is_clicked(pos)
+        self.draw_button(hover)
+        if hover and click:
+            if self.on_click:
+                self.on_click() # コールバック関数を呼び出す
+
+# インプットボックスをクラス化するよ
+class InputBox:
+    def __init__(self, screen, rect, input_flag=True, line_bold=2):
+        self.screen = screen
+        # ボックスのカラーの設定
+        self.color = WHITE if input_flag else SHEET_COLOR
+        self.x = rect[0] + 5
+        self.y = rect[1] - 4
+        self.w, self.h = rect[2], rect[3]
+        self.rect = Rect(self.x, self.y, self.w, self.h)
+        self.line_bold = line_bold
+        
+        self.draw_box()
+    
+    # ボックスの描画
+    def draw_box(self):
+        # 入力ボックス
+        pygame.draw.rect(self.screen, self.color, self.rect)
+        # 下線
+        pygame.draw.line(self.screen, BLACK, (self.x, self.y+self.h-1), (self.x+self.w-1, self.y+self.h-1),
+                         self.line_bold)
+
+# 画像表示をクラス化するよ
+class Image:
+    def __init__(self, screen, path, size, x, y, line_flag=False, line_width=1, bg_flag=False):
+        self.screen = screen
+
+        self.img, self.rect = self.create_image(path, size)
+        self.set_rect(x, y)
+        self.view_image(bg_flag, line_flag, line_width)
+
+    # イメージを作成するよ
+    def create_image(self, path, size):
+        # 画像の読み込み＆アルファ化(透明化)
+        img = pygame.image.load(path).convert_alpha()
+        # 画像の縮小
+        img = pygame.transform.rotozoom(img, 0, size)
+        # 画像の位置取得
+        rect = img.get_rect()
+        return img, rect
+        
+    # 配置をセットするよ
+    def set_rect(self, x, y):
+        # 位置を変更する
+        if x == "center":
+            self.rect.centerx = self.screen.get_width() // 2 
+        else:
+            self.rect.centerx += x
+        if y == "center":
+            self.rect.centery = self.screen.get_height() // 2
+        else:
+            self.rect.centery += y
+
+    # 画像を表示するよ
+    def view_image(self, bg_flag, line_flag, line_width):
+        # 背景を白にする場合
+        if bg_flag:
+            pygame.draw.rect(self.screen, WHITE, self.rect)
+
+        # 画像の描写
+        self.screen.blit(self.img, self.rect)
+
+        # 画像の枠を描画する場合
+        if line_flag:
+            pygame.draw.rect(self.screen, BLACK, self.rect, line_width)
+ 
 # プルダウン機能をクラス化できないかな？
 class PullDown:
     def __init__(self, screen, font, rect, text, list, pd_h=285):
         self.screen = screen
         self.font = font
-        self.box_rect = self.Box(rect)
-        self.box_text = self.Label(text, self.box_rect)
+
+        self.box_rect = self.create_box(rect)
+        # プルダウンボックスに最初に表示される文字を表示するよ
+        self.label = Label(self.screen, self.font, str(text), rect[0]+4, rect[1]+4)
         self.list = list
 
         # プルダウンボックスのアイテムの位置のリスト{item:rect}
         self.items = {}
+        self.pd_h = pd_h
+        self.list_box = None
 
         if PullDownFlag:
-            self.pd_rect = self.PullDown(self.box_rect, pd_h)
-            self.PullDownList(self.pd_rect)
+            self.create_pulldown_list()
 
     # ボックス作るよ
-    def Box(self,rect):
+    def create_box(self,rect):
         x = rect[0] + 5
-        y = rect[1]
-        w = rect[2]
-        h = rect[3]
-        Box(x,y,w,h)
+        y, w, h = rect[1], rect[2], rect[3]
+        Box(x, y, w, h)
 
         # 三角作るよ
         tx = x + w -25
         ty = y + 3
-        triangle_rect = Label(self.screen, self.font, "▼", tx, ty, background=WHITE)
-
+        triangle = Label(self.screen, self.font, "▼", tx, ty, background=WHITE)
         return Rect(x,y,w,h)
-
-    # プルダウンボックスに表示される文字列を描画するよ
-    def Label(self, text, rect):
-        surface = self.font.render(str(text),True,BLACK)
-        rect = surface.get_rect(left=rect[0]+4,top=rect[1]+4)
-        self.screen.blit(surface, rect)
-        return text
     
-    # プルダウン押した時に表示されるボックス作るよ
-    def PullDown(self, rect, ph):
-        x = rect[0]
-        y = rect[1] + rect[3]
-        w = rect[2] 
-        h = rect[3] + ph
-        Box(x,y,w,h)
-        return Rect(x,y,w,h)
-
     # プルダウン押した時に表示される項目表示したいよ
-    def PullDownList(self, rect):
-        x = rect.x + 3
-        y = rect.y + 3
-        self.ListDraw(self.list,x,y,self.pd_rect.w)
+    def create_pulldown_list(self):
+        x = self.box_rect.x + 3
+        y = self.box_rect.y + self.box_rect.h + 3
+        self.draw_list(self.list, x, y)
 
-    # 同じ処理だったのでまとめた
-    def ListDraw(self,list,x,y,w):
+    # リストを表示する
+    def draw_list(self, list, x, y):
+        w = self.box_rect.w
         ly = y
-        i = 0
+        lis_rect = None
         for item in list:
-            i += 1
-            # 項目表示
-            surface = self.font.render(item,True,BLACK)
+            # 項目作成
+            surface = self.font.render(item, True, BLACK)
             rect = surface.get_rect(left=x,top=y)
-            self.screen.blit(surface,rect)
 
-            # 項目名とそのrectを辞書に登録していく
-            lis_rect = Rect(rect.x,rect.y,w,rect.h)
-            self.items[item] = lis_rect
+            # 項目名とそのsurface, rectを辞書に登録していく
+            lis_rect = Rect(rect.x, rect.y, w, rect.h)
+            self.items = {item: (surface, lis_rect)}
 
             # 表示位置を下にずらす
             y += rect.h + 1
-
-            # 仕切り線を引く
-            pygame.draw.line(self.screen, BLACK,(x-2,y),(x+w-4,y))
             
             # プルダウンボックスより下は隣に表示する
-            if y >= (self.pd_rect.y+self.pd_rect.h-rect.h):
+            if y >= (ly + self.pd_h):
                 x += x + w
                 y = ly
-                # 隣にプルダウンボックスを作る
-                self.PullDown(Rect(x-3,self.box_rect.y,self.box_rect.w,self.box_rect.h),150)
         lh = y - ly
-        self.List_rect = Rect(x,ly,w,lh)
-        return 
+
+        # リストボックスを作って文字を表示する
+        self.list_box = Box(self.screen, x, ly, w, lh)
+        for item in self.items:
+            self.screen.blit(self.items[item][0], self.items[item][1])
+
+# ダイスロールをクラス化するよ（画像表示はやめとこうかなって悩んでるよ）
+class DiceRoll:
+    def __init__(self, dice_text):
+        self.text = dice_text
+
+        # 個数、何面、プラスαのアイテム
+        self.pieces, self.dice, self.plus_item = dice_confirmation(self.text)
+        # 計算結果
+        self.val = self.dice_roll()
+    
+    # ダイスロールの計算
+    def dice_roll(self):
+        val = 0
+        # ランダムで数字を出して個数分＋する
+        for _ in range(self.pieces):
+            val += random.randint(1, self.dice)
+        
+        # プラスα文字列があった場合は計算する
+        if self.plus_item:
+            index = self.plus_item.end() + 1
+            item_num = int(self.text[index])
+            val = val + item_num if self.plus_item.group() == "+" else val - item_num
+        return val
 
 # ステータス作るよ
 class Status:
-    def __init__(self, screen, name, status_name, label_name, x, y, w, h, text="",  button_flag=True, input_flag=True, box_flag=True,  dice_text=""):
+    def __init__(self, screen, name, status_name, label_name, x, y, w, h, text="", button_flag=True, input_flag=True, box_flag=True, dice_text=""):
         self.screen = screen
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
 
@@ -193,23 +377,25 @@ class Status:
         self.status_name = status_name  # CharaStatusでの名前
         self.label_name = label_name if label_name != "" else self.name     # 実際に表示する名前（スペースなどで位置調整する場合があるため）
         self.text = text                # 説明文
-        self.dice_text = dice_text      # ダイスに表示するテキスト
+        self.dice_text = dice_text      # ダイスボタンに表示するテキスト
         self.label = Label(self.screen, self.font, self.label_name, x, y)    # ラベル作成
 
+        self.input = None   # 初期化
+        self.input_flag = input_flag
         if box_flag:    # インプットボックスを作るかのフラグ
-            self.create_input(input_flag)
-        
+            self.create_input(x, y, w, h, input_flag)
+
+        self.button = None  # 初期化
         if button_flag: # ダイスボタンを作るかのフラグ
-            self.create_dice_button(dice_text)
+            self.create_dice_button()
 
     # インプットボックスを作成
     def create_input(self, x, y, w, h, input_flag):
         self.input = InputBox(self.screen, (x+self.label.rect.w, y, w, h), input_flag)
-        if self.status_name != "sex":
-            if self.status_name in CharaStatus:
-                self.status = CharaStatus[self.status_name]
-                bg = WHITE if input_flag else SHEET_COLOR
-                stat_label = Label(self.screen,self.font, str(self.status), self.input.rect.x+2, self.input.rect.y+2, background=bg)
+        if self.status_name != "sex" and self.status_name in CharaStatus:
+            self.status = CharaStatus[self.status_name]
+            bg = WHITE if input_flag else SHEET_COLOR
+            stat_label = Label(self.screen,self.font, str(self.status), self.input.rect.x+2, self.input.rect.y+2, background=bg)
 
     # ダイスボタンを作成
     def create_dice_button(self):
@@ -260,15 +446,16 @@ class Status:
         if self.status_name == "age":
             min = CharaStatus["EDU"] + 6
         elif self.dice_text != "":
-            min = int(self.dice_text[0])
-            max = int(self.dice_text[2]) * min
-            if len(self.dice_text) > 3:
-                if self.dice_text[3] == "+":
-                    min += int(self.dice_text[4])
-                    max += int(self.dice_text[4])
+            pieces, dice, plus_item = dice_confirmation(self.dice_text)
+            min, max = pieces, dice * pieces
+            if plus_item:
+                num = int(self.dice_text[-1])
+                if plus_item.group() == "+":
+                    min += num
+                    max += num
                 else:
-                    min -= int(self.dice_text[4])
-                    max -= int(self.dice_text[4])
+                    min -= num
+                    max -= num
         val = InputGet(self.status_name, self.name, f"あなたの{self.name}を入力してください", min, max)
         if val != None:
             label = Label(self.screen, self.font, f"{val}", self.input.rect.x+2, self.input.rect.y+2)
@@ -277,16 +464,17 @@ class Status:
 
     # ダイス処理まとめるよ
     def DiceProcess(self):
-        val = DiceRool(self.dice_text)
-        CharaStatus[self.status_name] = val
+        dice = DiceRoll(self.dice_text)
+        CharaStatus[self.status_name] = dice.val
         self.AutoCalculation(self.status_name)
-        Label(self.screen, self.font, str(val), self.input.rect.x+2, self.input.rect.y+2)
+        Label(self.screen, self.font, str(dice.val), self.input.rect.x+2, self.input.rect.y+2)
 
 # 選んだ性別によって画像が変わるようにするよ
 class SexChange:
     def __init__(self, screen, x, y, flag):
         self.screen = screen
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
+
         # flag が True なら男、False なら女
         woman_flag = False if flag else True
 
@@ -306,20 +494,13 @@ class SexChange:
         background = push_color if flag else no_push_color
         color = WHITE if flag else BLACK
         
-        return text_view(self.screen, self.font, text, color, background)
+        return text_view(self.screen, self.font, text, color, background, x, y)
 
     # 画像表示するよ    
     def view_image(self,flag):
         sex = "man" if flag else "woman"
         img_path = f"{PATH}{PICTURE}silhouette_{sex}.png"
-        self.image = Image(self.screen, img_path, 0.5, 40, 40, line=True, line_width=2)
-
-# テキストを描画
-def text_view(screen, font, text, color, bg, x, y):
-    surface = font.render(text, True, color, bg)
-    rect = surface.get_rect(left=x, top=y)
-    screen.blit(surface, rect)
-    return rect
+        self.image = Image(self.screen, img_path, 0.5, 40, 40, line_flag=True, line_width=2)
 
 # 職業選択画面作るよ
 class Profession:
@@ -330,7 +511,7 @@ class Profession:
 
         self.list_image()
         if prof != "":
-            self.image(prof)
+            self.view_image(prof)
 
     # 一覧の表示
     def list_image(self):
@@ -339,7 +520,7 @@ class Profession:
         for prof in list(self.prof_list):
             name = self.prof_list[prof]["name"]
             img_path = f"{PATH}{PICTURE}prof_{name}.png"
-            img = Image(img_path, 0.1, x, y, line=True, bg=True)
+            img = Image(self.screen, img_path, 0.1, x, y, line_flag=True, bg_flag=True)
             self.prof_list[prof]["rect"] = img.rect
             x += 55
             if x >= 590:
@@ -347,7 +528,7 @@ class Profession:
                 x = 100
 
     # 選択された職業を表示
-    def image(self, prof):
+    def view_image(self, prof):
         data = self.prof_list[prof]
         name = data["name"]
         skill_list = data["skill"]
@@ -355,7 +536,7 @@ class Profession:
         x, y = 100, 40
 
         # 画像インスタンス
-        img = Image(self.screen, img_path, 0.35 , x, y, line=True, bg=True)
+        img = Image(self.screen, img_path, 0.35 , x, y, line_flag=True, bg_flag=True)
         lrx = img.rect.x + img.rect.w + 5
         # ラベルインスタンス
         lbl_name = Label(self.screen, self.font, f"【{prof}】", lrx, y)
@@ -364,11 +545,11 @@ class Profession:
         sk_x, sk_y = skill_x + 10, skill_y + lbl_skill.rect.h + 10
         sx, sy = sk_x, sk_y
         for skill in skill_list:
-            rect = Label(self.screen, self.small_font, skill, sx, sy)
-            sx += rect.w + 10
+            skill_label = Label(self.screen, self.small_font, skill, sx, sy)
+            sx += skill_label.rect.w + 10
             if sx > 530:
                 sx = sk_x
-                sy += rect.h + 10
+                sy += skill_label.rect.h + 10
 
 # 趣味選択画面作るよ
 class Hobby:

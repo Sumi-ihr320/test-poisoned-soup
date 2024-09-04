@@ -1,0 +1,97 @@
+{
+    "name":{    "name": "名前", "status_name": "name", "view_name": "",
+                "x": 250, "y": 50, "w": 150, "h": 28,
+                "text": "探索者の名前を入力してください",
+                "button_flag": false, "input_flag": true, "box_flag": true, "dice_text": ""
+    },
+    "sex":  {   "name": "性別", "status_name": "sex", "view_name": "性別(       )",
+                "x": 250, "y": 80, "w": 0,  "h": 0,
+                "text": "探索者の性別をクリックで選択してください",
+                "button_flag": false, "input_flag": false, "box_flag": false, "dice_text": ""
+    },
+    "age":  {   "name": "年齢", "status_name": "age", "view_name": "",
+                "x": 250, "y": 80, "w": 50, "h": 28,
+                "text": "探索者の年齢を入力してください",
+                "button_flag": false, "input_flag": true, "box_flag": true, "dice_text": ""
+    },
+    "STR":  {   "name": "筋力", "status_name": "STR", "view_name": "STR(筋力)  ",
+                "x": 250, "y": 120, "w": 40, "h": 28,
+                "text": "筋力の値を決めます。\n・3～6:全然筋力がない ・7～10:普通ぐらい\n・11～14:筋力に自身あり ・15～17:筋力を自慢できる\n・18:筋肉モリモリマッチョマン\nテキスト入力とダイスで決定を選択できます。",
+                "button_flag": true, "input_flag": true, "box_flag": true, "dice_text": "3D6"
+    },
+    "CON":  {   "name": "体力", "status_name": "CON", "view_name": "CON(体力)  ",
+                "x": 250, "y": 152, "w": 40, "h": 28,
+                "text": "体力の値を決めます。\n・3～6:まったく体力ない ・7～10:ほどほど体力はある\n・11～14:それなりに体力がある\n・15～17:スポーツマン並にある ・18:元気100倍\nテキスト入力とダイスで決定を選択できます。",
+                "button_flag": true, "input_flag": true, "box_flag": true, "dice_text": "3D6"
+    },
+    "SIZ":  {   "name": "体格", "status_name": "SIZ", "view_name": "SIZ(体格)  ",
+                "x": 250, "y": 184, "w": 40, "h": 28,
+                "text": "体格の値を決めます。\n・8～11:小柄 ・12～15:中肉中背 ・16～18:大柄\nテキスト入力とダイスで決定を選択できます。",
+                "button_flag": true, "input_flag": true, "box_flag": true, "dice_text": "2D6+6"
+    },
+    "DEX":  {   "name": "俊敏性", "status_name": "DEX", "view_name": "DEX(俊敏性)",
+                "x": 250, "y": 216, "w": 40, "h": 28,
+                "text": "俊敏性の値を決めます。\n・3～6:鈍重 ・7～10:問題なく動ける\n・11～14:素早い動作が得意 ・15～17:その道のプロ\n・18:電光石火\nテキスト入力とダイスで決定を選択できます。",
+                "button_flag": true, "input_flag": true, "box_flag": true, "dice_text": "3D6"
+    },
+    "APP":  {   "name": "外見", "status_name": "APP", "view_name": "APP(外見)  ",
+                "x": 500, "y": 120, "w": 40, "h": 28,
+                "text": "外見の値を決めます。\n・3～6:醜悪な容姿 ・7～10:一般的\n・11～14:整った顔立ち ・15～17:モデル並み\n・18:傾城傾国\nテキスト入力とダイスで決定を選択できます。",
+                "button_flag": true, "input_flag": true, "box_flag": true, "dice_text": "3D6"
+    },
+    "EDU":  {   "name": "教育", "status_name": "EDU", "view_name": "EDU(教育)  ",
+                "x": 500, "y": 152, "w": 40, "h": 28,
+                "text": "教育の値を決めます。\n・6～8:中学卒業程度 ・9～11:高校卒業\n・12～15:大学卒業 ・16～19:大学院生卒業\n・20～21:研究者や科学者\nテキスト入力とダイスで決定を選択できます。",
+                "button_flag": true, "input_flag": true, "box_flag": true, "dice_text": "3D6+3"
+    },
+    "INT":  {   "name": "知性", "status_name": "INT", "view_name": "INT(知性)  ",
+                "x": 500, "y": 184, "w": 40, "h": 28,
+                "text": "知力の値を決めます。\n・3～6:頭が悪い ・7～10:普通 ・11～14:発想豊か\n・15～17:頭脳明晰 ・18:英俊豪傑\nテキスト入力とダイスで決定を選択できます。",
+                "button_flag": true, "input_flag": true, "box_flag": true, "dice_text": "3D6"
+    },
+    "POW":  {   "name": "精神力", "status_name": "POW", "view_name": "POW(精神力)",
+                "x": 500, "y": 216, "w": 40, "h": 28,
+                "text": "精神力の値を決めます。\n・3～6:精神に問題あり ・7～10:人並みの心臓\n・11～14:精神的にタフ ・15～17:修行僧\n・18:黄金の精神\nテキスト入力とダイスで決定を選択できます。",
+                "button_flag": true, "input_flag": true, "box_flag": true, "dice_text": "3D6"
+    },
+    "Luck": {   "name": "幸運", "status_name": "Luck", "view_name": "幸運       ",
+                "x": 250, "y": 250, "w": 40, "h": 28,
+                "text": "探索者の幸運度を表します。\n値はPOW x 5で決まります。",
+                "button_flag": false, "input_flag": false, "box_flag": true, "dice_text": ""
+    },
+    "Idea": {   "name": "アイデア", "status_name": "Idea", "view_name": "アイデア   ",
+                "x": 250, "y": 282, "w": 40, "h": 28,
+                "text": "アイデアは直感的な能力です。\n特殊な雰囲気など、普通では気がつかないであろう物に\n気付けるかどうかの能力になります\n値はINT x 5で決まります。",
+                "button_flag": false, "input_flag": false, "box_flag": true, "dice_text": ""
+    },
+    "Knowledge": {  "name": "知識", "status_name": "Knowledge", "view_name": "知識       ",
+                    "x": 250, "y": 314, "w": 40, "h": 28,
+                    "text": "探索者が持っている知識量の値です。\n値はEDU x 5で決まります。",
+                    "button_flag": false, "input_flag": false, "box_flag": true, "dice_text": ""
+    },
+    "Avo":  {   "name": "回避", "status_name": "Avo", "view_name": "回避       ",
+                "x": 250, "y": 346, "w": 40, "h": 28,
+                "text": "探索者の回避技能値です。\n値はDEX x 2で決まります。",
+                "button_flag": false, "input_flag": false, "box_flag": true, "dice_text": ""
+    },
+    "DB":  {   "name": "ﾀﾞﾒｰｼﾞ･ﾎﾞｰﾅｽ", "status_name": "DB", "view_name": "DB(ﾀﾞﾒｰｼﾞ･ﾎﾞｰﾅｽ)",
+                "x": 450, "y": 250, "w": 50, "h": 28,
+                "text": "小柄で筋力が無い人物だと\n与えるダメージにマイナスの補正が掛かります。\n逆に大柄で筋力がある人物では\n与えるダメージにプラスの補正が掛かります。\n値はSTR+SIZで決まります。",
+                "button_flag": false, "input_flag": false, "box_flag": true, "dice_text": ""
+    },
+    "HP":  {   "name": "耐久力", "status_name": "HP", "view_name": "耐久力          ",
+                "x": 450, "y": 282, "w": 40, "h": 28,
+                "text": "探索者のHPや生命力を表します。\n最大値は(CON+SIZ)÷2で決まります。",
+                "button_flag": false, "input_flag": false, "box_flag": true, "dice_text": ""
+    },
+    "MP":  {   "name": "ﾏｼﾞｯｸﾎﾟｲﾝﾄ", "status_name": "MP", "view_name": "MP(ﾏｼﾞｯｸﾎﾟｲﾝﾄ)  ",
+                "x": 450, "y": 314, "w": 40, "h": 28,
+                "text": "探索者のマジックポイントを表します。\n最大値はPOWと同じ数値です。",
+                "button_flag": false, "input_flag": false, "box_flag": true, "dice_text": ""
+    },
+    "SAN":  {   "name": "正気度", "status_name": "SAN", "view_name": "SAN値(正気度)   ",
+                "x": 450, "y": 346, "w": 40, "h": 28,
+                "text": "探索者の正気度を表します。\n最大値はPOW x 5で決まります。",
+                "button_flag": false, "input_flag": false, "box_flag": true, "dice_text": ""
+    }
+}

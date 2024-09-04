@@ -48,7 +48,8 @@ class MainApp:
                           "charasheet": CharacterSheet,
                           "play": MainPlay}
 
-        self.event_name = "title"
+        #self.event_name = "title"
+        self.event_name = "charasheet"
         #self.event_name = "play"
         self.event_flag = ""
 
