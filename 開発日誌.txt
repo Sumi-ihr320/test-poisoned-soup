@@ -145,3 +145,9 @@
 	functhion_summary.py のできそうなクラス化を完了
 	class_summary.pyの手直し完了
 	character_sheet.py をクラス化に挑戦中
+	jsonフォルダを作成
+
+2024/09/07
+	character_sheet.py をクラス化に挑戦
+	pulldownクラスの手直し
+	professionクラスを調整

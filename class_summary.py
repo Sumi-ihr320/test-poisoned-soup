@@ -266,7 +266,7 @@ class Image:
             self.rect.centery += y
 
     # 画像を表示するよ
-    def view_image(self, bg_flag, line_flag, line_width):
+    def view_image(self, bg_flag, line_flag, line_width=1):
         # 背景を白にする場合
         if bg_flag:
             pygame.draw.rect(self.screen, WHITE, self.rect)
@@ -277,38 +277,55 @@ class Image:
         # 画像の枠を描画する場合
         if line_flag:
             pygame.draw.rect(self.screen, BLACK, self.rect, line_width)
- 
+
+# 箱をクラスにするよ
+class Box:
+    def __init__(self, screen, x, y, w, h):
+        self.screen = screen
+        self.rect = self.draw_box(x, y, w, h)
+
+    def draw_box(self, x, y, w, h):
+        pygame.draw.rect(self.screen, GRAY,(x, y, w, h))
+        pygame.draw.rect(self.screen, WHITE, (x+1, y+1, w-2, h-2))
+
 # プルダウン機能をクラス化できないかな？
 class PullDown:
-    def __init__(self, screen, font, rect, text, list, pd_h=285):
+    def __init__(self, screen, font, rect, text, item_list, pd_h=285):
         self.screen = screen
         self.font = font
 
         self.box_rect = self.create_box(rect)
         # プルダウンボックスに最初に表示される文字を表示するよ
         self.label = Label(self.screen, self.font, str(text), rect[0]+4, rect[1]+4)
-        self.list = list
+        self.item_list = item_list
 
-        # プルダウンボックスのアイテムの位置のリスト{item:rect}
-        self.items = {}
+        # 現在表示されているアイテム
+        self.selected_item = ""
+
+        # プルダウンボックスのアイテムの位置のリスト
+        self.items = []
         self.pd_h = pd_h
         self.list_box = None
 
-        if PullDownFlag:
-            self.create_pulldown_list()
+        self.is_dropped = False     # プルダウンが開いているかのフラグ
 
     # ボックス作るよ
     def create_box(self,rect):
         x = rect[0] + 5
         y, w, h = rect[1], rect[2], rect[3]
-        Box(x, y, w, h)
+        box = Box(self.screen, x, y, w, h)
 
         # 三角作るよ
         tx = x + w -25
         ty = y + 3
         triangle = Label(self.screen, self.font, "▼", tx, ty, background=WHITE)
-        return Rect(x,y,w,h)
+        return box.rect
     
+    def toggle_pulldown_list(self):
+        self.is_dropped = not self.is_dropped
+        if self.is_dropped:
+            self.create_pulldown_list()
+
     # プルダウン押した時に表示される項目表示したいよ
     def create_pulldown_list(self):
         x = self.box_rect.x + 3
@@ -320,14 +337,14 @@ class PullDown:
         w = self.box_rect.w
         ly = y
         lis_rect = None
+        self.items.clear()  # 以前のアイテムをクリア
         for item in list:
             # 項目作成
             surface = self.font.render(item, True, BLACK)
             rect = surface.get_rect(left=x,top=y)
-
             # 項目名とそのsurface, rectを辞書に登録していく
             lis_rect = Rect(rect.x, rect.y, w, rect.h)
-            self.items = {item: (surface, lis_rect)}
+            self.items.append(item, surface, lis_rect)
 
             # 表示位置を下にずらす
             y += rect.h + 1
@@ -336,12 +353,23 @@ class PullDown:
             if y >= (ly + self.pd_h):
                 x += x + w
                 y = ly
-        lh = y - ly
 
         # リストボックスを作って文字を表示する
-        self.list_box = Box(self.screen, x, ly, w, lh)
-        for item in self.items:
-            self.screen.blit(self.items[item][0], self.items[item][1])
+        self.list_box = Box(self.screen, x, ly, w, y-ly)
+        for item, surface, rect in self.items:
+            self.screen.blit(surface, rect)
+
+    def handle_click(self, pos):
+        if self.is_dropped and self.list_box.rect.collidepoint(pos):
+            for item, surface, rect in self.items:
+                if rect.collidepoint(pos):
+                    self.selected_item = item   # 選択されたアイテムを保持
+                    self.label.text = f"{item}" # 表示されるラベルを更新
+                    self.is_dropped = False     # プルダウンを閉じる
+                    break
+    
+    def is_open(self):
+        return self.is_dropped
 
 # ダイスロールをクラス化するよ（画像表示はやめとこうかなって悩んでるよ）
 class DiceRoll:
@@ -469,6 +497,17 @@ class Status:
         self.AutoCalculation(self.status_name)
         Label(self.screen, self.font, str(dice.val), self.input.rect.x+2, self.input.rect.y+2)
 
+    def handle_mouse_hover(self, pos):
+        if self.label.rect.collidepoint(pos):
+            TextDraw(self.screen, self.text)
+        elif self.input:
+            if self.input.rect.collidepoint(pos):
+                TextDraw(self.screen, self.text)
+        elif self.button:
+            if self.button.rect.collidepoint(pos):
+                TextDraw(self.screen, "ダイスでランダムに値を決めることができます")
+
+
 # 選んだ性別によって画像が変わるようにするよ
 class SexChange:
     def __init__(self, screen, x, y, flag):
@@ -502,66 +541,129 @@ class SexChange:
         img_path = f"{PATH}{PICTURE}silhouette_{sex}.png"
         self.image = Image(self.screen, img_path, 0.5, 40, 40, line_flag=True, line_width=2)
 
-# 職業選択画面作るよ
+# 職業クラス
 class Profession:
-    def __init__(self, screen, prof):
+    def __init__(self, screen, name, eng_name, skills, x, y, view_x, view_y):
         self.screen = screen
-        self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
-        self.small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
 
-        self.list_image()
-        if prof != "":
-            self.view_image(prof)
+        self.name = name
+        self.eng_name = eng_name
+        self.skills = skills
+        self.path = f"{PATH}{PICTURE}prof_{eng_name}.png"
+        self.x, self.y = x, y
+        self.view_x, self.view_y = view_x, view_y
+        self.small_img = self.load_img(self.x, self.y, 0.1)
+        self.big_img = self.load_img(self.view_x, self.view_y, 0.35)
+        self.show_img_flag = False
+        
+    # 画像インスタンスを作成
+    def load_img(self, x, y, size):
+        return Image(self.screen, self.path, size, x, y, line_flag=True, bg_flag=True)
 
-    # 一覧の表示
-    def list_image(self):
-        x, y = 100, 230
-        self.prof_list = ProfessionList
-        for prof in list(self.prof_list):
-            name = self.prof_list[prof]["name"]
-            img_path = f"{PATH}{PICTURE}prof_{name}.png"
-            img = Image(self.screen, img_path, 0.1, x, y, line_flag=True, bg_flag=True)
-            self.prof_list[prof]["rect"] = img.rect
-            x += 55
-            if x >= 590:
-                y += 55
-                x = 100
+    # 画像を改めて表示
+    def image_draw(self):
+        self.small_img.view_image(True, True)
+        if self.show_img_flag:
+            self.big_img.view_image(True, True)
+            self.text_draw()
 
-    # 選択された職業を表示
-    def view_image(self, prof):
-        data = self.prof_list[prof]
-        name = data["name"]
-        skill_list = data["skill"]
-        img_path = f"{PATH}{PICTURE}prof_{name}.png"
-        x, y = 100, 40
+    # 職業ステータスを表示する
+    def text_draw(self):
+        font = pygame.font.Font(FONT_PATH, FONT_SIZ)
+        small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
 
-        # 画像インスタンス
-        img = Image(self.screen, img_path, 0.35 , x, y, line_flag=True, bg_flag=True)
-        lrx = img.rect.x + img.rect.w + 5
-        # ラベルインスタンス
-        lbl_name = Label(self.screen, self.font, f"【{prof}】", lrx, y)
-        skill_x, skill_y = lrx + 10, y + 30
-        lbl_skill = Label(self.screen, self.small_font, "所持技能： ", skill_x, skill_y)
+        # 名前ラベル
+        lbl_name = Label(self.screen, font, f"【{self.name}】", self.big_img.rect.x+self.big_img.rect.w+5, self.view_y)
+
+        # 所持技能ラベルの表示位置
+        skill_x, skill_y = self.big_img.rect.x + self.big_img.rect.w + 15, self.view_y + 30
+
+        # 所持技能ラベル
+        lbl_skill = Label(self.screen, small_font, "所持技能： ", skill_x, skill_y)
+
+        # 個々のスキルの表示位置
         sk_x, sk_y = skill_x + 10, skill_y + lbl_skill.rect.h + 10
         sx, sy = sk_x, sk_y
-        for skill in skill_list:
-            skill_label = Label(self.screen, self.small_font, skill, sx, sy)
+
+        # スキルを順番に表示していく
+        for skill in self.skills:
+            skill_label = Label(self.screen, small_font, skill, sx, sy)
             sx += skill_label.rect.w + 10
             if sx > 530:
                 sx = sk_x
                 sy += skill_label.rect.h + 10
 
-# 趣味選択画面作るよ
-class Hobby:
+    def handle_mouse_hover(self, pos):
+        if self.small_img.rect.collidepoint(pos):
+            TextDraw(self.screen, f"あなたの職業を選択してください\n【{self.name}】")
+
+    def handle_click(self, pos):
+        if self.small_img.rect.collidepoint(pos):
+            self.show_img_flag = not self.show_img_flag     # クリックすると逆の状態になる
+            CharaStatus["Profession"] = self.name
+            ProfDataIn()
+
+# 職業選択画面作るよ
+class ProfessionSelecter:
     def __init__(self, screen):
+        self.screen = screen
+
+        self.set_data()
+        self.list_image_view()
+
+    def set_data(self):
+        self.prof_data = self.load_profession_data()
+        self.prof_items = []
+
+    # 職業データのロード
+    def load_profession_data(self):
+        # 職業リスト
+        with open(PROF_JSON_PATH,"r",encoding="utf-8_sig") as f:
+            return json.load(f)
+
+    # 一覧の表示
+    def list_image_view(self):
+        x, y = 100, 230
+        view_x, view_y = 100, 40
+        for prof in list(self.prof_data):
+            name = self.prof_data[prof]["name"]
+            item = Profession(self.screen, prof, name, self.prof_data[prof]["skill"], x, y, view_x, view_y)
+            self.prof_items.append(item)
+            x += 55
+            if x >= 590:
+                y += 55
+                x = 100
+
+# 趣味選択画面作るよ
+class HobbySelecter:
+    def __init__(self, screen):
+        self.screen = screen
+
+        self.set_data()
+        self.draw_item()        
+
+    # 趣味データをロード
+    def set_data(self):
+        self.hobby_list = self.load_data()
+        self.select_item = ""
+
+    def load_data(self):
+        with open(HOBBY_JSON_PATH,"r",encoding="utf-8_sig") as f:
+            return json.load(f)
+    
+    def draw_item(self):
         # フォントの設定
         font = pygame.font.Font(FONT_PATH, FONT_SIZ)
         small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
-
-        self.label = Label(screen, font, "趣味", 545, 175)
-        if PullDownItem == "":
+        
+        label = Label(self.screen, font, "趣味", 545, 175)
+        if self.select_item == "":
             self.listitem = "未選択"
         else:
-            self.listitem = PullDownItem
-        self.pull = PullDown(screen, small_font, (435,200,150,25), self.listitem, list(HobbyList), 207)
+            self.listitem = self.select_item
+        self.pull = PullDown(self.screen, small_font, (435,200,150,25), self.listitem, list(self.hobby_list), 207)
+
+    def handle_mousu_hover(self, pos):
+        if self.pull.box_rect.collidepoint(pos):
+            TextDraw(self.screen, "あなたの趣味を選択してください")
 

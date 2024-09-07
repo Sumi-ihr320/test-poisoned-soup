@@ -45,7 +45,7 @@ class MainApp:
                           "load": Load,
                           "save": Save,
                           "opening": Opening(self.screen),
-                          "charasheet": CharacterSheet,
+                          "charasheet": CharacterSheet(self.screen),
                           "play": MainPlay}
 
         #self.event_name = "title"
@@ -81,8 +81,8 @@ class MainApp:
     def process_event(self):
         if self.event_name in self.event_map:
             event = self.event_map[self.event_name]
-            if self.event_name in ["title", "opening"]:
-                self.event_name, self.event_flag = event.update()                           
+            if self.event_name in ["title", "opening", "charasheet"]:
+                self.event_name, self.event_flag = event.update()
             elif self.event_name in ["save", "load"]:
                 self.event_name = event(self.screen, self.event_flag, SelectSaveData)
             else:

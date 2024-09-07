@@ -10,7 +10,7 @@
                 "button_flag": false, "input_flag": false, "box_flag": false, "dice_text": ""
     },
     "age":  {   "name": "年齢", "status_name": "age", "view_name": "",
-                "x": 250, "y": 80, "w": 50, "h": 28,
+                "x": 500, "y": 80, "w": 50, "h": 28,
                 "text": "探索者の年齢を入力してください",
                 "button_flag": false, "input_flag": true, "box_flag": true, "dice_text": ""
     },
