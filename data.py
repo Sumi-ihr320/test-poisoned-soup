@@ -30,10 +30,10 @@ MUSIC = "/Music/"
 SAVE_FOLDER = "/Save/"
 JSON_FOLDER = "/Json/"
 
-STATUS_JSON_PATH = f"{PATH}{JSON_FOLDER}CharaStatus.json"
-PROF_JSON_PATH = f"{PATH}{JSON_FOLDER}Profession.json"
-SKILL_JSOM_PATH = f"{PATH}{JSON_FOLDER}SkillList.json"
-HOBBY_JSON_PATH = f"{PATH}{JSON_FOLDER}Hobby.json"
+STATUS_DATA_PATH = "CharaStatus.json"
+PROF_DATA_PATH = "Profession.json"
+SKILL_DATA_PATH = "SkillList.json"
+HOBBY_DATA_PATH = "Hobby.json"
 
 # フォント
 FONT_PATH = os.path.join(PATH,"HGRKK.TTC")
@@ -55,17 +55,9 @@ CENTER,NORTH,EAST,WEST,SOUTH = (0,1,2,3,4)
 
 
 # 基本データ --------------------------------------------
-"""
-# フォントの設定
-font = pygame.font.Font(FONT_PATH, FONT_SIZ)
-small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
-big_font = pygame.font.Font(FONT_PATH, BIG_SIZ)
-# メニュー用フォント
-contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)
-"""
 
 # キャラクターのステータスデータ
-with open(STATUS_JSON_PATH,"r",encoding="utf-8_sig")as f:
+with open(f"{PATH}{JSON_FOLDER}{STATUS_DATA_PATH}", "r", encoding="utf-8_sig")as f:
     STATUS = json.load(f)
     
 CharaStatus = STATUS["Hero"]    # 主人公
@@ -95,15 +87,15 @@ PullDownFlag = False    # プルダウン用フラグ
 PullDownItem = ""       # プルダウンアイテム記憶用
 
 # 職業リスト
-with open(PROF_JSON_PATH,"r",encoding="utf-8_sig") as f:
+with open(f"{PATH}{JSON_FOLDER}{PROF_DATA_PATH}","r",encoding="utf-8_sig") as f:
     ProfessionList = json.load(f)
 
 # 技能リスト
-with open(SKILL_JSOM_PATH,"r",encoding="utf-8_sig") as f:
+with open(f"{PATH}{JSON_FOLDER}{SKILL_DATA_PATH}","r",encoding="utf-8_sig") as f:
     SkillList = json.load(f)
 
 # 趣味リスト
-with open(HOBBY_JSON_PATH,"r",encoding="utf-8_sig") as f:
+with open(f"{PATH}{JSON_FOLDER}{HOBBY_DATA_PATH}","r",encoding="utf-8_sig") as f:
     HobbyList = json.load(f)
 
 # 本編 -------------------------------------------------------

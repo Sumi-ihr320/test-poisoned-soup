@@ -151,3 +151,15 @@
 	character_sheet.py をクラス化に挑戦
 	pulldownクラスの手直し
 	professionクラスを調整
+
+2024/9/11
+	CharacterSheetクラスがうまく働いてないので
+	CharacterSheet,status,profession等のクラスの手直し
+
+2024/9/14
+	いろいろうまく動かないのでchatGPTに聞きながら試行錯誤
+
+2024/9/18
+	inputboxクラスにラベル表示機能を追加
+	statusクラス等の手直し
+	character_sheetの1page目を表示することに成功
