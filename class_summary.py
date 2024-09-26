@@ -43,7 +43,7 @@ class DataWindow:
             top_text = "ロード"
             enter_text = "開始"
 
-        self.top = Label(self.screen, self.contents_font, top_text, y=80, center_flag=True)
+        self.top = Label(self.screen, self.contents_font, top_text, y=80, centerx=WINDOW_CENTER_X)
         self.enter = Label(self.screen, self.contents_font, enter_text, 250, 500)
         self.close = Label(self.screen, self.contents_font, "CLOSE", 480, 500)
         self.lbl_list = [self.enter,self.close]
@@ -111,20 +111,25 @@ class PageNavigation:
 
 # ラベル作成をクラス化するよ    (chatGPT指南)
 class Label:
-    def __init__(self, screen, font, text, x=0, y=0, color=BLACK, center_flag=False, background=None):
+    def __init__(self, screen, font, text, x=0, y=0, centerx=None, centery=None, position="left", color=BLACK, background=None):
         self.screen = screen
         self.font = font
         self.text = text
         self.color = color
         self.background = background
-        self.rect = self.create_label(x, y, center_flag)
+        self.rect = self.create_label(x, y, centerx, centery, position)
 
     # ラベルを作る
-    def create_label(self, x, y, center_flag):
+    def create_label(self, x, y, centerx, centery, position):
         surface = self.font.render(self.text, True, self.color, self.background)
-        rect = surface.get_rect(left=x, top=y)
-        if center_flag:
-            rect.centerx = DISPLAY_SIZE[0] / 2
+        if position == "right":
+            rect = surface.get_rect(right=x, top=y)
+        else:
+            rect = surface.get_rect(left=x, top=y)
+        if centerx:
+            rect.centerx = centerx
+        if centery:
+            rect.centery = centery
         return rect
 
     # ラベルを描画する
@@ -240,15 +245,13 @@ class InputBox:
 
         # ラベルの設定
         self.label_text = label_text
-        self.label_surface = None
-        self.label_rect = None
+        self.label = None
         if self.label_text:
             self.create_label()
     
     # ラベルの作成
     def create_label(self):
-        self.label_surface = self.font.render(self.label_text, True, BLACK)
-        self.label_rect = self.label_surface.get_rect(center=(self.rect.centerx, self.rect.centery))
+        self.label = Label(self.screen, self.font, self.label_text, centerx=self.rect.centerx, centery=self.rect.centery)
 
     # ボックスの描画
     def draw_box(self):
@@ -259,8 +262,8 @@ class InputBox:
                          self.line_bold)
         
         # ラベルがあれば描写
-        if self.label_surface:
-            self.screen.blit(self.label_surface, self.label_rect)
+        if self.label:
+            self.label.draw()
 
     # 色を更新するメソッド
     def update_color(self):
@@ -275,9 +278,18 @@ class InputBox:
     def update(self):
         self.draw_box()
 
+    # ラベルの更新
     def update_label(self, new_text):
         self.label_text = new_text
         self.create_label()
+
+    def get_value(self):
+        # ラベルに表示されている文字を、数字ならintにしてそうでないなら文字列として返す
+        try:
+            val = int(self.label_text)
+        except ValueError:
+            val = self.label_text
+        return val
 
 # 画像表示をクラス化するよ
 class Image:
@@ -333,23 +345,34 @@ class Image:
 class Box:
     def __init__(self, screen, x, y, w, h):
         self.screen = screen
-        self.rect = self.draw_box(x, y, w, h)
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.rect = Rect(x, y, w, h)
 
-    def draw_box(self, x, y, w, h):
-        pygame.draw.rect(self.screen, GRAY,(x, y, w, h))
-        pygame.draw.rect(self.screen, WHITE, (x+1, y+1, w-2, h-2))
-        return Rect(x, y, w, h)
+    def draw(self):
+        pygame.draw.rect(self.screen, GRAY, self.rect)
+        pygame.draw.rect(self.screen, WHITE, (self.x+1, self.y+1, self.w-2, self.h-2))
 
 # プルダウン機能をクラス化できないかな？
 class PullDown:
-    def __init__(self, screen, font, rect, text, item_list, pd_h=285):
+    def __init__(self, screen, font, rect, item_list, label_text="", pd_h=285):
         self.screen = screen
         self.font = font
 
-        self.box_rect = self.create_box(rect)
-        # プルダウンボックスに最初に表示される文字を表示するよ
-        self.label = Label(self.screen, self.font, str(text), rect[0]+5, rect[1]+4, background=WHITE)
-        self.label.draw()
+        # プルダウンする前のボックス
+        self.box = None
+        self.triangle = None        # ボックスに表示される ▼
+        self.create_box(Rect(rect))
+
+        # ボックスに表示される文字
+        self.label_text = label_text
+        self.label = None
+        if label_text:
+            self.create_label()
+
+        # プルダウンに表示するリスト
         self.item_list = item_list
 
         # 現在表示されているアイテム
@@ -360,36 +383,44 @@ class PullDown:
         self.pd_h = pd_h            # プルダウンボックスの最大高さ
         self.list_box = None
 
-        self.is_dropped = False     # プルダウンが開いているかのフラグ
-
     # ボックス作るよ
-    def create_box(self,rect):
-        x = rect[0] + 5
-        y, w, h = rect[1], rect[2], rect[3]
-        box = Box(self.screen, x, y, w, h)
+    def create_box(self, rect):
+        self.box = Box(self.screen, rect.x, rect.y, rect.w, rect.h)
 
         # 三角作るよ
-        tx = x + w -25
-        ty = y + 3
-        triangle = Label(self.screen, self.font, "▼", tx, ty, background=WHITE)
-        triangle.draw()
-        return box.rect
+        self.triangle = Label(self.screen, self.font, "▼", rect.right-5, centery=rect.centery, position="right")
     
-    def toggle_pulldown_list(self):
-        self.is_dropped = not self.is_dropped
-        print(f"Dropdown toggled: {self.is_dropped}")  # トグルの状態を表示  
-        if self.is_dropped:
-            self.create_pulldown_list()
+    # 表示するラベル作るよ
+    def create_label(self):
+        self.label = Label(self.screen, self.font, self.label_text, x=self.box.rect.x+5, centery=self.box.rect.centery)
+
+    # ボックスの表示
+    def draw(self, is_dropped):
+        # ボックスと▼
+        self.box.draw()
+        self.triangle.draw()
+
+        # テキストがあればテキスト
+        if self.label:
+            self.label.draw()
+
+        if is_dropped:
+            self.draw_list_box()
+
+    # ラベルの更新
+    def update_label(self, new_text):
+        self.label_text = new_text
+        self.create_label()
 
     # プルダウン押した時に表示される項目表示したいよ
     def create_pulldown_list(self):
-        x = self.box_rect.x + 3
-        y = self.box_rect.y + self.box_rect.h + 3
-        self.draw_list(self.item_list, x, y)
+        x = self.box.rect.x
+        y = self.box.rect.y + self.box.rect.h
+        self.create_list(self.item_list, x, y)
 
-    # リストを表示する
-    def draw_list(self, list, x, y):
-        w = self.box_rect.w
+    # リストを作成する
+    def create_list(self, list, x, y):
+        w = self.box.rect.w
         self.items.clear()  # 以前のアイテムをクリア
         lis_rect = None     # クリック感知の範囲は文字の範囲だけではなく少し広い範囲に設定するためのリスト用rect
         y_initial = y   # 最初のy位置を記録
@@ -408,36 +439,32 @@ class PullDown:
             
             # プルダウンボックスより下は隣に表示する
             if current_y >= (y_initial + self.pd_h):
-                current_x += current_x + w
+                current_x += w
                 max_w += w
                 current_y = y_initial
 
-        # リストボックスを作って文字を表示する
+        # リストボックスを作る
         self.list_box = Box(self.screen, x, y_initial, max_w, self.pd_h)
+
+    # リストボックスを表示する
+    def draw_list_box(self):
+        self.create_pulldown_list()
+        self.list_box.draw()
         for item, surface, rect in self.items:
             self.screen.blit(surface, rect)
-
-    def handle_click(self, pos):
-        print(f"Handling click at position: {pos}")  # クリック位置の確認 
-        if self.is_dropped:
-            if self.list_box.rect.collidepoint(pos):
-                print("Dropdown is open and click detected inside the dropdown.") 
+        
+    def handle_click(self, pos, is_dropped):
+        if is_dropped:
+            if self.list_box and self.list_box.rect.collidepoint(pos):
                 for item, surface, lis_rect in self.items:
                     if lis_rect.collidepoint(pos):
-                        print(f"Item selected: {item}")  # 選択されたアイテムの確認
-                        self.selected_item = item   # 選択されたアイテムを保持
-                        self.label.text = f"{item}" # 表示されるラベルを更新
-                        self.is_dropped = False     # プルダウンを閉じる
-                        break
-            else:
-                print("Click detected outside the dropdown, keeping it open.") 
-                return
-        else:
-            print("Dropdown is closed, handling other clicks.")
-            return
+                        self.selected_item = item       # 選択されたアイテムを保持
+                        self.update_label(f"{item}")    # 表示されるラベルを更新
+                        return True
+        return False
     
-    def is_open(self):
-        return self.is_dropped
+    def handle_mouse_over(self, pos):
+        pass
 
 # ダイスロールをクラス化するよ（画像表示はやめとこうかなって悩んでるよ）
 class DiceRoll:
@@ -487,7 +514,6 @@ class Status:
         # 入力可能かのフラグ
         self.input_flag = input_flag
         self.input = None   # 初期化
-        self.input_label = None
         if box_flag:    # インプットボックスを作るかのフラグ
             self.create_input(x, y, w, h)
 
@@ -510,8 +536,6 @@ class Status:
         rect = self.input.rect.copy() if self.input else self.status_label.rect.copy()
         # その幅分隣
         rect.x = rect.x + rect.w + 5
-        # ボタンのほうがインプットボックスや元のラベルより大きいので少し上に表示する
-        rect.y = rect.y - 2
         self.button = Button(self.screen, self.font, rect, self.dice_text, self.dice_process)
 
     def draw(self):
@@ -521,62 +545,13 @@ class Status:
         if self.button:
             self.button.draw()
 
-    # ステータスの自動計算
-    def auto_calculation(self, name):
-        calculations = {"STR": [self.calculation_damege_bonus],
-                        "SIZ": [self.calculation_damege_bonus, self.calculation_health_point],
-                        "CON": [self.calculation_health_point],
-                        "POW": [self.calculation_power_related],
-                        "INT": [self.calculation_idea],
-                        "EDU": [self.calculation_educated_point],
-                        "DEX": [self.calculation_avoid_point]}
-
-        if name in calculations:
-            for calculation in calculations[name]:
-                calculation()
-
-    # ダメージボーナスの計算
-    def calculation_damege_bonus(self):
-        st = CharaStatus["STR"] + CharaStatus["SIZ"]
-        if 2 <= st <= 12:       val = "-1D6"
-        elif 13 <= st <= 16:    val = "-1D4"
-        elif 25 <= st <= 32:    val = "+1D4"
-        elif 33 <= st <= 40:    val = "+1D6"
-        else:                   val = "0"
-        CharaStatus["DB"] = val
-
-    # HPの計算
-    def calculation_health_point(self):
-        CharaStatus["HP"] = (CharaStatus["CON"] + CharaStatus["SIZ"]) // 2
-
-    # POW 関連の計算
-    def calculation_power_related(self):
-        # MP、幸運、SAN値の計算
-        CharaStatus["MP"] = CharaStatus["POW"]
-        val = CharaStatus["POW"] * 5
-        CharaStatus["Luck"] = val
-        CharaStatus["SAN"] = val
-
-    # アイデアの計算
-    def calculation_idea(self):
-        CharaStatus["Idea"] = CharaStatus["INT"] * 5
-
-    # 知識の計算
-    def calculation_educated_point(self):
-        val = CharaStatus["EDU"] * 5
-        CharaStatus["Know"] = val if val < 99 else 99
-        
-    # 回避の計算
-    def calculation_avoid_point(self):
-        CharaStatus["Avo"] = CharaStatus["DEX"] * 2
-
     # 入力ボックスの最大値最小値を決めるよ
-    def determine_input_range(self):
+    def determine_input_range(self, edu):
         min, max = 0, self.MAX_STATUS_VALUE
 
         # 最大値最小値を決めるよ
         if self.status_name == "age":
-            min = CharaStatus["EDU"] + 6
+            min = edu + 6
 
         elif self.dice_text:
             pieces, dice, plus_item = dice_confirmation(self.dice_text)
@@ -592,15 +567,12 @@ class Status:
         return min, max
     
     # 入力ボックスの処理まとめるよ
-    def input_process(self):
-        min, max = self.determine_input_range()
-
+    def input_process(self, edu):
+        min, max = self.determine_input_range(edu)
         val = self.input_get(min, max)
         if val is not None:
             if self.input:
                 self.input.update_label(f"{val}")
-            CharaStatus[self.status_name] = val
-            self.auto_calculation(self.status_name)
 
     # インプットボックスの処理をまとめるよ
     def input_get(self, min=0, max=100):
@@ -620,8 +592,6 @@ class Status:
     # ダイス処理まとめるよ
     def dice_process(self):
         dice = DiceRoll(self.dice_text)
-        CharaStatus[self.status_name] = dice.val
-        self.auto_calculation(self.status_name)
         self.input.update_label(f"{dice.val}")
 
     def handle_mouse_hover(self, pos):
@@ -657,7 +627,7 @@ class SexChange:
         # 背景色と文字色をフラグによって変える
         background = push_color if flag else no_push_color
         color = WHITE if flag else BLACK
-        return Label(self.screen, self.font, text, x, y, color, background=background)
+        return Label(self.screen, self.font, text, x, y, color=color, background=background)
 
     # 画像作るよ
     def create_image(self, flag):
@@ -695,7 +665,7 @@ class Profession:
         self.small_img = self.load_img(self.x, self.y, 0.1)
         self.big_img = self.load_img(self.view_x, self.view_y, 0.35)
 
-        self.show_img_flag = False
+        #self.show_img_flag = False
         
     # 画像インスタンスを作成
     def load_img(self, x, y, size):
@@ -706,10 +676,10 @@ class Profession:
             return None
 
     # 画像を表示
-    def image_draw(self):
+    def image_draw(self, is_selected=False):
         if self.small_img:
             self.small_img.draw()
-        if self.show_img_flag and self.big_img:
+        if is_selected and self.big_img:
             self.big_img.draw()
             self.text_draw()
 
@@ -749,18 +719,16 @@ class Profession:
 
     def handle_click(self, pos):
         if self.small_img.rect.collidepoint(pos):
-            self.show_img_flag = not self.show_img_flag     # クリックすると逆の状態になる
-            CharaStatus["Profession"] = self.name
-            ProfDataIn()
             return True
-        else:
-            return False
+        return False
 
 # 職業選択画面作るよ
 class ProfessionSelecter:
     def __init__(self, screen):
         self.screen = screen
         self.prof_items = []
+        self.selected_profession = None     # 現在保持している職業
+
         self.load_and_setup_data()
 
     # データのロードとセットアップ
@@ -785,13 +753,19 @@ class ProfessionSelecter:
     
     def draw(self):
         for item in self.prof_items:
-            item.image_draw()   
+            item.image_draw()
 
+    def handle_click(self, pos):
+        for item in self.prof_items:
+            if item.handle_click(pos):
+                return item
+        return None
 
 # 趣味選択画面作るよ
 class HobbySelecter:
-    def __init__(self, screen):
+    def __init__(self, screen, is_dropped):
         self.screen = screen
+        self.is_dropped = is_dropped
 
         self.set_data()
         self.draw_item()        
@@ -806,14 +780,15 @@ class HobbySelecter:
         font = pygame.font.Font(FONT_PATH, FONT_SIZ)
         small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
         
-        label = Label(self.screen, font, "趣味", 545, 175)
+        label = Label(self.screen, font, "趣味", 548, 175)
         label.draw()
         listitem = self.select_item if self.select_item != "" else "未選択"
-        self.pull = PullDown(self.screen, small_font, (435,200,150,25), listitem, list(self.hobby_list), 207)
+        self.pull = PullDown(self.screen, small_font, (440,200,150,25), list(self.hobby_list), listitem, 207)
+        self.pull.draw(self.is_dropped)
         self.select_item = self.pull.selected_item
 
     def handle_mouse_hover(self, pos):
-        if self.pull.box_rect.collidepoint(pos):
+        if self.pull.box.rect.collidepoint(pos):
             return "あなたの趣味を選択してください"
         return None
 

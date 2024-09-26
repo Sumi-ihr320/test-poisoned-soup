@@ -16,12 +16,16 @@ BLUE = (71,131,132)
 SHEET_COLOR = (189,183,107)
 SHEET_RECT = Rect(30,30,740,375)
 
-# フレーム
+# Rect
 FRAME_RECT = Rect(30,420,580,150)
 DICE_FRAME_RECT = Rect(620,420,150,150)
 
 FILL_RECT = Rect(20,20,800,410)
 
+# 画面中央の座標
+WINDOW_CENTER_X = DISPLAY_SIZE[0] // 2
+WINDOW_CENTER_Y = DISPLAY_SIZE[1] // 2
+ 
 # パスの指定
 PATH = os.path.dirname(__file__)
 SCENARIO = "/Scenario/"
@@ -30,7 +34,8 @@ MUSIC = "/Music/"
 SAVE_FOLDER = "/Save/"
 JSON_FOLDER = "/Json/"
 
-STATUS_DATA_PATH = "CharaStatus.json"
+CHARA_DATA_PATH = "CharaStatus.json"
+STATUS_DATA_PATH = "Status.json"
 PROF_DATA_PATH = "Profession.json"
 SKILL_DATA_PATH = "SkillList.json"
 HOBBY_DATA_PATH = "Hobby.json"
@@ -57,7 +62,7 @@ CENTER,NORTH,EAST,WEST,SOUTH = (0,1,2,3,4)
 # 基本データ --------------------------------------------
 
 # キャラクターのステータスデータ
-with open(f"{PATH}{JSON_FOLDER}{STATUS_DATA_PATH}", "r", encoding="utf-8_sig")as f:
+with open(f"{PATH}{JSON_FOLDER}{CHARA_DATA_PATH}", "r", encoding="utf-8_sig")as f:
     STATUS = json.load(f)
     
 CharaStatus = STATUS["Hero"]    # 主人公

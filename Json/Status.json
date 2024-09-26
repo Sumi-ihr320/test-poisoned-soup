@@ -64,7 +64,7 @@
                 "text": "アイデアは直感的な能力です。\n特殊な雰囲気など、普通では気がつかないであろう物に\n気付けるかどうかの能力になります\n値はINT x 5で決まります。",
                 "button_flag": false, "input_flag": false, "box_flag": true, "dice_text": ""
     },
-    "Knowledge": {  "name": "知識", "status_name": "Knowledge", "view_name": "知識       ",
+    "Know": {  "name": "知識", "status_name": "Know", "view_name": "知識       ",
                     "x": 250, "y": 314, "w": 40, "h": 28,
                     "text": "探索者が持っている知識量の値です。\n値はEDU x 5で決まります。",
                     "button_flag": false, "input_flag": false, "box_flag": true, "dice_text": ""

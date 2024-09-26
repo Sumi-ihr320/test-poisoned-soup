@@ -33,7 +33,7 @@ def MainPlay(screen):
     room = create_room(screen, player)
 
     # テキストフレームの表示
-    Frame(screen)
+    create_frame(screen)
 
     # 文章の表示
     #Scenario(screen)

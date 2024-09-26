@@ -16,11 +16,11 @@ class Title:
         self.contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)    # メニュー用フォント
 
         # タイトル
-        self.title = Label(self.screen, self.title_font, TITLE_TEXT, y=150, color=RED, center_flag=True, background=BLACK)
-        self.start = Label(self.screen, self.contents_font, "はじめる", y=280, color=WHITE, center_flag=True, background=BLACK)
-        self.load = Label(self.screen, self.contents_font, "つづきから", y=350, color=WHITE, center_flag=True, background=BLACK)
-        self.setting = Label(self.screen, self.contents_font, "設定", y=420, color=WHITE, center_flag=True, background=BLACK)
-        self.close = Label(self.screen, self.contents_font, "おわる", y=490, color=WHITE, center_flag=True, background=BLACK)
+        self.title = Label(self.screen, self.title_font, TITLE_TEXT, y=150, centerx=WINDOW_CENTER_X, color=RED, background=BLACK)
+        self.start = Label(self.screen, self.contents_font, "はじめる", y=280, centerx=WINDOW_CENTER_X, color=WHITE, background=BLACK)
+        self.load = Label(self.screen, self.contents_font, "つづきから", y=350, centerx=WINDOW_CENTER_X, color=WHITE, background=BLACK)
+        self.setting = Label(self.screen, self.contents_font, "設定", y=420, centerx=WINDOW_CENTER_X, color=WHITE, background=BLACK)
+        self.close = Label(self.screen, self.contents_font, "おわる", y=490, centerx=WINDOW_CENTER_X, color=WHITE, background=BLACK)
 
         self.contents_list = [self.start, self.load, self.setting, self.close]
 

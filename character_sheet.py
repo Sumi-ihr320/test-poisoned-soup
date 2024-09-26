@@ -18,6 +18,15 @@ class CharacterSheet:
         self.status_items = []  # ステータスのアイテム一覧
         self.end_flag = False   # キャラシ作成を終わるフラグ
 
+        self.selected_profession = None     # 選択中の職業
+
+        self.is_pulludown_open = False      # プルダウン用のフラグ
+        self.selected_hobby = None          # 選択中の趣味
+
+        # 設定する主人公のステータス
+        chara_data = load_json(CHARA_DATA_PATH)
+        self.hero_data = chara_data["Hero"]
+
     # シートの描画
     def draw_sheet(self):
         pygame.draw.rect(self.screen, SHEET_COLOR, SHEET_RECT)
@@ -34,14 +43,18 @@ class CharacterSheet:
             for item in self.status_items:
                 item.draw()
             if self.sex_button:
-                self.sex_button.draw(CharaStatus["sex"])
+                self.sex_button.draw(self.hero_data["sex"])
         else:
-            self.create_chara_profession()
+            self.create_profession_page()
             self.prof_selecter.draw()
+            if self.selected_profession:
+                self.selected_profession.image_draw(is_selected=True)
+            self.end_button.draw()
+            self.hoby_selecter.draw_item()
             
     # キャラステータス作成画面を作る
     def create_status_page(self):
-        status_json = self.load_data()
+        status_json = load_json(STATUS_DATA_PATH)
         if not self.status_items:   # すでにアイテムがあるか確認
             for status in status_json:
                 items = status_json[status]
@@ -50,34 +63,18 @@ class CharacterSheet:
                             items["button_flag"], items["input_flag"], items["box_flag"], items["dice_text"])
                 self.status_items.append(item)
                 if status == "sex":
-                    self.sex_button = SexChange(self.screen, 310, 80, CharaStatus["sex"])
-
-    # jsonファイルを取ってくる
-    def load_data(self):
-        file_path = f"{PATH}{JSON_FOLDER}Status.json"
-        return load_json(file_path)
-
-    def create_chara_profession(self):
-        # 職業選択画面
-        self.create_profession_selecter()
-
-        # 趣味選択画面
-        self.create_hoby_selecter()
-
-        # キャラ作成終了ボタン
-        self.create_end_button()
+                    self.sex_button = SexChange(self.screen, 310, 80, self.hero_data["sex"])
     
-    # 職業選択画面を作る
-    def create_profession_selecter(self):
+    # 職業ページを作る
+    def create_profession_page(self):
+        # 職業選択画面
         self.prof_selecter = ProfessionSelecter(self.screen)
 
-    # 趣味選択画面を作る
-    def create_hoby_selecter(self):
-        self.hoby_selecter = HobbySelecter(self.screen)
-
-    # キャラ作成終了ボタンを作る
-    def create_end_button(self):
+        # キャラ作成終了ボタン
         self.end_button = Button(self.screen, self.font, (600,330,100,50), "キャラ作成\n終了", self.end_button_event)        
+
+        # 趣味選択画面
+        self.hoby_selecter = HobbySelecter(self.screen, self.is_pulludown_open)
 
     # ナビゲーションバーを作る
     def create_navigation(self, page):
@@ -96,20 +93,15 @@ class CharacterSheet:
                                 "EDU":"EDUが入力されていません",
                                 "INT":"INTが入力されていません",
                                 "POW":"POWが入力されていません",
-                                "Profession":"職業が選択されていません"
+                                "Profession":"職業が選択されていません",
+                                "Hobby":"趣味が選択されていません"
                                 }
         texts = []
 
         # 手動入力が必要なステータスのみエラーチェックする
         for status, error_msg in manual_input_fields.items():
-            if CharaStatus.get(status) == "" or CharaStatus.get(status) == 0:
+            if self.hero_data.get(status) == "" or self.hero_data.get(status) == 0:
                 texts.append(error_msg)
-
-        # 趣味が選択されていない場合のチェック
-        if self.hoby_selecter.select_item == "":
-            texts.append("趣味が選択されていません")
-        else:
-            HobyDataIn()
         if texts:
             text = "\n".join(texts)
             messagebox.showerror("未入力", text)
@@ -134,7 +126,7 @@ class CharacterSheet:
         else:
             horver_text = self.hoby_selecter.handle_mouse_hover(key)
 
-            if not self.hoby_selecter.pull.is_open():
+            if not self.is_pulludown_open:
                 for prof in self.prof_selecter.prof_items:
                     text = prof.handle_mouse_hover(key)
                     if text is not None:
@@ -174,23 +166,93 @@ class CharacterSheet:
             self.now_page = 1
         # 男ボタン
         elif self.sex_button and self.sex_button.man.rect.collidepoint(pos):
-            CharaStatus["sex"] = True
+            self.hero_data["sex"] = True
             self.sex_button.update_sex(True)
         # 女ボタン
         elif self.sex_button and self.sex_button.woman.rect.collidepoint(pos):
-            CharaStatus["sex"] = False
+            self.hero_data["sex"] = False
             self.sex_button.update_sex(False)
         else:
             # 他のステータスをリストでまとめた
             for status in self.status_items:
                 # インプットボックス
                 if status.input and status.input.rect.collidepoint(pos) and status.input_flag:   # かつ入力フラグがonの場合
-                    status.input_process()
+                    status.input_process(self.hero_data["EDU"])
+                    self.insart_data(status)
                     break
                 # ダイスボタン
                 if status.button:
                     if status.button.update(pos, True):
+                        self.insart_data(status)
                         break
+
+    # 更新されたデータをステータスに入力＋自動計算する
+    def insart_data(self, status):
+        self.hero_data[status.status_name] = status.input.get_value()
+        self.auto_calculation(status.status_name)
+
+    # ステータスの自動計算
+    def auto_calculation(self, name):
+        calculations = {"STR": [self.calculation_damege_bonus],
+                        "SIZ": [self.calculation_damege_bonus, self.calculation_health_point],
+                        "CON": [self.calculation_health_point],
+                        "POW": [self.calculation_power_related],
+                        "INT": [self.calculation_idea],
+                        "EDU": [self.calculation_educated_point],
+                        "DEX": [self.calculation_avoid_point]}
+
+        if name in calculations:
+            for calculation in calculations[name]:
+                calculation()
+
+    # ダメージボーナスの計算
+    def calculation_damege_bonus(self):
+        st = self.hero_data["STR"] + self.hero_data["SIZ"]
+        if 2 <= st <= 12:       val = "-1D6"
+        elif 13 <= st <= 16:    val = "-1D4"
+        elif 25 <= st <= 32:    val = "+1D4"
+        elif 33 <= st <= 40:    val = "+1D6"
+        else:                   val = "0"
+        self.hero_data["DB"] = val
+        self.update_status_label("DB", val)
+
+    # HPの計算
+    def calculation_health_point(self):
+        self.hero_data["HP"] = (self.hero_data["CON"] + self.hero_data["SIZ"]) // 2
+        self.update_status_label("HP", self.hero_data["HP"])
+
+    # POW 関連の計算
+    def calculation_power_related(self):
+        # MP、幸運、SAN値の計算
+        self.hero_data["MP"] = self.hero_data["POW"]
+        val = self.hero_data["POW"] * 5
+        self.hero_data["Luck"] = val
+        self.hero_data["SAN"] = val
+        self.update_status_label("MP", self.hero_data["MP"])
+        self.update_status_label("Luck", val)
+        self.update_status_label("SAN", val)
+
+    # アイデアの計算
+    def calculation_idea(self):
+        self.hero_data["Idea"] = self.hero_data["INT"] * 5
+        self.update_status_label("Idea", self.hero_data["Idea"])
+
+    # 知識の計算
+    def calculation_educated_point(self):
+        val = self.hero_data["EDU"] * 5
+        self.hero_data["Know"] = val if val < 99 else 99
+        self.update_status_label("Know", self.hero_data["Know"])
+        
+    # 回避の計算
+    def calculation_avoid_point(self):
+        self.hero_data["Avo"] = self.hero_data["DEX"] * 2
+        self.update_status_label("Avo", self.hero_data["Avo"])
+
+    # ステータスラベルの更新
+    def update_status_label(self, name, val):
+        for item in self.status_items:
+            if item.status_name == name:
+                item.input.update_label(f"{val}")
 
     # 2ページ目の処理
     def handle_second_page_click(self, pos):
@@ -198,33 +260,100 @@ class CharacterSheet:
         if self.page_navi.handle_click(pos):
             self.now_page = 0
             # もし趣味のプルダウンが開いていたら閉じる
-            if self.hoby_selecter.pull.is_dropped:
-                print("Closing dropdown due to page navigation.")                
-                self.hoby_selecter.pull.toggle_pulldown_list()
+            if self.is_pulludown_open:
+                self.is_pulludown_open = False
 
         # プルダウンのクリック処理
-        elif self.hoby_selecter.pull.box_rect.collidepoint(pos):
-            print("Toggling dropdown.")
-            self.hoby_selecter.pull.toggle_pulldown_list()
+        elif self.hoby_selecter.pull.box.rect.collidepoint(pos):
+            self.is_pulludown_open = True
 
         # プルダウンが開いているときは
-        elif self.hoby_selecter.pull.is_open():
-            print("Dropdown is open, handling item click.")
+        if self.is_pulludown_open:
             # 趣味欄のクリック処理
-            self.hoby_selecter.pull.handle_click(pos)
-            return
-
+            if self.hoby_selecter.pull.handle_click(pos, self.is_pulludown_open):
+                self.is_pulludown_open = False
         else:
             # もしプルダウンが開いていなかったら
-            print("Dropdown is closed, handling other clicks.")
+
             # ボタンのクリック処理
             if self.end_button.is_clicked(pos):
                 self.end_button.update(pos, True)
             else:
                 # 職業のクリック処理
-                for prof in self.prof_selecter.prof_items:
-                    if prof.handle_click(pos):
-                        break
+                selected_item = self.prof_selecter.handle_click(pos)
+                if selected_item:
+                    self.selected_profession = selected_item
+                    self.hero_data["Profession"] = selected_item.name
+                    self.profession_data_set()
+
+    # 選択した職業から主人公のステータスにデータを入れるよ
+    def profession_data_set(self):
+        # 主人公の所持スキルをリセット
+        self.hero_data["skill"] = {}
+        # 回避もスキル一覧にあるので回避もリセット
+        self.hero_data["Avo"] = self.hero_data["DEX"] * 2
+
+        profession_list = load_json(PROF_DATA_PATH)
+
+        # 職業から設定されている技能一覧を取得
+        current_profession = self.hero_data["Profession"]
+        profession_skills = profession_list[current_profession]["skill"]
+
+        # 加算できる技能ポイントを算出する
+        max_skill_points = self.hero_data["EDU"] * 20
+        remaining_points = max_skill_points
+        for skill, percent in profession_skills.items():
+            # 割り振る技能ポイントを計算
+            bonus_points = int(max_skill_points * (percent / 100))
+
+            # 基本技能ポイント
+            if skill == "回避":
+                current_skill_value = self.hero_data["Avo"]
+            else:
+                current_skill_value = SkillList[skill]
+
+            # ポイントを計算する
+            new_skill_value, surplus_points = Calculation(current_skill_value, bonus_points, 90)
+
+            # 主人公のステータスにポイントを入力
+            if skill == "回避":
+                self.hero_data["Avo"] = new_skill_value
+            else:
+                self.hero_data["skill"][skill] = new_skill_value
+
+            # 技能ポイント - 使用した技能ポイント + 余りの技能ポイント
+            remaining_points = remaining_points - bonus_points + surplus_points
+
+            # 技能ポイントが足りなかった場合
+            if remaining_points < 0:
+                print("技能ポイントが足りません")
+                break
+
+        # 全ての技能ポイント割り振り後にポイントが余った場合
+        if remaining_points > 0:
+            # ポイントが0になるまで繰り返す
+            while remaining_points > 0:
+                lists = {}
+                # スキルリストから90以下のスキルをリスト化する
+                for skill in self.hero_data["skill"]:
+                    skill_value = self.hero_data["skill"][skill]
+                    if skill_value < 90:
+                        lists[skill] = skill_value
+                if len(lists) > 0:
+                    # リストの数よりポイントが多い場合
+                    if len(lists) < remaining_points:
+                        # リストの数でポイントを割る
+                        bonus_points = int(remaining_points / len(lists))
+                        
+                        # 計算していく
+                        for skill, current_skill_value in lists.items():
+                            new_skill_value, surplus_points = Calculation(current_skill_value, bonus_points, 90)
+                            self.hero_data["skill"][skill] = new_skill_value
+                            remaining_points = remaining_points - bonus_points + surplus_points
+                    else:
+                        select = random.choice(list(lists))
+                        self.hero_data["skill"][select]  += remaining_points
+                        remaining_points -= remaining_points
 
     def update(self):
         self.draw_sheet()        
