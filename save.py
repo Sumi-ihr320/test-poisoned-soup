@@ -16,7 +16,7 @@ def Save(screen, flag, list):
     str_now = now.strftime("%Y-%m-%d_%H-%M-%S")
 
     # セーブフォルダが無ければ作る
-    dir_name = PATH + SAVE
+    dir_name = f"{PATH}{SAVE_FOLDER}"
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
 

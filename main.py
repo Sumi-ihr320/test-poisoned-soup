@@ -8,8 +8,7 @@ from fanction_summary import *
 from class_summary import *
 
 from title import Title
-from load import Load
-from save import Save
+from save_or_load import Save_or_Load
 from opening import Opening
 from character_sheet import CharacterSheet
 from playing import MainPlay
@@ -41,17 +40,17 @@ class MainApp:
         self.clock = pygame.time.Clock()
 
         # イベントマップ
+        self.event_flag = ""
         self.event_map = {"title": Title(self.screen),
-                          "load": Load,
-                          "save": Save,
+                          "load": Save_or_Load(self.screen, "load", self.event_flag),
+                          "save": Save_or_Load(self.screen, "save", self.event_flag),
                           "opening": Opening(self.screen),
                           "charasheet": CharacterSheet(self.screen),
                           "play": MainPlay}
 
-        #self.event_name = "title"
-        self.event_name = "charasheet"
+        self.event_name = "title"
+        #self.event_name = "charasheet"
         #self.event_name = "play"
-        self.event_flag = ""
 
     # 画面の描写
     def run(self):
@@ -84,7 +83,7 @@ class MainApp:
             if self.event_name in ["title", "opening", "charasheet"]:
                 self.event_name, self.event_flag = event.update()
             elif self.event_name in ["save", "load"]:
-                self.event_name = event(self.screen, self.event_flag, SelectSaveData)
+                self.event_name = event.update()
             else:
                 self.event_name, self.event_flag = event(self.screen)
 

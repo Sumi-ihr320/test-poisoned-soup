@@ -7,67 +7,6 @@ from pygame.locals import *
 from data import *
 from fanction_summary import *
 
-# セーブロード画面作るよ
-class DataWindow:
-    def __init__(self, screen, flag, list):
-        # 基本データ
-        self.screen = screen
-        self.flag = flag
-        self.list = list
-
-        # 選択したデータ
-        self.select_data = None
-
-        # フォントの設定
-        self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)                    # 基本フォント
-        self.contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)        # メニュー用フォント
-
-        # 画面表示       
-        self.draw()
-        self.data_set(self.list)
-
-    # データ表示ボックスを表示
-    def draw(self):
-        w = 400
-        h = 500
-        x = (self.screen.get_width() / 2) - (w / 2)
-        y = (self.screen.get_height() / 2) - (h / 2)
-        self.window_rect = Rect(x,y,w,h)
-        pygame.draw.rect(self.screen, SHEET_COLOR,self.window_rect)
-        pygame.draw.rect(self.screen, BLACK,self.window_rect,2)
-
-        if self.flag == "save":
-            top_text = "セーブ"
-            enter_text = "保存"
-        else:
-            top_text = "ロード"
-            enter_text = "開始"
-
-        self.top = Label(self.screen, self.contents_font, top_text, y=80, centerx=WINDOW_CENTER_X)
-        self.enter = Label(self.screen, self.contents_font, enter_text, 250, 500)
-        self.close = Label(self.screen, self.contents_font, "CLOSE", 480, 500)
-        self.lbl_list = [self.enter,self.close]
-
-        # マウスオーバーで枠を表示するよ
-        key = pygame.mouse.get_pos()
-        for lbl in self.lbl_list:
-            if lbl.rect.collidepoint(key):
-                pygame.draw.rect(self.screen, BLACK, lbl.rect, 1)
-
-    def data_set(self, datas):
-        x = (self.screen.get_width() / 2) - 150
-        start_y = 150
-        y = start_y
-        self.data_lbl_list = []
-        for data in datas:
-            if self.select_data == data:
-                color = WHITE
-            else:
-                color = SHEET_COLOR
-            data_name = data.replace(".json", "")
-            self.data_lbl_list.append(Label(self.screen, self.font, data_name, x, y, background=color))
-            y += 30
-
 # ページ移動用の矢印表示するよ
 class PageNavigation:
     def __init__(self, screen, page_flag=0):
@@ -341,7 +280,7 @@ class Image:
         if self.line_flag:
             pygame.draw.rect(self.screen, BLACK, self.rect, self.line_width)
 
-# 箱をクラスにするよ
+# 箱をクラスにするよ (主にプルダウンで使ってるよ)
 class Box:
     def __init__(self, screen, x, y, w, h):
         self.screen = screen
@@ -374,9 +313,6 @@ class PullDown:
 
         # プルダウンに表示するリスト
         self.item_list = item_list
-
-        # 現在表示されているアイテム
-        self.selected_item = ""
 
         # プルダウンボックスのアイテムの位置のリスト
         self.items = []
@@ -424,10 +360,9 @@ class PullDown:
         self.items.clear()  # 以前のアイテムをクリア
         lis_rect = None     # クリック感知の範囲は文字の範囲だけではなく少し広い範囲に設定するためのリスト用rect
         y_initial = y   # 最初のy位置を記録
-        current_x, current_y = x, y   # 現在の位置
+        current_x, current_y = x+1, y   # 現在の位置
         max_w = w       # 横に広がった際の幅
         for item in list:
-            # 項目作成
             surface = self.font.render(item, True, BLACK)
             rect = surface.get_rect(left=current_x,top=current_y)
             # 項目名とそのsurface, rectを辞書に登録していく
@@ -444,27 +379,43 @@ class PullDown:
                 current_y = y_initial
 
         # リストボックスを作る
-        self.list_box = Box(self.screen, x, y_initial, max_w, self.pd_h)
+        self.list_box = Box(self.screen, x, y_initial, max_w+2, self.pd_h+1)
 
     # リストボックスを表示する
-    def draw_list_box(self):
+    def draw_list_box(self, hover_item=""):
         self.create_pulldown_list()
         self.list_box.draw()
         for item, surface, rect in self.items:
+            # hoverされてる時は背景色を変える
+            if item == hover_item:
+                pygame.draw.rect(self.screen, BLUE, rect)
+            else:
+                pygame.draw.rect(self.screen, WHITE, rect)
+            # テキストを描画
             self.screen.blit(surface, rect)
-        
+
+    # マウスオーバーで重なってるアイテムを取得    
+    def check_mouse_hover(self, pos):
+        for item, surface, rect in self.items:
+            if rect.collidepoint(pos):
+                return item
+        return None
+
+    # クリック時の動作
     def handle_click(self, pos, is_dropped):
         if is_dropped:
             if self.list_box and self.list_box.rect.collidepoint(pos):
                 for item, surface, lis_rect in self.items:
                     if lis_rect.collidepoint(pos):
-                        self.selected_item = item       # 選択されたアイテムを保持
-                        self.update_label(f"{item}")    # 表示されるラベルを更新
-                        return True
-        return False
+                        return item
+        return None
     
-    def handle_mouse_over(self, pos):
-        pass
+    # マウスオーバー時の動作
+    def handle_mouse_hover(self, pos, is_dropped):
+        if is_dropped:
+            hover_item = self.check_mouse_hover(pos)
+            if hover_item:
+                self.draw_list_box(hover_item)
 
 # ダイスロールをクラス化するよ（画像表示はやめとこうかなって悩んでるよ）
 class DiceRoll:
@@ -763,9 +714,10 @@ class ProfessionSelecter:
 
 # 趣味選択画面作るよ
 class HobbySelecter:
-    def __init__(self, screen, is_dropped):
+    def __init__(self, screen, is_dropped, select_item):
         self.screen = screen
         self.is_dropped = is_dropped
+        self.select_item = select_item
 
         self.set_data()
         self.draw_item()        
@@ -773,7 +725,6 @@ class HobbySelecter:
     # 趣味データをロード
     def set_data(self):
         self.hobby_list = load_json(HOBBY_DATA_PATH)
-        self.select_item = ""
    
     def draw_item(self):
         # フォントの設定
@@ -785,10 +736,11 @@ class HobbySelecter:
         listitem = self.select_item if self.select_item != "" else "未選択"
         self.pull = PullDown(self.screen, small_font, (440,200,150,25), list(self.hobby_list), listitem, 207)
         self.pull.draw(self.is_dropped)
-        self.select_item = self.pull.selected_item
 
-    def handle_mouse_hover(self, pos):
+    def handle_mouse_hover(self, pos, is_dropped):
         if self.pull.box.rect.collidepoint(pos):
             return "あなたの趣味を選択してください"
+        elif self.pull.list_box and self.pull.list_box.rect.collidepoint(pos):
+            self.pull.handle_mouse_hover(pos, is_dropped)
         return None
-
+                    

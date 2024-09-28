@@ -85,24 +85,6 @@ SelectSaveData = ""
 # オープニング画面 --------------------------------------------
 OpeningFlag = 0     # オープニングの進行フラグ
 
-# キャラクターシート画面 ---------------------------------------
-CharaPage = True    # ページ変更用フラグ
-
-PullDownFlag = False    # プルダウン用フラグ
-PullDownItem = ""       # プルダウンアイテム記憶用
-
-# 職業リスト
-with open(f"{PATH}{JSON_FOLDER}{PROF_DATA_PATH}","r",encoding="utf-8_sig") as f:
-    ProfessionList = json.load(f)
-
-# 技能リスト
-with open(f"{PATH}{JSON_FOLDER}{SKILL_DATA_PATH}","r",encoding="utf-8_sig") as f:
-    SkillList = json.load(f)
-
-# 趣味リスト
-with open(f"{PATH}{JSON_FOLDER}{HOBBY_DATA_PATH}","r",encoding="utf-8_sig") as f:
-    HobbyList = json.load(f)
-
 # 本編 -------------------------------------------------------
 CenterRoomFlag = 0      # 中央の部屋のシーンフラグ
 MemoFlag = 0            # メモの進行フラグ

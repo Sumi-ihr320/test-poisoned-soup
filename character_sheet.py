@@ -21,7 +21,7 @@ class CharacterSheet:
         self.selected_profession = None     # 選択中の職業
 
         self.is_pulludown_open = False      # プルダウン用のフラグ
-        self.selected_hobby = None          # 選択中の趣味
+        self.selected_hobby = ""            # 選択中の趣味
 
         # 設定する主人公のステータス
         chara_data = load_json(CHARA_DATA_PATH)
@@ -74,7 +74,7 @@ class CharacterSheet:
         self.end_button = Button(self.screen, self.font, (600,330,100,50), "キャラ作成\n終了", self.end_button_event)        
 
         # 趣味選択画面
-        self.hoby_selecter = HobbySelecter(self.screen, self.is_pulludown_open)
+        self.hoby_selecter = HobbySelecter(self.screen, self.is_pulludown_open, self.selected_hobby)
 
     # ナビゲーションバーを作る
     def create_navigation(self, page):
@@ -124,7 +124,7 @@ class CharacterSheet:
                     horver_text = text
                     break
         else:
-            horver_text = self.hoby_selecter.handle_mouse_hover(key)
+            horver_text = self.hoby_selecter.handle_mouse_hover(key, self.is_pulludown_open)
 
             if not self.is_pulludown_open:
                 for prof in self.prof_selecter.prof_items:
@@ -265,12 +265,17 @@ class CharacterSheet:
 
         # プルダウンのクリック処理
         elif self.hoby_selecter.pull.box.rect.collidepoint(pos):
-            self.is_pulludown_open = True
+            self.is_pulludown_open = not self.is_pulludown_open
 
         # プルダウンが開いているときは
         if self.is_pulludown_open:
             # 趣味欄のクリック処理
-            if self.hoby_selecter.pull.handle_click(pos, self.is_pulludown_open):
+            selected_item = self.hoby_selecter.pull.handle_click(pos, self.is_pulludown_open)
+            if selected_item:
+                self.selected_hobby = selected_item
+                self.hero_data["Hobby"] = selected_item
+                self.hoby_selecter.pull.update_label(f"{selected_item}")
+                self.hobby_data_set()
                 self.is_pulludown_open = False
         else:
             # もしプルダウンが開いていなかったら
@@ -294,6 +299,7 @@ class CharacterSheet:
         self.hero_data["Avo"] = self.hero_data["DEX"] * 2
 
         profession_list = load_json(PROF_DATA_PATH)
+        skill_list = load_json(SKILL_DATA_PATH)
 
         # 職業から設定されている技能一覧を取得
         current_profession = self.hero_data["Profession"]
@@ -310,7 +316,7 @@ class CharacterSheet:
             if skill == "回避":
                 current_skill_value = self.hero_data["Avo"]
             else:
-                current_skill_value = SkillList[skill]
+                current_skill_value = skill_list[skill]
 
             # ポイントを計算する
             new_skill_value, surplus_points = Calculation(current_skill_value, bonus_points, 90)
@@ -354,6 +360,46 @@ class CharacterSheet:
                         select = random.choice(list(lists))
                         self.hero_data["skill"][select]  += remaining_points
                         remaining_points -= remaining_points
+
+    # 選択した趣味から主人公のステータスにデータを入れるよ
+    def hobby_data_set(self):
+        # 主人公の持っている技能データ
+        my_skills = self.hero_data["skill"]
+
+        # 趣味リストの技能データ
+        hobby_list = load_json(HOBBY_DATA_PATH)
+        hobby_skills = hobby_list[self.selected_hobby]
+        # 技能リスト
+        skill_list = load_json(SKILL_DATA_PATH)
+
+        # 最大振り分けポイント
+        max_points = CharaStatus["INT"] * 10
+        # スキルの振り分け割合
+        percent = [70,30]
+        if max_points > 0:
+            remaining_points = max_points
+            for i, skill in enumerate(hobby_skills):
+                # 元の技能ポイント
+                if skill in my_skills:
+                    current_value = my_skills[skill]
+                else:
+                    current_value = skill_list[skill]
+                # 技能ポイントをパーセンテージ分算出
+                bonus_points = int(max_points * (percent[i] / 100))
+                # 計算する
+                new_value, surplus_points = Calculation(current_value, bonus_points, 90)
+                # スキルに値を入れる
+                self.hero_data["skill"][skill] = new_value
+                # 残りのポイントを算出
+                remaining_points = remaining_points - bonus_points + surplus_points
+
+            # ポイントが余った場合
+            if remaining_points > 0:
+                for i, skill in enumerate(hobby_list):
+                    current_value = my_skills[skill]
+                    new_value, surplus_points = Calculation(current_value, remaining_points, 90)
+                    self.hero_data["skill"][skill] = new_value
+                    remaining_points = surplus_points
 
     def update(self):
         self.draw_sheet()        
