@@ -1,3 +1,7 @@
+import os, json
+import datetime as dt
+from enum import Enum
+
 import pygame
 import pygame.draw
 from pygame.locals import *
@@ -6,9 +10,15 @@ from data import *
 from fanction_summary import *
 from class_summary import *
 
+class SaveLoadState(Enum):
+    NONE = 0
+    SAVE = 1
+    LOAD = 2
+    CLOSE = 3
+
 # データロード
 class Save_or_Load:
-    def __init__(self, screen, save_load_flag, return_flag):
+    def __init__(self, screen, save_load_flag, return_flag, save_data=None):
         self.screen = screen
         # フォントの設定
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)                    # 基本フォント
@@ -16,15 +26,22 @@ class Save_or_Load:
 
         self.save_load_flag = save_load_flag    # save か load か
         self.return_flag = return_flag          # どこに戻るかのフラグ
-        self.close_flag = False                 # 画面終了フラグ
-        self.enter_flag = False                 # 完了フラグ
+
+        self.state = SaveLoadState.NONE         # 閉じるフラグや完了フラグ等の状態管理フラグ
+
+        self.save_data = save_data              # 保存するデータ
+        self.load_data = None                   # ロードするデータ
+
+        self.forder_name = f"{PATH}{SAVE_FOLDER}"   # セーブフォルダ
+
+        # 選択したデータ
+        self.select_file_name = None
 
         # セーブデータリスト
         self.save_data_list = []
-        self.load_data()
-
-        # 選択したデータ
-        self.select_data = None
+        self.load_save_data()
+        self.data_lbl_list = []
+        self.create_save_data_list()
 
         # 画面作成
         self.top = None     # セーブ or ロード
@@ -58,29 +75,76 @@ class Save_or_Load:
         self.button_list = [self.enter,self.close]
 
     # セーブデータ一覧を探してくる
-    def load_data(self):
+    def load_save_data(self):
         # セーブフォルダが無ければ作る
-        dir_name = f"{PATH}{SAVE_FOLDER}"
-        if not os.path.isdir(dir_name):
-            os.makedirs(dir_name)
+        if not os.path.isdir(self.forder_name):
+            os.makedirs(self.forder_name)
 
         # フォルダ内にあるデータ一覧を持ってくる
-        self.save_data_list = os.listdir(dir_name)
+        self.save_data_list = os.listdir(self.forder_name)
 
     # セーブデータ一覧を表示する
     def create_save_data_list(self):
         x = (self.screen.get_width() // 2) - 150
         start_y = 150
         y = start_y
-        self.data_lbl_list = []
-        for data in self.save_data_list:
-            if self.select_data == data:
-                color = WHITE
-            else:
-                color = None
-            data_name = data.replace(".json", "")
-            self.data_lbl_list.append(Label(self.screen, self.font, data_name, x, y, background=color))
-            y += 30
+        if self.save_data_list:
+            for data in self.save_data_list:
+                data_name = data.replace(".json", "")
+                self.data_lbl_list.append(Label(self.screen, self.font, data_name, x, y))
+                y += 30
+
+    # データセーブ
+    def save(self):
+        file_name = self.create_file_name()
+        try:
+            with open(file_name,"w",encoding="utf-8_sig") as f:
+                json.dump(self.save_data, f, indent=2, ensure_ascii=False)
+            messagebox.showinfo("セーブ", "セーブが完了しました")
+        except Exception as e:
+            print(f"セーブエラー: {e}")
+            messagebox.showerror("セーブエラー", "セーブに失敗しました")
+
+    # データロード
+    def load(self):
+        file_name = f"{self.forder_name}{self.select_file_name}"
+        try:
+            self.load_data = load_json(file_name)
+        except FileNotFoundError:
+            messagebox.showerror("ロードエラー", "ファイルが見つかりません")
+        except json.JSONDecodeError:
+            messagebox.showerror("ロードエラー", "ファイル形式が正しくありません")
+        except Exception as e:
+            print(f"ロードエラー: {e}")
+            messagebox.showerror("ロードエラー", f"ロードに失敗しました: {str(e)}")
+
+    # ファイル名を作る
+    def create_file_name(self):
+        # 今日の日付と時間を取得
+        now = dt.datetime.now()
+        str_now = now.strftime("%Y-%m-%d_%H-%M-%S")
+
+        # 選択された場所に保存する
+        # セーブデータのインデックスを切り出す
+        if self.select_file_name:
+            try:
+                data_no = self.select_file_name.split(" ")[0]
+            except IndexError:
+                data_no = "00"
+        else:
+            # 新規セーブの場合
+            data_no = str(len(self.save_data_list)).zfill(2)
+
+        # キャラクター名と場所
+        name = self.save_data.get("hero_status", {}).get("name", "Unknown")
+        room_index = self.save_data.get("flag", {}).get("room_flag", None)
+        if room_index:
+            room_name = ROOM_NAME[room_index]
+        else:
+            room_name = ""
+
+        # キャラクター名、プレイ中なら現在地、日時でファイル名を作る
+        return f"{self.forder_name}{data_no} {name} {room_name} {str_now}.json"
 
     # 画面を描画
     def draw(self):
@@ -90,6 +154,13 @@ class Save_or_Load:
         if self.button_list:
             for item in self.button_list:
                 item.draw()
+        if self.data_lbl_list:
+            for label, save_data in zip(self.data_lbl_list, self.save_data_list):
+                if save_data == self.select_file_name:
+                    label.set_background_color(WHITE)
+                else:
+                    label.set_background_color(None)
+                label.draw()
 
     # マウスオーバーで枠を表示するよ
     def handle_mouse_hover(self):
@@ -98,7 +169,7 @@ class Save_or_Load:
             if item.rect.collidepoint(pos):
                 pygame.draw.rect(self.screen, BLACK, item.rect, 1)
 
-    def handle_ckick(self):
+    def handle_event(self):
         for event in pygame.event.get():
             # 閉じるボタンで終了
             if event.type == QUIT:
@@ -107,30 +178,47 @@ class Save_or_Load:
                 Close()
             # マウスクリック時
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
-                if self.window.close.rect.collidepoint(event.pos):
-                    self.close_flag = True
-                elif self.window.enter.rect.collidepoint(event.pos):
-                    pass
+                self.handle_ckick(event)
 
-                for i in range(len(self.window.data_rect_list)):
-                    if self.window.data_rect_list[i].collidepoint(event.pos):
-                        SelectSaveData = self.save_files[i]
-                        print(SelectSaveData)
+    def handle_ckick(self, event):
+        # 閉じるボタン
+        if self.close.rect.collidepoint(event.pos):
+            self.state = SaveLoadState.CLOSE
+
+        # 決定ボタン
+        elif self.enter.rect.collidepoint(event.pos):
+            if self.save_load_flag == "save":
+                self.save()
+                self.state = SaveLoadState.SAVE
+            else:
+                self.load()
+                self.state = SaveLoadState.LOAD
+
+        # データ一覧の選択
+        for label, save_data in zip(self.data_lbl_list, self.save_data_list):
+            if label.rect.collidepoint(event.pos):
+                self.select_file_name = save_data
+                print(self.select_file_name)
 
     def update(self):
-        if self.window:
-            self.draw()
-            self.handle_mouse_hover()
-            self.handle_ckick()
+        self.draw()
+        self.handle_mouse_hover()
+        self.handle_event()
         return self.next_state()
                             
     def next_state(self):
-        if self.close_flag:
+        if self.state == SaveLoadState.CLOSE:
             if self.return_flag == "title":
-                return "title"
+                return "title", None
             elif self.return_flag == "play":
-                return "play"
-        if self.enter_flag:
-            return "play"
-        return "load"
+                return "play", self.save_data
+        elif self.state == SaveLoadState.SAVE:
+            return "play", self.save_data
+        elif self.state == SaveLoadState.LOAD:
+            return "play", self.load_data
+        else:
+            if self.save_load_flag == "save":
+                return "save", self.save_data
+            else:
+                return "load", self.save_data
 

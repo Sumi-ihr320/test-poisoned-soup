@@ -1,5 +1,4 @@
 import os, json
-import pygame
 from pygame.locals import *
 
 DISPLAY_SIZE = (800, 600)
@@ -57,6 +56,9 @@ RIGHT,LEFT,UNDER = (0,1,2)
 
 # 方角
 CENTER,NORTH,EAST,WEST,SOUTH = (0,1,2,3,4)
+# 部屋の名前
+ROOM_NAME= ["中央の部屋","北の部屋","東の部屋","西の部屋","南の部屋"]
+
 
 
 # 基本データ --------------------------------------------
@@ -69,21 +71,12 @@ CharaStatus = STATUS["Hero"]    # 主人公
 GirlStatus = STATUS["Girl"]     # 少女
 
 
-# ロード画面（セーブ画面） -------------------------------------
-
-# セーブファイルリスト
-SavePath = PATH + SAVE_FOLDER
-SaveFiles = os.listdir(SavePath)
 
 # シナリオファイルリスト
 ScenarioPath = PATH + SCENARIO
 ScenarioFiles = os.listdir(ScenarioPath)
 
-# 選択されたデータ
-SelectSaveData = ""
 
-# オープニング画面 --------------------------------------------
-OpeningFlag = 0     # オープニングの進行フラグ
 
 # 本編 -------------------------------------------------------
 CenterRoomFlag = 0      # 中央の部屋のシーンフラグ

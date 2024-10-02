@@ -42,17 +42,17 @@ class Title:
             # 左マウスクリック時
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 if self.start.rect.collidepoint(event.pos):
-                    return "opening", ""
+                    return "opening"
                 elif self.load.rect.collidepoint(event.pos):
-                    return "load", "title"
+                    return "load"
                 elif self.setting.rect.collidepoint(event.pos):
-                    return "setting", ""
+                    return "setting"
                 elif self.close.rect.collidepoint(event.pos):
                     Close()
                 else:
                     pass
             
-        return "title", ""
+        return "title"
 
     def update(self):
         self.draw()

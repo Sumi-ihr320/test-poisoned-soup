@@ -39,18 +39,15 @@ class MainApp:
 
         self.clock = pygame.time.Clock()
 
-        # イベントマップ
-        self.event_flag = ""
-        self.event_map = {"title": Title(self.screen),
-                          "load": Save_or_Load(self.screen, "load", self.event_flag),
-                          "save": Save_or_Load(self.screen, "save", self.event_flag),
-                          "opening": Opening(self.screen),
-                          "charasheet": CharacterSheet(self.screen),
-                          "play": MainPlay}
-
         self.event_name = "title"
         #self.event_name = "charasheet"
         #self.event_name = "play"
+
+        # イベントマップ
+        self.event_map = {"title": Title(self.screen),
+                          "opening": Opening(self.screen),
+                          "charasheet": CharacterSheet(self.screen),
+                          "play": MainPlay}
 
     # 画面の描写
     def run(self):
@@ -80,12 +77,41 @@ class MainApp:
     def process_event(self):
         if self.event_name in self.event_map:
             event = self.event_map[self.event_name]
-            if self.event_name in ["title", "opening", "charasheet"]:
-                self.event_name, self.event_flag = event.update()
-            elif self.event_name in ["save", "load"]:
+            if self.event_name == "title":
                 self.event_name = event.update()
+                if self.event_name == "load":
+                    self.event_map["load"] = Save_or_Load(self.screen, "load", "title")
+
+            elif self.event_name == "opening":
+                self.event_name = event.update()
+
+            elif self.event_name == "charasheet":
+                self.event_name = event.update()
+                if self.event_name == "save":
+                    self.create_save(event)
+
+            elif self.event_name == "save":
+                self.event_name, self.save_data = self.event_map["save"].update()
+
+            elif self.event_name == "load":
+                self.event_name, self.save_data = self.event_map["load"].update()
+                if self.event_name == "play" and self.save_data:
+                    self.event_map["play"] = MainPlay(self.screen, self.save_data)
+
+            elif self.event_name == "play":
+                self.event_name = self.event_map["play"].update()
+                if self.event_name == "save":
+                    self.create_save(event)
+                elif self.event_name == "load":
+                    self.save_data = event.save_data
+                    self.event_map["load"] = Save_or_Load(self.screen, "load", "play", self.save_data)
             else:
-                self.event_name, self.event_flag = event(self.screen)
+                self.event_name = event(self.screen)
+
+    # セーブデータを取得してイベントマップを更新
+    def create_save(self, event):
+        self.save_data = event.save_data
+        self.event_map["save"] = Save_or_Load(self.screen, "save", "play", self.save_data)
 
     # 画面を更新
     def update_display(self):

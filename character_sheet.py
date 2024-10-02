@@ -26,6 +26,8 @@ class CharacterSheet:
         # 設定する主人公のステータス
         chara_data = load_json(CHARA_DATA_PATH)
         self.hero_data = chara_data["Hero"]
+        # セーブデータ
+        self.save_data = load_json("SaveData.json")
 
     # シートの描画
     def draw_sheet(self):
@@ -106,6 +108,8 @@ class CharacterSheet:
             text = "\n".join(texts)
             messagebox.showerror("未入力", text)
         else:
+            # セーブデータに主人公データを入れる
+            self.save_data["hero_status"] = self.hero_data
             self.end_flag = True
 
     # マウスオーバーイベント
@@ -411,5 +415,5 @@ class CharacterSheet:
 
     def next_state(self):
         if self.end_flag:
-            return "save", "play"
-        return "charasheet", ""        
+            return "save"
+        return "charasheet"

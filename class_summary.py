@@ -78,9 +78,17 @@ class Label:
         self.screen.blit(surface, self.rect)
 
     def update_text(self, new_text):
-        surface = self.font.render(new_text, True, self.color, self.background)
-        self.screen.blit(surface, self.rect)
+        self.text = new_text
+        self.draw()
+        #surface = self.font.render(new_text, True, self.color, self.background)
+        #self.screen.blit(surface, self.rect)
 
+    def set_background_color(self, color):
+        self.background = color
+        self.draw()
+        #surface = self.font.render(self.text, True, self.color, color)
+        #self.screen.blit(surface, self.rect)
+        
     # 指定した点が描画内かをチェック
     def collidepoint(self, pos):
         return self.rect.collidepoint(pos)

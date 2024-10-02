@@ -20,6 +20,47 @@ player["center_room_flag"] = 0
 SIZE = 0.19
 
 # プレイ画面
+class MainPlay:
+    def __init__(self, screen, save_data=None):
+        self.screen = screen
+        self.save_data = save_data
+
+        # ナビゲーションバー
+        self.right_navi = None
+        self.left_navi = None
+        self.under_navi = None
+
+        self.room_flag = CENTER     # どの部屋にいるかフラグ
+        pass
+
+    def create_navigetion(self):
+        # ナビゲーションバーの表示
+        if self.room_flag == CENTER:
+            self.right_navi = PageNavigation(self.screen, RIGHT)
+            self.left_navi = PageNavigation(self.screen, LEFT)
+        else:
+            self.under_nave = PageNavigation(self.screen, UNDER)
+
+    def handle_click(self, event):
+        pass
+
+    def handle_events(self):
+        for event in pygame.event.get():
+            # 閉じるボタンで終了
+            if event.type == QUIT:
+                Close()
+            elif event.type == KEYDOWN and event.key == K_ESCAPE:
+                Close()
+            # マウスクリック時
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                self.handle_click(event)
+
+    def update(self):
+        return self.next_state()
+    
+    def next_state(self):
+        return "play", self.save_data
+
 def MainPlay(screen):
     global CenterRoomFlag
     global EastRoomFlag
@@ -38,12 +79,6 @@ def MainPlay(screen):
     # 文章の表示
     #Scenario(screen)
 
-    # ナビゲーションバーの表示
-    if room_flag == "center":
-        right_navi = PageNavigation(screen, RIGHT)
-        left_navi = PageNavigation(screen,LEFT)
-    else:
-        under_nave = PageNavigation(screen,UNDER)
 
     for event in pygame.event.get():
         # マウスクリック時
@@ -121,12 +156,6 @@ def MainPlay(screen):
                         else:
                             player["direction"] = "east"
 
-        # 閉じるボタンで終了
-        if event.type == QUIT:
-            Close()
-        elif event.type == KEYDOWN:
-            if event.key == K_ESCAPE:
-                Close()
 
     return "play", "" 
 

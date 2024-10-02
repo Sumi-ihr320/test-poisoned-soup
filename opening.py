@@ -39,5 +39,5 @@ class Opening:
 
     def next_state(self):
         if self.opening_flag >= 2:
-            return "charasheet", ""
-        return "opening", ""
+            return "charasheet"
+        return "opening"
