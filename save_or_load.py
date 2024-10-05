@@ -46,13 +46,14 @@ class Save_or_Load:
         # 画面作成
         self.top = None     # セーブ or ロード
         self.enter = None   # 決定
+        self.delete = None  # 削除
         self.close = None   # 閉じる
         self.button_list = []
         self.create_label()
 
     # データ表示ボックスを表示
     def create_window(self):
-        w = 400
+        w = 600
         h = 500
         x = (self.screen.get_width() / 2) - (w / 2)
         y = (self.screen.get_height() / 2) - (h / 2)
@@ -70,9 +71,10 @@ class Save_or_Load:
             enter_text = "開始"
 
         self.top = Label(self.screen, self.contents_font, top_text, y=80, centerx=WINDOW_CENTER_X)
-        self.enter = Label(self.screen, self.contents_font, enter_text, 250, 500)
-        self.close = Label(self.screen, self.contents_font, "CLOSE", 480, 500)
-        self.button_list = [self.enter,self.close]
+        self.enter = Label(self.screen, self.contents_font, enter_text, 200, 500)
+        self.delete_label = Label(self.screen, self.contents_font, "削除", y=500, centerx=WINDOW_CENTER_X)
+        self.close = Label(self.screen, self.contents_font, "閉じる", 520, 500)
+        self.button_list = [self.enter, self.delete_label, self.close]
 
     # セーブデータ一覧を探してくる
     def load_save_data(self):
@@ -85,7 +87,7 @@ class Save_or_Load:
 
     # セーブデータ一覧を表示する
     def create_save_data_list(self):
-        x = (self.screen.get_width() // 2) - 150
+        x = (self.screen.get_width() // 2) - 200
         start_y = 150
         y = start_y
         if self.save_data_list:
@@ -94,29 +96,55 @@ class Save_or_Load:
                 self.data_lbl_list.append(Label(self.screen, self.font, data_name, x, y))
                 y += 30
 
+    def data_delete(self):
+        if self.select_file_name is None:
+            messagebox.showerror("エラー", "データが選択されていません")
+        else:
+            if messagebox.askokcancel("削除", f"{self.select_file_name}\n本当に削除してよろしいですか？"):
+                file_name = f"{self.forder_name}{self.select_file_name}"
+                try:
+                    # ファイルの中身を空にする
+                    with open(file_name, "w", encoding="utf-8_sig") as f:
+                        pass
+                except Exception as e:
+                    print(f"データエラー: {e}")
+
+                # 新しいファイル名に変更する
+                file_no = self.select_file_name.split(" ")[0]
+                new_file_name = f"{self.forder_name}{file_no}.json"
+                os.rename(file_name, new_file_name)
+                self.draw()
+                messagebox.showinfo("削除", "削除が完了しました")
+
     # データセーブ
     def save(self):
         file_name = self.create_file_name()
         try:
-            with open(file_name,"w",encoding="utf-8_sig") as f:
+            with open(file_name, "w", encoding="utf-8_sig") as f:
                 json.dump(self.save_data, f, indent=2, ensure_ascii=False)
             messagebox.showinfo("セーブ", "セーブが完了しました")
+            self.state = SaveLoadState.SAVE            
         except Exception as e:
             print(f"セーブエラー: {e}")
             messagebox.showerror("セーブエラー", "セーブに失敗しました")
 
     # データロード
     def load(self):
-        file_name = f"{self.forder_name}{self.select_file_name}"
-        try:
-            self.load_data = load_json(file_name)
-        except FileNotFoundError:
-            messagebox.showerror("ロードエラー", "ファイルが見つかりません")
-        except json.JSONDecodeError:
-            messagebox.showerror("ロードエラー", "ファイル形式が正しくありません")
-        except Exception as e:
-            print(f"ロードエラー: {e}")
-            messagebox.showerror("ロードエラー", f"ロードに失敗しました: {str(e)}")
+        if len(self.select_file_name.replace(".json", "")) == 2:
+            messagebox.showerror("ロードエラー", "データがありません")
+        else:
+            file_name = f"{self.forder_name}{self.select_file_name}"
+            try:
+                self.load_data = load_json(file_name)
+                messagebox.showinfo("ロード", "ロードに成功しました")
+                self.state = SaveLoadState.LOAD
+            except FileNotFoundError:
+                messagebox.showerror("ロードエラー", "ファイルが見つかりません")
+            except json.JSONDecodeError:
+                messagebox.showerror("ロードエラー", "ファイル形式が正しくありません")
+            except Exception as e:
+                print(f"ロードエラー: {e}")
+                messagebox.showerror("ロードエラー", f"ロードに失敗しました: {str(e)}")
 
     # ファイル名を作る
     def create_file_name(self):
@@ -137,9 +165,9 @@ class Save_or_Load:
 
         # キャラクター名と場所
         name = self.save_data.get("hero_status", {}).get("name", "Unknown")
-        room_index = self.save_data.get("flag", {}).get("room_flag", None)
-        if room_index:
-            room_name = ROOM_NAME[room_index]
+        room_direction = self.save_data.get("flag", {}).get("room_flag", None)
+        if room_direction:
+            room_name = ROOM_NAME[room_direction]
         else:
             room_name = ""
 
@@ -188,11 +216,13 @@ class Save_or_Load:
         # 決定ボタン
         elif self.enter.rect.collidepoint(event.pos):
             if self.save_load_flag == "save":
-                self.save()
-                self.state = SaveLoadState.SAVE
+                self.save()                
             else:
                 self.load()
-                self.state = SaveLoadState.LOAD
+
+        # 削除ボタン
+        elif self.delete_label.rect.collidepoint(event.pos):
+            self.data_delete()
 
         # データ一覧の選択
         for label, save_data in zip(self.data_lbl_list, self.save_data_list):

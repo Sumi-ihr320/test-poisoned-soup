@@ -46,8 +46,7 @@ class MainApp:
         # イベントマップ
         self.event_map = {"title": Title(self.screen),
                           "opening": Opening(self.screen),
-                          "charasheet": CharacterSheet(self.screen),
-                          "play": MainPlay}
+                          "charasheet": CharacterSheet(self.screen)}
 
     # 画面の描写
     def run(self):
@@ -99,7 +98,7 @@ class MainApp:
                     self.event_map["play"] = MainPlay(self.screen, self.save_data)
 
             elif self.event_name == "play":
-                self.event_name = self.event_map["play"].update()
+                self.event_name, self.save_data = self.event_map["play"].update()
                 if self.event_name == "save":
                     self.create_save(event)
                 elif self.event_name == "load":

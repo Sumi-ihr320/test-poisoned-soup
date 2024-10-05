@@ -47,6 +47,7 @@ class PageNavigation:
     def handle_click(self, pos):
         if self.navi_rect.collidepoint(pos):
             return True
+        return False
 
 # ラベル作成をクラス化するよ    (chatGPT指南)
 class Label:
@@ -240,7 +241,7 @@ class InputBox:
 
 # 画像表示をクラス化するよ
 class Image:
-    def __init__(self, screen, path, size, x, y, line_flag=False, line_width=1, bg_flag=False):
+    def __init__(self, screen, path, size, x, y, line_flag=False, line_width=1, bg_flag=False, area=None):
         self.screen = screen
 
         self.img, self.rect = self.create_image(path, size)
@@ -249,6 +250,7 @@ class Image:
         self.bg_flag = bg_flag
         self.line_flag = line_flag
         self.line_width = line_width
+        self.area = area
 
     # イメージを作成するよ
     def create_image(self, path, size):
@@ -282,7 +284,7 @@ class Image:
             pygame.draw.rect(self.screen, WHITE, self.rect)
 
         # 画像の描写
-        self.screen.blit(self.img, self.rect)
+        self.screen.blit(self.img, self.rect, area=self.area)
 
         # 画像の枠を描画する場合
         if self.line_flag:

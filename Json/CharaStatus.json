@@ -6,7 +6,8 @@
         "Luck":0,"Idea":0,"Know":0,"DB":"",
         "HP":0,"MP":0,"Avo":0,"SAN":0,"Profession":"",
         "skill":{},
-        "item":{"白いローブ":{"装甲":0}}
+        "item":{"白いローブ":{"装甲":0}},
+        "girl_like_ability":0
     },
 
     "Girl":{

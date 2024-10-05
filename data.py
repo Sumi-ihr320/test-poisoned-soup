@@ -57,7 +57,11 @@ RIGHT,LEFT,UNDER = (0,1,2)
 # 方角
 CENTER,NORTH,EAST,WEST,SOUTH = (0,1,2,3,4)
 # 部屋の名前
-ROOM_NAME= ["中央の部屋","北の部屋","東の部屋","西の部屋","南の部屋"]
+ROOM_NAME= {"center":"中央の部屋",
+            "north":"北の部屋",
+            "east":"東の部屋",
+            "west":"西の部屋",
+            "south":"南の部屋"}
 
 
 
