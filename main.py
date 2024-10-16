@@ -16,12 +16,7 @@ from playing import MainPlay
 
 # tkinterの起動 ---------------------------------------------------
 root = tk.Tk()
-# 画面中央に配置したい
-sw, sh = root.winfo_screenmmwidth(), root.winfo_screenmmheight()
-w, h = root.winfo_width(), root.winfo_height()
-x = (sw - w) // 2
-y = (sh - h) // 2
-root.geometry(f"+{x}+{y}")
+root.geometry(create_size_tkinter(root))
 # tkinterの非表示
 root.withdraw()
 
@@ -44,9 +39,9 @@ class MainApp:
         #self.event_name = "play"
 
         # イベントマップ
-        self.event_map = {"title": Title(self.screen),
-                          "opening": Opening(self.screen),
-                          "charasheet": CharacterSheet(self.screen)}
+        self.event_map = {"title": Title(self.screen, root),
+                          "opening": Opening(self.screen, root),
+                          "charasheet": CharacterSheet(self.screen, root)}
 
     # 画面の描写
     def run(self):
@@ -61,7 +56,7 @@ class MainApp:
 
             self.update_display()
 
-            self.clock.tick(60)
+            #self.clock.tick(60)
 
     # イベント取得確認
     def handle_events(self):
@@ -79,7 +74,7 @@ class MainApp:
             if self.event_name == "title":
                 self.event_name = event.update()
                 if self.event_name == "load":
-                    self.event_map["load"] = Save_or_Load(self.screen, "load", "title")
+                    self.event_map["load"] = Save_or_Load(self.screen, root, "load", "title")
 
             elif self.event_name == "opening":
                 self.event_name = event.update()
@@ -95,7 +90,7 @@ class MainApp:
             elif self.event_name == "load":
                 self.event_name, self.save_data = self.event_map["load"].update()
                 if self.event_name == "play" and self.save_data:
-                    self.event_map["play"] = MainPlay(self.screen, self.save_data)
+                    self.event_map["play"] = MainPlay(self.screen, root, self.save_data)
 
             elif self.event_name == "play":
                 self.event_name, self.save_data = self.event_map["play"].update()
@@ -103,14 +98,14 @@ class MainApp:
                     self.create_save(event)
                 elif self.event_name == "load":
                     self.save_data = event.save_data
-                    self.event_map["load"] = Save_or_Load(self.screen, "load", "play", self.save_data)
+                    self.event_map["load"] = Save_or_Load(self.screen, root, "load", "play", self.save_data)
             else:
                 self.event_name = event(self.screen)
 
     # セーブデータを取得してイベントマップを更新
     def create_save(self, event):
         self.save_data = event.save_data
-        self.event_map["save"] = Save_or_Load(self.screen, "save", "play", self.save_data)
+        self.event_map["save"] = Save_or_Load(self.screen, root, "save", "play", self.save_data)
 
     # 画面を更新
     def update_display(self):
@@ -118,13 +113,13 @@ class MainApp:
 
     # 終了処理
     def close(self):
-        if messagebox.askokcancel("確認","本当に終了しますか？"):
-            pygame.quit()
-            sys.exit()
-        else:
-            pass
+        with TopmostManager(root):
+            if messagebox.askokcancel("確認","本当に終了しますか？"):
+                pygame.quit()
+                sys.exit()
+            else:
+                pass
             
 if __name__ == "__main__":
-    #main()
     app = MainApp()
     app.run()

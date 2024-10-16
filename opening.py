@@ -8,8 +8,9 @@ from class_summary import *
 
 # オープニング関数をクラス化    (chatGPT指南)
 class Opening:
-    def __init__(self, screen):
+    def __init__(self, screen, root):
         self.screen = screen
+        self.root = root
         self.opening_flag = 0
         self.file_path = f"{PATH}{SCENARIO}Opening.txt"
         self.texts = load_texts(self.file_path)
@@ -25,11 +26,15 @@ class Opening:
     
     def handle_events(self):
         for event in pygame.event.get():
+            # 閉じるボタンで終了
+            if event.type == QUIT:
+                Close(self.root)
+            elif event.type == KEYDOWN and event.key == K_ESCAPE:
+                Close(self.root)
+
             # マウスクリック時
-            if event.type == MOUSEBUTTONDOWN:
-                # 左ボタン
-                if event.button == 1:
-                    self.opening_flag += 1
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                self.opening_flag += 1
 
     def update(self):
         self.draw_frame()

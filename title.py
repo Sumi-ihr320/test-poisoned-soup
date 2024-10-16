@@ -9,8 +9,10 @@ from class_summary import *
 
 # タイトル関数をクラス化    (chatGPT指南)
 class Title:
-    def __init__(self, screen):
+    def __init__(self, screen, root):
         self.screen = screen
+        self.root = root
+
         # フォントの設定
         self.title_font = pygame.font.Font(TITLE_FONT_PATH,TITLE_SIZ)    # タイトル用のフォント
         self.contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)    # メニュー用フォント
@@ -39,8 +41,15 @@ class Title:
 
     def handle_events(self):
         for event in pygame.event.get():
+            # 閉じるボタンで終了
+            if event.type == QUIT:
+                Close(self.root)
+            elif event.type == KEYDOWN and event.key == K_ESCAPE:
+                Close(self.root)
+
             # 左マウスクリック時
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                print(event.pos)
                 if self.start.rect.collidepoint(event.pos):
                     return "opening"
                 elif self.load.rect.collidepoint(event.pos):
@@ -48,7 +57,7 @@ class Title:
                 elif self.setting.rect.collidepoint(event.pos):
                     return "setting"
                 elif self.close.rect.collidepoint(event.pos):
-                    Close()
+                    Close(self.root)
                 else:
                     pass
             

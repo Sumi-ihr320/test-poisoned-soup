@@ -55,7 +55,7 @@ TITLE,SAVE,LOAD,SETTING,OPENING,CHARASE,PLAY,ENDING,ENDCREDITS = (0,1,2,3,4,5,6,
 RIGHT,LEFT,UNDER = (0,1,2)
 
 # 方角
-CENTER,NORTH,EAST,WEST,SOUTH = (0,1,2,3,4)
+# CENTER,NORTH,EAST,WEST,SOUTH = (0,1,2,3,4)
 # 部屋の名前
 ROOM_NAME= {"center":"中央の部屋",
             "north":"北の部屋",
@@ -83,19 +83,19 @@ ScenarioFiles = os.listdir(ScenarioPath)
 
 
 # 本編 -------------------------------------------------------
-CenterRoomFlag = 0      # 中央の部屋のシーンフラグ
-MemoFlag = 0            # メモの進行フラグ
-EastRoomFlag = 0        # 東の部屋のシーンフラグ
-RoomFlag = CENTER       # どの部屋にいるかフラグ
-DirectionFlag = NORTH   # どの方角を向いてるかフラグ
-DiscoveryFlag = False   # 東の部屋奥が見えるかフラグ
-KeyOpenFlag = False     # 東の部屋カギが開いてるかフラグ
-BookFlag = False        # 本を見つけてるかフラグ
-BookHaveFlag = False    # 本を持ってるかフラグ
-CandleHaveFlag = False  # キャンドルを持ってるかフラグ
-LightFlag = True        # 電気が点いてるかフラグ
-PoisonFlag = False      # 毒を入手してるかフラグ
-SoupFlag = 0            # スープの状態フラグ 0=通常 1=毒入り 2=空
-SoupIdeaFlag = False    # スープの知識があるかフラグ
-GirlFlag = False        # 少女がいるかフラグ
+#CenterRoomFlag = 0      # 中央の部屋のシーンフラグ
+#MemoFlag = 0            # メモの進行フラグ
+#EastRoomFlag = 0        # 東の部屋のシーンフラグ
+#RoomFlag = CENTER       # どの部屋にいるかフラグ
+#DirectionFlag = NORTH   # どの方角を向いてるかフラグ
+#DiscoveryFlag = False   # 東の部屋奥が見えるかフラグ
+#KeyOpenFlag = False     # 東の部屋カギが開いてるかフラグ
+#BookFlag = False        # 本を見つけてるかフラグ
+#BookHaveFlag = False    # 本を持ってるかフラグ
+#CandleHaveFlag = False  # キャンドルを持ってるかフラグ
+#LightFlag = True        # 電気が点いてるかフラグ
+#PoisonFlag = False      # 毒を入手してるかフラグ
+#SoupFlag = 0            # スープの状態フラグ 0=通常 1=毒入り 2=空
+#SoupIdeaFlag = False    # スープの知識があるかフラグ
+#GirlFlag = False        # 少女がいるかフラグ
 # -----------------------------------------------------------

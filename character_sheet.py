@@ -8,8 +8,9 @@ from class_summary import *
 
 # キャラクターシート作成画面をクラス化してみる
 class CharacterSheet:
-    def __init__(self, screen):
+    def __init__(self, screen, root):
         self.screen = screen
+        self.root = root
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
 
         self.page_navi = None   # ナビゲーションバー
@@ -40,6 +41,7 @@ class CharacterSheet:
     # ページを表示する
     def draw_page(self):
         self.create_navigation(self.now_page)
+        self.page_navi.draw()
         if self.now_page == 0:
             self.create_status_page()
             for item in self.status_items:
@@ -60,7 +62,7 @@ class CharacterSheet:
         if not self.status_items:   # すでにアイテムがあるか確認
             for status in status_json:
                 items = status_json[status]
-                item = Status(self.screen, items["name"], status, items["view_name"],
+                item = Status(self.screen, self.root, items["name"], status, items["view_name"], self.hero_data[status],
                             items["x"], items["y"], items["w"], items["h"], items["text"],
                             items["button_flag"], items["input_flag"], items["box_flag"], items["dice_text"])
                 self.status_items.append(item)
@@ -106,7 +108,8 @@ class CharacterSheet:
                 texts.append(error_msg)
         if texts:
             text = "\n".join(texts)
-            messagebox.showerror("未入力", text)
+            with TopmostManager(self.root):
+                messagebox.showerror("未入力", text)
         else:
             # セーブデータに主人公データを入れる
             self.save_data["hero_status"] = self.hero_data
@@ -149,7 +152,7 @@ class CharacterSheet:
         for event in pygame.event.get():
             # 閉じるボタンかESCキーで終了
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-                Close()
+                Close(self.root)
             # マウス左クリック時
             elif event.type == MOUSEBUTTONDOWN and event.button == 1:
                 self.handle_mouse_click(event.pos)

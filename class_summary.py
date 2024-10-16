@@ -1,48 +1,56 @@
 
 import random
 
+import tkinter as tk
+from tkinter import ttk
+from tkinter import simpledialog
+
 import pygame
 from pygame.locals import *
+
 
 from data import *
 from fanction_summary import *
 
 # ページ移動用の矢印表示するよ
 class PageNavigation:
-    def __init__(self, screen, page_flag=0):
+    def __init__(self, screen, position_flag=0):
         self.screen = screen
-        self.navi_rect = self.draw(page_flag)
+        self.position_flag = position_flag
 
-    # 画像表示
-    def draw(self, page_flag):
-        img = f"{PATH}{PICTURE}navigate.png"
-        navi_img = pygame.image.load(img).convert_alpha()
-        if page_flag == UNDER:
-            navi_img = pygame.transform.rotate(navi_img, 90)
-            navi_img = pygame.transform.scale(navi_img, (500,40))
+        self.rect_dic = {RIGHT:{"x":740, "y":40, "triangle":[[750,190],[770,210],[750,230]]},
+                         LEFT:{"x":20, "y":40, "triangle":[[50,190],[30,210],[50,230]]},
+                         UNDER:{"x":None,"y":350,"triangle":[[380,360],[400,380],[420,360]]}}
+
+        self.navi_img = None
+        self.navi_rect = None
+        self.create_image()
+
+    # ナビゲーションの作成
+    def create_image(self):
+        img_path = f"{PATH}{PICTURE}navigate.png"
+        self.navi_img = pygame.image.load(img_path).convert_alpha()
+        if self.position_flag == UNDER:
+            self.navi_img = pygame.transform.rotate(self.navi_img, 90)
+            self.navi_img = pygame.transform.scale(self.navi_img, (500,40))
         else:
-            navi_img = pygame.transform.scale(navi_img, (40,355))
-        navi_rect = navi_img.get_rect()
-        if page_flag == RIGHT: # 右側のナビゲーション
-            navi_x, navi_y = 740, 40
-            triangle = [[750,190],[770,210],[750,230]]
-        elif page_flag == LEFT: # 左側のナビゲーション
-            navi_x, navi_y = 20, 40
-            triangle = [[50,190],[30,210],[50,230]]
-        else:   # 下側のナビゲーション
-            navi_x = self.screen.get_width() / 2 - navi_rect.centerx
-            navi_y = 350
-            triangle = [[380,360],[400,380],[420,360]]
+            self.navi_img = pygame.transform.scale(self.navi_img, (40,355))
 
+        self.navi_rect = self.navi_img.get_rect()
         # ナビゲーションの表示
-        navi_rect.centerx += navi_x
-        navi_rect.centery += navi_y
-        self.screen.blit(navi_img, navi_rect)
+        if self.position_flag == UNDER:
+            self.navi_rect.centerx = self.screen.get_width() / 2 - self.navi_rect.centerx
+        else:
+            self.navi_rect.centerx += self.rect_dic[self.position_flag]["x"]
+        self.navi_rect.centery += self.rect_dic[self.position_flag]["y"]
+    
+    # 画像表示
+    def draw(self):
+        # バーの描画
+        self.screen.blit(self.navi_img, self.navi_rect)
 
         # 三角形の描画
-        pygame.draw.polygon(self.screen, BLACK, triangle)
-
-        return navi_rect
+        pygame.draw.polygon(self.screen, BLACK, self.rect_dic[self.position_flag]["triangle"])
     
     def handle_click(self, pos):
         if self.navi_rect.collidepoint(pos):
@@ -455,8 +463,9 @@ class DiceRoll:
 class Status:
     MAX_STATUS_VALUE = 99
 
-    def __init__(self, screen, name, status_name, label_name, x, y, w, h, text="", button_flag=True, input_flag=True, box_flag=True, dice_text=""):
+    def __init__(self, screen, root, name, status_name, label_name, status, x, y, w, h, text="", button_flag=True, input_flag=True, box_flag=True, dice_text=""):
         self.screen = screen
+        self.root = root
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
 
         self.name = name                # ステータスの名前
@@ -466,11 +475,8 @@ class Status:
         self.dice_text = dice_text      # ダイスボタンに表示するテキスト
         self.status_label = Label(self.screen, self.font, self.label_name, x, y)    # ラベル作成
 
-        # ステータスの値 初期化
-        if self.status_name == "name" and self.status_name == "sex":
-            self.status = ""
-        else:
-            self.status = 0
+        # ステータスの値
+        self.status = status
 
         # 入力可能かのフラグ
         self.input_flag = input_flag
@@ -487,8 +493,6 @@ class Status:
         # ステータスラベルの隣
         input_x = x + self.status_label.rect.w + 5
         input_y = y - 4     # ラベルより大きいので少し上に
-        if self.status_name != "sex" and self.status_name in CharaStatus:
-            self.status = CharaStatus[self.status_name]
         self.input = InputBox(self.screen, self.font, Rect(input_x, input_y, w, h), str(self.status), self.input_flag)
 
     # ダイスボタンを作成
@@ -530,25 +534,15 @@ class Status:
     # 入力ボックスの処理まとめるよ
     def input_process(self, edu):
         min, max = self.determine_input_range(edu)
-        val = self.input_get(min, max)
-        if val is not None:
+        value_type = type(self.status)
+        num = 2 if value_type == int else None
+        CustomDialog(self.root, self.name, f"あなたの{self.name}を入力してください", value_type, min, max, num, self.handle_input)
+        
+    # カスタムダイアログに入力された値を取得してラベルを更新する
+    def handle_input(self, value):
+        if value is not None:
             if self.input:
-                self.input.update_label(f"{val}")
-
-    # インプットボックスの処理をまとめるよ
-    def input_get(self, min=0, max=100):
-        # 表示項目
-        title = self.name
-        text = f"あなたの{self.name}を入力してください"
-        txt = CharaStatus[self.status_name]
-
-        if type(txt) == str:
-            val = simpledialog.askstring(title, text, initialvalue=txt)
-        elif type(txt) == int:
-            val = simpledialog.askinteger(title, text, initialvalue=txt, minvalue=min, maxvalue=max)
-        if val != None:
-            CharaStatus[self.status_name] = val
-        return val
+                self.input.update_label(f"{value}")
 
     # ダイス処理まとめるよ
     def dice_process(self):
@@ -753,4 +747,227 @@ class HobbySelecter:
         elif self.pull.list_box and self.pull.list_box.rect.collidepoint(pos):
             self.pull.handle_mouse_hover(pos, is_dropped)
         return None
-                    
+
+# simpledialogの代わり
+class CustomDialog:
+    def __init__(self, root, title="title", text="文字列を入力してください", type=str, min=0, max=99, num=None, callback=None):
+        self.root = root
+        self.root.deiconify()   # root を表示する
+        self.root.lift()        # 他のウィンドウよりも前面に表示
+        
+        self.dialog = tk.Toplevel(root)
+        self.dialog.title(title)
+        self.dialog.attributes("-topmost", True)
+        self.dialog.grab_set()  # フォーカスをこのウィンドウに固定
+        self.dialog.protocol("WM_DELETE_WINDOW", self.close)
+
+        self.text = text
+        self.type = type
+        self.min = min
+        self.max = max
+        self.num = num
+        self.callback = callback
+        self.value = tk.IntVar() if self.type == int else tk.StringVar()
+        self.create_widget(self.dialog)
+
+        # ダイアログを中央に
+        self.dialog.geometry(create_size_tkinter(self.dialog))
+        self.dialog.transient(root)
+
+    def create_widget(self, parent):
+        # フレーム
+        frm_top = self.create_frame(parent, "top")
+        frm_bottom = self.create_frame(parent, "top")
+
+        frm_left = self.create_frame(frm_bottom, "left")
+        frm_right = self.create_frame(frm_bottom, "left")
+    
+        # ラベル作成
+        label = ttk.Label(frm_top, text=self.text)
+        label.pack(pady=10, side="top")
+
+        # エントリー作成
+        vcmd = (self.dialog.register(validate_input), "%P", self.type, self.num)
+        self.entry = ttk.Entry(frm_top, textvariable=self.value, validate="key", validatecommand=vcmd)
+        self.entry.pack(pady=10, side="top")
+        self.entry.focus()
+
+        # ボタン作成
+        self.ok = self.create_button(frm_left, "OK", self.on_ok)
+        self.cancel = self.create_button(frm_right, "キャンセル", self.on_cancel)
+    
+    # フレーム作成
+    def create_frame(self, parent, side):
+        frame = ttk.Frame(parent)
+        frame.pack(pady=10, side=side)
+        return frame
+        
+    # ボタン作成
+    def create_button(self, parent, text, command):
+        button = ttk.Button(parent, text=text, command=command)
+        button.pack(anchor="center")
+        return button
+
+    # OKボタンを押したとき
+    def on_ok(self):
+        value = self.value.get() if self.value.get() else None
+        if value:
+            if self.type == int:
+                if not self.check_value(value):
+                    return
+        self.callback(value)
+        self.close()
+
+    # キャンセルボタンを押したとき
+    def on_cancel(self):
+        self.callback(None)
+        self.close()
+
+    # 閉じる
+    def close(self):
+        self.dialog.destroy()   # ダイアログを閉じる
+        self.root.withdraw()    # rootを非表示にする
+
+    # 値がmin-maxの間かどうかをチェックする
+    def check_value(self, value):
+        if self.min <= value <= self.max:
+            return True
+        else:
+            with TopmostManager(self.dialog):
+                messagebox.showerror("入力エラー", f"入力値は{self.min}から{self.max}の間で入力してください")
+            return False
+        
+# 部屋の型を作るよ
+class Room:
+    # 部屋画像の縮小パーセンテージ
+    SIZE = 0.19
+    def __init__(self, screen, room, direction="", room2_flag=False):
+        self.screen = screen
+        self.room2_flag = room2_flag    # 二つ目の部屋画像を表示するかのフラグ
+
+        # 部屋画像を表示するエリア
+        self.area_rect = Rect(0,0,820,375)
+        
+        # ファイル名一覧
+        self.room_path = create_file_path("room", room, direction)
+        self.room2_path = create_file_path("room2", room, direction)
+        self.scenario_list = create_scenario_path("", room)
+
+        # 部屋画像の作成
+        self.img = Image(self.screen, self.room_path, size=self.SIZE, x="center", y=30, area=self.area_rect)
+        self.img2 = Image(self.screen, self.room2_path, size=self.SIZE, x="center", y=30, area=self.area_rect) if self.room2_path else None
+
+        # 部屋にあるアイテムの作成
+        self.items = []
+        self.items_draw_list = []
+        self.items_select_list= []
+        self.create_item(self.img.img, room, direction)
+
+    # 画像表示するよ
+    def draw(self):
+        # フラグが立っていればroom_img2を表示する
+        if self.room2_flag and self.img2:
+            self.img2.draw()
+        else:
+            self.img.draw()
+
+        if self.items_draw_list:
+            for item in self.items_draw_list:
+                item.draw()
+
+    # 部屋のアイテムを作成する
+    def create_item(self, surface, room, direction):
+        if room == "center":
+            self.light = Item(surface, "Light", room, "", "center", 24)
+            self.soup = Item(surface, "Soup", room, "", "center", 224)
+            directions = ["north","east","south","west"]
+            position = {"north":{"tablex":"center","tabley":189,
+                                 "memox":306,"memoy":237},
+                        "east":{"tablex":229,"tabley":212,
+                                "memox":"center","memoy":253},
+                        "south":{"tablex":"center","tabley":223,
+                                 "memox":392,"memoy":237},
+                        "west":{"tablex":260,"tabley":213,
+                                "memox":"center","memoy":223}
+            }
+            center_door_name = f"{direction}Door"
+            index = directions.index(direction)
+            left_index = index - 1
+            left_direct = directions[left_index]
+            left_door_name = f"{left_direct}Door"
+            right_index = index + 1
+            if right_index > len(directions) - 1:
+                right_index = 0
+            right_direct = directions[right_index]
+            rigth_door_name = f"{right_direct}Door"
+            self.center_door = Item(surface, center_door_name, room, direction, "center", 82)
+            self.left_door = Item(surface, left_door_name, room, direction, 86, 63)
+            self.right_door = Item(surface, rigth_door_name, room, direction, 568, 64)
+            self.table = Item(surface, "Table", "center", direction, position[direction]["tablex"], position[direction]["tabley"])
+            self.center_memo = Item(surface, "Memo", "center", direction, position[direction]["memox"], position[direction]["memoy"])
+            self.items_draw_list = [self.center_door, self.left_door, self.right_door, self.table, self.light, self.soup, self.center_memo]
+            self.items_select_list = [self.light, self.soup, self.center_memo, self.table, self.center_door, self.left_door, self.right_door]
+        elif room == "north":
+            self.under_storage = Item(surface, "UnderSinkStorage", "north", "", 325, 250)
+            self.cooktop = Item(surface, "Cooktop", "north", "", 225, 226)
+            self.sink = Item(surface, "Sink", "north", "", 468, 216)
+            self.top_storage = Item(surface, "TopSinkStorage", "north", "", 325, 100)
+            self.pot = Item(surface, "Pot", "north", "", 290, 203)
+            self.storage = Item(surface, "Storage", "north", "", 560, 225)
+            self.cupboard = Item(surface, "CupBoard", "north", "", 36, 30)
+            self.fridge = Item(surface, "Fridge", "north", "", 628, 39)
+            self.items_draw_list = [self.under_storage, self.cooktop, self.sink, self.top_storage, self.pot, self.storage, self.cupboard, self.fridge]
+            self.items_select_list = [self.pot, self.sink, self.cooktop, self.under_storage, self.top_storage, self.storage, self.cupboard, self.fridge]
+        elif room == "east":
+            self.corpse = Item(surface, "Corpse", "east", "", 437, 218)
+            self.east_memo = Item(surface, "Memo", "east", "", 277, 259)
+            self.items_draw_list = [self.corpse, self.east_memo]
+            self.items_select_list = [self.east_memo, self.corpse]
+        elif room == "south":
+            self.statue = Item(surface, "StoneStatue", "south", "",287, 69)
+            self.slate1 = Item(surface, "Slate1", "south", "", 213, 156)
+            self.slate2 = Item(surface, "Slate2", "south", "", 479, 156)
+            self.items_draw_list = [self.statue, self.slate1, self.slate2]
+            self.items_select_list = [self.statue, self.slate1, self.slate2]
+        else:
+            self.bookshelf = Item(surface, "BookShelf", "west", "", 36, 30)
+            self.chandle = Item(surface, "Candle", "west", "", 350, 223)
+            self.book = Item(surface, "Book", "west", "", 298, 246)
+            self.items_draw_list = [self.bookshelf, self.chandle, self.book]
+            self.items_select_list = [self.book, self.chandle, self.bookshelf]
+
+# アイテムの型を作るよ
+class Item:
+    # アイテム画像の縮小パーセンテージ
+    SIZE = 0.19
+    def __init__(self, screen, name, room, direction, x, y):
+        self.screen = screen
+        self.name = name    # アイテム名
+
+        # ファイルパス
+        self.path = create_file_path(name, room, direction)
+
+        # 画像
+        self.img = Image(self.screen, self.path, self.SIZE, x, y)
+
+        # シナリオファイルパス
+        self.scenario_path_list = create_scenario_path(name, room)
+
+        # クリック時画像パス
+        self.big_img_path_list = create_item_path(name)
+    
+    def draw(self):
+        self.img.draw()
+        pygame.draw.rect(self.screen, BLACK, self.img.rect, 1)
+
+    def handle_click(self, pos):
+        if self.img.rect.collidepoint(pos):
+            return True
+        return False
+
+        # 表示するテキスト
+        return self.scenario_path_list
+    
+        # 起こるイベント
+        pass
+
