@@ -380,7 +380,7 @@ class CharacterSheet:
         skill_list = load_json(SKILL_DATA_PATH)
 
         # 最大振り分けポイント
-        max_points = CharaStatus["INT"] * 10
+        max_points = self.hero_data["INT"] * 10
         # スキルの振り分け割合
         percent = [70,30]
         if max_points > 0:

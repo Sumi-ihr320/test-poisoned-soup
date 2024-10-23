@@ -25,6 +25,10 @@ class MainPlay:
         # フラグをセットする
         self.set_flag(save_data["flag"])
 
+        # メニューを作る
+        self.menu = None
+        self.create_menu()
+    
         # ナビゲーションバー
         self.right_navi = None
         self.left_navi = None
@@ -32,14 +36,27 @@ class MainPlay:
         self.create_navigetion()
 
         # 部屋を作る
+        self.room = None
         self.create_room()
+
+        # 表示するシナリオのリスト
+        self.scenario_list = []
+        # テキストフレームに表示するテキスト
+        self.text = ""
+
+        # 選択されたアイテム
+        self.selected_item = None
+
+    # メニューの作成
+    def create_menu(self):
+        self.menu = Menu(self.screen, self.root)
 
     # 部屋の作成
     def create_room(self):
         room2_flag = self.room2_flag_check(self.room_flag)
         self.room = Room(self.screen, self.room_flag, self.direction_flag, room2_flag)
         self.max_room_scenario_flag = len(self.room.scenario_list)
-        print(self.room.scenario_list)
+        print(self.room.scenario_list)  # デバッグ用
 
     # フラグをセットする
     def set_flag(self, play_flags):
@@ -50,25 +67,23 @@ class MainPlay:
         self.direction_flag = play_flags.get("direction_flag", "north")     # どの方角を向いているかフラグ
         self.girl_flag = play_flags.get("girl_flag", False)                 # 少女を見つけてるかフラグ
 
-        self.center_room_scenario_flag = play_flags.get("center_room_scenario_flag", 0) # 中央の部屋のシナリオフラグ
-        self.north_room_scenario_flag = play_flags.get("north_room_scenario_flag", 0) # 北の部屋のシナリオフラグ
-        self.south_room_scenario_flag = play_flags.get("south_room_scenario_flag", 0) # 南の部屋のシナリオフラグ
-        self.east_room_scenario_flag = play_flags.get("east_room_scenario_flag", 0) # 東の部屋のシナリオフラグ
-        self.west_room_scenario_flag = play_flags.get("west_room_scenario_flag", 0) # 西の部屋のシナリオフラグ
+        self.room_scenario_flag = play_flags.get("room_scenario_flag", {"center":0, "north":0, "south":0, "east":0, "west":0})    # 各部屋のシナリオフラグ
         self.max_room_scenario_flag = 0             # シナリオフラグの最大値
         self.light_flag = play_flags.get("light_flag", False)               # 電球が取られていないかフラグ
-        self.west_room_book_found_flag = play_flags.get("book_found_flag", False)       # 本を見つけているかフラグ
-        self.east_room_visible_flag = play_flags.get("east_room_visible_flag", False)    # 東の部屋が見えるようになっているかフラグ
+        self.east_room_flag = play_flags.get("east_room_flag", {"open":False, "visivle":False})     # 東の部屋のフラグ
         self.poison_get_flag = play_flags.get("poison_get_flag", False)     # 毒を見つけているかフラグ
-        self.poison_input_flag = play_flags.get("poison_input_flag", False) # 毒をスープに入れているかフラグ
-        self.west_room_book_have_flag = False    # 本を持っているかフラグ
+
+        # アイテムの状態フラグ
+        self.soup_flag = play_flags.get("soup_flag", {"poison":False, "know":False, "drink":False, "temperature":0}) # スープに関するフラグ
+        self.center_memo_flag = play_flags.get("center_memo_flag", {"scenario":0, "objective":False})       # 真ん中の部屋のメモに関するフラグ
+        self.book_flag = play_flags.get("book_flag", {"found":False, "get":False})  # 西の部屋の本に関するフラグ
 
     # 二つ目の部屋表示チェック
     def room2_flag_check(self, room):
         if room == "east":
-            return self.east_room_visible_flag
+            return self.east_room_flag["visivle"]
         elif room == "west":
-            return self.west_room_book_found_flag
+            return self.book_flag["found"]
         else:
             return False
 
@@ -121,53 +136,33 @@ class MainPlay:
             direction = "east"
         return "center", direction
 
-    def handle_click(self, event):
-        if not self.first_room_scenario(self.room_flag):
-            if self.room_flag == "center":
-                # ナビゲーションバーによる移動
-                if self.right_navi and self.right_navi.handle_click(event.pos):
-                    self.move_room("right")
-                elif self.left_navi and self.left_navi.handle_click(event.pos):
-                    self.move_room("left")
-                else:
-                    for item in self.room.items_select_list:
-                        if item.handle_click(event.pos):
-                            print(item.name)
-                        pass
-            else:
-                # ナビゲーションバーによる移動
-                if self.under_navi and self.under_navi.handle_click(event.pos):
-                    self.move_room("under")
-
-    def first_room_scenario(self, room):
-        # 部屋に最初に入った時に起こるイベント
-        # イベント中は他のクリックイベントは作動しない
-        if room == "center":
-            if self.center_room_scenario_flag < self.max_room_scenario_flag:
-                self.center_room_scenario_flag += 1
-                return True
-        if room == "north":
-            if self.north_room_scenario_flag < self.max_room_scenario_flag:
-                self.north_room_scenario_flag += 1
-                return True
-        if room == "east":
-            if self.east_room_scenario_flag < self.max_room_scenario_flag:
-                self.east_room_scenario_flag += 1
-                return True
-        if room == "west":
-            if self.west_room_scenario_flag < self.max_room_scenario_flag:
-                self.west_room_scenario_flag += 1
-                return True
-        return False
-
     # 部屋移動をまとめる
     def move_room(self, position):
         if position == "under":
-            self.room_flag, self.direction_flag = self.room_move_direction_get(self.room_flag)
+            if self.book_flag["get"]:
+                # 本を持って出ようとしたらイベント
+                pass
+                # 戦闘終了後は部屋のほうを向いている
+                self.room_flag, self.direction_flag = "center", self.room_flag
+                # 扉が元に戻ったことを説明
+            else:
+                self.room_flag, self.direction_flag = self.room_move_direction_get(self.room_flag)
         else:
             self.direction_flag = self.direction_move_get(position, self.direction_flag)
         self.create_room()
 
+    # 部屋に最初に入った時に起こるイベント   ※イベント中は他のクリックイベントは作動しない
+    def first_room_scenario_count(self, room):
+        if self.room_scenario_flag[room] < self.max_room_scenario_flag:
+            self.room_scenario_flag[room] += 1
+            return True
+        return False
+
+    def handle_mouse_hover(self):
+        key = pygame.mouse.get_pos()
+        for button in self.menu.buttons:
+            button.update(key)
+            
     def handle_events(self):
         for event in pygame.event.get():
             # 閉じるボタンで終了
@@ -179,8 +174,33 @@ class MainPlay:
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 self.handle_click(event)
 
+    def handle_click(self, event):
+        if not self.first_room_scenario_count(self.room_flag):
+            if self.room_flag == "center":
+                # ナビゲーションバーによる移動
+                if self.right_navi and self.right_navi.handle_click(event.pos):
+                    self.move_room("right")
+                elif self.left_navi and self.left_navi.handle_click(event.pos):
+                    self.move_room("left")
+                else:
+                    for button in self.menu.buttons:
+                        if button.update(event.pos, True):
+                            break
+
+                    for item in self.room.items_select_list:
+                        if item.handle_click(event.pos):
+                            self.selected_item = item
+                            print(item.name)                # デバッグ用
+                            print(item.scenario_path_list)  # デバッグ用
+                            break
+            else:
+                # ナビゲーションバーによる移動
+                if self.under_navi and self.under_navi.handle_click(event.pos):
+                    self.move_room("under")
+
     def draw(self):
         create_frame(self.screen)   # テキストフレームの表示
+        self.menu.draw()            # メニューの表示
         self.room.draw()            # 部屋の表示
         if self.left_navi:
             self.left_navi.draw()
@@ -188,53 +208,53 @@ class MainPlay:
             self.right_navi.draw()
         if self.under_navi:
             self.under_navi.draw()
+        if self.selected_item:
+            img_number = 0
+            if self.selected_item == "Soup":
+                if self.soup_flag["drink"]:
+                    img_number = 1
+                elif self.soup_flag["poison"]:
+                    img_number = 2
+            self.selected_item.draw(is_selected=True, img_number=img_number)
+
+    # シナリオを作成する
+    def create_scenario(self):
+        self.text = ""
+        file_name = ""
+        if self.room_scenario_flag[self.room_flag] < self.max_room_scenario_flag:
+            if self.room.scenario_list:
+                file_name = self.room.scenario_list[self.room_scenario_flag[self.room_flag]]
+        else:
+            if self.selected_item:
+                if self.selected_item.name == "Soup":
+                    if self.time >= 45:
+                        time = 1
+                    elif self.time >= 30:
+                        time = 2
+                    elif self.time >= 15:
+                        time = 3
+                    else:
+                        time = 4
+                    event = "know" if self.soup_flag["know"] else ""
+                    file_name = create_scenario_path(item="Soup", event=event, time=time)[0]
+                elif self.selected_item.name == "centerMemo":
+                    pass
+                elif self.selected_item.scenario_path_list:
+                    file_name = self.selected_item.scenario_path_list[0]
+        if file_name:
+            self.text = load_text(file_name)
 
     # シナリオ表示用
     def draw_scenario(self):
-        text = ""
-        file_name = ""
-        room_scenario_flag = {"center": self.center_room_scenario_flag,
-                              "north": self.north_room_scenario_flag,
-                              "east": self.east_room_scenario_flag,
-                              "west": self.west_room_scenario_flag}
-        if room_scenario_flag[self.room_flag] < self.max_room_scenario_flag:
-            if self.room.scenario_list:
-                file_name = self.room.scenario_list[room_scenario_flag[self.room_flag]]
-        if file_name:
-            if os.path.isfile(file_name):
-                with open(file_name,"r",encoding="utf-8_sig") as f:
-                    text = f.read()
-        TextDraw(self.screen, text)
-
+        self.create_scenario()
+        TextDraw(self.screen, self.text)
 
     def update(self):
         self.draw()
+        self.handle_mouse_hover()
         self.handle_events()
         self.draw_scenario()
         return self.next_state()
     
     def next_state(self):
         return "play", self.save_data
-
-    
-
-"""
-# シナリオ表示用
-def Scenario(screen, room):
-    text = ""
-    room_name = room + "_room"
-    item_name = ""
-    flag_name = ""
-    if RoomFlag == CENTER:
-        room_name = "_Center_room_"
-        if CenterRoomFlag < 5:
-            flag_name = str(CenterRoomFlag)
-        else:
-            pass
-
-    file_name = ScenarioPath + room_name + item_name + flag_name + ".txt"
-    if os.path.isfile(file_name):
-        with open(file_name,"r",encoding="utf-8_sig") as f:
-            text = f.read()
-    TextDraw(screen, text)
-"""

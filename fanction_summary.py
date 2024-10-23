@@ -1,4 +1,4 @@
-import sys, re, glob
+import sys, re, glob, json
 from tkinter import messagebox
 
 import pygame
@@ -39,8 +39,8 @@ def create_size_tkinter(root):
 def create_frame(screen):
     # テキストフレーム
     pygame.draw.rect(screen, WHITE, FRAME_RECT,3)
-    # ダイスフレーム
-    pygame.draw.rect(screen, WHITE, DICE_FRAME_RECT,3)
+    # メニューフレーム
+    pygame.draw.rect(screen, WHITE, MENU_FRAME_RECT,3)
 
 # テキストフレームに文字を表示するよ
 def TextDraw(screen, text):
@@ -57,15 +57,21 @@ def TextDraw(screen, text):
         y += 25
 
 # テキストファイルのロード
-def load_texts(file_path):
-    with open(file_path, "r", encoding="utf-8_sig") as f:
-        return f.readlines()
-    
+def load_text(file_path):
+    if os.path.isfile(file_path):
+        with open(file_path, "r", encoding="utf-8_sig") as f:
+            return f.read()
+    else:
+        print(f"{file_path} が見つかりません")
+
 # jsonファイルのロード
 def load_json(file):
     file_path = os.path.join(f"{PATH}{JSON_FOLDER}", file)
-    with open(file_path, "r", encoding="utf-8_sig") as f:
-        return json.load(f)
+    if os.path.isfile(file_path):
+        with open(file_path, "r", encoding="utf-8_sig") as f:
+            return json.load(f)
+    else:
+        print(f"{file_path} が見つかりません")
 
 # "〇D〇" のテキストから何個のダイスか、何面ダイスか、+〇、-〇が付いてるかを抽出する
 def dice_confirmation(text):
@@ -108,19 +114,19 @@ def validate_num(value, num):
     else:
         return True
 
-# シナリオのパスを作って返す
-def create_scenario_path(item, room):
+# シナリオのパス名を返す
+def create_scenario_path(room="", item="", event="", time=0):
     path = f".{SCENARIO}"
-    room_path = f"{path}{room}-room"
-    item_path = room_path
-    if item != "":
-        item_path = f"{room_path}_{item}"
-        search_text = f"{item_path}*.txt"
-    else:
-        search_text = f"{item_path}?.txt"
+    if room:
+        search_text = f"{path}{room}-room?.txt"
+    if item:
+        event_name = f"_{event}?" if event else ""
+        time_name = f"_time{time}" if time else ""
+        search_text = f"{path}{item}?{event_name}{time_name}.txt"
     return glob.glob(search_text)
+        
 
-# アイテムファイルのパス名を作って返す
+# アイテムイメージファイルのパス名を作って返す
 def create_item_path(item):
     path = f".{PICTURE}"
     search_text = f"{path}{item}*.png"

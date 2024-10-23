@@ -13,7 +13,7 @@ class Opening:
         self.root = root
         self.opening_flag = 0
         self.file_path = f"{PATH}{SCENARIO}Opening.txt"
-        self.texts = load_texts(self.file_path)
+        self.texts = load_text(self.file_path).splitlines()
     
     # テキストフレームの表示
     def draw_frame(self):

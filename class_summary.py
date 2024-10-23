@@ -104,7 +104,7 @@ class Label:
 
 # ボタン作成をクラス化 やってみた     (chatGPT修正)
 class Button:
-    def __init__(self, screen, font, rect, text, on_click=None):
+    def __init__(self, screen, font, text, rect, on_click=None, text_color=BLACK, in_color=WHITE, out_color=GRAY, on_color=BLUE):
         self.screen = screen
         self.font = font
         self.texts = text.splitlines()
@@ -112,15 +112,15 @@ class Button:
         self.rect = Rect(rect)
 
         # 色情報
-        self.out_color = GRAY
-        self.in_color = WHITE
-        self.on_color = BLUE
-        self.text_color = BLACK
+        self.in_color = in_color
+        self.out_color = out_color
+        self.on_color = on_color
+        self.text_color = text_color
 
         # テキスト表示用
         self.surfaces = []
         self.text_rects = []
-
+        self.text_total_h = 0
         self.create_button()
 
         # コールバック関数
@@ -140,10 +140,13 @@ class Button:
             self.text_rects.append(rect)
             if rect.w > self.rect.w:
                 self.rect.w = rect.w + 4
-            total_h += rect.h        
+            total_h += rect.h
 
+        # 文字列の高さの合計がボタンの高さより高ければそれをボタンの高さにする
         if total_h > self.rect.h:
             self.rect.h = total_h
+
+        self.text_total_h = total_h
 
     # ボタンの描画
     def draw_button(self, hover=False):
@@ -156,7 +159,7 @@ class Button:
 
     # テキストの描画
     def draw_text(self):
-        current_y = self.rect.top + 2
+        current_y = self.rect.y + ((self.rect.h - self.text_total_h) // 2)
         for i, surface in enumerate(self.surfaces):
             text_rect = self.text_rects[i]
             text_rect.center = (self.rect.centerx, current_y + text_rect.h // 2)
@@ -249,11 +252,11 @@ class InputBox:
 
 # 画像表示をクラス化するよ
 class Image:
-    def __init__(self, screen, path, size, x, y, line_flag=False, line_width=1, bg_flag=False, area=None):
+    def __init__(self, screen, path, size, x=0, y=0, centerx=None, centery=None ,line_flag=False, line_width=1, bg_flag=False, area=None):
         self.screen = screen
 
         self.img, self.rect = self.create_image(path, size)
-        self.set_rect(x, y)
+        self.set_rect(x, y, centerx, centery)
 
         self.bg_flag = bg_flag
         self.line_flag = line_flag
@@ -274,14 +277,18 @@ class Image:
             print(f"Error loading image: {e}")
         
     # 配置をセットするよ
-    def set_rect(self, x, y):
+    def set_rect(self, x, y, centerx, centery):
         # 位置を変更する
         if x == "center":
-            self.rect.centerx = self.screen.get_width() // 2 
+            self.rect.centerx = self.screen.get_width() // 2
+        elif centerx:
+            self.rect.centerx = centerx
         else:
             self.rect.centerx += x
         if y == "center":
             self.rect.centery = self.screen.get_height() // 2
+        elif centery:
+            self.rect.centery = centery
         else:
             self.rect.centery += y
 
@@ -501,7 +508,7 @@ class Status:
         rect = self.input.rect.copy() if self.input else self.status_label.rect.copy()
         # その幅分隣
         rect.x = rect.x + rect.w + 5
-        self.button = Button(self.screen, self.font, rect, self.dice_text, self.dice_process)
+        self.button = Button(self.screen, self.font, self.dice_text, rect, self.dice_process)
 
     def draw(self):
         self.status_label.draw()
@@ -846,12 +853,12 @@ class Room:
         self.room2_flag = room2_flag    # 二つ目の部屋画像を表示するかのフラグ
 
         # 部屋画像を表示するエリア
-        self.area_rect = Rect(0,0,820,375)
+        self.area_rect = ROOM_AREA
         
         # ファイル名一覧
         self.room_path = create_file_path("room", room, direction)
         self.room2_path = create_file_path("room2", room, direction)
-        self.scenario_list = create_scenario_path("", room)
+        self.scenario_list = create_scenario_path(room=room)
 
         # 部屋画像の作成
         self.img = Image(self.screen, self.room_path, size=self.SIZE, x="center", y=30, area=self.area_rect)
@@ -904,7 +911,7 @@ class Room:
             self.left_door = Item(surface, left_door_name, room, direction, 86, 63)
             self.right_door = Item(surface, rigth_door_name, room, direction, 568, 64)
             self.table = Item(surface, "Table", "center", direction, position[direction]["tablex"], position[direction]["tabley"])
-            self.center_memo = Item(surface, "Memo", "center", direction, position[direction]["memox"], position[direction]["memoy"])
+            self.center_memo = Item(surface, "centerMemo", "center", direction, position[direction]["memox"], position[direction]["memoy"])
             self.items_draw_list = [self.center_door, self.left_door, self.right_door, self.table, self.light, self.soup, self.center_memo]
             self.items_select_list = [self.light, self.soup, self.center_memo, self.table, self.center_door, self.left_door, self.right_door]
         elif room == "north":
@@ -920,7 +927,7 @@ class Room:
             self.items_select_list = [self.pot, self.sink, self.cooktop, self.under_storage, self.top_storage, self.storage, self.cupboard, self.fridge]
         elif room == "east":
             self.corpse = Item(surface, "Corpse", "east", "", 437, 218)
-            self.east_memo = Item(surface, "Memo", "east", "", 277, 259)
+            self.east_memo = Item(surface, "eastMemo", "east", "", 277, 259)
             self.items_draw_list = [self.corpse, self.east_memo]
             self.items_select_list = [self.east_memo, self.corpse]
         elif room == "south":
@@ -940,7 +947,7 @@ class Room:
 class Item:
     # アイテム画像の縮小パーセンテージ
     SIZE = 0.19
-    def __init__(self, screen, name, room, direction, x, y):
+    def __init__(self, screen, name, room, direction, x, y, big_size=None):
         self.screen = screen
         self.name = name    # アイテム名
 
@@ -951,14 +958,26 @@ class Item:
         self.img = Image(self.screen, self.path, self.SIZE, x, y)
 
         # シナリオファイルパス
-        self.scenario_path_list = create_scenario_path(name, room)
+        self.scenario_path_list = create_scenario_path(item=name)
 
         # クリック時画像パス
         self.big_img_path_list = create_item_path(name)
-    
-    def draw(self):
+        self.big_imgs = []
+        self.create_images()
+
+    def create_images(self):
+        if self.big_img_path_list:
+            for path in self.big_img_path_list:
+                self.big_imgs.append(Image(self.screen, path, 0.35, x="center", centery=200, line_flag=True, bg_flag=True))
+        elif self.name == "Light":
+            self.big_imgs.append(Image(self.screen, self.path, 0.35, x="center", centery=200, line_flag=True, bg_flag=True))
+
+    def draw(self, is_selected=None, img_number=0):
         self.img.draw()
-        pygame.draw.rect(self.screen, BLACK, self.img.rect, 1)
+        if is_selected:
+            if self.big_imgs:
+                self.big_imgs[img_number].draw()
+        pygame.draw.rect(self.screen, BLACK, self.img.rect, 1)  # デバッグ用
 
     def handle_click(self, pos):
         if self.img.rect.collidepoint(pos):
@@ -971,3 +990,33 @@ class Item:
         # 起こるイベント
         pass
 
+# メニュー作るよ
+class Menu:
+    def __init__(self, screen, root) -> None:
+        self.screen = screen
+        self.root = root
+        self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
+        self.rect = MENU_FRAME_RECT.copy()
+
+        self.buttons = []
+        self.create_button()
+
+    # ボタン作成
+    def create_button(self):
+        save_button = Button(self.screen, self.font,"セーブ", Rect(self.rect.x, self.rect.y, self.rect.w,50), self.save_event, WHITE, BLACK, WHITE, GRAY)
+        load_button = Button(self.screen, self.font,"ロード", Rect(self.rect.x, self.rect.y+50, self.rect.w,50), self.load_event, WHITE, BLACK, WHITE, GRAY)
+        end_button = Button(self.screen, self.font,"終了", Rect(self.rect.x, self.rect.y+100, self.rect.w,50), self.save_event, WHITE, BLACK, WHITE, GRAY)
+        self.buttons = [save_button, load_button, end_button]
+
+    def save_event(self):
+        pass
+    
+    def load_event(self):
+        pass
+
+    def end_event(self):
+        Close(self.root)
+
+    def draw(self):
+        for button in self.buttons:
+            button.draw()
