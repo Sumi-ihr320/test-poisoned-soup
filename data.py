@@ -1,5 +1,7 @@
 import os
+from enum import Enum
 from pygame.locals import Rect
+
 
 DISPLAY_SIZE = (800, 600)
 TITLE_TEXT = "毒入りスープ"
@@ -59,8 +61,20 @@ RIGHT,LEFT,UNDER = (0,1,2)
 # CENTER,NORTH,EAST,WEST,SOUTH = (0,1,2,3,4)
 
 # 部屋の名前
-ROOM_NAME= {"center":"中央の部屋",
+ROOM_NAME = {"center":"中央の部屋",
             "north":"北の部屋",
             "east":"東の部屋",
             "west":"西の部屋",
             "south":"南の部屋"}
+
+EVENT_NAME = {"入る":"open",
+              "目星":"objective",
+              "医学":"medicine",
+              "アイデア":"idea"}
+
+# play中の状態
+class PlayState(Enum):
+    NONE = 0
+    SAVE = 1
+    LOAD = 2
+    SETTING = 3

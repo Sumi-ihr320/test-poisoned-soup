@@ -75,7 +75,7 @@ class CharacterSheet:
         self.prof_selecter = ProfessionSelecter(self.screen)
 
         # キャラ作成終了ボタン
-        self.end_button = Button(self.screen, self.font, (600,330,100,50), "キャラ作成\n終了", self.end_button_event)        
+        self.end_button = Button(self.screen, self.font, "キャラ作成\n終了", (600,330,100,50), self.end_button_event)
 
         # 趣味選択画面
         self.hoby_selecter = HobbySelecter(self.screen, self.is_pulludown_open, self.selected_hobby)

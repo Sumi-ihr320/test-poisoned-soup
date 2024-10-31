@@ -1,4 +1,5 @@
 import sys, re, glob, json
+import ctypes, platform, subprocess
 from tkinter import messagebox
 
 import pygame
@@ -94,12 +95,13 @@ def Calculation(a, b, max=None):
 
 # 入力時のvalidate
 def validate_input(value, value_type, num=None):
+    # タイプが数字の時は数字かどうかのチェックと文字数チェックを行う
     if value_type == int:
-        if validate_int(value):
-            return validate_num(value, num)
+        return validate_int(value) and validate_num(value=num)
+    
+    # 数字以外（文字列）の時は文字数のチェックのみ行う
     else:
         return validate_num(value, num)
-    return False
 
 # 数字のみ
 def validate_int(value):
@@ -107,12 +109,54 @@ def validate_int(value):
 
 # 文字数制限
 def validate_num(value, num):
-    if num:
-        if len(value) <= num:
-            return True
-        return False
-    else:
+    if num is None:
         return True
+    else:
+        return len(value) <= num
+
+def ime_on(event):
+    pf = platform.system()
+    if pf == "Windows":
+        user32 = ctypes.WinDLL(name="user32")
+        imm32 = ctypes.WinDLL(name="imm32")
+        h_wnd = user32.GetForegroundWindow()
+        h_imc = imm32.ImmGetContext(h_wnd)
+        imm32.ImmSetOpenStatus(h_imc, True)
+        imm32.ImmReleaseContext(h_wnd, h_imc)
+
+    elif pf == "Darwin":
+        applescript = r'tell application "System Events" to keystroke (key code {104})'
+        subprocess.run(["osascript", "-e", applescript])
+
+    elif pf == "Linux":
+        try:
+            subprocess.run(["ibus", "engine", "mozc-jp"])  # ibusの場合
+            subprocess.run(["fcitx-remote", "-o"])  # fcitxの場合
+            subprocess.run(["echo", "1", ">", "$UIM_FEP_SETMODE"])  # uimの場合(合っているのか不明)
+        except FileNotFoundError:
+            pass        
+
+def ime_off(event):
+    pf = platform.system()
+    if pf == "Windows":
+        user32 = ctypes.WinDLL(name="user32")
+        imm32 = ctypes.WinDLL(name="imm32")
+        h_wnd = user32.GetForegroundWindow()
+        h_imc = imm32.ImmGetContext(h_wnd)
+        imm32.ImmSetOpenStatus(h_imc, False)
+        imm32.ImmReleaseContext(h_wnd, h_imc)
+
+    elif pf == "Darwin":
+        applescript = r'tell application "System Events" to keystroke (key code {102})'
+        subprocess.run(["osascript", "-e", applescript])
+
+    elif pf == "Linux":
+        try:
+            subprocess.run(["ibus", "engine", "xkb:jp::jpn"])  # ibusの場合
+            subprocess.run(["fcitx-remote", "-c"])  # fcitxの場合
+            subprocess.run(["echo", "0", ">", "$UIM_FEP_SETMODE"])  # uimの場合(合っているのか不明)
+        except FileNotFoundError:
+            pass
 
 # シナリオのパス名を返す
 def create_scenario_path(room="", item="", event="", time=0):

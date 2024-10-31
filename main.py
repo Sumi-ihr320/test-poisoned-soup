@@ -86,6 +86,8 @@ class MainApp:
 
             elif self.event_name == "save":
                 self.event_name, self.save_data = self.event_map["save"].update()
+                if self.event_name == "play" and self.save_data:
+                    self.event_map["play"] = MainPlay(self.screen, root, self.save_data)
 
             elif self.event_name == "load":
                 self.event_name, self.save_data = self.event_map["load"].update()

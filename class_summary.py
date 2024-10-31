@@ -181,10 +181,9 @@ class Button:
         self.draw_button(hover)
         self.draw_text()
 
-        if hover:
-            if click:
-                if self.on_click:
-                    self.on_click() # コールバック関数を呼び出す
+        if hover and click:
+            if self.on_click:
+                self.on_click() # コールバック関数を呼び出す
             return True
         else:
             return False
@@ -543,10 +542,11 @@ class Status:
         min, max = self.determine_input_range(edu)
         value_type = type(self.status)
         num = 2 if value_type == int else None
-        CustomDialog(self.root, self.name, f"あなたの{self.name}を入力してください", value_type, min, max, num, self.handle_input)
-        
-    # カスタムダイアログに入力された値を取得してラベルを更新する
-    def handle_input(self, value):
+
+        # カスタムダイアログに入力された値を取得してラベルを更新する
+        with TopmostManager(self.root):
+            dialog = CustomDialog(self.root, self.name, f"あなたの{self.name}を入力してください", self.status, min, max, num)
+            value = dialog.result
         if value is not None:
             if self.input:
                 self.input.update_label(f"{value}")
@@ -756,94 +756,62 @@ class HobbySelecter:
         return None
 
 # simpledialogの代わり
-class CustomDialog:
-    def __init__(self, root, title="title", text="文字列を入力してください", type=str, min=0, max=99, num=None, callback=None):
-        self.root = root
-        self.root.deiconify()   # root を表示する
-        self.root.lift()        # 他のウィンドウよりも前面に表示
+class CustomDialog(simpledialog.Dialog):
+    def __init__(self, parent, title="title", text="文字列を入力してください", input_value="", min_value=0, max_value=99, num=None):
         
-        self.dialog = tk.Toplevel(root)
-        self.dialog.title(title)
-        self.dialog.attributes("-topmost", True)
-        self.dialog.grab_set()  # フォーカスをこのウィンドウに固定
-        self.dialog.protocol("WM_DELETE_WINDOW", self.close)
+        self.text = text    # ダイアログに表示するテキスト
+        self.input_value = input_value
+        self.input_type = type(input_value)
+        self.min_value = min_value      # 入力できる最小値
+        self.max_value = max_value      # 入力できる最大値
+        self.num = num                  # 入力可能文字数
+        self.value = tk.StringVar()
+        
+        super().__init__(parent, title)
 
-        self.text = text
-        self.type = type
-        self.min = min
-        self.max = max
-        self.num = num
-        self.callback = callback
-        self.value = tk.IntVar() if self.type == int else tk.StringVar()
-        self.create_widget(self.dialog)
-
-        # ダイアログを中央に
-        self.dialog.geometry(create_size_tkinter(self.dialog))
-        self.dialog.transient(root)
-
-    def create_widget(self, parent):
-        # フレーム
-        frm_top = self.create_frame(parent, "top")
-        frm_bottom = self.create_frame(parent, "top")
-
-        frm_left = self.create_frame(frm_bottom, "left")
-        frm_right = self.create_frame(frm_bottom, "left")
-    
+    def body(self, frame):
         # ラベル作成
-        label = ttk.Label(frm_top, text=self.text)
-        label.pack(pady=10, side="top")
+        label = ttk.Label(frame, text=self.text).pack(pady=10)
 
         # エントリー作成
-        vcmd = (self.dialog.register(validate_input), "%P", self.type, self.num)
-        self.entry = ttk.Entry(frm_top, textvariable=self.value, validate="key", validatecommand=vcmd)
-        self.entry.pack(pady=10, side="top")
-        self.entry.focus()
+        vcmd = (self.register(validate_input), "%P", self.input_type, self.num)
+        func = ime_on if self.input_type == str else ime_off
+        self.entry = ttk.Entry(frame, textvariable=self.value, validate="key", validatecommand=vcmd)
+        self.entry.pack(pady=10)
+        self.entry.bind(sequence="ForcusIn", func=func)
 
-        # ボタン作成
-        self.ok = self.create_button(frm_left, "OK", self.on_ok)
-        self.cancel = self.create_button(frm_right, "キャンセル", self.on_cancel)
-    
-    # フレーム作成
-    def create_frame(self, parent, side):
-        frame = ttk.Frame(parent)
-        frame.pack(pady=10, side=side)
-        return frame
-        
-    # ボタン作成
-    def create_button(self, parent, text, command):
-        button = ttk.Button(parent, text=text, command=command)
-        button.pack(anchor="center")
-        return button
+        return self.entry
 
     # OKボタンを押したとき
-    def on_ok(self):
-        value = self.value.get() if self.value.get() else None
-        if value:
-            if self.type == int:
-                if not self.check_value(value):
-                    return
-        self.callback(value)
-        self.close()
+    def apply(self):
+        if self.validate():
+            try:
+                self.result = int(self.value.get())
+            except ValueError:
+                self.result = self.value.get()
 
-    # キャンセルボタンを押したとき
-    def on_cancel(self):
-        self.callback(None)
-        self.close()
-
-    # 閉じる
-    def close(self):
-        self.dialog.destroy()   # ダイアログを閉じる
-        self.root.withdraw()    # rootを非表示にする
-
-    # 値がmin-maxの間かどうかをチェックする
-    def check_value(self, value):
-        if self.min <= value <= self.max:
-            return True
-        else:
-            with TopmostManager(self.dialog):
-                messagebox.showerror("入力エラー", f"入力値は{self.min}から{self.max}の間で入力してください")
+    # 入力を検証する
+    def validate(self):
+        if self.input_type == int:
+            if not validate_int(self.value.get()):
+                with TopmostManager(self):
+                    messagebox.showerror("入力エラー", f"数字を入力してください")
+                return False
+            
+            value = int(self.value.get())
+            # 値がmin-maxの間かどうかをチェックする
+            if not (self.min_value <= value <= self.max_value):
+                with TopmostManager(self):
+                    messagebox.showerror("入力エラー", f"入力値は{self.min_value}から{self.max_value}の間で入力してください")
+                return False
+            
+        if not validate_num(self.value.get(), self.num):
+            with TopmostManager(self):
+                messagebox.showerror("入力エラー", f"文字数制限を超えています")
             return False
-        
+
+        return True
+
 # 部屋の型を作るよ
 class Room:
     # 部屋画像の縮小パーセンテージ
@@ -885,8 +853,8 @@ class Room:
     # 部屋のアイテムを作成する
     def create_item(self, surface, room, direction):
         if room == "center":
-            self.light = Item(surface, "Light", room, "", "center", 24)
-            self.soup = Item(surface, "Soup", room, "", "center", 224)
+            self.light = Item(surface, "Light", room, "", "center", 24, ["目星", "外す", "壊す"])
+            self.soup = Item(surface, "Soup", room, "", "center", 224, ["目星", "医学", "触る", "飲む", "捨てる"])
             directions = ["north","east","south","west"]
             position = {"north":{"tablex":"center","tabley":189,
                                  "memox":306,"memoy":237},
@@ -907,11 +875,11 @@ class Room:
                 right_index = 0
             right_direct = directions[right_index]
             rigth_door_name = f"{right_direct}Door"
-            self.center_door = Item(surface, center_door_name, room, direction, "center", 82)
-            self.left_door = Item(surface, left_door_name, room, direction, 86, 63)
-            self.right_door = Item(surface, rigth_door_name, room, direction, 568, 64)
-            self.table = Item(surface, "Table", "center", direction, position[direction]["tablex"], position[direction]["tabley"])
-            self.center_memo = Item(surface, "centerMemo", "center", direction, position[direction]["memox"], position[direction]["memoy"])
+            self.center_door = Item(surface, center_door_name, room, direction, "center", 82, ["目星", "聞き耳", "叩く", "開ける"])
+            self.left_door = Item(surface, left_door_name, room, direction, 86, 63, ["目星", "聞き耳", "叩く", "開ける"])
+            self.right_door = Item(surface, rigth_door_name, room, direction, 568, 64, ["目星", "聞き耳", "叩く", "開ける"])
+            self.table = Item(surface, "Table", "center", direction, position[direction]["tablex"], position[direction]["tabley"], ["目星"])
+            self.center_memo = Item(surface, "centerMemo", "center", direction, position[direction]["memox"], position[direction]["memoy"], ["目星"])
             self.items_draw_list = [self.center_door, self.left_door, self.right_door, self.table, self.light, self.soup, self.center_memo]
             self.items_select_list = [self.light, self.soup, self.center_memo, self.table, self.center_door, self.left_door, self.right_door]
         elif room == "north":
@@ -947,7 +915,7 @@ class Room:
 class Item:
     # アイテム画像の縮小パーセンテージ
     SIZE = 0.19
-    def __init__(self, screen, name, room, direction, x, y, big_size=None):
+    def __init__(self, screen, name, room, direction, x, y, command_list=None):
         self.screen = screen
         self.name = name    # アイテム名
 
@@ -965,19 +933,41 @@ class Item:
         self.big_imgs = []
         self.create_images()
 
+        # メニューに表示するコマンド
+        self.command_list = command_list
+        self.menu_buttons = []
+        self.create_menu()
+
     def create_images(self):
+        size = 0.6 if "Memo" in self.name else 0.35
         if self.big_img_path_list:
             for path in self.big_img_path_list:
-                self.big_imgs.append(Image(self.screen, path, 0.35, x="center", centery=200, line_flag=True, bg_flag=True))
+                self.big_imgs.append(Image(self.screen, path, size, x="center", centery=200, line_flag=True, bg_flag=True))
         elif self.name == "Light":
-            self.big_imgs.append(Image(self.screen, self.path, 0.35, x="center", centery=200, line_flag=True, bg_flag=True))
+            self.big_imgs.append(Image(self.screen, self.path, 0.5, x="center", centery=200, line_flag=True, bg_flag=True))
 
     def draw(self, is_selected=None, img_number=0):
         self.img.draw()
         if is_selected:
             if self.big_imgs:
                 self.big_imgs[img_number].draw()
+            if self.menu_buttons:
+                for button in self.menu_buttons:
+                    button.draw()
         pygame.draw.rect(self.screen, BLACK, self.img.rect, 1)  # デバッグ用
+
+    def event(self):
+        pass
+
+    def create_menu(self):
+        font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
+        w, h = 100, 30
+        x = 600
+        y = 200
+        if self.command_list:
+            for command in self.command_list:
+                self.menu_buttons.append(Button(self.screen, font, command, (x,y,w,h), out_color=BLACK))
+                y += h
 
     def handle_click(self, pos):
         if self.img.rect.collidepoint(pos):
@@ -992,11 +982,12 @@ class Item:
 
 # メニュー作るよ
 class Menu:
-    def __init__(self, screen, root) -> None:
+    def __init__(self, screen, root, callback=None) -> None:
         self.screen = screen
         self.root = root
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
         self.rect = MENU_FRAME_RECT.copy()
+        self.callback = callback
 
         self.buttons = []
         self.create_button()
@@ -1005,14 +996,16 @@ class Menu:
     def create_button(self):
         save_button = Button(self.screen, self.font,"セーブ", Rect(self.rect.x, self.rect.y, self.rect.w,50), self.save_event, WHITE, BLACK, WHITE, GRAY)
         load_button = Button(self.screen, self.font,"ロード", Rect(self.rect.x, self.rect.y+50, self.rect.w,50), self.load_event, WHITE, BLACK, WHITE, GRAY)
-        end_button = Button(self.screen, self.font,"終了", Rect(self.rect.x, self.rect.y+100, self.rect.w,50), self.save_event, WHITE, BLACK, WHITE, GRAY)
+        end_button = Button(self.screen, self.font,"終了", Rect(self.rect.x, self.rect.y+100, self.rect.w,50), self.end_event, WHITE, BLACK, WHITE, GRAY)
         self.buttons = [save_button, load_button, end_button]
 
     def save_event(self):
-        pass
+        if self.callback:
+            self.callback(PlayState.SAVE)
     
     def load_event(self):
-        pass
+        if self.callback:
+            self.callback(PlayState.LOAD)
 
     def end_event(self):
         Close(self.root)

@@ -103,68 +103,102 @@ class Save_or_Load:
 
     # データ削除
     def data_delete(self):
-        if self.check_select_file():
+        # データが選択されているかをチェック
+        if not self.check_select_file():
+            return
+        
+        # データが存在しているかをチェック
+        if not self.check_save_data():
             with TopmostManager(self.root):
-                if messagebox.askokcancel("削除", f"{self.select_file_name}\n本当に削除してよろしいですか？"):
-                    file_name = f"{self.forder_name}{self.select_file_name}"
-                    try:
-                        # ファイルの中身を空にする
-                        with open(file_name, "w", encoding="utf-8_sig") as f:
-                            pass
-                    except Exception as e:
-                        print(f"データエラー: {e}")
+                messagebox.showerror("削除エラー", "データがありません")
+                return
+        
+        # 本当に削除するかを確認
+        with TopmostManager(self.root):
+            if not messagebox.askokcancel("削除", f"{self.select_file_name}\n本当に削除してよろしいですか？"):
+                return
+                    
+        file_name = f"{self.forder_name}{self.select_file_name}"
+        try:
+            # ファイルの中身を空にする
+            with open(file_name, "w", encoding="utf-8_sig") as f:
+                pass
+        except Exception as e:
+            print(f"データエラー: {e}")
 
-                    # 新しいファイル名に変更する
-                    file_no = self.get_file_no(self.select_file_name)
-                    new_file_name = f"{self.forder_name}{file_no}.json"
-                    os.rename(file_name, new_file_name)
-                    with TopmostManager(self.root):
-                        messagebox.showinfo("削除", "削除が完了しました")
-                    self.reload()
-                    self.draw()
+        # 新しいファイル名に変更する
+        file_no = self.get_file_no(self.select_file_name)
+        new_file_name = f"{self.forder_name}{file_no}.json"
+        os.rename(file_name, new_file_name)
+        with TopmostManager(self.root):
+            messagebox.showinfo("削除", "削除が完了しました")
+        
+        # リストを更新
+        self.reload()
+        self.draw()
 
     # データセーブ
     def save(self):
-        if self.check_select_file():
-            # 新しいファイル名に変更する
-            file_name = self.create_file_name()
-            os.rename(self.select_file_name, file_name)
+        # セーブする場所が選択されているかチェック
+        if not self.check_select_file():
+            return
+        
+        # すでにデータがあった場合は上書き確認
+        if self.check_save_data():
+            with TopmostManager(self.root):
+                if not messagebox.askokcancel("セーブ", f"{self.select_file_name}\nセーブデータを上書きしますか？"):
+                    return
 
-            # データを書き込む
-            try:
-                with open(file_name, "w", encoding="utf-8_sig") as f:
-                    json.dump(self.save_data, f, indent=2, ensure_ascii=False)
-                with TopmostManager(self.root):
-                    messagebox.showinfo("セーブ", "セーブが完了しました")
-                self.state = SaveLoadState.SAVE            
-            except Exception as e:
-                print(f"セーブエラー: {e}")
-                with TopmostManager(self.root):
-                    messagebox.showerror("セーブエラー", "セーブに失敗しました")
+        # 新しいファイル名に変更する
+        old_file_name = f"{self.forder_name}{self.select_file_name}"
+        new_file_name = self.create_file_name()
+        os.rename(old_file_name, new_file_name)
+
+        # データを書き込む
+        try:
+            with open(new_file_name, "w", encoding="utf-8_sig") as f:
+                json.dump(self.save_data, f, indent=2, ensure_ascii=False)
+            with TopmostManager(self.root):
+                messagebox.showinfo("セーブ", "セーブが完了しました")
+            self.state = SaveLoadState.SAVE
+        except Exception as e:
+            print(f"セーブエラー: {e}")
+            with TopmostManager(self.root):
+                messagebox.showerror("セーブエラー", "セーブに失敗しました")
 
     # データロード
     def load(self):
-        if self.check_select_file():
-            if len(self.select_file_name.replace(".json", "")) == 2:
+        # データが選択されているかをチェック
+        if not self.check_select_file():
+            return
+        
+        # データが存在するかをチェック
+        if not self.check_save_data():
+            with TopmostManager(self.root):
+                messagebox.showerror("ロードエラー", "データがありません")
+        else:
+            file_name = f"{self.forder_name}{self.select_file_name}"
+            try:
+                self.load_data = load_json(file_name)
                 with TopmostManager(self.root):
-                    messagebox.showerror("ロードエラー", "データがありません")
-            else:
-                file_name = f"{self.forder_name}{self.select_file_name}"
-                try:
-                    self.load_data = load_json(file_name)
-                    with TopmostManager(self.root):
-                        messagebox.showinfo("ロード", "ロードに成功しました")
-                    self.state = SaveLoadState.LOAD
-                except FileNotFoundError:
-                    with TopmostManager(self.root):
-                        messagebox.showerror("ロードエラー", "ファイルが見つかりません")
-                except json.JSONDecodeError:
-                    with TopmostManager(self.root):
-                        messagebox.showerror("ロードエラー", "ファイル形式が正しくありません")
-                except Exception as e:
-                    print(f"ロードエラー: {e}")
-                    with TopmostManager(self.root):
-                        messagebox.showerror("ロードエラー", f"ロードに失敗しました: {str(e)}")
+                    messagebox.showinfo("ロード", "ロードに成功しました")
+                self.state = SaveLoadState.LOAD
+            except FileNotFoundError:
+                with TopmostManager(self.root):
+                    messagebox.showerror("ロードエラー", "ファイルが見つかりません")
+            except json.JSONDecodeError:
+                with TopmostManager(self.root):
+                    messagebox.showerror("ロードエラー", "ファイル形式が正しくありません")
+            except Exception as e:
+                print(f"ロードエラー: {e}")
+                with TopmostManager(self.root):
+                    messagebox.showerror("ロードエラー", f"ロードに失敗しました: {str(e)}")
+
+    # 選択された箇所にデータがあるかないかを確認する
+    def check_save_data(self):
+        if len(self.select_file_name.replace(".json", "")) == 2:
+            return False
+        return True
 
     # データが選択されているかのチェックとエラーメッセージ
     def check_select_file(self):
@@ -173,7 +207,6 @@ class Save_or_Load:
                 messagebox.showerror("エラー", "データが選択されていません")
             return False
         return True
-
 
     # ファイルNoを取得する
     def get_file_no(self, file_name):
