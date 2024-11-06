@@ -2,9 +2,12 @@ import pygame
 import pygame.draw
 from pygame.locals import *
 
-from data import *
-from fanction_summary import *
-from class_summary import *
+from constans import *
+from utils import *
+from ui_elements import *
+
+from status import Status, SexChange
+from profession import ProfessionSelecter, HobbySelecter
 
 # キャラクターシート作成画面をクラス化してみる
 class CharacterSheet:
@@ -12,6 +15,9 @@ class CharacterSheet:
         self.screen = screen
         self.root = root
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
+
+        self.menu = None        # メニューボタン
+        self.create_menu()
 
         self.page_navi = None   # ナビゲーションバー
         self.now_page = 0       # 現在のページ
@@ -30,6 +36,9 @@ class CharacterSheet:
         # セーブデータ
         self.save_data = load_json("SaveData.json")
 
+        # 状態フラグ
+        self.state = State.NONE
+
     # シートの描画
     def draw_sheet(self):
         pygame.draw.rect(self.screen, SHEET_COLOR, SHEET_RECT)
@@ -38,8 +47,13 @@ class CharacterSheet:
     def draw_frame(self):
         create_frame(self.screen)
 
+    # メニューボタンの作成
+    def create_menu(self):
+        self.menu = Menu(self.screen, self.root, self.set_state, save_enabled=False)
+
     # ページを表示する
     def draw_page(self):
+        self.menu.draw()
         self.create_navigation(self.now_page)
         self.page_navi.draw()
         if self.now_page == 0:
@@ -50,7 +64,8 @@ class CharacterSheet:
                 self.sex_button.draw(self.hero_data["sex"])
         else:
             self.create_profession_page()
-            self.prof_selecter.draw()
+            if self.prof_selecter:
+                self.prof_selecter.draw()
             if self.selected_profession:
                 self.selected_profession.image_draw(is_selected=True)
             self.end_button.draw()
@@ -75,7 +90,7 @@ class CharacterSheet:
         self.prof_selecter = ProfessionSelecter(self.screen)
 
         # キャラ作成終了ボタン
-        self.end_button = Button(self.screen, self.font, "キャラ作成\n終了", (600,330,100,50), self.end_button_event)
+        self.end_button = Button(self.screen, self.font, "キャラ作成\n終了", (640,340,100,50), self.end_button_event)
 
         # 趣味選択画面
         self.hoby_selecter = HobbySelecter(self.screen, self.is_pulludown_open, self.selected_hobby)
@@ -121,6 +136,10 @@ class CharacterSheet:
         key = pygame.mouse.get_pos()
         horver_text = None
 
+        if self.menu:
+            for button in self.menu.buttons:
+                button.update(key)
+
         # ページによって変わる
         if self.now_page == 0:
             for stat in self.status_items:
@@ -159,6 +178,10 @@ class CharacterSheet:
 
     # マウスクリック時
     def handle_mouse_click(self, pos):
+        if self.menu:
+            for button in self.menu.buttons:
+                if button.update(pos, True):
+                    return
         # １ページ目だったら
         if self.now_page == 0:
             self.handle_first_page_click(pos)
@@ -402,7 +425,7 @@ class CharacterSheet:
 
             # ポイントが余った場合
             if remaining_points > 0:
-                for i, skill in enumerate(hobby_list):
+                for i, skill in enumerate(hobby_skills):
                     current_value = my_skills[skill]
                     new_value, surplus_points = Calculation(current_value, remaining_points, 90)
                     self.hero_data["skill"][skill] = new_value
@@ -416,7 +439,17 @@ class CharacterSheet:
         self.handle_events()
         return self.next_state()
 
+    # メニューボタン用のコールバック関数
+    def set_state(self, state=State.NONE):
+        self.state = state
+
     def next_state(self):
         if self.end_flag:
             return "save"
+        elif self.state == State.LOAD:
+            self.state = State.NONE
+            return "load"
+        elif self.state == State.CLOSE:
+            self.state = State.NONE
+            Close()
         return "charasheet"

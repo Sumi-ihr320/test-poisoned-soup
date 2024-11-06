@@ -1,0 +1,74 @@
+﻿{
+  "hero_status": {
+    "name": "鳳　和沙",
+    "age": 28,
+    "sex": false,
+    "STR": 13,
+    "CON": 9,
+    "SIZ": 13,
+    "DEX": 8,
+    "APP": 9,
+    "EDU": 13,
+    "INT": 7,
+    "POW": 15,
+    "Luck": 75,
+    "Idea": 35,
+    "Know": 65,
+    "DB": "+1D4",
+    "HP": 11,
+    "MP": 15,
+    "Avo": 16,
+    "SAN": 75,
+    "Profession": "ジャーナリスト",
+    "skill": {
+      "言いくるめ": 44,
+      "写真術": 25,
+      "心理学": 41,
+      "説得": 69,
+      "図書館": 90,
+      "母国語": 57,
+      "歴史": 74,
+      "他の言語（英語）": 16
+    },
+    "item": {
+      "白いローブ": {
+        "装甲": 0
+      }
+    },
+    "girl_like_ability": 0,
+    "Hobby": "読書"
+  },
+  "flag": {
+    "time": 60,
+    "room_flag": "center",
+    "direction_flag": "east",
+    "girl_flag": false,
+    "room_scenario_flag": {
+      "center": 4,
+      "north": 0,
+      "south": 0,
+      "east": 0,
+      "west": 0
+    },
+    "light_flag": false,
+    "east_room_flag": {
+      "open": false,
+      "visivle": false
+    },
+    "poison_get_flag": false,
+    "soup_flag": {
+      "poison": false,
+      "know": false,
+      "drink": false,
+      "temperature": 0
+    },
+    "center_memo_flag": {
+      "scenario": 0,
+      "objective": false
+    },
+    "book_flag": {
+      "found": false,
+      "get": false
+    }
+  }
+}

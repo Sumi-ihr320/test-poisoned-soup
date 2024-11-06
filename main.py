@@ -3,9 +3,8 @@ import pygame.draw
 from pygame.locals import *
 import tkinter as tk
 
-from data import *
-from fanction_summary import *
-from class_summary import *
+from constans import *
+from utils import *
 
 from title import Title
 from save_or_load import Save_or_Load
@@ -78,11 +77,15 @@ class MainApp:
 
             elif self.event_name == "opening":
                 self.event_name = event.update()
+                if self.event_name == "load":
+                    self.event_map["load"] = Save_or_Load(self.screen, root, "load", "opening")
 
             elif self.event_name == "charasheet":
                 self.event_name = event.update()
                 if self.event_name == "save":
-                    self.create_save(event)
+                    self.create_save_or_load(event, "save", "charasheet")
+                elif self.event_name == "load":
+                    self.event_map["load"] = Save_or_Load(self.screen, root, "load", "charasheet")
 
             elif self.event_name == "save":
                 self.event_name, self.save_data = self.event_map["save"].update()
@@ -97,17 +100,16 @@ class MainApp:
             elif self.event_name == "play":
                 self.event_name, self.save_data = self.event_map["play"].update()
                 if self.event_name == "save":
-                    self.create_save(event)
+                    self.create_save_or_load(event, "save", "play")
                 elif self.event_name == "load":
-                    self.save_data = event.save_data
-                    self.event_map["load"] = Save_or_Load(self.screen, root, "load", "play", self.save_data)
+                    self.create_save_or_load(event, "load", "play")
             else:
                 self.event_name = event(self.screen)
 
     # セーブデータを取得してイベントマップを更新
-    def create_save(self, event):
+    def create_save_or_load(self, event, next_stage, old_stage):
         self.save_data = event.save_data
-        self.event_map["save"] = Save_or_Load(self.screen, root, "save", "play", self.save_data)
+        self.event_map[next_stage] = Save_or_Load(self.screen, root, next_stage, old_stage, self.save_data)
 
     # 画面を更新
     def update_display(self):

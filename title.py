@@ -2,8 +2,8 @@ import pygame
 import pygame.draw
 from pygame.locals import *
 
-from data import *
-from fanction_summary import *
+from constans import *
+from utils import *
 from class_summary import *
 
 

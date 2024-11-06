@@ -5,7 +5,7 @@ from tkinter import messagebox
 import pygame
 from pygame.locals import *
 
-from data import *
+from constans import *
 
 # messagebox や sinpledialog を最前面に表示し続ける
 class TopmostManager:
@@ -21,7 +21,7 @@ class TopmostManager:
 # 終了処理をまとめるよ
 def Close(root):
     with TopmostManager(root):
-        if messagebox.askokcancel("確認","本当に終了しますか？"):
+        if messagebox.askokcancel("確認","本当に終了しますか？\n※セーブせずに終了するとデータは消えてしまいます"):
             pygame.quit()
             sys.exit()
         else:
@@ -94,10 +94,14 @@ def Calculation(a, b, max=None):
     return result, surplus
 
 # 入力時のvalidate
-def validate_input(value, value_type, num=None):
+def validate_input(action, value, value_type, num=None):
+    # 削除の時は確認しない
+    if action == '\\0':
+        return True
+
     # タイプが数字の時は数字かどうかのチェックと文字数チェックを行う
-    if value_type == int:
-        return validate_int(value) and validate_num(value=num)
+    if value_type == "<class 'int'>":
+        return validate_int(value) and validate_num(value, num)
     
     # 数字以外（文字列）の時は文字数のチェックのみ行う
     else:
@@ -109,10 +113,10 @@ def validate_int(value):
 
 # 文字数制限
 def validate_num(value, num):
-    if num is None:
+    if num is None or num == "None":
         return True
     else:
-        return len(value) <= num
+        return len(value) <= int(num)
 
 def ime_on(event):
     pf = platform.system()

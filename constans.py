@@ -57,9 +57,6 @@ TITLE,SAVE,LOAD,SETTING,OPENING,CHARASE,PLAY,ENDING,ENDCREDITS = (0,1,2,3,4,5,6,
 # ナビゲーション表示用
 RIGHT,LEFT,UNDER = (0,1,2)
 
-# 方角
-# CENTER,NORTH,EAST,WEST,SOUTH = (0,1,2,3,4)
-
 # 部屋の名前
 ROOM_NAME = {"center":"中央の部屋",
             "north":"北の部屋",
@@ -72,9 +69,10 @@ EVENT_NAME = {"入る":"open",
               "医学":"medicine",
               "アイデア":"idea"}
 
-# play中の状態
-class PlayState(Enum):
+# 状態フラグ
+class State(Enum):
     NONE = 0
     SAVE = 1
     LOAD = 2
     SETTING = 3
+    CLOSE = 4

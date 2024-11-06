@@ -1,20 +1,13 @@
 import os, json
 import datetime as dt
-from enum import Enum
 
 import pygame
 import pygame.draw
 from pygame.locals import *
 
-from data import *
-from fanction_summary import *
+from constans import *
+from utils import *
 from class_summary import *
-
-class SaveLoadState(Enum):
-    NONE = 0
-    SAVE = 1
-    LOAD = 2
-    CLOSE = 3
 
 # データロード
 class Save_or_Load:
@@ -28,7 +21,7 @@ class Save_or_Load:
         self.save_load_flag = save_load_flag    # save か load か
         self.return_flag = return_flag          # どこに戻るかのフラグ
 
-        self.state = SaveLoadState.NONE         # 閉じるフラグや完了フラグ等の状態管理フラグ
+        self.state = State.NONE                 # 閉じるフラグや完了フラグ等の状態管理フラグ
 
         self.save_data = save_data              # 保存するデータ
         self.load_data = None                   # ロードするデータ
@@ -160,7 +153,7 @@ class Save_or_Load:
                 json.dump(self.save_data, f, indent=2, ensure_ascii=False)
             with TopmostManager(self.root):
                 messagebox.showinfo("セーブ", "セーブが完了しました")
-            self.state = SaveLoadState.SAVE
+            self.state = State.SAVE
         except Exception as e:
             print(f"セーブエラー: {e}")
             with TopmostManager(self.root):
@@ -182,7 +175,7 @@ class Save_or_Load:
                 self.load_data = load_json(file_name)
                 with TopmostManager(self.root):
                     messagebox.showinfo("ロード", "ロードに成功しました")
-                self.state = SaveLoadState.LOAD
+                self.state = State.LOAD
             except FileNotFoundError:
                 with TopmostManager(self.root):
                     messagebox.showerror("ロードエラー", "ファイルが見つかりません")
@@ -287,7 +280,7 @@ class Save_or_Load:
     def handle_ckick(self, event):
         # 閉じるボタン
         if self.close.rect.collidepoint(event.pos):
-            self.state = SaveLoadState.CLOSE
+            self.state = State.CLOSE
 
         # 決定ボタン
         elif self.enter.rect.collidepoint(event.pos):
@@ -313,14 +306,34 @@ class Save_or_Load:
         return self.next_state()
                             
     def next_state(self):
-        if self.state == SaveLoadState.CLOSE:
+        # 閉じるボタン
+        if self.state == State.CLOSE:
             if self.return_flag == "title":
                 return "title", None
+            
+            elif self.return_flag == "opening":
+                return "opening", None
+            
+            elif self.return_flag == "charasheet":
+                if self.save_load_flag == "save":
+                    with TopmostManager(self.root):
+                        if messagebox.askokcancel("閉じる", "セーブせずに本編に進みますか？"):
+                            return "play", self.save_data
+                        else:
+                            self.state = State.NONE
+                            return "save", self.save_data
+                else:
+                    return "charasheet", None
+
             elif self.return_flag == "play":
                 return "play", self.save_data
-        elif self.state == SaveLoadState.SAVE:
+        
+        # セーブボタン
+        elif self.state == State.SAVE:
             return "play", self.save_data
-        elif self.state == SaveLoadState.LOAD:
+
+        # ロードボタン
+        elif self.state == State.LOAD:
             return "play", self.load_data
         else:
             if self.save_load_flag == "save":

@@ -2,10 +2,11 @@ import pygame
 import pygame.draw
 from pygame.locals import *
 
-from data import *
-from fanction_summary import *
-from class_summary import *
+from constans import *
+from utils import *
+from ui_elements import *
 
+from room import Room
 
 # プレイ画面
 class MainPlay:
@@ -77,7 +78,7 @@ class MainPlay:
     # フラグをセットする
     def set_flag(self, play_flags):
         # フラグ一覧
-        self.state = PlayState.NONE     # saveやload等の状態管理フラグ
+        self.state = State.NONE     # saveやload等の状態管理フラグ
         self.time = play_flags.get("time", 60)  # 残り時間フラグ（分）
         self.room_flag = play_flags.get("room_flag", "center")              # どの部屋にいるかフラグ
         self.direction_flag = play_flags.get("direction_flag", "north")     # どの方角を向いているかフラグ
@@ -197,11 +198,15 @@ class MainPlay:
     def handle_item_click_event(self, event):
         for item in self.room.items_select_list:
             if item.handle_click(event.pos):
+                if self.selected_item:
+                    self.selected_item = None
+                    self.screen.fill(BLACK)
+                    self.main_draw()
                 self.selected_item = item
                 print(item.name)                # デバッグ用
                 print(item.scenario_path_list)  # デバッグ用
                 return True
-            self.selected_item = None
+        self.selected_item = None
         return False
 
     def handle_mouse_hover(self):
@@ -212,7 +217,6 @@ class MainPlay:
             for button in self.selected_item.menu_buttons:
                 button.update(key)
 
-    
     def handle_events(self):
         for event in pygame.event.get():
             # 閉じるボタンで終了
@@ -251,10 +255,7 @@ class MainPlay:
                         if self.handle_item_click_event(event):
                             return
 
-    # メニューボタン用のコールバック関数
-    def set_state(self, state=PlayState.NONE):
-        self.create_save_data()
-        self.state = state
+    
 
     def draw(self):
         self.main_draw()
@@ -269,7 +270,7 @@ class MainPlay:
         else:
             # 選択されたアイテムが無い場合は再描画
             self.screen.fill(BLACK)
-            self.main_draw()
+            #self.main_draw()
     
     # 基本の描画をまとめてみた
     def main_draw(self):
@@ -351,12 +352,17 @@ class MainPlay:
         self.handle_events()
         self.draw_scenario()
         return self.next_state()
-    
+
+    # メニューボタン用のコールバック関数
+    def set_state(self, state=State.NONE):
+        self.create_save_data()
+        self.state = state
+
     def next_state(self):
-        if self.state == PlayState.SAVE:
-            self.state = PlayState.NONE
+        if self.state == State.SAVE:
+            self.state = State.NONE
             return "save", self.save_data
-        elif self.state == PlayState.LOAD:
-            self.state = PlayState.NONE
+        elif self.state == State.LOAD:
+            self.state = State.NONE
             return "load", self.save_data
         return "play", self.save_data

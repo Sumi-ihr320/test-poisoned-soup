@@ -1,0 +1,74 @@
+﻿{
+  "hero_status": {
+    "name": "大里　実",
+    "age": 35,
+    "sex": true,
+    "STR": 9,
+    "CON": 7,
+    "SIZ": 17,
+    "DEX": 13,
+    "APP": 5,
+    "EDU": 10,
+    "INT": 10,
+    "POW": 10,
+    "Luck": 50,
+    "Idea": 50,
+    "Know": 50,
+    "DB": "+1D4",
+    "HP": 12,
+    "MP": 10,
+    "Avo": 26,
+    "SAN": 50,
+    "Profession": "狂信者",
+    "skill": {
+      "隠す": 25,
+      "隠れる": 37,
+      "心理学": 65,
+      "説得": 67,
+      "図書館": 82,
+      "法律": 7,
+      "ライフル": 37,
+      "オカルト": 90
+    },
+    "item": {
+      "白いローブ": {
+        "装甲": 0
+      }
+    },
+    "girl_like_ability": 0,
+    "Hobby": "オカルト"
+  },
+  "flag": {
+    "time": 60,
+    "room_flag": "center",
+    "direction_flag": "east",
+    "girl_flag": false,
+    "room_scenario_flag": {
+      "center": 4,
+      "north": 0,
+      "south": 0,
+      "east": 0,
+      "west": 0
+    },
+    "light_flag": false,
+    "east_room_flag": {
+      "open": false,
+      "visivle": false
+    },
+    "poison_get_flag": false,
+    "soup_flag": {
+      "poison": false,
+      "know": false,
+      "drink": false,
+      "temperature": 0
+    },
+    "center_memo_flag": {
+      "scenario": 0,
+      "objective": false
+    },
+    "book_flag": {
+      "found": false,
+      "get": false
+    }
+  }
+}
