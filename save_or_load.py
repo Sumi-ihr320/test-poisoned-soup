@@ -7,7 +7,7 @@ from pygame.locals import *
 
 from constans import *
 from utils import *
-from class_summary import *
+from ui_elements import Label
 
 # データロード
 class Save_or_Load:

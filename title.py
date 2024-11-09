@@ -4,8 +4,7 @@ from pygame.locals import *
 
 from constans import *
 from utils import *
-from class_summary import *
-
+from ui_elements import Label
 
 # タイトル関数をクラス化    (chatGPT指南)
 class Title:

@@ -234,3 +234,8 @@
 	状態フラグを一つに統合
 	class_summary.py をそれぞれの機能ごとにファイル分割
 	data.pyをconstans.pyに、function_summary.pyをutils.pyに名前変更
+
+2024/11/9
+	character_sheet.pyからstatus_calculator.pyを分離
+	character_sheet.pyからstatus_page.pyを分離しStatusPageクラスを作成
+	character_sheet.pyからprofession_page.pyを分離しProfessionPageクラスを作成中
