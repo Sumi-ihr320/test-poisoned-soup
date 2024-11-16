@@ -20,8 +20,6 @@ class Profession:
         # 画像は最初に一度だけロードしキャッシュする
         self.small_img = self.load_img(self.x, self.y, 0.1)
         self.big_img = self.load_img(self.view_x, self.view_y, 0.35)
-
-        #self.show_img_flag = False
         
     # 画像インスタンスを作成
     def load_img(self, x, y, size):
@@ -119,28 +117,30 @@ class ProfessionSelecter:
 
 # 趣味選択画面作るよ
 class HobbySelecter:
-    def __init__(self, screen, is_dropped, select_item):
+    def __init__(self, screen, select_item):
         self.screen = screen
-        self.is_dropped = is_dropped
         self.select_item = select_item
 
-        self.set_data()
-        self.draw_item()        
-
-    # 趣味データをロード
-    def set_data(self):
+        # 趣味データをロード
         self.hobby_list = load_json(HOBBY_DATA_PATH)
-   
-    def draw_item(self):
+
+        self.label = None
+        self.pull = None
+        self.create_item()        
+
+    # アイテム作成
+    def create_item(self):
         # フォントの設定
         font = pygame.font.Font(FONT_PATH, FONT_SIZ)
         small_font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
-        
-        label = Label(self.screen, font, "趣味", 548, 175)
-        label.draw()
+
+        self.label = Label(self.screen, font, "趣味", 548, 175)
         listitem = self.select_item if self.select_item != "" else "未選択"
         self.pull = PullDown(self.screen, small_font, (440,200,150,25), list(self.hobby_list), listitem, 207)
-        self.pull.draw(self.is_dropped)
+
+    def draw_item(self, is_dropped):
+        self.label.draw()
+        self.pull.draw(is_dropped)
 
     def handle_mouse_hover(self, pos, is_dropped):
         if self.pull.box.rect.collidepoint(pos):

@@ -4,18 +4,19 @@ from ui_elements import *
 from profession import ProfessionSelecter, HobbySelecter
 
 class ProfessionPage:
-    def __init__(self, screen, root, hero_data, save_data) -> None:
+    def __init__(self, screen, root, hero_data, save_data, callback) -> None:
         self.screen = screen
         self.root = root
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
         self.hero_data = hero_data
         self.save_data = save_data
+        self.callback = callback
 
         self.prof_selecter = None
         self.end_button = None
         self.hoby_selecter = None
         
-    def load_selecter(self, is_pulldown_open, selected_hobby):
+    def load_selecter(self, selected_hobby):
         # 職業選択画面
         self.prof_selecter = ProfessionSelecter(self.screen)
 
@@ -23,7 +24,7 @@ class ProfessionPage:
         self.end_button = Button(self.screen, self.font, "キャラ作成\n終了", (640,340,100,50), self.end_button_event)
 
         # 趣味選択画面
-        self.hoby_selecter = HobbySelecter(self.screen, is_pulldown_open, selected_hobby)
+        self.hoby_selecter = HobbySelecter(self.screen, selected_hobby)
 
     # 終了ボタンを押した時のイベント
     def end_button_event(self):
@@ -53,15 +54,15 @@ class ProfessionPage:
         else:
             # セーブデータに主人公データを入れる
             self.save_data["hero_status"] = self.hero_data
-            self.end_flag = True
+            self.callback(State.SAVE)
 
-    def draw(self, selected_profession):
+    def draw(self, selected_profession, is_pulldown_open):
         if self.prof_selecter:
             self.prof_selecter.draw()
         if selected_profession:
             selected_profession.image_draw(is_selected=True)
         self.end_button.draw()
-        self.hoby_selecter.draw_item()
+        self.hoby_selecter.draw_item(is_pulldown_open)
 
     def handle_mouse_hover(self, pos, is_pulldown_open):
         if is_pulldown_open:
@@ -78,24 +79,22 @@ class ProfessionPage:
                     return "キャラクター作成を終了します"
         return None
     
-    def handle_click(self, pos, is_pulludown_open):
-        selected_profession = None
-        selected_hobby = None
-
+    def handle_click(self, pos, is_pulldown_open, selected_profession, selected_hobby):
         # プルダウンのクリック処理
         if self.hoby_selecter.pull.box.rect.collidepoint(pos):
-            is_pulludown_open = not is_pulludown_open
+            is_pulldown_open = not is_pulldown_open
+            print(f"is_pulldown_open:{is_pulldown_open}")
 
         # プルダウンが開いているときは
-        if is_pulludown_open:
+        if is_pulldown_open:
             # 趣味欄のクリック処理
-            selected_item = self.hoby_selecter.pull.handle_click(pos, is_pulludown_open)
+            selected_item = self.hoby_selecter.pull.handle_click(pos, is_pulldown_open)
             if selected_item:
                 selected_hobby = selected_item
                 self.hero_data["Hobby"] = selected_item
                 self.hoby_selecter.pull.update_label(f"{selected_item}")
-                self.hobby_data_set()
-                is_pulludown_open = False
+                self.hobby_data_set(selected_hobby)
+                is_pulldown_open = False
         else:
             # もしプルダウンが開いていなかったら
             # ボタンのクリック処理
@@ -109,7 +108,7 @@ class ProfessionPage:
                     self.hero_data["Profession"] = selected_item.name
                     self.profession_data_set()
 
-        return is_pulludown_open, selected_profession, selected_hobby
+        return is_pulldown_open, selected_profession, selected_hobby
 
     # 選択した職業から主人公のステータスにデータを入れるよ
     def profession_data_set(self):
@@ -182,13 +181,13 @@ class ProfessionPage:
                         remaining_points -= remaining_points
 
     # 選択した趣味から主人公のステータスにデータを入れるよ
-    def hobby_data_set(self):
+    def hobby_data_set(self, selected_hobby):
         # 主人公の持っている技能データ
         my_skills = self.hero_data["skill"]
 
         # 趣味リストの技能データ
         hobby_list = load_json(HOBBY_DATA_PATH)
-        hobby_skills = hobby_list[self.selected_hobby]
+        hobby_skills = hobby_list[selected_hobby]
         # 技能リスト
         skill_list = load_json(SKILL_DATA_PATH)
 

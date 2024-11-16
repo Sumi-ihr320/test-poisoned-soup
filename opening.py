@@ -4,7 +4,7 @@ from pygame.locals import *
 
 from constans import *
 from utils import *
-from ui_elements import Menu
+from menu import MenuController
 
 # オープニング関数をクラス化    (chatGPT指南)
 class Opening:
@@ -18,19 +18,13 @@ class Opening:
         # 画面の状態
         self.state = State.NONE
 
-        self.menu = None
-        self.create_menu()
+        # メニューボタン
+        self.menu_controller = MenuController(self.screen, self.root, self.set_state, save_enabled=False)
     
     # 表示
     def draw(self):
         create_frame(self.screen)
-        if self.menu:
-            self.menu.draw()
-
-    # メニューボタンの作成
-    def create_menu(self):
-        self.menu = Menu(self.screen, self.root, self.set_state, save_enabled=False)
-
+        self.menu_controller.draw()
 
     # テキストの描画
     def draw_text(self):
@@ -39,8 +33,7 @@ class Opening:
     
     def handle_mouse_hover(self):
         key = pygame.mouse.get_pos()
-        for button in self.menu.buttons:
-            button.update(key)
+        self.menu_controller.handle_mouse_hover(key)
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -52,10 +45,8 @@ class Opening:
 
             # マウスクリック時
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
-                if self.menu:
-                    for button in self.menu.buttons:
-                        if button.update(event.pos, True):
-                            return
+                if self.menu_controller.handle_click(event.pos):
+                    return
                 self.opening_flag += 1
 
     def update(self):

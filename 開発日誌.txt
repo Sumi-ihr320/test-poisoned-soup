@@ -239,3 +239,11 @@
 	character_sheet.pyからstatus_calculator.pyを分離
 	character_sheet.pyからstatus_page.pyを分離しStatusPageクラスを作成
 	character_sheet.pyからprofession_page.pyを分離しProfessionPageクラスを作成中
+
+2024/11/13
+	menu.py、menu_controllerクラス作成
+	navigation.py、navigationクラス作成
+
+2024/11/16
+	managerフォルダを作成、room_manager.py、scenario_manager.py、
+	item_manager.py、event_manager.pyを作成中

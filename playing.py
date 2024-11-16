@@ -6,7 +6,10 @@ from constans import *
 from utils import *
 from ui_elements import *
 
-from room import Room
+from menu import MenuController
+from navigation import Navigation
+from manager.room_manager import RoomManager
+from manager.scenario_manager import ScenarioManager
 
 # プレイ画面
 class MainPlay:
@@ -19,19 +22,15 @@ class MainPlay:
         # フラグをセットする
         self.set_flag(save_data["flag"])
 
-        # メニューを作る
-        self.menu = None
-        self.create_menu()
+        # メニューコントローラー
+        self.menu_controller = MenuController(self.screen, self.root, self.set_state)
     
         # ナビゲーションバー
-        self.right_navi = None
-        self.left_navi = None
-        self.under_navi = None
-        self.create_navigetion()
+        self.navigation = Navigation(self.screen)
+        self.setup_navigetion()
 
-        # 部屋を作る
-        self.room = None
-        self.create_room()
+        # 部屋の管理
+        self.room_manager = RoomManager(self.screen, self.room_flag, self.direction_flag, self.east_room_flag, self.book_flag)
 
         # 主人公のステータス表示
         self.status_label = None
@@ -45,26 +44,6 @@ class MainPlay:
         # 選択されたアイテム
         self.selected_item = None
         self.item_max_flag = 0
-
-    # メニューの作成
-    def create_menu(self):
-        self.menu = Menu(self.screen, self.root, self.set_state)
-
-    # 部屋の作成
-    def create_room(self):
-        room2_flag = self.room2_flag_check(self.room_flag)
-        self.room = Room(self.screen, self.room_flag, self.direction_flag, room2_flag)
-        self.max_room_scenario_flag = len(self.room.scenario_list)
-        print(self.room.scenario_list)  # デバッグ用
-
-    # 二つ目の部屋表示チェック
-    def room2_flag_check(self, room):
-        if room == "east":
-            return self.east_room_flag["visivle"]
-        elif room == "west":
-            return self.book_flag["found"]
-        else:
-            return False
 
     # 主人公の名前・HP・MP・現在地を右上に表示する
     def create_hero_label(self):
@@ -114,70 +93,12 @@ class MainPlay:
         save_data["flag"] = flag
         self.save_data = save_data
 
-    # ナビゲーションバーを作成
-    def create_navigetion(self):
-        # ナビゲーションバーの表示
+    # ナビゲーションバーのセット
+    def setup_navigetion(self):
         if self.room_flag == "center":
-            self.right_navi = PageNavigation(self.screen, RIGHT)
-            self.left_navi = PageNavigation(self.screen, LEFT)
+            self.navigation.setup_navigation([Position.RIGHT, Position.LEFT])
         else:
-            self.under_navi = PageNavigation(self.screen, UNDER)
-
-    # 向き移動先を取得
-    def direction_move_get(self, position, direction):
-        if position == "right":
-            if direction == "north":
-                return "east"
-            elif direction == "east":
-                return "south"
-            elif direction == "south":
-                return "west"
-            else:
-                return "north"
-        elif position == "left":
-            if direction == "north":
-                return "west"
-            elif direction == "west":
-                return "south"
-            elif direction == "south":
-                return "east"
-            else:
-                return "north"
-            
-        # 扉からの移動先
-        elif position == "center":
-            return direction
-                
-        else:
-            return direction
-
-    # 部屋の戻り先を取得
-    def room_move_direction_get(self, room):
-        if room == "north":
-            direction = "south"
-        elif room == "south":
-            direction = "north"
-        elif room == "east":
-            direction = "west"
-        else:
-            direction = "east"
-        return "center", direction
-
-    # 部屋移動をまとめる
-    def move_room(self, position):
-        if position == "under":
-            if self.book_flag["get"]:
-                # 本を持って出ようとしたらイベント
-                pass
-                # 戦闘終了後は部屋のほうを向いている
-                self.room_flag, self.direction_flag = "center", self.room_flag
-                # 扉が元に戻ったことを説明
-            else:
-                self.room_flag, self.direction_flag = self.room_move_direction_get(self.room_flag)
-            self.status_label[3].update_text(ROOM_NAME[self.room_flag])
-        else:
-            self.direction_flag = self.direction_move_get(position, self.direction_flag)
-        self.create_room()
+            self.navigation.setup_navigation([Position.UNDER])
 
     # 部屋に最初に入った時に起こるイベント   ※イベント中は他のクリックイベントは作動しない
     def first_room_scenario_count(self, room):
@@ -200,8 +121,8 @@ class MainPlay:
             if item.handle_click(event.pos):
                 if self.selected_item:
                     self.selected_item = None
-                    self.screen.fill(BLACK)
-                    self.main_draw()
+                    #self.screen.fill(BLACK)
+                    #self.main_draw()
                 self.selected_item = item
                 print(item.name)                # デバッグ用
                 print(item.scenario_path_list)  # デバッグ用
@@ -209,87 +130,65 @@ class MainPlay:
         self.selected_item = None
         return False
 
+    # マウスオーバー
     def handle_mouse_hover(self):
         key = pygame.mouse.get_pos()
-        for button in self.menu.buttons:
-            button.update(key)
+        self.menu_controller.handle_mouse_hover(key)
         if self.selected_item and self.selected_item.menu_buttons:
             for button in self.selected_item.menu_buttons:
                 button.update(key)
 
+    # イベントハンドラ
     def handle_events(self):
         for event in pygame.event.get():
             # 閉じるボタンで終了
-            if event.type == QUIT:
+            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 Close(self.root)
-            elif event.type == KEYDOWN and event.key == K_ESCAPE:
-                Close(self.root)
+
             # マウスクリック時
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 self.handle_click(event)
 
+    # クリックイベント
     def handle_click(self, event):
         if not self.first_room_scenario_count(self.room_flag):
             if not self.selected_item_scenario_count(self.selected_item):
                 # メニューボタン
-                for button in self.menu.buttons:
-                    if button.update(event.pos, True):
-                        return
+                if self.menu_controller.handle_click(event.pos):
+                    return
 
                 if self.room_flag == "center":
                     # ナビゲーションバーによる移動
-                    if self.right_navi and self.right_navi.handle_click(event.pos):
-                        self.move_room("right")
+                    clicked_position = self.navigation.handle_click(event.pos)
+                    if clicked_position == Position.RIGHT:
+                        self.room_manager.move_room("right")
                         self.selected_item = None
-                    elif self.left_navi and self.left_navi.handle_click(event.pos):
-                        self.move_room("left")
+                    elif clicked_position == Position.LEFT:
+                        self.room_manager.move_room("left")
                         self.selected_item = None
                     else:
                         if self.handle_item_click_event(event):
                             return
                 else:
                     # ナビゲーションバーによる移動
-                    if self.under_navi and self.under_navi.handle_click(event.pos):
-                        self.move_room("under")
+                    if self.navigation.handle_click(event.pos) is not None:
+                        self.room_manager.move_room("under")
                     else:
                         if self.handle_item_click_event(event):
                             return
 
-    
-
     def draw(self):
-        self.main_draw()
-        if self.selected_item:
-            img_number = 0
-            if self.selected_item == "Soup":
-                if self.soup_flag["drink"]:
-                    img_number = 1
-                elif self.soup_flag["poison"]:
-                    img_number = 2
-            self.selected_item.draw(is_selected=True, img_number=img_number)
-        else:
-            # 選択されたアイテムが無い場合は再描画
-            self.screen.fill(BLACK)
-            #self.main_draw()
-    
-    # 基本の描画をまとめてみた
-    def main_draw(self):
-        create_frame(self.screen)   # テキストフレームの表示
-        self.menu.draw()            # メニューの表示
-        self.room.draw()            # 部屋の表示
+        create_frame(self.screen)       # テキストフレームの表示
+        self.menu_controller.draw()     # メニューの表示
 
-        # ナビゲーションバーの表示
-        if self.left_navi:
-            self.left_navi.draw()
-        if self.right_navi:
-            self.right_navi.draw()
-        if self.under_navi:
-            self.under_navi.draw()
+        self.room_manager.draw(self.selected_item, self.soup_flag)  # 部屋の表示
+
+        self.navigation.draw()          # ナビゲーションバーの表示
 
         # 主人公のステータスの表示
         for status in self.status_label:
             status.draw()
-
+    
     # シナリオを作成する
     def create_scenario(self):
         self.text = ""

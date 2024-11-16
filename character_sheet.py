@@ -6,6 +6,8 @@ from constans import *
 from utils import *
 from ui_elements import *
 
+from menu import MenuController
+from navigation import Navigation
 from status_calculator import *
 from pages.status_page import StatusPage
 from pages.profession_page import ProfessionPage
@@ -16,17 +18,17 @@ class CharacterSheet:
         self.screen = screen
         self.root = root
 
-        self.menu = None        # メニューボタン
-        self.create_menu()
+        # メニューボタン
+        self.menu_controller = MenuController(self.screen, self.root, self.set_state, save_enabled=False)
 
-        self.page_navi = None   # ナビゲーションバー
         self.now_page = 0       # 現在のページ
 
-
-        self.end_flag = False   # キャラシ作成を終わるフラグ
+        # ナビゲーション
+        self.navigetion = Navigation(self.screen)
+        self.setup_navigation()
 
         self.selected_profession = None     # 選択中の職業
-        self.is_pulldown_open = False      # プルダウン用のフラグ
+        self.is_pulldown_open = False       # プルダウン用のフラグ
         self.selected_hobby = ""            # 選択中の趣味
 
         # 設定する主人公のステータス
@@ -38,8 +40,8 @@ class CharacterSheet:
         # ページ管理
         self.status_page = StatusPage(self.screen, self.root, self.hero_data)
         self.status_page.load_status_items(load_json(STATUS_DATA_PATH))
-        self.profession_page = ProfessionPage(self.screen, self.root, self.hero_data, self.save_data)
-        self.profession_page.load_selecter(self.is_pulldown_open, self.selected_hobby)
+        self.profession_page = ProfessionPage(self.screen, self.root, self.hero_data, self.save_data, self.set_state)
+        self.profession_page.load_selecter(self.selected_hobby)
 
         # 状態フラグ
         self.state = State.NONE
@@ -48,24 +50,19 @@ class CharacterSheet:
     def draw_sheet(self):
         pygame.draw.rect(self.screen, SHEET_COLOR, SHEET_RECT)
     
-    # メニューボタンの作成
-    def create_menu(self):
-        self.menu = Menu(self.screen, self.root, self.set_state, save_enabled=False)
-
     # ページを表示する
     def draw_page(self):
-        self.menu.draw()
-        self.create_navigation(self.now_page)
-        self.page_navi.draw()
+        self.menu_controller.draw()
+        self.navigetion.draw()
         if self.now_page == 0:
             self.status_page.draw()
         else:
-            self.profession_page.draw(self.selected_profession)
-                
+            self.profession_page.draw(self.selected_profession, self.is_pulldown_open)
+    
     # ナビゲーションバーを作る
-    def create_navigation(self, page):
-        position = RIGHT if page == 0 else LEFT
-        self.page_navi = PageNavigation(self.screen, position)
+    def setup_navigation(self):
+        position = Position.RIGHT if self.now_page == 0 else Position.LEFT
+        self.navigetion.setup_navigation([position])
 
     # マウスオーバーイベント
     def handle_mouse_hover(self):
@@ -73,10 +70,8 @@ class CharacterSheet:
         key = pygame.mouse.get_pos()
         horver_text = None
 
-        if self.menu:
-            for button in self.menu.buttons:
-                button.update(key)
-
+        self.menu_controller.handle_mouse_hover(key)
+        
         # ページによって変わる
         if self.now_page == 0:
             horver_text = self.status_page.handle_mouse_hover(key)
@@ -98,15 +93,15 @@ class CharacterSheet:
 
     # マウスクリック時
     def handle_mouse_click(self, pos):
-        if self.menu:
-            for button in self.menu.buttons:
-                if button.update(pos, True):
-                    return
+        if self.menu_controller.handle_click(pos):
+            return
+        
         # １ページ目だったら
         if self.now_page == 0:
             # ページ移動
-            if self.page_navi.handle_click(pos):
+            if self.navigetion.handle_click(pos) is not None:
                 self.now_page = 1
+                self.setup_navigation()
             else:
                 item = self.status_page.handle_click(pos)
                 if item:
@@ -114,13 +109,14 @@ class CharacterSheet:
         else:
         # 2ページ目だったら
             # ページ移動
-            if self.page_navi.handle_click(pos):
+            if self.navigetion.handle_click(pos):
                 self.now_page = 0
+                self.setup_navigation()
                 # もし趣味のプルダウンが開いていたら閉じる
                 if self.is_pulldown_open:
                     self.is_pulldown_open = False
             else:
-                self.is_pulldown_open, self.selected_profession, self.selected_hobby = self.profession_page.handle_click(pos, self.is_pulldown_open)
+                self.is_pulldown_open, self.selected_profession, self.selected_hobby = self.profession_page.handle_click(pos, self.is_pulldown_open, self.selected_profession, self.selected_hobby)
 
     # 更新されたデータをステータスに入力＋自動計算する
     def insart_data(self, status):
@@ -180,7 +176,7 @@ class CharacterSheet:
         self.state = state
 
     def next_state(self):
-        if self.end_flag:
+        if self.state == State.SAVE:
             return "save"
         elif self.state == State.LOAD:
             self.state = State.NONE

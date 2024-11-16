@@ -2,7 +2,7 @@ import os, json
 import datetime as dt
 
 import pygame
-import pygame.draw
+#import pygame.draw
 from pygame.locals import *
 
 from constans import *

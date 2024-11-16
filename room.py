@@ -3,8 +3,7 @@ from pygame.locals import *
 
 from constans import *
 from utils import *
-from ui_elements import *
-
+from ui_elements import Image, Button
 
 # 部屋の型を作るよ
 class Room:
@@ -33,7 +32,7 @@ class Room:
         self.create_item(self.img.img, room, direction)
 
     # 画像表示するよ
-    def draw(self):
+    def draw(self, selected_item, soup_flag):
         # フラグが立っていればroom_img2を表示する
         if self.room2_flag and self.img2:
             self.img2.draw()
@@ -42,7 +41,16 @@ class Room:
 
         if self.items_draw_list:
             for item in self.items_draw_list:
-                item.draw()
+                if item == selected_item:
+                    img_number = 0
+                    if item == "Soup":
+                        if soup_flag["drink"]:
+                            img_number = 1
+                        elif soup_flag["poison"]:
+                            img_number = 2
+                    item.draw(is_selected=True, img_number=img_number)
+                else:
+                    item.draw()
 
     # 部屋のアイテムを作成する
     def create_item(self, surface, room, direction):

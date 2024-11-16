@@ -48,7 +48,7 @@ class Title:
 
             # 左マウスクリック時
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
-                print(event.pos)
+                print(event.pos)    # デバッグ用
                 if self.start.rect.collidepoint(event.pos):
                     return "opening"
                 elif self.load.rect.collidepoint(event.pos):
