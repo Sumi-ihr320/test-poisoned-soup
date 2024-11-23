@@ -3,7 +3,7 @@ from pygame.locals import *
 
 from constans import *
 from utils import *
-from ui_elements import Image, Button
+from ui_elements import Image
 
 # 部屋の型を作るよ
 class Room:
@@ -117,28 +117,22 @@ class Room:
 class Item:
     # アイテム画像の縮小パーセンテージ
     SIZE = 0.19
-    def __init__(self, screen, name, room, direction, x, y, command_list=None):
+    def __init__(self, screen, name, room, direction, x, y):
         self.screen = screen
         self.name = name    # アイテム名
 
-        # ファイルパス
-        self.path = create_file_path(name, room, direction)
-
-        # 画像
-        self.img = Image(self.screen, self.path, self.SIZE, x, y)
-
-        # シナリオファイルパス
-        self.scenario_path_list = create_scenario_path(item=name)
+        # アイテムの基本情報
+        self.path = create_file_path(name, room, direction)             # ファイルパス
+        self.img = Image(self.screen, self.path, self.SIZE, x, y)       # 画像
 
         # クリック時画像パス
         self.big_img_path_list = create_item_path(name)
         self.big_imgs = []
         self.create_images()
 
-        # メニューに表示するコマンド
-        self.command_list = command_list
-        self.menu_buttons = []
-        self.create_menu()
+        # イベントトリガーやコマンドに必要なデータを保持
+        #self.scenario_key = name.lower()    # json内での対応するキー
+        self.command_list = None
 
     # クリック時の画像リストを作る
     def create_images(self):
@@ -154,18 +148,10 @@ class Item:
         if is_selected:
             if self.big_imgs:
                 self.big_imgs[img_number].draw()
-            if self.menu_buttons:
-                for button in self.menu_buttons:
-                    button.draw()
         pygame.draw.rect(self.screen, BLACK, self.img.rect, 1)  # デバッグ用
 
-    def event(self):
-        pass
-
-    # コマンドメニューボタンを作る
-    def create_menu(self):
-        font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
-        w, h = 100, 30
+    # コマンドメニューの表示位置を取得
+    def get_position(self):
         max_x, max_y = 620, 220     # これ以上端に配置すると見えなくなる
         # コマンド表示の指標となる画像位置。クリック時画像があればそこを起点とする。なければ元の画像。
         image_rect = self.big_imgs[0].rect if self.big_imgs else self.img.rect
@@ -174,26 +160,9 @@ class Item:
         x = image_rect.right + 30 if (image_rect.right + 30) <= max_x else image_rect.x - 130
         y = image_rect.y if image_rect.y <= max_y else image_rect.y - 50
 
-        if self.command_list:
-            for command in self.command_list:
-                if command in EVENT_NAME:
-                    event = EVENT_NAME[command]
-                self.menu_buttons.append(Button(self.screen, font, command, (x,y,w,h), out_color=BLACK))
-                y += h
-
-    # コマンドボタンのイベント作成
-    def open(self):
-        pass
+        return (x, y)
 
     def handle_click(self, pos):
-        if self.img.rect.collidepoint(pos):
-            return True                
-        return False
-
-        # 表示するテキスト
-        return self.scenario_path_list
-    
-        # 起こるイベント
-        pass
+        return self.img.rect.collidepoint(pos)
 
     

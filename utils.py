@@ -83,6 +83,10 @@ def dice_confirmation(text):
     dice = text[2:] if cut_index == 0 else text[2:cut_index]
     return int(pieces), int(dice), plus_item
 
+# 対抗ロールの成功値計算(return パーセンテージ)
+def opposition_percent(active, passive):
+    return 50 + ((active - passive) * 5)
+
 # 答えと余りを算出する計算式を関数にしてみた
 def Calculation(a, b, max=None):
     surplus = 0

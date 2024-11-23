@@ -1,7 +1,43 @@
+from ui_elements import CommandMenu
 
 class EventManager:
-    def __init__(self, screen) -> None:
-        pass
+    def __init__(self, screen, scenario_manager):
+        self.screen = screen
+
+        self.scenario_manager = scenario_manager
+        self.command_menu = None
+
+    # アイテムがクリックされた際に呼び出される
+    def tregger_item_event(self, item):
+        print(f"アイテムクリック：{item.name}")     # デバッグ用
+        self.scenario_manager.start_scenario(item.name)
+        self.create_command_menu(item)
+
+    # コマンドメニューの生成
+    def create_command_menu(self, item):
+        commands = self.get_item_commands(item.scenario_key)
+        if commands:
+            start_position = item.get_position()
+            self.command_menu = CommandMenu(self.screen, commands, start_position)
+
+    # アイテムに関連するコマンドリストを取得
+    def get_item_commands(self, scenario_key):
+        scenario_data = self.scenario_manager.get_scenario(scenario_key)
+        if scenario_data and scenario_data["type"] == "intaraction":
+            return scenario_data["intaractions"]
+        return None
+
+    def handle_mouse_hover(self, pos):
+        if self.command_menu:
+            self.command_menu.handle_mouse_hover(pos)
+
+    # コマンドメニューがクリックされた際に実行
+    def handle_command_click(self, pos):
+        if self.command_menu:
+            event = self.command_menu.handle_click(pos)
+            if event:
+                self.scenario_manager.trigger_event(event)
+                self.command_menu = None    # コマンドメニューを閉じる
 
     def handle_event(self, event_name, *args, **kwargs):
         """

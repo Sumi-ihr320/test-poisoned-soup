@@ -10,6 +10,7 @@ from menu import MenuController
 from navigation import Navigation
 from manager.room_manager import RoomManager
 from manager.scenario_manager import ScenarioManager
+from manager.event_manager import EventManager
 
 # プレイ画面
 class MainPlay:
@@ -30,20 +31,17 @@ class MainPlay:
         self.setup_navigetion()
 
         # 部屋の管理
-        self.room_manager = RoomManager(self.screen, self.room_flag, self.direction_flag, self.east_room_flag, self.book_flag)
+        self.room_manager = RoomManager(self.screen, self.room_flag, self.direction_flag, self.east_room_flag, self.items_flag["book"])
 
         # 主人公のステータス表示
         self.status_label = None
         self.create_hero_label()
 
-        # 表示するシナリオのリスト
-        self.scenario_list = []
-        # テキストフレームに表示するテキスト
-        self.text = ""
+        self.scenario_manager = ScenarioManager(self.screen, "center-room")
+        self.event_manager = EventManager(self.screen, self.scenario_manager)
 
         # 選択されたアイテム
         self.selected_item = None
-        self.item_max_flag = 0
 
     # 主人公の名前・HP・MP・現在地を右上に表示する
     def create_hero_label(self):
@@ -63,16 +61,23 @@ class MainPlay:
         self.direction_flag = play_flags.get("direction_flag", "north")     # どの方角を向いているかフラグ
         self.girl_flag = play_flags.get("girl_flag", False)                 # 少女を見つけてるかフラグ
 
-        self.room_scenario_flag = play_flags.get("room_scenario_flag", {"center":0, "north":0, "south":0, "east":0, "west":0})    # 各部屋のシナリオフラグ
+        # 各部屋のシナリオフラグ
+        self.room_scenario_flag = play_flags.get(
+            "room_scenario_flag", {"center":0, "north":0, "south":0, "east":0, "west":0}
+        )
         self.max_room_scenario_flag = 0             # シナリオフラグの最大値
         self.light_flag = play_flags.get("light_flag", False)               # 電球が取られていないかフラグ
         self.east_room_flag = play_flags.get("east_room_flag", {"open":False, "visivle":False})     # 東の部屋のフラグ
         self.poison_get_flag = play_flags.get("poison_get_flag", False)     # 毒を見つけているかフラグ
 
         # アイテムの状態フラグ
-        self.soup_flag = play_flags.get("soup_flag", {"poison":False, "know":False, "drink":False, "temperature":0}) # スープに関するフラグ
-        self.center_memo_flag = play_flags.get("center_memo_flag", {"scenario":0, "objective":False})       # 真ん中の部屋のメモに関するフラグ
-        self.book_flag = play_flags.get("book_flag", {"found":False, "get":False})  # 西の部屋の本に関するフラグ
+        self.items_flag = play_flags.get(
+            "items_flag", {
+                    "soup", {"poison":False, "know":False, "drink":False, "temperature":0},    # スープに関するフラグ
+                    "center_memo", {"scenario":0, "objective":False},                          # 真ん中の部屋のメモに関するフラグ
+                    "book", {"found":False, "get":False}                                       # 西の部屋の本に関するフラグ
+            }
+        )
 
     # セーブデータを作る
     def create_save_data(self):
@@ -86,9 +91,7 @@ class MainPlay:
                 "light_flag":self.light_flag,
                 "east_room_flag":self.east_room_flag,
                 "poison_get_flag":self.poison_get_flag,
-                "soup_flag":self.soup_flag,
-                "center_memo_flag":self.center_memo_flag,
-                "book_flag":self.book_flag
+                "items_flag":self.items_flag,
                 }
         save_data["flag"] = flag
         self.save_data = save_data
@@ -110,33 +113,32 @@ class MainPlay:
     # アイテムが選択された時のシナリオフラグカウント（うまくいってない）
     def selected_item_scenario_count(self, item):
         if item == "centerMemo":
-            if self.center_memo_flag["scenario"] < self.item_max_flag:
-                self.center_memo_flag["scenario"] += 1
+            if self.items_flag["center_memo"]["scenario"] < self.item_max_flag:
+                self.items_flag["center_memo"]["scenario"] += 1
                 return True
         return False
 
     # アイテムクリック時のイベントをまとめる
     def handle_item_click_event(self, event):
-        for item in self.room.items_select_list:
+        for item in self.room_manager.room.items_select_list:
             if item.handle_click(event.pos):
-                if self.selected_item:
-                    self.selected_item = None
-                    #self.screen.fill(BLACK)
-                    #self.main_draw()
                 self.selected_item = item
                 print(item.name)                # デバッグ用
-                print(item.scenario_path_list)  # デバッグ用
+                self.event_manager.tregger_item_event(item)
                 return True
         self.selected_item = None
         return False
+
+    # コマンドメニューイベント
+    def handle_command_menu_event(self, event):
+        if self.event_manager.command_menu:
+            self.event_manager.command_menu.handle_click(event.pos)
 
     # マウスオーバー
     def handle_mouse_hover(self):
         key = pygame.mouse.get_pos()
         self.menu_controller.handle_mouse_hover(key)
-        if self.selected_item and self.selected_item.menu_buttons:
-            for button in self.selected_item.menu_buttons:
-                button.update(key)
+        self.event_manager.handle_mouse_hover(key)
 
     # イベントハンドラ
     def handle_events(self):
@@ -169,6 +171,7 @@ class MainPlay:
                     else:
                         if self.handle_item_click_event(event):
                             return
+                        self.handle_command_menu_event(event)
                 else:
                     # ナビゲーションバーによる移動
                     if self.navigation.handle_click(event.pos) is not None:
@@ -176,19 +179,23 @@ class MainPlay:
                     else:
                         if self.handle_item_click_event(event):
                             return
+                        self.handle_command_menu_event(event)
 
     def draw(self):
         create_frame(self.screen)       # テキストフレームの表示
         self.menu_controller.draw()     # メニューの表示
-
-        self.room_manager.draw(self.selected_item, self.soup_flag)  # 部屋の表示
-
+        self.room_manager.draw(self.selected_item, self.items_flag["soup"])  # 部屋の表示
         self.navigation.draw()          # ナビゲーションバーの表示
 
         # 主人公のステータスの表示
         for status in self.status_label:
             status.draw()
-    
+
+        if self.event_manager.command_menu:
+            self.event_manager.command_menu.draw()
+            
+        self.scenario_manager.draw()
+
     # シナリオを作成する
     def create_scenario(self):
         self.text = ""
@@ -210,15 +217,16 @@ class MainPlay:
                     event = "know" if self.soup_flag["know"] else ""
                     file_name = create_scenario_path(item="Soup", event=event, time=time)[0]
                 elif self.selected_item.name == "centerMemo":
-                    self.item_max_flag = 4 if self.center_memo_flag["objective"] else 3
-                    if self.center_memo_flag["scenario"] < self.item_max_flag:
-                        file_name = self.selected_item.scenario_path_list[self.center_memo_flag["scenario"]]
+                    self.item_max_flag = 4 if self.items_flag["center_memo"]["objective"] else 3
+                    if self.items_flag["center_memo"]["scenario"] < self.item_max_flag:
+                        file_name = self.selected_item.scenario_path_list[self.items_flag["center_memo"]["scenario"]]
                 elif self.selected_item.scenario_path_list:
                     file_name = self.selected_item.scenario_path_list[0]
         if file_name:
             self.text = load_text(file_name)
 
     def item_event(self):
+        # 悩み中　item_managerかevent_managerを使う
         # menuを表示
 
         # doorのイベント
@@ -241,9 +249,6 @@ class MainPlay:
         pass
     
     # シナリオ表示用
-    def draw_scenario(self):
-        self.create_scenario()
-        TextDraw(self.screen, self.text)
 
     def update(self):
         self.draw()

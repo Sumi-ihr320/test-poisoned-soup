@@ -413,8 +413,9 @@ class DiceRoll:
 
         # 個数、何面、プラスαのアイテム
         self.pieces, self.dice, self.plus_item = dice_confirmation(self.text)
+        
         # 計算結果
-        self.val = self.dice_roll()
+        self.result = self.dice_roll()
     
     # ダイスロールの計算
     def dice_roll(self):
@@ -429,8 +430,53 @@ class DiceRoll:
             item_num = int(self.text[index])
             val = val + item_num if self.plus_item.group() == "+" else val - item_num
         return val
+    
+    # 成否判定
+    def check(self, threshold):
+        """
+        threshold: 判定の基準値
+        return: 成否 (bool)
+        """
+        return self.result <= threshold
 
-# simpledialogの代わり(モーダルはうまくいかない)
+# コマンドメニュー
+class CommandMenu:
+    def __init__(self, screen, commands, start_position):
+        self.screen = screen
+
+        self.commands = commands
+        self.start_x, self.start_y = start_position
+        self.buttons = []
+        self.create_buttons()
+
+    # コマンドリストからボタンを作成
+    def create_buttons(self):
+        font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
+        x, y = self.start_x, self.start_y
+        w, h = 100, 30
+
+        if self.commands:
+            for command in self.commands:
+                button = Button(self.screen, font, command, (x,y,w,h), out_color=BLACK)
+                self.buttons.append({"button":button, "event": command["event"]})
+                y += h
+
+    def draw(self):
+        for item in self.buttons:
+            item["button"].draw()
+
+    def handle_mouse_hover(self, pos):
+        for item in self.buttons:
+            item["button"].update(pos)
+
+    def handle_click(self, pos):
+        # クリックされたイベントを判定
+        for item in self.buttons:
+            if item["button"].is_clicked(pos):
+                return item["event"]
+        return None
+    
+# simpledialogの代わり(モーダルはうまくいかないがエラーメッセージの日本語化はできた)
 class CustomDialog(simpledialog.Dialog):
     def __init__(self, parent, title="title", text="文字列を入力してください", input_value="", input_type=None, min_value=0, max_value=99, num=None):
         

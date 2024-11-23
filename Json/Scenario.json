@@ -1,0 +1,110 @@
+{   
+    "MEMO":[
+            "type: text → 表示されるテキストをクリックで次に進む。",
+            "type: action → 指定されたアクション（例: 部屋の切り替え）を実行。",
+            "type: dice_check → ダイスの結果によって次のシナリオへ移行。",
+            "type: interaction → コマンドの種類と選択結果",
+            "type: conditional → 開始前にフラグチェックをする",
+            "check_type → どのタイプのチェックか(スキル、対抗など)",
+            "skill → どのスキルでチェックを行うか",
+            "status → どのステータスを利用するか",
+            "enemy_status → 敵側のステータス" 
+    ],
+    "opening":[
+        {"type":"text", "text":"この物語はクトゥルフ神話TRPGを元に作成しています。"},
+        {"type":"text", "text":"まずは探索者を作成しましょう。"}
+    ],
+    "center-room":[
+        {"type":"text", "text":"あなたが目を覚ますとそこは、\n壁も床もコンクリートで出来た\n四方に扉のある正方形の部屋でした。"},
+        {"type":"text", "text":"着ている衣服は全て白いローブのようなぼろきれで、\n他には何もありません。\n財布等の貴重品はもちろん、\n普段身に着けているアクセサリーなどもありません。"},
+        {"type":"text", "text":"天井の薄暗い豆電球だけが部屋を照らし、\n真ん中には古い木製の長机と椅子が一つあります。\n更に机の上には、\n木製の器に入った赤い無臭のスープが一つと、\n古い紙切れが二つ。"},
+        {"type":"text", "text":"さて、この部屋であなたは何をしましょうか。"}
+    ],
+    "east-room":[
+        {"type":"text", "text":"中は真っ暗だ。"},
+        {"type": "dice_check", "check_type": "skill", "skill": "聞き耳", "dice": "1d100",
+         "success": "east-room_success",
+         "failure": "east-room_failure"}
+    ],
+    "east-room_success": [
+        {"type": "text", "text": "ひたひたという足音が近づいて来ているようだ。"}
+    ],
+    "east-room_failure":[
+        {"type": "text", "text": "特に何も聞こえなかった。"}
+    ],
+    "north-room":[
+        {"type":"text", "text":"明るくて綺麗な部屋だ。"}
+    ],
+    "west-room":[
+        {"type":"text", "text":"四方が大きな本棚に囲まれた部屋だ。"},
+        {"type":"text", "text":"中央には古い机があり、\nその上にあるキャンドル皿に乗せられたろうそくがうっすらと部屋を照らしている。"}
+    ],
+    "northDoor":[
+        {"type":"text", "text":"真っ白でドアノブがない、板のような押し扉だ。"},
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":"northDoor_objective"},
+            {"text":"聞き耳", "next":""},
+            {"text":"叩く", "next":""},
+            {"text":"開ける", "next":"northDoor_open"}
+         ]}
+    ],
+    "eastDoor":[
+        {"type":"text", "text":"扉は錆びた鉄で出来ている。"},
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":"eastDoor_objective"},
+            {"text":"聞き耳", "next":""},
+            {"text":"叩く", "next":""},
+            {"text":"開ける", "next":"eastDoor_open"}
+         ]}
+    ],
+    "eastDoor_objective":[
+        {"type":"text", "text":""}
+    ],
+    "eastDoor_open":[
+        {"type": "conditional",
+         "conditions":[
+            {"flag": "open", "value":false, "next":"eastDoor_locked"},
+            {"flag": "open", "value":true, "next":"eastDoor_unlocked"}
+         ]
+        }
+    ],
+    "eastDoor_locked":[
+        {"type":"text", "text":"どうやら鍵がかかっているようだ。\nしかし少し力を入れれば開きそうに思える。\n《STR》⇒"},
+        {"type":"VS_active", "statue":"STR", "enemy_status":5, "dice":"1d100",
+         "success":"eastDoor_open_success",
+         "failure":"eastDoor_open_failure"}
+    ],
+    "eastDoor_locked_success":[
+        {"type":"text", "text":"鍵を壊すことができた。"},
+        {"type":"action", "action":"set_flag", "flag":"open", "value":true},
+        {"type":"action", "action":"move_to_room", "room_id":"east-room"}
+    ],
+    "eastDoor_locked_failure":[
+        {"type":"text", "text":"鍵を壊すことはできなかった。"}
+    ],
+    "eastDoor_unlocked":[
+        {"type":"action", "action":"move_to_room", "room_id":"east-room"}
+    ],
+    "southDoor":[
+        {"type":"text", "text":"大きな厚い鉄扉だ。小窓がついている。"},
+        {"type":"interaction",
+        "intaractions":[
+           {"text":"目星", "next":"southDoor_objective"},
+           {"text":"聞き耳", "next":""},
+           {"text":"叩く", "next":""},
+           {"text":"開ける", "next":"southDoor_open"}
+        ]}
+    ],
+    "westDoor":[
+        {"type":"text", "text":"綺麗な木製の扉だ。"},
+        {"type":"interaction",
+        "intaractions":[
+           {"text":"目星", "next":"westDoor_objective"},
+           {"text":"聞き耳", "next":""},
+           {"text":"叩く", "next":""},
+           {"text":"開ける", "next":"westDoor_open"}
+        ]}
+    ]
+}

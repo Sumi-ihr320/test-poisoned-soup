@@ -247,3 +247,13 @@
 2024/11/16
 	managerフォルダを作成、room_manager.py、scenario_manager.py、
 	item_manager.py、event_manager.pyを作成中
+
+2024/11/20
+	chatGPTに聞きながらscenario_manager.pyを作成中
+	シナリオをScenario.jsonにまとめてみる
+	難航中
+
+2024/11/23
+	CommandMenuクラスを作成
+	scenario_managerを更新
+	Scenario.jsonを更新

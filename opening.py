@@ -5,19 +5,20 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from menu import MenuController
+from manager.scenario_manager import ScenarioManager
 
 # オープニング関数をクラス化    (chatGPT指南)
 class Opening:
     def __init__(self, screen, root):
         self.screen = screen
         self.root = root
-        self.opening_flag = 0
-        self.file_path = f"{PATH}{SCENARIO}Opening.txt"
-        self.texts = load_text(self.file_path).splitlines()
 
         # 画面の状態
         self.state = State.NONE
 
+        # シナリオマネージャーを初期化
+        self.scenario_manager = ScenarioManager(self.screen, "opening")
+        
         # メニューボタン
         self.menu_controller = MenuController(self.screen, self.root, self.set_state, save_enabled=False)
     
@@ -25,11 +26,7 @@ class Opening:
     def draw(self):
         create_frame(self.screen)
         self.menu_controller.draw()
-
-    # テキストの描画
-    def draw_text(self):
-        if self.opening_flag < 2:
-            TextDraw(self.screen, self.texts[self.opening_flag])
+        self.scenario_manager.draw()
     
     def handle_mouse_hover(self):
         key = pygame.mouse.get_pos()
@@ -38,20 +35,19 @@ class Opening:
     def handle_events(self):
         for event in pygame.event.get():
             # 閉じるボタンで終了
-            if event.type == QUIT:
-                Close(self.root)
-            elif event.type == KEYDOWN and event.key == K_ESCAPE:
+            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 Close(self.root)
 
             # マウスクリック時
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 if self.menu_controller.handle_click(event.pos):
                     return
-                self.opening_flag += 1
+                self.scenario_manager.next()
+                if self.scenario_manager.is_active == False:
+                    self.state = State.CLOSE
 
     def update(self):
         self.draw()
-        self.draw_text()
         self.handle_mouse_hover()
         self.handle_events()
         return self.next_state()
@@ -64,6 +60,6 @@ class Opening:
         if self.state == State.LOAD:
             self.state = State.NONE
             return "load"
-        elif self.opening_flag >= 2:
+        elif self.state == State.CLOSE:
             return "charasheet"
         return "opening"
