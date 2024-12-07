@@ -55,8 +55,8 @@ class Room:
     # 部屋のアイテムを作成する
     def create_item(self, surface, room, direction):
         if room == "center":
-            self.light = Item(surface, "Light", room, "", "center", 24, ["目星", "外す", "壊す"])
-            self.soup = Item(surface, "Soup", room, "", "center", 224, ["目星", "医学", "触る", "飲む", "捨てる"])
+            self.light = Item(surface, "Light", room, "", "center", 24)
+            self.soup = Item(surface, "Soup", room, "", "center", 224)
             directions = ["north","east","south","west"]
             position = {"north":{"tablex":"center","tabley":189,
                                  "memox":306,"memoy":237},
@@ -77,11 +77,11 @@ class Room:
                 right_index = 0
             right_direct = directions[right_index]
             rigth_door_name = f"{right_direct}Door"
-            self.center_door = Item(surface, center_door_name, room, direction, "center", 82, ["目星", "聞き耳", "叩く", "開ける"])
-            self.left_door = Item(surface, left_door_name, room, direction, 86, 63, ["目星", "聞き耳", "叩く", "開ける"])
-            self.right_door = Item(surface, rigth_door_name, room, direction, 568, 64, ["目星", "聞き耳", "叩く", "開ける"])
-            self.table = Item(surface, "Table", "center", direction, position[direction]["tablex"], position[direction]["tabley"], ["目星"])
-            self.center_memo = Item(surface, "centerMemo", "center", direction, position[direction]["memox"], position[direction]["memoy"], ["目星"])
+            self.center_door = Item(surface, center_door_name, room, direction, "center", 82)
+            self.left_door = Item(surface, left_door_name, room, direction, 86, 63)
+            self.right_door = Item(surface, rigth_door_name, room, direction, 568, 64)
+            self.table = Item(surface, "Table", "center", direction, position[direction]["tablex"], position[direction]["tabley"])
+            self.center_memo = Item(surface, "centerMemo", "center", direction, position[direction]["memox"], position[direction]["memoy"])
             self.items_draw_list = [self.center_door, self.left_door, self.right_door, self.table, self.light, self.soup, self.center_memo]
             self.items_select_list = [self.light, self.soup, self.center_memo, self.table, self.center_door, self.left_door, self.right_door]
         elif room == "north":

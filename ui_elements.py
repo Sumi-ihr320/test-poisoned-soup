@@ -475,7 +475,30 @@ class CommandMenu:
             if item["button"].is_clicked(pos):
                 return item["event"]
         return None
-    
+
+# 主人公の名前・HP・MP・現在地を右上に表示する
+class HeroDataView:
+    def __init__(self, screen, hero_status, room_flag) -> None:
+        self.screen = screen
+        self.font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
+
+        self.hero_status = hero_status
+        self.room_flag = room_flag
+
+        self.status_label = None
+        self.create_label()
+
+    def create_label(self):
+        name_label = Label(self.screen, self.font, self.hero_status["name"], 500, 10, position="right", color=WHITE)
+        hp_label = Label(self.screen, self.font, f"HP/{self.hero_status["HP"]}", 590, 10, position="right", color=WHITE)
+        mp_label = Label(self.screen, self.font, f"MP/{self.hero_status["MP"]}", 650, 10, position="right", color=WHITE)
+        current_room_label = Label(self.screen, self.font, ROOM_NAME[self.room_flag], 770, 10, position="right", color=WHITE)
+        self.status_label = [name_label, hp_label, mp_label, current_room_label]
+
+    def draw(self):
+        for label in self.status_label:
+            label.draw()
+
 # simpledialogの代わり(モーダルはうまくいかないがエラーメッセージの日本語化はできた)
 class CustomDialog(simpledialog.Dialog):
     def __init__(self, parent, title="title", text="文字列を入力してください", input_value="", input_type=None, min_value=0, max_value=99, num=None):

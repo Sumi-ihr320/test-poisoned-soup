@@ -42,7 +42,7 @@ class Opening:
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 if self.menu_controller.handle_click(event.pos):
                     return
-                self.scenario_manager.next()
+                self.scenario_manager.update()
                 if self.scenario_manager.is_active == False:
                     self.state = State.CLOSE
 

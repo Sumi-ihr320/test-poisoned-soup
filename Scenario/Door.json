@@ -1,0 +1,106 @@
+{
+    "northDoor":[
+        {"type":"text", "text":"真っ白でドアノブがない、板のような押し扉だ。"},
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":"northDoor_objective"},
+            {"text":"聞き耳", "next":"northDoor_listen"},
+            {"text":"叩く", "next":"northDoor_knock"},
+            {"text":"開ける", "next":"northDoor_open"}
+         ]}
+    ],
+    "northDoor_objective":[
+        {"type":"text", "text":"特に分かることはなかった。"}
+    ],
+    "northDoor_listen":[
+        {"type":"text", "text":"何も聞こえなかった。"}
+    ],
+    "northDoor_knock":[
+        {"type":"text", "text":"何の反応もない。"}
+    ],
+    "northDoor_open":[
+        {"type":"action", "action":"move_to_room", "room_id":"north-room"}
+    ],
+    "eastDoor":[
+        {"type":"text", "text":"扉は錆びた鉄で出来ている。"},
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":"eastDoor_objective"},
+            {"text":"聞き耳", "next":""},
+            {"text":"叩く", "next":""},
+            {"text":"開ける", "next":"eastDoor_open"}
+         ]}
+    ],
+    "eastDoor_objective":[
+        {"type":"text", "text":"特に分かることはなかった"}
+    ],
+    "eastDoor_open":[
+        {"type": "conditional",
+         "conditions":[
+            {"flags":[{"flag_name":"east_room_flag", "flag": "open", "value":false}], "next":"eastDoor_locked"},
+            {"flags":[{"flag_name":"east_room_flag", "flag": "open", "value":true}], "next":"eastDoor_unlocked"}
+         ]
+        }
+    ],
+    "eastDoor_locked":[
+        {"type":"text", "text":"どうやら鍵がかかっているようだ。\nしかし少し力を入れれば開きそうに思える。\n《STR》⇒"},
+        {"type":"VS_active", "statue":"STR", "enemy_status":5, "dice":"1d100",
+         "success":"eastDoor_open_success",
+         "failure":"eastDoor_open_failure"}
+    ],
+    "eastDoor_locked_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}"},
+        {"type":"text", "text":"鍵を壊すことができた。"},
+        {"type":"action", "action":"set_flag", "flag_name":"east_room_flag" ,"flag":"open", "value":true},
+        {"type":"action", "action":"move_to_room", "room_id":"east-room"}
+    ],
+    "eastDoor_locked_failure":[
+        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
+        {"type":"text", "text":"鍵を壊すことはできなかった。"}
+    ],
+    "eastDoor_unlocked":[
+        {"type":"action", "action":"move_to_room", "room_id":"east-room"}
+    ],
+    "southDoor":[
+        {"type":"text", "text":"大きな厚い鉄扉だ。小窓がついている。"},
+        {"type":"interaction",
+        "intaractions":[
+           {"text":"目星", "next":"southDoor_objective"},
+           {"text":"聞き耳", "next":""},
+           {"text":"叩く", "next":""},
+           {"text":"開ける", "next":"southDoor_open"}
+        ]}
+    ],
+    "southDoor_objective":[
+        {"type":"text", "text":"小窓を覗いてみた。"},
+        {"type":"text", "text":"ぼんやりと青白い部屋の中に、一枚だけの翼を持った巨大なクサリヘビのような怪物がうろついている。"},
+        {"type":"text", "text":"この怪物を目撃したあなたは0/1d10のSANチェックだ！"},
+        {"type":"dice_check", "check_type":"SAN", "dice":"1d100",
+         "success":"southDoor_objective_success",
+         "failure":"southDoor_objective_failure"}
+    ],
+    "southDoor_objective_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}"},
+        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ"}
+    ],
+    "southDoor_objective_failure":[
+        {"tyep":"text", "text":"失敗！ {roll}/{threshold}"},
+        {"type":"action", "action":"damege", "status":"SAN", "dice":"1d10"},
+        {"type":"text", "text":"おぞましい怪物を目撃してしまったあなたは{damege}ポイントの正気度を失った"}
+    ],
+    "southDoor_open":[
+    ],
+    "westDoor":[
+        {"type":"text", "text":"綺麗な木製の扉だ。"},
+        {"type":"interaction",
+        "intaractions":[
+           {"text":"目星", "next":"westDoor_objective"},
+           {"text":"聞き耳", "next":""},
+           {"text":"叩く", "next":""},
+           {"text":"開ける", "next":"westDoor_open"}
+        ]}
+    ],
+    "westDoor_open":[
+        {"type":"action", "action":"move_to_room", "room_id":"west-room"}
+    ]
+}

@@ -1,0 +1,25 @@
+{
+    "center-room":[
+        {"type":"conditional",
+        "conditions":[
+            {"flags":[
+                {"flag_name":"room_scenario_flag", "flag":"center", "value":false}
+            ], "next":"center-room_first"}
+        ]}
+    ],
+    "center-room_first":[
+        {"type":"text", "text":"あなたが目を覚ますとそこは、\n壁も床もコンクリートで出来た\n四方に扉のある正方形の部屋でした。"},
+        {"type":"text", "text":"着ている衣服は全て白いローブのようなぼろきれで、\n他には何もありません。\n財布等の貴重品はもちろん、\n普段身に着けているアクセサリーなどもありません。"},
+        {"type":"text", "text":"天井の薄暗い豆電球だけが部屋を照らし、\n真ん中には古い木製の長机と椅子が一つあります。\n更に机の上には、\n木製の器に入った赤い無臭のスープが一つと、\n古い紙切れが二つ。"},
+        {"type":"text", "text":"さて、この部屋であなたは何をしましょうか。"},
+        {"type":"action", "action":"set_flag", "flag_name":"room_scenario_flag", "flag":"center", "value":true}
+    ],
+    "Table":[
+        {"tyep":"text", "text":""},
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":""}
+         ]
+        }
+    ]
+}

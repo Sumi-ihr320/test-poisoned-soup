@@ -1,15 +1,28 @@
-{   
-    "MEMO":[
-            "type: text → 表示されるテキストをクリックで次に進む。",
-            "type: action → 指定されたアクション（例: 部屋の切り替え）を実行。",
-            "type: dice_check → ダイスの結果によって次のシナリオへ移行。",
-            "type: interaction → コマンドの種類と選択結果",
-            "type: conditional → 開始前にフラグチェックをする",
-            "check_type → どのタイプのチェックか(スキル、対抗など)",
-            "skill → どのスキルでチェックを行うか",
-            "status → どのステータスを利用するか",
-            "enemy_status → 敵側のステータス" 
-    ],
+{
+    "MEMO":{
+        "type: text": "表示されるテキストをクリックで次に進む。",
+        "type: action": "指定されたアクション（例: 部屋の切り替え）を実行。",
+        "type: dice_check": "ダイスの結果によって次のシナリオへ移行。",
+        "action: move_to_room": "部屋を移動する",
+        "action: set_flag": "フラグをセットする",
+        "action: damege": "SAN値チェックやダメージチェックなどの結果、数値を減らす",
+        "action: damege_check": "ダメージが多かった場合にショックロールや狂気判定を行う",
+        "check_type": "どのタイプのチェックか(スキル、対抗など)",
+        "skill": "どのスキルでチェックを行うか",
+        "status": "どのステータスを利用するか",
+        "enemy_status": "敵側のステータス" ,
+        "flag_name": "なんて名前のフラグか", "item": "なんのアイテムのフラグか", "flag": "どのフラグか", "value": "どんな値か",
+        "type: conditional": "開始前にフラグチェックをする",
+        "conditions": [
+            {"flags":[
+                {"flag_name":"フラグ名", "flag":"どのフラグ", "value":"値"}
+            ], "next":"次のシナリオ"}
+        ],
+        "type: interaction": "コマンドの種類と選択結果",
+        "intaractions":[
+            {"text":"コマンド名", "next":"次のシナリオ"}
+        ]
+    },
     "opening":[
         {"type":"text", "text":"この物語はクトゥルフ神話TRPGを元に作成しています。"},
         {"type":"text", "text":"まずは探索者を作成しましょう。"}
@@ -21,15 +34,32 @@
         {"type":"text", "text":"さて、この部屋であなたは何をしましょうか。"}
     ],
     "east-room":[
-        {"type":"text", "text":"中は真っ暗だ。"},
-        {"type": "dice_check", "check_type": "skill", "skill": "聞き耳", "dice": "1d100",
-         "success": "east-room_success",
-         "failure": "east-room_failure"}
+        {"type":"conditional", "conditions":[
+            {"flags":[{"flag_name":"east_room_flag","flag":"visivle", "value":false, "next":"east_room_nonvisivle"}]},
+            {"flags":[{"flag_name":"east_room_flag", "flag":"visivle", "value":true, "next":"east_room_visivle"}]}
+        ]}
     ],
-    "east-room_success": [
+    "east-room_nonvisivle":[
+        {"type":"text", "text":"中は真っ暗で、中央の部屋の明かりも奥までは届かないようだ。"},
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":""},
+            {"text":"聞き耳", "next":"east_room_listen"},
+            {"text":"中を歩く", "next":""},
+            {"text":"中を走る", "next":""}
+         ]}
+    ],
+    "east_room_listen":[
+        {"type": "dice_check", "check_type": "skill", "skill": "聞き耳", "dice": "1d100",
+         "success": "east-room_listen_success",
+         "failure": "east-room_listen_failure"}
+    ],
+    "east-room_listen_success": [
+        {"type":"text", "text":"成功！ {roll}/{threshold}"},
         {"type": "text", "text": "ひたひたという足音が近づいて来ているようだ。"}
     ],
-    "east-room_failure":[
+    "east-room_listen_failure":[
+        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
         {"type": "text", "text": "特に何も聞こえなかった。"}
     ],
     "north-room":[
@@ -44,10 +74,22 @@
         {"type":"interaction",
          "intaractions":[
             {"text":"目星", "next":"northDoor_objective"},
-            {"text":"聞き耳", "next":""},
-            {"text":"叩く", "next":""},
+            {"text":"聞き耳", "next":"northDoor_listen"},
+            {"text":"叩く", "next":"northDoor_knock"},
             {"text":"開ける", "next":"northDoor_open"}
          ]}
+    ],
+    "northDoor_objective":[
+        {"type":"text", "text":"特に分かることはなかった。"}
+    ],
+    "northDoor_listen":[
+        {"type":"text", "text":"何も聞こえなかった。"}
+    ],
+    "northDoor_knock":[
+        {"type":"text", "text":"何の反応もない。"}
+    ],
+    "northDoor_open":[
+        {"type":"action", "action":"move_to_room", "room_id":"north-room"}
     ],
     "eastDoor":[
         {"type":"text", "text":"扉は錆びた鉄で出来ている。"},
@@ -60,13 +102,13 @@
          ]}
     ],
     "eastDoor_objective":[
-        {"type":"text", "text":""}
+        {"type":"text", "text":"特に分かることはなかった"}
     ],
     "eastDoor_open":[
         {"type": "conditional",
          "conditions":[
-            {"flag": "open", "value":false, "next":"eastDoor_locked"},
-            {"flag": "open", "value":true, "next":"eastDoor_unlocked"}
+            {"flags":[{"flag": "open", "value":false}], "next":"eastDoor_locked"},
+            {"flags":[{"flag": "open", "value":true}], "next":"eastDoor_unlocked"}
          ]
         }
     ],
@@ -77,11 +119,13 @@
          "failure":"eastDoor_open_failure"}
     ],
     "eastDoor_locked_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}"},
         {"type":"text", "text":"鍵を壊すことができた。"},
-        {"type":"action", "action":"set_flag", "flag":"open", "value":true},
+        {"type":"action", "action":"set_flag", "flag_name":"east_room_flag" ,"flag":"open", "value":true},
         {"type":"action", "action":"move_to_room", "room_id":"east-room"}
     ],
     "eastDoor_locked_failure":[
+        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
         {"type":"text", "text":"鍵を壊すことはできなかった。"}
     ],
     "eastDoor_unlocked":[
@@ -97,6 +141,25 @@
            {"text":"開ける", "next":"southDoor_open"}
         ]}
     ],
+    "southDoor_objective":[
+        {"type":"text", "text":"小窓を覗いてみた。"},
+        {"type":"text", "text":"ぼんやりと青白い部屋の中に、一枚だけの翼を持った巨大なクサリヘビのような怪物がうろついている。"},
+        {"type":"text", "text":"この怪物を目撃したあなたは0/1d10のSANチェックだ！"},
+        {"type":"dice_check", "check_type":"SAN", "dice":"1d100",
+         "success":"southDoor_objective_success",
+         "failure":"southDoor_objective_failure"}
+    ],
+    "southDoor_objective_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}"},
+        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ"}
+    ],
+    "southDoor_objective_failure":[
+        {"tyep":"text", "text":"失敗！ {roll}/{threshold}"},
+        {"type":"action", "action":"damege", "status":"SAN", "dice":"1d10"},
+        {"type":"text", "text":"おぞましい怪物を目撃してしまったあなたは{damege}ポイントの正気度を失った"}
+    ],
+    "southDoor_open":[
+    ],
     "westDoor":[
         {"type":"text", "text":"綺麗な木製の扉だ。"},
         {"type":"interaction",
@@ -106,5 +169,198 @@
            {"text":"叩く", "next":""},
            {"text":"開ける", "next":"westDoor_open"}
         ]}
+    ],
+    "westDoor_open":[
+        {"type":"action", "action":"move_to_room", "room_id":"west-room"}
+    ],
+    "Light":[
+        {"type":"text", "text":"薄暗い豆電球が部屋を照らしている。"},
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":""},
+            {"text":"外す", "next":""},
+            {"text":"壊す", "next":""}
+         ]}
+    ],
+    "Soup":[
+        {"tyep":"conditional",
+         "conditions":[
+            {"flags":[{"flag":"drink", "value":true}], "next":""},
+            {"flags":[{"flag":"poison", "value":true}], "next":""},
+            {"flags":[
+                {"flag":"drink", "value":false},
+                {"flag":"know", "value":false},
+                {"flag":"temperature", "value":0}
+                ],
+             "next":"Soup_time1"},
+            {"flags":[
+                {"flag":"drink", "value":false},
+                {"flag":"know", "value":false},
+                {"flag":"temperature", "value":1}
+             ],
+             "next":"Soup_time2"},
+            {"flags":[
+                {"flag":"drink", "value":false},
+                {"flag":"know", "value":false},
+                {"flag":"temperature", "value":2}
+             ],
+             "next":"Soup_time3"},
+            {"flags":[
+                {"flag":"drink", "value":false},
+                {"flag":"know", "value":false},
+                {"flag":"temperature", "value":3}
+             ],
+             "next":"Soup_time4"},
+            {"flags":[
+                {"flag":"drink", "value":false},
+                {"flag":"know", "value":true},
+                {"flag":"temperature", "value":0}
+             ],
+             "next":"Soup_know_time1"},
+            {"flags":[
+                {"flag":"drink", "value":false},
+                {"flag":"know", "value":true},
+                {"flag":"temperature", "value":1}
+             ],
+             "next":"Soup_know_time2"},
+            {"flags":[
+                {"flag":"drink", "value":false},
+                {"flag":"know", "value":true},
+                {"flag":"temperature", "value":2}
+             ],
+             "next":"Soup_know_time3"},
+            {"flags":[
+                {"flag":"drink", "value":false},
+                {"flag":"know", "value":true},
+                {"flag":"temperature", "value":3}
+             ],
+             "next":"Soup_know_time4"}
+            ]}
+        ],
+    "Soup_time1":[
+        {"tyep":"text", "text":"赤い無臭のスープ。温かく湯気が立っている。"},
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":""},
+            {"text":"医学", "next":"Soup_medicine"},
+            {"text":"触る", "next":""},
+            {"text":"飲む", "next":""},
+            {"text":"捨てる", "next":""}
+         ]}
+    ],
+    "Soup_know_time1":[
+        {"tyep":"text", "text":"人間の血のスープ。温かく湯気が立っている。\n鉄錆に似た悪臭がスープから漂ってくる…"},
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":""},
+            {"text":"触る", "next":""},
+            {"text":"飲む", "next":""},
+            {"text":"捨てる", "next":""}
+         ]}
+    ],
+    "Soup_medicine":[
+        {"type":"dice_check", "check_type":"skill", "skill":"医学", "dice":"1d100",
+         "success":"Soup_medicine_success",
+         "failure":"Soup_medicine_failure"}
+    ],
+    "Soup_medicine_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}"},
+        {"type":"action", "action":"set_flag", "flag_name":"items_flag", "item":"soup", "flag":"know", "value":true},
+        {"type":"text", "text":"あなたは医学の知識によって、このスープが確かに人間の血液であることを確信するだろう。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。"},
+        {"type":"text", "text":"そのことを知ってしまったあなたは0/1d4のSANチェックだ。"},
+        {"type":"dice_check", "check_type":"SAN", "dice":"1d100",
+         "success":"Soup_medicine_SAN_success",
+         "failure":"Soup_medicine_SAN_failure"}
+    ],
+    "Soup_medicine_SAN_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}"},
+        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ"}
+    ],
+    "Soup_medicine_SAN_failure":[
+        {"tyep":"text", "text":"失敗！ {roll}/{threshold}"},
+        {"type":"action", "action":"damege", "status":"SAN", "dice":"1d4"},
+        {"type":"text", "text":"おぞましい事実に気づいてしまったあなたは{damege}ポイントの正気度を失った"}
+    ],
+    "Soup_medicine_failure":[
+        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
+        {"type":"text", "text":"何もわからなかった。"}
+    ],
+    "Table":[
+        {"tyep":"text", "text":""},
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":""}
+         ]
+        }
+    ],
+    "centerMemo":[
+        {"tyep":"text", "text":"1枚目のメモには絵が描かれている。\nおそらくこの部屋の地図だろう。"},
+        {"type":"text", "text":"もう一枚のメモを手に取ると、\nそこにはこう書かれていた。"},
+        {"type":"text", "text":"～帰りたいなら 一時間以内に 毒入りスープを飲め。\n  飲むまでは 君じゃあここから 出られない。/n  一時間以内に 飲めなかったら お迎えが来るぞ～"},
+        {"type":"conditional", 
+         "conditions":[
+            {"flags":[
+                {"flag":"objective", "value":true}
+             ],
+             "next":"centerMemo_obj_true"
+            },
+            {"flags":[
+                {"flag":"objective", "value":false}
+             ],
+             "next":"centerMemo_obj_false"
+            }]
+        }
+    ],
+    "centerMemo_obj_true":[
+        {"tyep":"text", "text":"裏には\n～暖かい 人間の 血の スープ 冷めない 内に 召し上がれ～\nと書かれている。"}
+    ],
+    "centerMemo_obj_false":[
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":"centerMemo_objective"}]
+        }
+    ],
+    "centerMemo_objective":[
+        {"tyep":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
+         "success":"centerMemo_objective_success",
+         "failure":"centerMemo_objective_failure"}
+    ],
+    "centerMemo_objective_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}"},
+        {"type":"text", "text":"あなたは、紙の裏にも文字が書かれていることに気付いた。"},
+        {"type":"action", "action":"set_flag", "flag_name":"items_flag", "item":"center_memo", "flag":"objective", "value":true},
+        {"type":"text", "text":"～暖かい 人間の 血の スープ 冷めない 内に 召し上がれ～\n《アイデア》⇒"},
+        {"type":"dice_check", "check_type":"status", "status":"Idea", "dice":"1d100",
+         "success":"centerMemo_objective_idea_success",
+         "failure":"centerMemo_objective_idea_failure"}
+    ],
+    "centerMemo_objective_idea_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}"},
+        {"type":"action", "action":"set_flag", "flag_name":"items_flag", "item":"soup", "flag":"know", "value":true},
+        {"type":"text", "text":"このスープはどうやら本当に人間の血のようだ。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。"},
+        {"type":"text", "text":"このおぞましい事実に気付いてしまったあなたは0/1d4のSANチェックだ。"},
+        {"type":"dice_check", "check_type":"SAN", "dice":"1d100",
+         "success":"centerMemo_objective_idea_SAN_success",
+         "failure":"centerMemo_objective_idea_SAN_failure"}
+    ],
+    "centerMemo_objective_idea_SAN_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}"},
+        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ"}
+    ],
+    "centerMemo_objective_idea_SAN_failure":[
+        {"tyep":"text", "text":"失敗！ {roll}/{threshold}"},
+        {"type":"action", "action":"damage", "status":"SAN", "dice":"1d4"},
+        {"type":"text", "text":"おぞましい事実に気づいてしまったあなたは{damege}ポイントの正気度を失った"}
+    ],
+    "centerMemo_objective_idea_failure":[
+        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
+        {"type":"text", "text":"どういう意味だろうか……"}
+    ],
+    "centerMemo_objective_failure":[
+        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
+        {"type":"text", "text":"何もわからなかった。"}
+    ],
+    "shock_roll":[
+        {"type":"action", "action":"shock_roll", "status":"HP", "dice":"1d100", "chack":"con*5"}
     ]
 }

@@ -257,3 +257,17 @@
 	CommandMenuクラスを作成
 	scenario_managerを更新
 	Scenario.jsonを更新
+
+2024/11/28
+	Scenario.jsonを更新
+
+2024/12/4
+	Scenario.jsonを更新
+	jsonファイルを分割してみる
+	scenario_managerを更新
+	event_managerを更新
+
+2024/12/7
+	scenario_managerを更新
+	handle_conditionalを追加
+	soup.jsonの更新

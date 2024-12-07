@@ -74,6 +74,15 @@ def load_json(file):
     else:
         print(f"{file_path} が見つかりません")
 
+# シナリオファイルのロード
+def load_scenario(file):
+    file_path = os.path.join(f"{PATH}{SCENARIO}", file)
+    if os.path.isfile(file_path):
+        with open(file_path, "r", encoding="utf-8_sig") as f:
+            return json.load(f)
+    else:
+        print(f"{file_path} が見つかりません")
+
 # "〇D〇" のテキストから何個のダイスか、何面ダイスか、+〇、-〇が付いてるかを抽出する
 def dice_confirmation(text):
     # テキストに+か-が入っているか確認
@@ -165,18 +174,6 @@ def ime_off(event):
             subprocess.run(["echo", "0", ">", "$UIM_FEP_SETMODE"])  # uimの場合(合っているのか不明)
         except FileNotFoundError:
             pass
-
-# シナリオのパス名を返す
-def create_scenario_path(room="", item="", event="", time=0):
-    path = f".{SCENARIO}"
-    if room:
-        search_text = f"{path}{room}-room?.txt"
-    if item:
-        event_name = f"_{event}?" if event else ""
-        time_name = f"_time{time}" if time else ""
-        search_text = f"{path}{item}?{event_name}{time_name}.txt"
-    return glob.glob(search_text)
-        
 
 # アイテムイメージファイルのパス名を作って返す
 def create_item_path(item):

@@ -1,4 +1,5 @@
 from room import Room
+from manager.scenario_manager import ScenarioManager
 from manager.event_manager import EventManager
 
 class RoomManager:
@@ -11,7 +12,7 @@ class RoomManager:
         self.east_room_flag = east_room_flag
         self.book_flag = book_flag
 
-        self.event_manager = EventManager(self.screen)
+        #self.event_manager = EventManager(self.screen)
         
         self.room = None
         self.create_room()
@@ -53,9 +54,9 @@ class RoomManager:
         if position == "under":
             if self.book_flag["get"]:
                 # 本を持って出ようとしたらイベント
-                self.event_manager.handle_event("book_exit")
+                #self.event_manager.handle_event("book_exit")
                 # 終了後は部屋のほうを向いている
-                # self.room_flag, self.direction_flag = "center", self.room_flag
+                self.room_flag, self.direction_flag = "center", self.room_flag
                 # 扉が元に戻ったことを説明
             else:
                 self.room_flag, self.direction_flag = self.room_move_direction_get(self.room_flag)

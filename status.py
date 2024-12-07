@@ -95,7 +95,7 @@ class Status:
     # ダイス処理まとめるよ
     def dice_process(self):
         dice = DiceRoll(self.dice_text)
-        self.input.update_label(f"{dice.val}")
+        self.input.update_label(f"{dice.result}")
 
     def handle_mouse_hover(self, pos):
         if self.status_label.rect.collidepoint(pos):

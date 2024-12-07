@@ -1,0 +1,38 @@
+{
+    "east-room":[
+        {"type":"conditional", "conditions":[
+            {"flags":[
+                {"flag_name":"east_room_flag","flag":"visivle", "value":false},
+                {"flag":"girl_flag", "value":false}
+            ], "next":"east_room_visivle_girl_false"},
+            {"flags":[{"flag_name":"east_room_flag", "flag":"visivle", "value":true}], "next":"east_room_visivle_true"}
+        ]}
+    ],
+    "east-room_visivle_true":[
+        {"type":"text", "text":"中は真っ暗だ。"}
+    ],
+    "east-room_visivle_girl_false":[
+        {"type":"text", "text":"中は真っ暗で、中央の部屋の明かりも奥までは届かないようだ。"},
+        {"type":"interaction",
+         "intaractions":[
+            {"text":"目星", "next":""},
+            {"text":"聞き耳", "next":"east_room_listen"},
+            {"text":"中を歩く", "next":""},
+            {"text":"中を走る", "next":""}
+         ]}
+    ],
+    "east_room_listen":[
+        {"type":"action", "action":"set_flag", "flag_name":"east_room_flag", "flag":"time", "value":"+1"},
+        {"type": "dice_check", "check_type": "skill", "skill": "聞き耳", "dice": "1d100",
+         "success": "east-room_listen_success",
+         "failure": "east-room_listen_failure"}
+    ],
+    "east-room_listen_success": [
+        {"type":"text", "text":"成功！ {roll}/{threshold}"},
+        {"type": "text", "text": "ひたひたという足音が近づいて来ているようだ。"}
+    ],
+    "east-room_listen_failure":[
+        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
+        {"type": "text", "text": "特に何も聞こえなかった。"}
+    ]
+}
