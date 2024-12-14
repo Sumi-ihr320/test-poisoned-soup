@@ -2,10 +2,11 @@
     "east-room":[
         {"type":"conditional", "conditions":[
             {"flags":[
-                {"flag_name":"east_room_flag","flag":"visivle", "value":false},
-                {"flag":"girl_flag", "value":false}
+                {"category":"rooms", "flag":"east_room_visivle", "value":false},
+                {"category":"girl", "flag":"fellow", "value":false},
+                {"category":"girl", "flag":"death", "value":false}
             ], "next":"east_room_visivle_girl_false"},
-            {"flags":[{"flag_name":"east_room_flag", "flag":"visivle", "value":true}], "next":"east_room_visivle_true"}
+            {"flags":[{"category":"rooms", "flag":"east_room_visivle", "value":true}], "next":"east_room_visivle_true"}
         ]}
     ],
     "east-room_visivle_true":[
@@ -22,7 +23,7 @@
          ]}
     ],
     "east_room_listen":[
-        {"type":"action", "action":"set_flag", "flag_name":"east_room_flag", "flag":"time", "value":"+1"},
+        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_time", "value":"+1"},
         {"type": "dice_check", "check_type": "skill", "skill": "聞き耳", "dice": "1d100",
          "success": "east-room_listen_success",
          "failure": "east-room_listen_failure"}

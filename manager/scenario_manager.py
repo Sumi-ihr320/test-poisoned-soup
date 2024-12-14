@@ -13,9 +13,9 @@ class ScenarioManager:
         self.current_scenario = None
         self.current_index = 0      # 現在の表示位置
 
-        self.roll_result = None
-        self.threshold = None
-        self.damage_point = None
+        self.roll_result = None     # ダイスロールの結果
+        self.threshold = None       # ダイスロールの比較値
+        self.damage_point = None    # ダメージポイント
 
         self.is_active = False
         self.on_action = on_action  # アクション発生時のコールバック
@@ -46,6 +46,10 @@ class ScenarioManager:
         print(f"シナリオ開始：{scenario_id}")
         self.is_active = True
 
+    # アイテム名に基づくコマンドリストを返す
+    def get_item_commands(self, item_name):
+        return self.scenario_data.get(item_name, {}).get("interactions", [])
+
     # 次のシナリオステップを進める
     def update(self):
         if not self.current_scenario or self.current_index >= len(self.current_scenario):
@@ -73,6 +77,9 @@ class ScenarioManager:
         elif step["type"] == "dice_check":
             self.roll_result, self.threshold = self.handle_dice_roll(step)
 
+        elif step["type"] == "damage":
+            self.handle_damage(step)
+
         elif step["type"] == "interaction":
             pass
 
@@ -88,7 +95,7 @@ class ScenarioManager:
     def process_text_template(self, text_tamplate):
         if "\{roll\}" in text_tamplate and self.roll_result is not None:
             text = text_tamplate.format(roll=self.roll_result, threshold=self.threshold)
-        elif "\{damage\}" in text_tamplate:
+        elif "\{damage\}" in text_tamplate and self.damage_point is not None:
             text = text_tamplate.format(damage=self.damage_point)
         else:
             text = text_tamplate
@@ -125,7 +132,11 @@ class ScenarioManager:
         roll_result = dice.check(threshold)
 
         return roll_result, threshold
-        
+
+    # ダメージ計算とダメージ処理
+    def handle_damage(self, step):
+        pass
+
     # フラグチェックを処理
     def handle_conditional(self, conditions):
         for condition in conditions:
@@ -136,8 +147,8 @@ class ScenarioManager:
         
     # フラグをチェックする
     def flag_check(self, flags):
-        flag_name = flags["flag_name"]
-        item = flags["item"]
+        flag_name = flags.get("flag_name", None)
+        item = flags.get("item", None)
         flag = flags["flag"]
         value = flags["value"]
 

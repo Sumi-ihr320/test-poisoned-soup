@@ -270,4 +270,14 @@
 2024/12/7
 	scenario_managerを更新
 	handle_conditionalを追加
-	soup.jsonの更新
+	CenterRoom.jsonの更新
+	Soup.jsonの更新
+
+2024/12/11
+	Soup.jsonの更新
+	Door.jsonの更新
+	event_managerとscenario_managerを更新
+
+2024/12/14
+	flagクラスを作成
+	それに伴いシナリオを更新

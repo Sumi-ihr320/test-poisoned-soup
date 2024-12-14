@@ -54,20 +54,12 @@ CONTENTS_SIZ = 30    # メニュー用
 # シーン切り替えフラグ
 TITLE,SAVE,LOAD,SETTING,OPENING,CHARASE,PLAY,ENDING,ENDCREDITS = (0,1,2,3,4,5,6,7,8)
 
-# ナビゲーション表示用
-#RIGHT,LEFT,UNDER = (0,1,2)
-
 # 部屋の名前
 ROOM_NAME = {"center":"中央の部屋",
             "north":"北の部屋",
             "east":"東の部屋",
             "west":"西の部屋",
             "south":"南の部屋"}
-
-EVENT_NAME = {"入る":"open",
-              "目星":"objective",
-              "医学":"medicine",
-              "アイデア":"idea"}
 
 # ナビゲーション表示用のポジションフラグ
 class Position(Enum):

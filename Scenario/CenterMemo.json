@@ -6,12 +6,12 @@
         {"type":"conditional", 
          "conditions":[
             {"flags":[
-                {"flag_name":"items_flag", "item":"center_memo", "flag":"objective", "value":true}
+                {"category":"items", "flag":"center_memo_objective", "value":true}
              ],
              "next":"centerMemo_obj_true"
             },
             {"flags":[
-                {"flag_name":"items_flag", "item":"center_memo", "flag":"objective", "value":false}
+                {"category":"items", "flag":"center_memo_objective", "value":false}
              ],
              "next":"centerMemo_obj_false"
             }]
@@ -34,7 +34,7 @@
     "centerMemo_objective_success":[
         {"type":"text", "text":"成功！ {roll}/{threshold}"},
         {"type":"text", "text":"あなたは、紙の裏にも文字が書かれていることに気付いた。"},
-        {"type":"action", "action":"set_flag", "flag_name":"items_flag", "item":"center_memo", "flag":"objective", "value":true},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"center_memo_objective", "value":true},
         {"type":"text", "text":"～暖かい 人間の 血の スープ 冷めない 内に 召し上がれ～\n《アイデア》⇒"},
         {"type":"dice_check", "check_type":"status", "status":"Idea", "dice":"1d100",
          "success":"centerMemo_objective_idea_success",
@@ -42,7 +42,7 @@
     ],
     "centerMemo_objective_idea_success":[
         {"type":"text", "text":"成功！ {roll}/{threshold}"},
-        {"type":"action", "action":"set_flag", "flag_name":"items_flag", "item":"soup", "flag":"know", "value":true},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_know", "value":true},
         {"type":"text", "text":"このスープはどうやら本当に人間の血のようだ。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。"},
         {"type":"text", "text":"このおぞましい事実に気付いてしまったあなたは0/1d4のSANチェックだ。"},
         {"type":"dice_check", "check_type":"SAN", "dice":"1d100",

@@ -31,14 +31,14 @@ class MainPlay:
         self.setup_navigetion()
 
         # 主人公のステータス表示
-        self.hero_label = HeroDataView(self.screen, self.hero_status, self.flags["room_flag"])
+        self.hero_label = HeroDataView(self.screen, self.hero_status, self.flags.get_flag("status","room"))
 
         # 管理用
         self.scenario_manager = ScenarioManager(self.screen, "center-room", self.flags, self.handle_action)
         self.event_manager = EventManager(self.screen, self.scenario_manager, self.flags)
 
         # 部屋の管理
-        self.room_manager = RoomManager(self.screen, self.flags["room_flag"], self.flags["direction_flag"], self.flags["east_room_flag"], self.flags["items_flag"]["book"])
+        self.room_manager = RoomManager(self.screen, self.event_manager, self.flags)
 
         # 選択されたアイテム
         self.selected_item = None
@@ -47,48 +47,18 @@ class MainPlay:
     def set_flag(self, play_flags):
         # フラグ一覧
         self.state = State.NONE     # saveやload等の状態管理フラグ
-        time = play_flags.get("time", 60)  # 残り時間フラグ（分）
-        room_flag = play_flags.get("room_flag", "center")              # どの部屋にいるかフラグ
-        direction_flag = play_flags.get("direction_flag", "north")     # どの方角を向いているかフラグ
-        girl_flag = play_flags.get("girl_flag", False)                 # 少女を見つけてるかフラグ
-
-        # 各部屋のシナリオフラグ
-        room_scenario_flag = play_flags.get(
-            "room_scenario_flag", {"center":False, "north":False, "south":False, "east":False, "west":False}
-        )
-        light_flag = play_flags.get("light_flag", False)               # 電球が取られていないかフラグ
-        east_room_flag = play_flags.get("east_room_flag", {"open":False, "visivle":False, "time":0})     # 東の部屋のフラグ
-
-        # アイテムの状態フラグ
-        items_flag = play_flags.get(
-            "items_flag", {
-                    "soup":{"poison":False, "know":False, "drink":False, "temperature":0},    # スープに関するフラグ
-                    "center_memo":{"scenario":0, "objective":False},                          # 真ん中の部屋のメモに関するフラグ
-                    "book":{"found":False, "get":False},                                      # 西の部屋の本に関するフラグ
-                    "poison":{"get":False}
-            }
-        )
-        self.flags = {
-            "time":time,
-            "room_flag":room_flag,
-            "direction_flag":direction_flag,
-            "girl_flag":girl_flag,
-            "room_scenario_flag":room_scenario_flag,
-            "light_flag":light_flag,
-            "east_room_flag":east_room_flag,
-            "items_flag":items_flag,
-        }
+        self.flags = Flags(play_flags)
 
     # セーブデータを作る
     def create_save_data(self):
         save_data = {}
         save_data["hero_status"] = self.hero_status
-        save_data["flag"] = self.flags
+        save_data["flag"] = self.flags.__dict__
         self.save_data = save_data
 
     # ナビゲーションバーのセット
     def setup_navigetion(self):
-        if self.flags["room_flag"] == "center":
+        if self.flags.get_flag("status", "room") == "center":
             self.navigation.setup_navigation([Position.RIGHT, Position.LEFT])
         else:
             self.navigation.setup_navigation([Position.UNDER])
@@ -99,7 +69,7 @@ class MainPlay:
             if item.handle_click(event.pos):
                 self.selected_item = item
                 print(item.name)                # デバッグ用
-                self.event_manager.tregger_item_event(item)
+                self.scenario_manager.start_scenario(item.name)
                 return True
         self.selected_item = None
         return False
@@ -146,10 +116,10 @@ class MainPlay:
                 # ナビゲーションバーによる移動
                 clicked_position = self.navigation.handle_click(event.pos)
                 if clicked_position == Position.RIGHT:
-                    self.room_manager.move_room("right")
+                    self.room_manager.move_to_room("right")
                     self.selected_item = None
                 elif clicked_position == Position.LEFT:
-                    self.room_manager.move_room("left")
+                    self.room_manager.move_to_room("left")
                     self.selected_item = None
                 else:
                     if self.handle_item_click_event(event):
@@ -158,7 +128,7 @@ class MainPlay:
             else:
                 # ナビゲーションバーによる移動
                 if self.navigation.handle_click(event.pos) is not None:
-                    self.room_manager.move_room("under")
+                    self.room_manager.move_to_room("under")
                 else:
                     if self.handle_item_click_event(event):
                         return
@@ -170,7 +140,7 @@ class MainPlay:
 
         self.menu_controller.draw()     # メニューの表示
 
-        self.room_manager.draw(self.selected_item, self.flags["items_flag"]["soup"])  # 部屋の表示
+        self.room_manager.draw(self.selected_item, self.flags)  # 部屋の表示
 
         self.navigation.draw()          # ナビゲーションバーの表示
 

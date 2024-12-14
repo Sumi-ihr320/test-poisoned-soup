@@ -1,18 +1,17 @@
 from room import Room
-from manager.scenario_manager import ScenarioManager
-from manager.event_manager import EventManager
 
 class RoomManager:
-    def __init__(self, screen, room_flag, direction_flag, east_room_flag, book_flag):
+    def __init__(self, screen, event_manager, flags, room_flag, direction_flag, east_room_flag, book_flag):
         self.screen = screen
+        self.flags = flags
 
-        self.room_flag = room_flag
-        self.direction_flag = direction_flag
+        self.room_flag = flags.get_flag("status", "room")
+        self.direction_flag = flags.get_flag("status", "direction")
 
-        self.east_room_flag = east_room_flag
-        self.book_flag = book_flag
+        self.east_room_flag = flags.get_flag("rooms", "east_room_visivle")
+        self.book_flag = flags.get_flag("items", "book_found")
 
-        #self.event_manager = EventManager(self.screen)
+        self.event_manager = event_manager
         
         self.room = None
         self.create_room()
@@ -21,15 +20,13 @@ class RoomManager:
     def create_room(self):
         room2_flag = self.room2_flag_check()
         self.room = Room(self.screen, self.room_flag, self.direction_flag, room2_flag)
-        #self.max_room_scenario_flag = len(self.room.scenario_list)
-        #print(self.room.scenario_list)  # デバッグ用
 
     # 二つ目の部屋表示チェック
     def room2_flag_check(self):
         if self.room_flag == "east":
-            return self.east_room_flag["visivle"]
+            return self.east_room_flag
         elif self.room_flag == "west":
-            return self.book_flag["found"]
+            return self.book_flag
         else:
             return False
 
@@ -50,7 +47,7 @@ class RoomManager:
         return "center", direction_map.get(room, "north")
 
     # 部屋の移動を管理
-    def move_room(self, position):
+    def move_to_room(self, position):
         if position == "under":
             if self.book_flag["get"]:
                 # 本を持って出ようとしたらイベント
@@ -63,8 +60,20 @@ class RoomManager:
             #self.status_label[3].update_text(ROOM_NAME[self.room_flag])
         else:
             self.direction_flag = self.direction_move_get(position, self.direction_flag)
+
+        self.flags.set_flag("status", "room", self.room_flag)
+        self.flags.set_flag("status", "direction", self.direction_flag)
         self.create_room()
 
+    def handle_item_click(self, pos):
+        clickd_item = None
+        for item in self.room.items_select_list:
+            if item.handle_click(pos):
+                clickd_item = item
+                break
 
-    def draw(self, selected_item, soup_flag):
-        self.room.draw(selected_item, soup_flag)            # 部屋の表示
+        if clickd_item:
+            self.event_manager.handle_event("item_click", {"item_name":clickd_item.name})
+
+    def draw(self, selected_item, flags):
+        self.room.draw(selected_item, flags)            # 部屋の表示

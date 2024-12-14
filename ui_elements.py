@@ -453,12 +453,12 @@ class CommandMenu:
     def create_buttons(self):
         font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
         x, y = self.start_x, self.start_y
-        w, h = 100, 30
+        w, h = 120, 30
 
         if self.commands:
             for command in self.commands:
-                button = Button(self.screen, font, command, (x,y,w,h), out_color=BLACK)
-                self.buttons.append({"button":button, "event": command["event"]})
+                button = Button(self.screen, font, command["text"], (x,y,w,h), out_color=BLACK)
+                self.buttons.append({"button":button, "next_scenario": command["next"]})
                 y += h
 
     def draw(self):
@@ -473,7 +473,7 @@ class CommandMenu:
         # クリックされたイベントを判定
         for item in self.buttons:
             if item["button"].is_clicked(pos):
-                return item["event"]
+                return item["next_scenario"]
         return None
 
 # 主人公の名前・HP・MP・現在地を右上に表示する
@@ -498,6 +498,70 @@ class HeroDataView:
     def draw(self):
         for label in self.status_label:
             label.draw()
+
+# フラグ管理用のクラス
+class Flags:
+    def __init__(self, play_flags):
+        # 主人公の現在の状況フラグ (残り時間（分）、どの部屋にいるか、どの方向を向いているか)
+        self.status = play_flags.get(
+            "status", {"time":60, "room":"center", "direction":"north"}
+        )
+        
+        # 少女関連のフラグ (仲間になってるか、好感度、死んだか)
+        self.girl = play_flags.get(
+            "girl", {"fellow":False, "like_ability":0, "death":False}
+        )
+        
+        # 部屋の状態フラグ
+        self.rooms = play_flags.get(
+            "rooms", {
+                # 中央の部屋 (初回シナリオが済んでいるか、電球が取られてないか)
+                "center_room_scenario":False,
+                "center_room_light":False,
+                # 東の部屋 (鍵が開いてるか、初回シナリオが済んでいるか、室内が見えてるか、少女と遭遇するまでの時間経過)
+                "east_room_open":False,
+                "east_room_scenario":False,
+                "east_room_visivle":False,
+                "east_room_time":5,
+                # 西の部屋 (初回シナリオが済んでいるか)
+                "west_room_scenario":False,
+                # 北の部屋
+                "north_room_scenario":False,
+                # 南の部屋 (初回シナリオが済んでいるか、敵を見つけているか、敵と戦って逃げたか、敵がそこにいるか)
+                "south_room_scenario":False,
+                "south_room_find_enemy":False,
+                "south_room_escape_enemy":False,
+                "south_room_there_enemy":True
+            }
+        )
+
+        # アイテムの状態フラグ
+        self.items = play_flags.get(
+            "items", {
+                # スープに関するフラグ  (毒が入っているか、血だと知っているか、飲んだか、捨てたか、時間経過)
+                "soup_know":False,
+                "soup_in_poison":False,
+                "soup_drink": False,
+                "soup_destruction": False,
+                "soup_temperature":0,
+                # 中央の部屋メモのフラグ (裏に気づいているか)
+                "center_memo_objective":False,
+                # 西の部屋の本に関するフラグ (見つけているか、入手しているか)
+                "book_found":False,
+                "book_get":False,
+                # 毒に関するフラグ (持っているか)
+                "poison_get":False
+            }
+        )
+
+    def update_flag(self, categry, key, value):
+        if categry in self.__dict__ and isinstance(self.__dict__[categry], dict):
+            self.__dict__[categry][key] = value
+        
+    def get_flag(self, categry, key):
+        if categry in self.__dict__:
+            return self.__dict__[categry].get(key, None)
+        return None
 
 # simpledialogの代わり(モーダルはうまくいかないがエラーメッセージの日本語化はできた)
 class CustomDialog(simpledialog.Dialog):

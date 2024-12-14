@@ -2,12 +2,12 @@
     "Soup":[
         {"tyep":"conditional",
          "conditions":[
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"drink", "value":true}], "next":"Soup_drink"},
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"poison", "value":true}], "next":"Soup_in_poison"},
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"temperature", "value":0}],"next":"Soup_time1"},
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"temperature", "value":1}],"next":"Soup_time2"},
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"temperature", "value":2}],"next":"Soup_time3"},
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"temperature", "value":3}],"next":"Soup_time4"}
+            {"flags":[{"category":"items", "flag":"soup_drink", "value":true}], "next":"Soup_drink"},
+            {"flags":[{"category":"items", "flag":"soup_in_poison", "value":true}], "next":"Soup_in_poison"},
+            {"flags":[{"category":"items", "flag":"soup_temperature", "value":0}],"next":"Soup_time1"},
+            {"flags":[{"category":"items", "flag":"soup_temperature", "value":1}],"next":"Soup_time2"},
+            {"flags":[{"category":"items", "flag":"soup_temperature", "value":2}],"next":"Soup_time3"},
+            {"flags":[{"category":"items", "flag":"soup_temperature", "value":3}],"next":"Soup_time4"}
         ],
     "Soup_drink":[
         {"type":"text", "text":"飲み干してしまったスープの器。中身は空だ。"}
@@ -24,26 +24,26 @@
     ],
     "Soup_time1":[
         {"type":"conditional", "conditions":[
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"know", "value":true}], "next":"Soup_know_time1"},
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"know", "value":false}], "next":"Soup_unknown_time1"}
+            {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time1"},
+            {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time1"}
         ]}
     ],
     "Soup_time2":[
         {"type":"conditional", "conditions":[
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"know", "value":true}], "next":"Soup_know_time2"},
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"know", "value":false}], "next":"Soup_unknown_time2"}
+            {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time2"},
+            {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time2"}
         ]}
     ],
     "Soup_time3":[
         {"type":"conditional", "conditions":[
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"know", "value":true}], "next":"Soup_know_time3"},
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"know", "value":false}], "next":"Soup_unknown_time3"}
+            {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time3"},
+            {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time3"}
         ]}
     ],
     "Soup_time4":[
         {"type":"conditional", "conditions":[
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"know", "value":true}], "next":"Soup_know_time4"},
-            {"flags":[{"flag_name":"items_flag", "item":"soup", "flag":"know", "value":false}], "next":"Soup_unknown_time4"}
+            {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time4"},
+            {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time4"}
         ]}
     ],
     "Soup_unknown_time1":[
@@ -81,20 +81,20 @@
     "Soup_interaction":[
         {"type":"conditional", "conditions":[
             {"flags":[
-                {"flag_name":"items_flag", "item":"soup", "flag":"know", "value":true},
-                {"flag_name":"items_flag", "item":"poison","flag":"get", "value":true}
+                {"category":"items", "flag":"soup_know", "value":true},
+                {"category":"items", "flag":"poison_get", "value":true}
             ], "next":"Soup_interaction_know_for_get"},
             {"flags":[
-                {"flag_name":"items_flag", "item":"soup", "flag":"know", "value":true},
-                {"flag_name":"items_flag", "item":"poison","flag":"get", "value":false}
+                {"category":"items", "flag":"soup_know", "value":true},
+                {"category":"items", "flag":"poison_get", "value":false}
             ], "next":"Soup_interaction_know_not_have"},
             {"flags":[
-                {"flag_name":"items_flag", "item":"soup", "flag":"know", "value":false},
-                {"flag_name":"items_flag", "item":"poison","flag":"get", "value":true}
+                {"category":"items", "flag":"soup_know", "value":false},
+                {"category":"items", "flag":"poison_get", "value":true}
             ], "next":"Soup_interaction_unknown_for_get"},
             {"flags":[
-                {"flag_name":"items_flag", "item":"soup", "flag":"know", "value":false},
-                {"flag_name":"items_flag", "item":"poison","flag":"get", "value":false}
+                {"category":"items", "flag":"soup_know", "value":false},
+                {"category":"items", "flag":"poison_get", "value":false}
             ], "next":"Soup_interaction_unknown_not_have"}
         ]}
     ],
@@ -127,7 +127,7 @@
                 {"text":"毒を入れる","next":""},
                 {"text":"飲む", "next":""},
                 {"text":"捨てる", "next":"Soup_destruction"}
-            ]}    
+            ]}
     ],
     "Soup_interaction_unknown_not_have":[
         {"type":"interaction",
@@ -146,7 +146,7 @@
     ],
     "Soup_medicine_success":[
         {"type":"text", "text":"成功！ {roll}/{threshold}"},
-        {"type":"action", "action":"set_flag", "flag_name":"items_flag", "item":"soup", "flag":"know", "value":true},
+        {"type":"action", "action":"set_flag", "category":"items", "item":"soup", "flag":"know", "value":true},
         {"type":"text", "text":"あなたは医学の知識によって、このスープが確かに人間の血液であることを確信するだろう。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。"},
         {"type":"text", "text":"そのことを知ってしまったあなたは0/1d4のSANチェックだ。"},
         {"type":"dice_check", "check_type":"SAN", "dice":"1d100",
@@ -170,12 +170,12 @@
         {"type":"text", "text":"あなたはスープを捨てることにした。"},
         {"type":"conditional",
          "conditions":[
-            {"flags":[{"flag":"girl_flag", "value":true}], "next":"Soup_destruction_with_girl"},
-            {"flags":[{"flag":"girl_flag", "value":false}], "next":"Soup_destruction_only_me"}
+            {"flags":[{"category":"girl","flag":"fellow", "value":true}], "next":"Soup_destruction_with_girl"},
+            {"flags":[{"category":"girl","flag":"fellow", "value":false}], "next":"Soup_destruction_only_me"}
          ]}
     ],
     "Soup_destruction_only_me":[
-        {"type":"action", "action":"set_flag", "flag_name":"items_flag", "item":"soup","flag":"", "value":false},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_destruction", "value":false},
         {"type":"text", "text":"あなたはスープを捨てた。"}
     ],
     "Soup_destruction_with_girl":[

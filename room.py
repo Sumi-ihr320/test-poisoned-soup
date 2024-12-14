@@ -19,7 +19,7 @@ class Room:
         # ファイル名一覧
         self.room_path = create_file_path("room", room, direction)
         self.room2_path = create_file_path("room2", room, direction)
-        self.scenario_list = create_scenario_path(room=room)
+        #self.scenario_list = create_scenario_path(room=room)
 
         # 部屋画像の作成
         self.img = Image(self.screen, self.room_path, size=self.SIZE, x="center", y=30, area=self.area_rect)
@@ -32,7 +32,7 @@ class Room:
         self.create_item(self.img.img, room, direction)
 
     # 画像表示するよ
-    def draw(self, selected_item, soup_flag):
+    def draw(self, selected_item, flags):
         # フラグが立っていればroom_img2を表示する
         if self.room2_flag and self.img2:
             self.img2.draw()
@@ -44,9 +44,9 @@ class Room:
                 if item == selected_item:
                     img_number = 0
                     if item == "Soup":
-                        if soup_flag["drink"]:
+                        if flags.get_flag("items", "soup_drink") == True:
                             img_number = 1
-                        elif soup_flag["poison"]:
+                        elif flags.get_flag("items", "soup_in_poison") == True:
                             img_number = 2
                     item.draw(is_selected=True, img_number=img_number)
                 else:
@@ -164,5 +164,3 @@ class Item:
 
     def handle_click(self, pos):
         return self.img.rect.collidepoint(pos)
-
-    
