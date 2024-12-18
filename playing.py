@@ -5,6 +5,7 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from ui_elements import *
+from game_state import *
 
 from menu import MenuController
 from navigation import Navigation

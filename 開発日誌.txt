@@ -281,3 +281,10 @@
 2024/12/14
 	flagクラスを作成
 	それに伴いシナリオを更新
+
+2024/12/18
+	game_state.pyを作成、そこにflagクラスを移動
+	characters.pyを作成
+	characterクラス、humanクラス、enemyクラス、playerクラスを作成
+	item_managerを削除
+	
