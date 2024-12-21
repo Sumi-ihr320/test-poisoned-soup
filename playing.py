@@ -6,6 +6,7 @@ from constans import *
 from utils import *
 from ui_elements import *
 from game_state import *
+from characters import *
 
 from menu import MenuController
 from navigation import Navigation
@@ -19,10 +20,9 @@ class MainPlay:
         self.screen = screen
         self.root = root
         self.save_data = save_data
-        self.hero_status = save_data["hero_status"]  # 主人公のステータス
         
-        # フラグをセットする
-        self.set_flag(save_data["flag"])
+        # セーブデータから各データをセットする
+        self.set_data(save_data)
 
         # メニューコントローラー
         self.menu_controller = MenuController(self.screen, self.root, self.set_state)
@@ -32,7 +32,7 @@ class MainPlay:
         self.setup_navigetion()
 
         # 主人公のステータス表示
-        self.hero_label = HeroDataView(self.screen, self.hero_status, self.flags.get_flag("status","room"))
+        self.player_label = PlayerDataView(self.screen, self.player_status, self.game_state.room)
 
         # 管理用
         self.scenario_manager = ScenarioManager(self.screen, "center-room", self.flags, self.handle_action)
@@ -44,22 +44,27 @@ class MainPlay:
         # 選択されたアイテム
         self.selected_item = None
 
-    # フラグをセットする
-    def set_flag(self, play_flags):
+    # データをセットする
+    def set_data(self, save_data):
+        # 主人公データ
+        self.player_status = Player().from_dict(save_data["player_status"])
+
         # フラグ一覧
         self.state = State.NONE     # saveやload等の状態管理フラグ
-        self.flags = Flags(play_flags)
+        self.game_state = GameStatus().from_dict(save_data["game_state"])
+        self.flags = Flags().from_dict(save_data["flags"])
 
     # セーブデータを作る
     def create_save_data(self):
-        save_data = {}
-        save_data["hero_status"] = self.hero_status
-        save_data["flag"] = self.flags.__dict__
-        self.save_data = save_data
+        self.save_data = {
+            "player_status": self.player_status.to_dict(),
+            "game_state": self.game_state.to_dict(),
+            "flags": self.flags.to_dict()
+        }
 
     # ナビゲーションバーのセット
     def setup_navigetion(self):
-        if self.flags.get_flag("status", "room") == "center":
+        if self.game_state.room == "center":
             self.navigation.setup_navigation([Position.RIGHT, Position.LEFT])
         else:
             self.navigation.setup_navigation([Position.UNDER])
@@ -113,7 +118,7 @@ class MainPlay:
             if self.menu_controller.handle_click(event.pos):
                 return
 
-            if self.flags["room_flag"] == "center":
+            if self.game_state.room == "center":
                 # ナビゲーションバーによる移動
                 clicked_position = self.navigation.handle_click(event.pos)
                 if clicked_position == Position.RIGHT:
@@ -146,7 +151,7 @@ class MainPlay:
         self.navigation.draw()          # ナビゲーションバーの表示
 
         # 主人公のステータスの表示
-        self.hero_label.draw()
+        self.player_label.draw()
 
         # コマンドメニューの表示
         if self.event_manager.command_menu:

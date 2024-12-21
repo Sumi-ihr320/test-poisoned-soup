@@ -1,4 +1,5 @@
 {
-    "hero_status":{},
-    "flag":{}
+    "player_status":{},
+    "game_state":{},
+    "flags":{}
 }

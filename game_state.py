@@ -1,4 +1,3 @@
-
 # 主人公のステータスクラス
 class GameStatus:
     def __init__(self):
@@ -7,9 +6,12 @@ class GameStatus:
         self.room = "center"
         self.direction = "north"
 
-        # フラグの状態
-        self.flags = Flags()
-
+    def to_dict(self):
+        return {
+            "time": self.time,
+            "room": self.room,
+            "direction": self.direction
+        }
 
 # フラグ管理用のクラス
 class Flags:

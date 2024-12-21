@@ -4,11 +4,11 @@ from ui_elements import *
 from profession import ProfessionSelecter, HobbySelecter
 
 class ProfessionPage:
-    def __init__(self, screen, root, hero_data, save_data, callback) -> None:
+    def __init__(self, screen, root, player, save_data, callback) -> None:
         self.screen = screen
         self.root = root
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
-        self.hero_data = hero_data
+        self.player = player
         self.save_data = save_data
         self.callback = callback
 
@@ -28,16 +28,16 @@ class ProfessionPage:
 
     # 終了ボタンを押した時のイベント
     def end_button_event(self):
-        manual_input_fields = { "name":"名前が入力されていません",
-                                "age":"年齢が入力されていません",
-                                "STR":"STRが入力されていません",
-                                "CON":"CONが入力されていません",
-                                "SIZ":"SIZが入力されていません",
-                                "DEX":"DEXが入力されていません",
-                                "APP":"APPが入力されていません",
-                                "EDU":"EDUが入力されていません",
-                                "INT":"INTが入力されていません",
-                                "POW":"POWが入力されていません",
+        manual_input_fields = { "name": "名前が入力されていません",
+                                "age": "年齢が入力されていません",
+                                "STR": "STRが入力されていません",
+                                "CON": "CONが入力されていません",
+                                "SIZ": "SIZが入力されていません",
+                                "DEX": "DEXが入力されていません",
+                                "APP": "APPが入力されていません",
+                                "EDU": "EDUが入力されていません",
+                                "INT": "INTが入力されていません",
+                                "POW": "POWが入力されていません",
                                 "Profession":"職業が選択されていません",
                                 "Hobby":"趣味が選択されていません"
                                 }
@@ -45,7 +45,7 @@ class ProfessionPage:
 
         # 手動入力が必要なステータスのみエラーチェックする
         for status, error_msg in manual_input_fields.items():
-            if self.hero_data.get(status) == "" or self.hero_data.get(status) == 0:
+            if getattr(self.player, status) == "" or getattr(self.player, status) == 0:
                 texts.append(error_msg)
         if texts:
             text = "\n".join(texts)
@@ -53,7 +53,7 @@ class ProfessionPage:
                 messagebox.showerror("未入力", text)
         else:
             # セーブデータに主人公データを入れる
-            self.save_data["hero_status"] = self.hero_data
+            self.save_data["player_status"] = self.player.to_dict()
             self.callback(State.SAVE)
 
     def draw(self, selected_profession, is_pulldown_open):
@@ -91,7 +91,7 @@ class ProfessionPage:
             selected_item = self.hoby_selecter.pull.handle_click(pos, is_pulldown_open)
             if selected_item:
                 selected_hobby = selected_item
-                self.hero_data["Hobby"] = selected_item
+                self.player.Hobby = selected_item
                 self.hoby_selecter.pull.update_label(f"{selected_item}")
                 self.hobby_data_set(selected_hobby)
                 is_pulldown_open = False
@@ -105,7 +105,7 @@ class ProfessionPage:
                 selected_item = self.prof_selecter.handle_click(pos)
                 if selected_item:
                     selected_profession = selected_item
-                    self.hero_data["Profession"] = selected_item.name
+                    self.player.Profession = selected_item.name
                     self.profession_data_set()
 
         return is_pulldown_open, selected_profession, selected_hobby
@@ -113,19 +113,19 @@ class ProfessionPage:
     # 選択した職業から主人公のステータスにデータを入れるよ
     def profession_data_set(self):
         # 主人公の所持スキルをリセット
-        self.hero_data["skill"] = {}
+        self.player["skill"] = {}
         # 回避もスキル一覧にあるので回避もリセット
-        self.hero_data["Avo"] = self.hero_data["DEX"] * 2
+        self.player.Avo = self.player.DEX * 2
 
         profession_list = load_json(PROF_DATA_PATH)
         skill_list = load_json(SKILL_DATA_PATH)
 
         # 職業から設定されている技能一覧を取得
-        current_profession = self.hero_data["Profession"]
+        current_profession = self.player.Profession
         profession_skills = profession_list[current_profession]["skill"]
 
         # 加算できる技能ポイントを算出する
-        max_skill_points = self.hero_data["EDU"] * 20
+        max_skill_points = self.player.EDU * 20
         remaining_points = max_skill_points
         for skill, percent in profession_skills.items():
             # 割り振る技能ポイントを計算
@@ -133,7 +133,7 @@ class ProfessionPage:
 
             # 基本技能ポイント
             if skill == "回避":
-                current_skill_value = self.hero_data["Avo"]
+                current_skill_value = self.player.Avo
             else:
                 current_skill_value = skill_list[skill]
 
@@ -142,9 +142,9 @@ class ProfessionPage:
 
             # 主人公のステータスにポイントを入力
             if skill == "回避":
-                self.hero_data["Avo"] = new_skill_value
+                self.player.Avo = new_skill_value
             else:
-                self.hero_data["skill"][skill] = new_skill_value
+                self.player["skill"][skill] = new_skill_value
 
             # 技能ポイント - 使用した技能ポイント + 余りの技能ポイント
             remaining_points = remaining_points - bonus_points + surplus_points
@@ -160,8 +160,8 @@ class ProfessionPage:
             while remaining_points > 0:
                 lists = {}
                 # スキルリストから90以下のスキルをリスト化する
-                for skill in self.hero_data["skill"]:
-                    skill_value = self.hero_data["skill"][skill]
+                for skill in self.player["skill"]:
+                    skill_value = self.player["skill"][skill]
                     if skill_value < 90:
                         lists[skill] = skill_value
                 if len(lists) > 0:
@@ -173,17 +173,17 @@ class ProfessionPage:
                         # 計算していく
                         for skill, current_skill_value in lists.items():
                             new_skill_value, surplus_points = Calculation(current_skill_value, bonus_points, 90)
-                            self.hero_data["skill"][skill] = new_skill_value
+                            self.player["skill"][skill] = new_skill_value
                             remaining_points = remaining_points - bonus_points + surplus_points
                     else:
                         select = random.choice(list(lists))
-                        self.hero_data["skill"][select]  += remaining_points
+                        self.player["skill"][select]  += remaining_points
                         remaining_points -= remaining_points
 
     # 選択した趣味から主人公のステータスにデータを入れるよ
     def hobby_data_set(self, selected_hobby):
         # 主人公の持っている技能データ
-        my_skills = self.hero_data["skill"]
+        my_skills = self.player["skill"]
 
         # 趣味リストの技能データ
         hobby_list = load_json(HOBBY_DATA_PATH)
@@ -192,7 +192,7 @@ class ProfessionPage:
         skill_list = load_json(SKILL_DATA_PATH)
 
         # 最大振り分けポイント
-        max_points = self.hero_data["INT"] * 10
+        max_points = self.player.INT * 10
         # スキルの振り分け割合
         percent = [70,30]
         if max_points > 0:
@@ -208,7 +208,7 @@ class ProfessionPage:
                 # 計算する
                 new_value, surplus_points = Calculation(current_value, bonus_points, 90)
                 # スキルに値を入れる
-                self.hero_data["skill"][skill] = new_value
+                self.player["skill"][skill] = new_value
                 # 残りのポイントを算出
                 remaining_points = remaining_points - bonus_points + surplus_points
 
@@ -217,5 +217,5 @@ class ProfessionPage:
                 for i, skill in enumerate(hobby_skills):
                     current_value = my_skills[skill]
                     new_value, surplus_points = Calculation(current_value, remaining_points, 90)
-                    self.hero_data["skill"][skill] = new_value
+                    self.player["skill"][skill] = new_value
                     remaining_points = surplus_points

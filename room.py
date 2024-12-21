@@ -29,7 +29,7 @@ class Room:
         self.items = []
         self.items_draw_list = []
         self.items_select_list= []
-        self.create_item(self.img.img, room, direction)
+        self.create_room_item(self.img.img, room, direction)
 
     # 画像表示するよ
     def draw(self, selected_item, flags):
@@ -53,10 +53,10 @@ class Room:
                     item.draw()
 
     # 部屋のアイテムを作成する
-    def create_item(self, surface, room, direction):
+    def create_room_item(self, surface, room, direction):
         if room == "center":
-            self.light = Item(surface, "Light", room, "", "center", 24)
-            self.soup = Item(surface, "Soup", room, "", "center", 224)
+            self.light = RoomItem(surface, "Light", room, "", "center", 24)
+            self.soup = RoomItem(surface, "Soup", room, "", "center", 224)
             directions = ["north","east","south","west"]
             position = {"north":{"tablex":"center","tabley":189,
                                  "memox":306,"memoy":237},
@@ -77,44 +77,44 @@ class Room:
                 right_index = 0
             right_direct = directions[right_index]
             rigth_door_name = f"{right_direct}Door"
-            self.center_door = Item(surface, center_door_name, room, direction, "center", 82)
-            self.left_door = Item(surface, left_door_name, room, direction, 86, 63)
-            self.right_door = Item(surface, rigth_door_name, room, direction, 568, 64)
-            self.table = Item(surface, "Table", "center", direction, position[direction]["tablex"], position[direction]["tabley"])
-            self.center_memo = Item(surface, "centerMemo", "center", direction, position[direction]["memox"], position[direction]["memoy"])
+            self.center_door = RoomItem(surface, center_door_name, room, direction, "center", 82)
+            self.left_door = RoomItem(surface, left_door_name, room, direction, 86, 63)
+            self.right_door = RoomItem(surface, rigth_door_name, room, direction, 568, 64)
+            self.table = RoomItem(surface, "Table", "center", direction, position[direction]["tablex"], position[direction]["tabley"])
+            self.center_memo = RoomItem(surface, "centerMemo", "center", direction, position[direction]["memox"], position[direction]["memoy"])
             self.items_draw_list = [self.center_door, self.left_door, self.right_door, self.table, self.light, self.soup, self.center_memo]
             self.items_select_list = [self.light, self.soup, self.center_memo, self.table, self.center_door, self.left_door, self.right_door]
         elif room == "north":
-            self.under_storage = Item(surface, "UnderSinkStorage", "north", "", 325, 250)
-            self.cooktop = Item(surface, "Cooktop", "north", "", 225, 226)
-            self.sink = Item(surface, "Sink", "north", "", 468, 216)
-            self.top_storage = Item(surface, "TopSinkStorage", "north", "", 325, 100)
-            self.pot = Item(surface, "Pot", "north", "", 290, 203)
-            self.storage = Item(surface, "Storage", "north", "", 560, 225)
-            self.cupboard = Item(surface, "CupBoard", "north", "", 36, 30)
-            self.fridge = Item(surface, "Fridge", "north", "", 628, 39)
+            self.under_storage = RoomItem(surface, "UnderSinkStorage", "north", "", 325, 250)
+            self.cooktop = RoomItem(surface, "Cooktop", "north", "", 225, 226)
+            self.sink = RoomItem(surface, "Sink", "north", "", 468, 216)
+            self.top_storage = RoomItem(surface, "TopSinkStorage", "north", "", 325, 100)
+            self.pot = RoomItem(surface, "Pot", "north", "", 290, 203)
+            self.storage = RoomItem(surface, "Storage", "north", "", 560, 225)
+            self.cupboard = RoomItem(surface, "CupBoard", "north", "", 36, 30)
+            self.fridge = RoomItem(surface, "Fridge", "north", "", 628, 39)
             self.items_draw_list = [self.under_storage, self.cooktop, self.sink, self.top_storage, self.pot, self.storage, self.cupboard, self.fridge]
             self.items_select_list = [self.pot, self.sink, self.cooktop, self.under_storage, self.top_storage, self.storage, self.cupboard, self.fridge]
         elif room == "east":
-            self.corpse = Item(surface, "Corpse", "east", "", 437, 218)
-            self.east_memo = Item(surface, "eastMemo", "east", "", 277, 259)
+            self.corpse = RoomItem(surface, "Corpse", "east", "", 437, 218)
+            self.east_memo = RoomItem(surface, "eastMemo", "east", "", 277, 259)
             self.items_draw_list = [self.corpse, self.east_memo]
             self.items_select_list = [self.east_memo, self.corpse]
         elif room == "south":
-            self.statue = Item(surface, "StoneStatue", "south", "",287, 69)
-            self.slate1 = Item(surface, "Slate1", "south", "", 213, 156)
-            self.slate2 = Item(surface, "Slate2", "south", "", 479, 156)
+            self.statue = RoomItem(surface, "StoneStatue", "south", "",287, 69)
+            self.slate1 = RoomItem(surface, "Slate1", "south", "", 213, 156)
+            self.slate2 = RoomItem(surface, "Slate2", "south", "", 479, 156)
             self.items_draw_list = [self.statue, self.slate1, self.slate2]
             self.items_select_list = [self.statue, self.slate1, self.slate2]
         else:
-            self.bookshelf = Item(surface, "BookShelf", "west", "", 36, 30)
-            self.chandle = Item(surface, "Candle", "west", "", 350, 223)
-            self.book = Item(surface, "Book", "west", "", 298, 246)
+            self.bookshelf = RoomItem(surface, "BookShelf", "west", "", 36, 30)
+            self.chandle = RoomItem(surface, "Candle", "west", "", 350, 223)
+            self.book = RoomItem(surface, "Book", "west", "", 298, 246)
             self.items_draw_list = [self.bookshelf, self.chandle, self.book]
             self.items_select_list = [self.book, self.chandle, self.bookshelf]
 
 # アイテムの型を作るよ
-class Item:
+class RoomItem:
     # アイテム画像の縮小パーセンテージ
     SIZE = 0.19
     def __init__(self, screen, name, room, direction, x, y):

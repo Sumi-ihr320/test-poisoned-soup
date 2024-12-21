@@ -5,6 +5,7 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from ui_elements import *
+from characters import Player
 
 from menu import MenuController
 from navigation import Navigation
@@ -32,15 +33,17 @@ class CharacterSheet:
         self.selected_hobby = ""            # 選択中の趣味
 
         # 設定する主人公のステータス
-        chara_data = load_json(CHARA_DATA_PATH)
-        self.hero_data = chara_data["Hero"]
+        #chara_data = load_json(CHARA_DATA_PATH)
+        #self.hero_data = chara_data["Hero"]
+        self.player = Player()
+
         # セーブデータ
         self.save_data = load_json("SaveData.json")
 
         # ページ管理
-        self.status_page = StatusPage(self.screen, self.root, self.hero_data)
+        self.status_page = StatusPage(self.screen, self.root, self.player)
         self.status_page.load_status_items(load_json(STATUS_DATA_PATH))
-        self.profession_page = ProfessionPage(self.screen, self.root, self.hero_data, self.save_data, self.set_state)
+        self.profession_page = ProfessionPage(self.screen, self.root, self.player_data, self.save_data, self.set_state)
         self.profession_page.load_selecter(self.selected_hobby)
 
         # 状態フラグ
@@ -120,7 +123,7 @@ class CharacterSheet:
 
     # 更新されたデータをステータスに入力＋自動計算する
     def insart_data(self, status):
-        self.hero_data[status.status_name] = status.input.get_value()
+        self.player_data[status.status_name] = status.input.get_value()
         self.auto_calculation(status.status_name)
 
     # ステータスの自動計算
@@ -146,16 +149,16 @@ class CharacterSheet:
         if name in calculations:
             for calculation in calculations[name]:
                 # 計算結果を取得する
-                val = calculation(self.hero_data)
+                val = calculation(self.player_data)
                 if name == "EDU":
                     val = val if val < 99 else 99
                 # 計算結果をステータスに入力 & ラベルの更新
                 if name == "POW":
-                    self.hero_data.update(val)
+                    self.player_data.update(val)
                 for status in response_status[calculation]:
                     if name != "POW":
-                        self.hero_data[status] = val
-                    self.update_status_label(status, self.hero_data[status])
+                        self.player_data[status] = val
+                    self.update_status_label(status, self.player_data[status])
     
     # ステータスラベルの更新
     def update_status_label(self, name, val):

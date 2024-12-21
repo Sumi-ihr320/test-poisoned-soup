@@ -113,14 +113,22 @@ class SexChange:
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
 
         # フラグがtrueなら男、falseなら女が選択されている
-        self.man = self.create_button("男", x, y, flag)
-        self.woman = self.create_button("女", x+40, y, not flag)
+        #self.man = self.create_button("男", x, y, flag)
+        #self.woman = self.create_button("女", x+40, y, not flag)
+
+        # フラグをman, woman, neuterにする
+        man_flag, woman_flag, neuter_flag = self.flag_check(flag)
+
+        self.man = self.create_button("男", x, y, man_flag)
+        self.woman = self.create_button("女", x+40, y, woman_flag)
+        self.neuter = self.create_button("その他", x+80, y, neuter_flag)
 
         # 画像を作成
         self.image_x = image_x
         self.image_y = image_y
-        self.man_image = self.create_image(True)
-        self.woman_image = self.create_image(False)
+        self.man_image = self.create_image("man")
+        self.woman_image = self.create_image("woman")
+        self.neuter_image = self.create_image("neuter")
 
     # ボタン作るよ
     def create_button(self, text, x, y, flag):
@@ -134,20 +142,41 @@ class SexChange:
 
     # 画像作るよ
     def create_image(self, flag):
-        sex = "man" if flag else "woman"
-        img_path = f"{PATH}{PICTURE}silhouette_{sex}.png"
+        img_path = f"{PATH}{PICTURE}silhouette_{flag}.png"
         return Image(self.screen, img_path, 0.5, self.image_x, self.image_y, line_flag=True, line_width=2)
+
+    # どれが選択されているかのフラグチェック
+    def flag_check(self, flag):
+        if flag == "man":
+            man_flag = True
+            woman_flag = False
+            neuter_flag = False
+        elif flag == "woman":
+            man_flag = False
+            woman_flag = True
+            neuter_flag = False
+        else:
+            man_flag = False
+            woman_flag = False
+            neuter_flag = True
+        
+        return man_flag, woman_flag, neuter_flag
 
     # 性別が変わった時にボタンの状態を更新する
     def update_sex(self, flag):
-        self.man = self.create_button("男", self.man.rect.x, self.man.rect.y, flag)
-        self.woman = self.create_button("女", self.woman.rect.x, self.woman.rect.y, not flag)
+        man_flag, woman_flag, neuter_flag = self.flag_check(flag)
+        self.man = self.create_button("男", self.man.rect.x, self.man.rect.y, man_flag)
+        self.woman = self.create_button("女", self.woman.rect.x, self.woman.rect.y, woman_flag)
+        self.neuter = self.create_button("その他", self.neuter.rect.x, self.neuter.rect.y, neuter_flag)
 
     # 描画するよ
     def draw(self, flag):
         self.man.draw()
         self.woman.draw()
-        if flag:
+        self.neuter.draw()
+        if flag == "man":
             self.man_image.draw()
-        else:
+        elif flag == "woman":
             self.woman_image.draw()
+        else:
+            self.neuter_image.draw()

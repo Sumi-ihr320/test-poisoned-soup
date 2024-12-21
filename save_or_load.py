@@ -231,8 +231,8 @@ class Save_or_Load:
             data_no = str(len(self.save_data_list)).zfill(2)
 
         # キャラクター名と場所
-        name = self.save_data.get("hero_status", {}).get("name", "Unknown")
-        room_direction = self.save_data.get("flag", {}).get("room_flag", None)
+        name = self.save_data.get("player_status", {}).get("name", "Unknown")
+        room_direction = self.save_data.get("game_state", {}).get("room", None)
         if room_direction:
             room_name = ROOM_NAME[room_direction]
         else:

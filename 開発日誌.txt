@@ -288,3 +288,5 @@
 	characterクラス、humanクラス、enemyクラス、playerクラスを作成
 	item_managerを削除
 	
+2024/12/21
+	character_item.pyを作成
