@@ -1,8 +1,8 @@
 {
     "Light":[
-        {"type":"text", "text":"薄暗い豆電球が部屋を照らしている。"},
-        {"type":"interaction",
-         "intaractions":[
+        {"type":"text", "text":"薄暗い豆電球が部屋を照らしている。", "progression":"click"},
+        {"type":"interaction", "progression":"click",
+         "interactions":[
             {"text":"目星", "next":""},
             {"text":"外す", "next":""},
             {"text":"壊す", "next":""}

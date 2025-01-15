@@ -1,8 +1,9 @@
 from character_item import *
+# from skill import *
 
 # キャラクタークラス
 class Character:
-    def __init__(self, name="", STR=0, CON=0, SIZ=0, DEX=0, INT=0, POW=0, DB="", HP=0, MP=0, Avo=0, skill={}):
+    def __init__(self, name="", STR=0, CON=0, SIZ=0, DEX=0, INT=0, POW=0, DB="", HP=0, MP=0, Dodge=0, skill={}):
         # 基本情報
         self.name = name
         
@@ -17,7 +18,7 @@ class Character:
         self.DB = DB
         self.HP = HP
         self.MP = MP
-        self.Avo = Avo
+        self.Dodge = Dodge
  
         # 技能
         self.skill = skill
@@ -53,12 +54,48 @@ class Character:
 
         return state
     
+    # 辞書型に変換
+    def to_dict(self):
+        return {
+            "type": self.__class__.__name__,
+            "name":self.name,
+            "STR":self.STR, "CON":self.CON, "SIZ":self.SIZ,
+            "DEX":self.DEX, "INT":self.INT, "POW":self.POW,
+            "DB":self.DB, "HP":self.HP, "MP":self.MP, "Dodge":self.Dodge,
+            "skill": self.skill
+        }
+    
+    # 辞書からクラスに変換
+    @classmethod
+    def from_dict(cls, data):
+        if data["type"] == "Player":
+            character = Player(data["name"], data["age"], data["sex"], data["STR"], data["CON"], data["SIZ"],
+                               data["DEX"], data["APP"], data["EDU"], data["INT"], data["POW"], data["Luck"],
+                               data["Idea"], data["Know"], data["DB"], data["HP"], data["MP"], data["Dodge"],
+                               data["SAN"], data["max_SAN"], data["Profession"], data["skill"], [], data["Hobby"], data["girl_like_ability"])
+
+        elif data["type"] == "Human":
+            character = Human(data["name"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
+                            data["DB"], data["HP"], data["MP"], data["Dodge"], data["skill"],
+                            data["age"], data["sex"], data["APP"], data["EDU"], data["Luck"], data["Idea"], data["Know"],
+                            data["SAN"], data["max_SAN"], data["Profession"], [])
+            character.inventory = [CharacterItem.from_dict(item) for item in data["inventory"]]
+
+        elif data["type"] == "Enemy":
+            character = Enemy(data["name"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
+                            data["DB"], data["HP"], data["MP"], data["Dodge"], data["skill"], data["armor"])
+
+        else:
+            character = cls(data["name"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
+                            data["DB"], data["HP"], data["MP"], data["Dodge"], data["skill"])
+
+        return character
+
 # 人間クラス
 class Human(Character):
-    def __init__(self, name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Avo, skill, age=0, sex="man",
+    def __init__(self, name="", STR=0, CON=0, SIZ=0, DEX=0, INT=0, POW=0, DB="", HP=0, MP=0, Dodge=0, skill={}, age=0, sex="man",
                  APP=0, EDU=0, Luck=0, Idea=0, Know=0, SAN=0, max_SAN=0, Profession="", inventory=[]):
-        super().__init__(name, STR, CON, SIZ, DEX, INT, POW, Luck, Idea, Know, DB, HP, MP, Avo, SAN, max_SAN,
-                         skill)
+        super().__init__(name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
         
         # 基本情報
         self.age = age
@@ -81,7 +118,7 @@ class Human(Character):
 
     # アイテムの追加
     def add_item(self, item):
-        self.inventory.add(item)
+        self.inventory.append(item)
         print(f"アイテムを追加しました: {item.name}")    # デバッグ用
     
     # アイテムの削除
@@ -115,44 +152,46 @@ class Human(Character):
 
         return state
 
+    def to_dict(self):
+        data = super().to_dict()
+        data["age"] = self.age
+        data["sex"] = self.sex
+        data["APP"] = self.APP
+        data["EDU"] = self.EDU
+        data["Luck"] = self.Luck
+        data["Idea"] = self.Idea
+        data["Know"] = self.Know
+        data["SAN"] = self.SAN
+        data["max_SAN"] = self.max_SAN
+        data["Profession"] = self.Profession
+        data["inventory"] = [item.to_dict() for item in self.inventory]
+        return data
+
 # 敵クラス
 class Enemy(Character):
-    def __init__(self, name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Avo, skill, armor):
-        super().__init__(name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Avo, skill)
+    def __init__(self, name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill, armor):
+        super().__init__(name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
         self.armor = armor
 
     def check_armor(self):
         return self.armor
+    
+    def to_dict(self):
+        data = super().to_dict()
+        data["armor"] = self.armor
+        return data
 
 # 主人公クラス
 class Player(Human):
-    def __init__(self, name, age, sex, STR, CON, SIZ, DEX, APP, EDU, INT, POW, Luck, Idea, Know, 
-                 DB, HP, MP, Avo, SAN, max_SAN, profession, skill, inventory):
-        super().__init__(name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Avo, skill,
+    def __init__(self, name="", age=0, sex="man", STR=0, CON=0, SIZ=0, DEX=0, APP=0, EDU=0, INT=0, POW=0, Luck=0, Idea=0, Know=0, 
+                 DB="", HP=0, MP=0, Dodge=0, SAN=0, max_SAN=0, profession="", skill={}, inventory=[], hobby="", girl_like_ability=0):
+        super().__init__(name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill,
                          age, sex, APP, EDU, Luck, Idea, Know, SAN, max_SAN, profession, inventory)
-        self.Hobby = ""
-        self.girl_like_ability = 0
+        self.Hobby = hobby
+        self.girl_like_ability = girl_like_ability
 
-    # 辞書型にして返す
     def to_dict(self):
-        return {
-            "name":self.name, "age":self.age, "sex":self.sex,
-            "STR":self.STR, "CON":self.CON, "SIZ":self.SIZ, "DEX":self.DEX,
-            "APP":self.APP, "EDU":self.EDU, "INT":self.INT, "POW":self.POW,
-            "Luck":self.Luck, "Idea":self.Idea, "Know":self.Know, "DB":self.DB,
-            "HP":self.HP, "MP":self.MP, "Avo":self.Avo, "SAN":self.SAN, "max_SAN": self.max_SAN,
-            "Profession":self.Profession,
-            "Hobby": self.Hobby,
-            "skill":self.skill,
-            "inventory":self.inventory,
-            "girl_like_ability": self.girl_like_ability
-        }
-    
-    # 辞書からクラスインスタンスを作成
-    @classmethod
-    def from_dict(cls, data):
-        player = cls()
-        for key, value in data.items():
-            if hasattr(player, key):
-                setattr(player, key, value)
-        return player
+        data = super().to_dict()
+        data["Hobby"] = self.Hobby
+        data["girl_like_ability"] = self.girl_like_ability
+        return data

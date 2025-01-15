@@ -1,5 +1,6 @@
 {
     "player_status":{},
+    "girl_status":{},
     "game_state":{},
     "flags":{}
 }

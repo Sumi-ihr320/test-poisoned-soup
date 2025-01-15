@@ -1,6 +1,6 @@
 {
     "Soup":[
-        {"tyep":"conditional",
+        {"type":"conditional",
          "conditions":[
             {"flags":[{"category":"items", "flag":"soup_drink", "value":true}], "next":"Soup_drink"},
             {"flags":[{"category":"items", "flag":"soup_in_poison", "value":true}], "next":"Soup_in_poison"},
@@ -10,10 +10,10 @@
             {"flags":[{"category":"items", "flag":"soup_temperature", "value":3}],"next":"Soup_time4"}
         ],
     "Soup_drink":[
-        {"type":"text", "text":"飲み干してしまったスープの器。中身は空だ。"}
+        {"type":"text", "text":"飲み干してしまったスープの器。中身は空だ。", "progression":"click"}
     ],
     "Soup_in_poison":[
-        {"type":"text", "text":"毒の入ったスープ。毒々しい色をしている。"},
+        {"type":"text", "text":"毒の入ったスープ。毒々しい色をしている。", "progression":"click"},
         {"type":"interaction",
          "interactions":[
             {"text":"目星", "next":""},
@@ -23,63 +23,68 @@
          ]}
     ],
     "Soup_time1":[
-        {"type":"conditional", "conditions":[
+        {"type":"conditional",
+         "conditions":[
             {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time1"},
             {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time1"}
         ]}
     ],
     "Soup_time2":[
-        {"type":"conditional", "conditions":[
+        {"type":"conditional",
+         "conditions":[
             {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time2"},
             {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time2"}
         ]}
     ],
     "Soup_time3":[
-        {"type":"conditional", "conditions":[
+        {"type":"conditional",
+         "conditions":[
             {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time3"},
             {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time3"}
         ]}
     ],
     "Soup_time4":[
-        {"type":"conditional", "conditions":[
+        {"type":"conditional",
+         "conditions":[
             {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time4"},
             {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time4"}
         ]}
     ],
     "Soup_unknown_time1":[
-        {"tyep":"text", "text":"赤い無臭のスープ。温かく湯気が立っている。"},
+        {"type":"text", "text":"赤い無臭のスープ。温かく湯気が立っている。", "progression":"click"},
         {"type":"next_step", "next":"Soup_interaction"}
     ],
     "Soup_unknown_time2":[
-        {"tyep":"text", "text":"赤い無臭のスープ。ほのかに温かい。"},
+        {"type":"text", "text":"赤い無臭のスープ。ほのかに温かい。", "progression":"click"},
         {"type":"next_step", "next":"Soup_interaction"}
     ],
     "Soup_unknown_time3":[
-        {"tyep":"text", "text":"赤い無臭のスープ。冷めてきているようだ。"},
+        {"type":"text", "text":"赤い無臭のスープ。冷めてきているようだ。", "progression":"click"},
         {"type":"next_step", "next":"Soup_interaction"}
     ],
     "Soup_unknown_time4":[
-        {"tyep":"text", "text":"赤い無臭のスープ。すっかり冷たくなっている。"},
+        {"type":"text", "text":"赤い無臭のスープ。すっかり冷たくなっている。", "progression":"click"},
         {"type":"next_step", "next":"Soup_interaction"}
     ],
     "Soup_know_time1":[
-        {"tyep":"text", "text":"人間の血のスープ。温かく湯気が立っている。\n鉄錆に似た悪臭がスープから漂ってくる…"},
+        {"type":"text", "text":"人間の血のスープ。温かく湯気が立っている。\n鉄錆に似た悪臭がスープから漂ってくる…", "progression":"click"},
         {"type":"next_step", "next":"Soup_interaction"}
     ],
     "Soup_know_time2":[
-        {"tyep":"text", "text":"人間の血のスープ。ほのかに温かい。\n鉄錆に似た悪臭がスープから漂ってくる…"},
+        {"type":"text", "text":"人間の血のスープ。ほのかに温かい。\n鉄錆に似た悪臭がスープから漂ってくる…", "progression":"click"},
         {"type":"next_step", "next":"Soup_interaction"}
     ],
     "Soup_know_time3":[
-        {"tyep":"text", "text":"人間の血のスープ。冷めてきているようだ。\n鉄錆に似た悪臭がスープから漂ってくる…"},
+        {"type":"text", "text":"人間の血のスープ。冷めてきているようだ。\n鉄錆に似た悪臭がスープから漂ってくる…", "progression":"click"},
         {"type":"next_step", "next":"Soup_interaction"}
     ],
     "Soup_know_time4":[
-        {"tyep":"text", "text":"人間の血のスープ。すっかり冷たくなっている。\n鉄錆に似た悪臭がスープから漂ってくる…"},
+        {"type":"text", "text":"人間の血のスープ。すっかり冷たくなっている。\n鉄錆に似た悪臭がスープから漂ってくる…", "progression":"click"},
         {"type":"next_step", "next":"Soup_interaction"}
     ],
     "Soup_interaction":[
-        {"type":"conditional", "conditions":[
+        {"type":"conditional",
+         "conditions":[
             {"flags":[
                 {"category":"items", "flag":"soup_know", "value":true},
                 {"category":"items", "flag":"poison_get", "value":true}
@@ -99,8 +104,8 @@
         ]}
     ],
     "Soup_interaction_know_for_get":[
-        {"type":"interaction",
-            "intaractions":[
+        {"type":"interaction", "progression":"click",
+            "interactions":[
                 {"text":"目星", "next":""},
                 {"text":"触る", "next":""},
                 {"text":"毒を入れる","next":""},
@@ -110,8 +115,8 @@
         ]}
     ],
     "Soup_interaction_know_not_have":[
-        {"type":"interaction",
-            "intaractions":[
+        {"type":"interaction", "progression":"click",
+            "interactions":[
                 {"text":"目星", "next":""},
                 {"text":"触る", "next":""},
                 {"text":"飲む", "next":""},
@@ -119,8 +124,8 @@
             ]}    
     ],
     "Soup_interaction_unknown_for_get":[
-        {"type":"interaction",
-            "intaractions":[
+        {"type":"interaction", "progression":"click",
+            "interactions":[
                 {"text":"目星", "next":""},
                 {"text":"医学", "next":"Soup_medicine"},
                 {"text":"触る", "next":""},
@@ -130,8 +135,8 @@
             ]}
     ],
     "Soup_interaction_unknown_not_have":[
-        {"type":"interaction",
-            "intaractions":[
+        {"type":"interaction", "progression":"click",
+            "interactions":[
                 {"text":"目星", "next":""},
                 {"text":"医学", "next":"Soup_medicine"},
                 {"text":"触る", "next":""},
@@ -145,29 +150,30 @@
          "failure":"Soup_medicine_failure"}
     ],
     "Soup_medicine_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}"},
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"items", "item":"soup", "flag":"know", "value":true},
-        {"type":"text", "text":"あなたは医学の知識によって、このスープが確かに人間の血液であることを確信するだろう。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。"},
-        {"type":"text", "text":"そのことを知ってしまったあなたは0/1d4のSANチェックだ。"},
+        {"type":"text", "text":"あなたは医学の知識によって、このスープが確かに人間の血液であることを確信するだろう。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。", "progression":"click"},
+        {"type":"text", "text":"そのことを知ってしまったあなたは0/1d4のSANチェックだ。", "progression":"click"},
         {"type":"dice_check", "check_type":"SAN", "dice":"1d100",
          "success":"Soup_medicine_SAN_success",
          "failure":"Soup_medicine_SAN_failure"}
     ],
     "Soup_medicine_SAN_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}"},
-        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ"}
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ", "progression":"click"}
     ],
     "Soup_medicine_SAN_failure":[
-        {"tyep":"text", "text":"失敗！ {roll}/{threshold}"},
-        {"type":"action", "action":"damege", "status":"SAN", "dice":"1d4"},
-        {"type":"text", "text":"おぞましい事実に気づいてしまったあなたは{damege}ポイントの正気度を失った"}
+        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"damage", "dice":"1d4"},
+        {"type":"text", "text":"おぞましい事実に気づいてしまったあなたは{damege}ポイントの正気度を失った", "progression":"click"},
+        {"type":"action", "action":"damage", "status":"SAN", "damage":0}
     ],
     "Soup_medicine_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
-        {"type":"text", "text":"何もわからなかった。"}
+        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"何もわからなかった。", "progression":"click"}
     ],
     "Soup_destruction":[
-        {"type":"text", "text":"あなたはスープを捨てることにした。"},
+        {"type":"text", "text":"あなたはスープを捨てることにした。", "progression":"click"},
         {"type":"conditional",
          "conditions":[
             {"flags":[{"category":"girl","flag":"fellow", "value":true}], "next":"Soup_destruction_with_girl"},
@@ -176,10 +182,18 @@
     ],
     "Soup_destruction_only_me":[
         {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_destruction", "value":false},
-        {"type":"text", "text":"あなたはスープを捨てた。"}
+        {"type":"text", "text":"あなたはスープを捨てた。", "progression":"click"}
     ],
     "Soup_destruction_with_girl":[
-        {"type":"text", "text":"少女がじっとあなたを見ている。"},
-        {"type":"text", "text":"本当に捨てていいのか？と問うているようだ。"}
+        {"type":"text", "text":"少女がじっとあなたを見ている。", "progression":"click"},
+        {"type":"text", "text":"本当に捨てていいのか？と問うているようだ。", "progression":"click"},
+        {"type":"interaction", "progression":"click",
+            "interactions":[
+                {"text":"捨てる", "next":"Soup_destruction_only_me"},
+                {"text":"捨てない", "next":"Soup_not_destruction"}
+        ]}
+    ],
+    "Soup_not_destruction":[
+        {"type":"text", "text":"やはり捨てるのはやめよう。", "progression":"click"}
     ]
 }

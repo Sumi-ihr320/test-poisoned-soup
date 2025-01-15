@@ -1,8 +1,8 @@
 {
     "centerMemo":[
-        {"tyep":"text", "text":"1枚目のメモには絵が描かれている。\nおそらくこの部屋の地図だろう。"},
-        {"type":"text", "text":"もう一枚のメモを手に取ると、\nそこにはこう書かれていた。"},
-        {"type":"text", "text":"～帰りたいなら 一時間以内に 毒入りスープを飲め。\n  飲むまでは 君じゃあここから 出られない。/n  一時間以内に 飲めなかったら お迎えが来るぞ～"},
+        {"type":"text", "text":"1枚目のメモには絵が描かれている。\nおそらくこの部屋の地図だろう。", "progression":"click"},
+        {"type":"text", "text":"もう一枚のメモを手に取ると、\nそこにはこう書かれていた。", "progression":"click"},
+        {"type":"text", "text":"～帰りたいなら 一時間以内に 毒入りスープを飲め。\n  飲むまでは 君じゃあここから 出られない。\n  一時間以内に 飲めなかったら お迎えが来るぞ～", "progression":"click"},
         {"type":"conditional", 
          "conditions":[
             {"flags":[
@@ -18,52 +18,52 @@
         }
     ],
     "centerMemo_obj_true":[
-        {"tyep":"text", "text":"裏には\n～暖かい 人間の 血の スープ 冷めない 内に 召し上がれ～\nと書かれている。"}
+        {"type":"text", "text":"裏には\n～暖かい 人間の 血の スープ 冷めない 内に 召し上がれ～\nと書かれている。", "progression":"click"}
     ],
     "centerMemo_obj_false":[
-        {"type":"interaction",
-         "intaractions":[
+        {"type":"interaction", "progression":"click",
+         "interactions":[
             {"text":"目星", "next":"centerMemo_objective"}]
         }
     ],
     "centerMemo_objective":[
-        {"tyep":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
+        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
          "success":"centerMemo_objective_success",
          "failure":"centerMemo_objective_failure"}
     ],
     "centerMemo_objective_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}"},
-        {"type":"text", "text":"あなたは、紙の裏にも文字が書かれていることに気付いた。"},
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"あなたは、紙の裏にも文字が書かれていることに気付いた。", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"items", "flag":"center_memo_objective", "value":true},
-        {"type":"text", "text":"～暖かい 人間の 血の スープ 冷めない 内に 召し上がれ～\n《アイデア》⇒"},
+        {"type":"text", "text":"～暖かい 人間の 血の スープ 冷めない 内に 召し上がれ～\n《アイデア》⇒", "progression":"click"},
         {"type":"dice_check", "check_type":"status", "status":"Idea", "dice":"1d100",
          "success":"centerMemo_objective_idea_success",
          "failure":"centerMemo_objective_idea_failure"}
     ],
     "centerMemo_objective_idea_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}"},
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_know", "value":true},
-        {"type":"text", "text":"このスープはどうやら本当に人間の血のようだ。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。"},
-        {"type":"text", "text":"このおぞましい事実に気付いてしまったあなたは0/1d4のSANチェックだ。"},
+        {"type":"text", "text":"このスープはどうやら本当に人間の血のようだ。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。", "progression":"click"},
+        {"type":"text", "text":"このおぞましい事実に気付いてしまったあなたは0/1d4のSANチェックだ。", "progression":"click"},
         {"type":"dice_check", "check_type":"SAN", "dice":"1d100",
          "success":"centerMemo_objective_idea_SAN_success",
          "failure":"centerMemo_objective_idea_SAN_failure"}
     ],
     "centerMemo_objective_idea_SAN_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}"},
-        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ"}
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ", "progression":"click"}
     ],
     "centerMemo_objective_idea_SAN_failure":[
-        {"tyep":"text", "text":"失敗！ {roll}/{threshold}"},
+        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
         {"type":"action", "action":"damage", "status":"SAN", "dice":"1d4"},
-        {"type":"text", "text":"おぞましい事実に気づいてしまったあなたは{damege}ポイントの正気度を失った"}
+        {"type":"text", "text":"おぞましい事実に気づいてしまったあなたは{damege}ポイントの正気度を失った", "progression":"click"}
     ],
     "centerMemo_objective_idea_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
-        {"type":"text", "text":"どういう意味だろうか……"}
+        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"どういう意味だろうか……", "progression":"click"}
     ],
     "centerMemo_objective_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
-        {"type":"text", "text":"何もわからなかった。"}
+        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"何もわからなかった。", "progression":"click"}
     ]
 }

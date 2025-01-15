@@ -1,5 +1,6 @@
 {
     "MEMO":{
+        "progression": "進行タイプ click or auto",
         "type: text": "表示されるテキストをクリックで次に進む。",
         "type: action": "指定されたアクション（例: 部屋の切り替え）を実行。",
         "type: dice_check": "ダイスの結果によって次のシナリオへ移行。",
@@ -19,12 +20,8 @@
             ], "next":"次のシナリオ"}
         ],
         "type: interaction": "コマンドの種類と選択結果",
-        "intaractions":[
+        "interactions":[
             {"text":"コマンド名", "next":"次のシナリオ"}
         ]
-    },
-
-    "shock_roll":[
-        {"type":"action", "action":"shock_roll", "status":"HP", "dice":"1d100", "chack":"con*5"}
-    ]
+    }
 }

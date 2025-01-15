@@ -290,3 +290,20 @@
 	
 2024/12/21
 	character_item.pyを作成
+
+2024/12/28
+	skillクラスを作成したが使用せず辞書型で運用することにした
+
+2025/1/4
+	flagクラス等の作成等による微調整
+	scenarioのスペルミス等を修正
+
+2025/1/11
+	pygame.mixer.init()を記述
+	サウンドのこともそろそろ考えたい
+	scenario_manager、event_managerの調整改良(未完成)
+
+2025/1/15
+	scenario_manager、event_managerの調整改良
+	scenarioに"progression"を追加
+	自動進行とクリック進行の両方に対応できるようにしたい

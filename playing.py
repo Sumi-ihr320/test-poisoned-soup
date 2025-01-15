@@ -35,11 +35,11 @@ class MainPlay:
         self.player_label = PlayerDataView(self.screen, self.player_status, self.game_state.room)
 
         # 管理用
-        self.scenario_manager = ScenarioManager(self.screen, "center-room", self.flags, self.handle_action)
-        self.event_manager = EventManager(self.screen, self.scenario_manager, self.flags)
-
+        self.event_manager = EventManager(self.screen, self.player_status, self.game_state, self.flags, self.handle_next_scenario)
+        self.scenario_manager = ScenarioManager(self.screen, self.event_manager, "center-room")
+ 
         # 部屋の管理
-        self.room_manager = RoomManager(self.screen, self.event_manager, self.flags)
+        self.room_manager = RoomManager(self.screen, self.event_manager, self.flags, self.game_state)
 
         # 選択されたアイテム
         self.selected_item = None
@@ -48,6 +48,9 @@ class MainPlay:
     def set_data(self, save_data):
         # 主人公データ
         self.player_status = Player().from_dict(save_data["player_status"])
+
+        # 少女のデータ
+        self.girl_status = Human().from_dict(save_data["girl_status"])
 
         # フラグ一覧
         self.state = State.NONE     # saveやload等の状態管理フラグ
@@ -58,6 +61,7 @@ class MainPlay:
     def create_save_data(self):
         self.save_data = {
             "player_status": self.player_status.to_dict(),
+            "girl_status": self.girl_status.to_dict(),
             "game_state": self.game_state.to_dict(),
             "flags": self.flags.to_dict()
         }
@@ -69,7 +73,7 @@ class MainPlay:
         else:
             self.navigation.setup_navigation([Position.UNDER])
     
-    # アイテムクリック時のイベントをまとめる
+    # アイテムクリック時のイベント
     def handle_item_click_event(self, event):
         for item in self.room_manager.room.items_select_list:
             if item.handle_click(event.pos):
@@ -80,14 +84,33 @@ class MainPlay:
         self.selected_item = None
         return False
 
-    # イベントマネージャーにシナリオマネージャーからデータを移す為のコールバック関数
-    def handle_action(self, action, step):
-        self.event_manager.handle_action(action, step)
-
     # コマンドメニューイベント
-    def handle_command_menu_event(self, event):
-        if self.event_manager.command_menu:
-            self.event_manager.command_menu.handle_click(event.pos)
+    def handle_command_menu_event(self, pos):
+        self.event_manager.handle_command_click(pos)
+
+    # ナビゲーションバーをクリックした場合のイベント
+    def handle_navigation(self, clicked_position):
+        state = False
+        if self.game_state.room == "center":
+            if clicked_position == Position.RIGHT:
+                self.room_manager.move_to_room("right")
+                state = True
+            elif clicked_position == Position.LEFT:
+                self.room_manager.move_to_room("left")
+                state = True
+        else:
+            if clicked_position is not None:
+                self.room_manager.move_to_room("under")
+                state = True
+        
+        if state:
+            self.selected_item = None
+
+        return state
+
+    # イベントマネージャーから次のシナリオを受け取るためのコールバック関数
+    def handle_next_scenario(self, next_scenario):
+        self.scenario_manager.start_scenario(next_scenario)
 
     # マウスオーバー
     def handle_mouse_hover(self):
@@ -109,37 +132,26 @@ class MainPlay:
     # クリックイベント
     def handle_click(self, event):
         # シナリオ進行
-        self.scenario_manager.update()
+        self.scenario_manager.on_click()
 
         # シナリオ進行中ではない場合
         if not self.scenario_manager.is_active:
 
+            # コマンドメニュー表示中はそれを優先
+            if self.event_manager.command_menu:
+                self.handle_command_menu_event(event.pos)
+            
             # メニューボタン
-            if self.menu_controller.handle_click(event.pos):
+            elif self.menu_controller.handle_click(event.pos):
                 return
 
-            if self.game_state.room == "center":
-                # ナビゲーションバーによる移動
-                clicked_position = self.navigation.handle_click(event.pos)
-                if clicked_position == Position.RIGHT:
-                    self.room_manager.move_to_room("right")
-                    self.selected_item = None
-                elif clicked_position == Position.LEFT:
-                    self.room_manager.move_to_room("left")
-                    self.selected_item = None
-                else:
-                    if self.handle_item_click_event(event):
-                        return
-                    self.handle_command_menu_event(event)
-            else:
-                # ナビゲーションバーによる移動
-                if self.navigation.handle_click(event.pos) is not None:
-                    self.room_manager.move_to_room("under")
-                else:
-                    if self.handle_item_click_event(event):
-                        return
-                    self.handle_command_menu_event(event)
-
+            # ナビゲーションバーによる移動
+            elif self.handle_navigation(self.navigation.handle_click(event.pos)):
+                return
+                
+            # アイテムクリックイベント
+            elif self.handle_item_click_event(event):
+                return
 
     def draw(self):
         create_frame(self.screen)       # テキストフレームの表示
@@ -160,43 +172,10 @@ class MainPlay:
         # シナリオマネージャーの表示
         self.scenario_manager.draw()
 
-    """
-    # シナリオを作成する
-    def create_scenario(self):
-        self.text = ""
-        file_name = ""
-        if self.room_scenario_flag[self.room_flag] < self.max_room_scenario_flag:
-            if self.room.scenario_list:
-                file_name = self.room.scenario_list[self.room_scenario_flag[self.room_flag]]
-        else:
-            if self.selected_item:
-                if self.selected_item.name == "Soup":
-                    if self.time >= 45:
-                        time = 1
-                    elif self.time >= 30:
-                        time = 2
-                    elif self.time >= 15:
-                        time = 3
-                    else:
-                        time = 4
-                    event = "know" if self.soup_flag["know"] else ""
-                    file_name = create_scenario_path(item="Soup", event=event, time=time)[0]
-                elif self.selected_item.name == "centerMemo":
-                    self.item_max_flag = 4 if self.items_flag["center_memo"]["objective"] else 3
-                    if self.items_flag["center_memo"]["scenario"] < self.item_max_flag:
-                        file_name = self.selected_item.scenario_path_list[self.items_flag["center_memo"]["scenario"]]
-                elif self.selected_item.scenario_path_list:
-                    file_name = self.selected_item.scenario_path_list[0]
-        if file_name:
-            self.text = load_text(file_name)
-
-    def item_event(self):
-
-        pass
-    
-    # シナリオ表示用
-    """
     def update(self):
+        if self.scenario_manager.is_active:
+            self.scenario_manager.update()
+
         self.draw()
         self.handle_mouse_hover()
         self.handle_events()

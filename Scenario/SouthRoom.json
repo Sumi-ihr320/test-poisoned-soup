@@ -1,3 +1,5 @@
 {
-    
+    "south-room": [
+        {"type":"text", "text":"", "progression":"click"}
+    ]
 }

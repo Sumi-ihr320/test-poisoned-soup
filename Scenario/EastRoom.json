@@ -10,12 +10,12 @@
         ]}
     ],
     "east-room_visivle_true":[
-        {"type":"text", "text":"中は真っ暗だ。"}
+        {"type":"text", "text":"中は真っ暗だ。", "progression":"click"}
     ],
     "east-room_visivle_girl_false":[
-        {"type":"text", "text":"中は真っ暗で、中央の部屋の明かりも奥までは届かないようだ。"},
-        {"type":"interaction",
-         "intaractions":[
+        {"type":"text", "text":"中は真っ暗で、中央の部屋の明かりも奥までは届かないようだ。", "progression":"click"},
+        {"type":"interaction", "progression":"click",
+         "interactions":[
             {"text":"目星", "next":""},
             {"text":"聞き耳", "next":"east_room_listen"},
             {"text":"中を歩く", "next":""},
@@ -29,11 +29,11 @@
          "failure": "east-room_listen_failure"}
     ],
     "east-room_listen_success": [
-        {"type":"text", "text":"成功！ {roll}/{threshold}"},
-        {"type": "text", "text": "ひたひたという足音が近づいて来ているようだ。"}
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type": "text", "text": "ひたひたという足音が近づいて来ているようだ。", "progression":"click"}
     ],
     "east-room_listen_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
+        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
         {"type": "text", "text": "特に何も聞こえなかった。"}
     ]
 }

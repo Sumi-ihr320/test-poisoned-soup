@@ -478,20 +478,20 @@ class CommandMenu:
 
 # 主人公の名前・HP・MP・現在地を右上に表示する
 class PlayerDataView:
-    def __init__(self, screen, player_status, room_flag) -> None:
+    def __init__(self, screen, player, room_flag) -> None:
         self.screen = screen
         self.font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
 
-        self.player_status = player_status
+        self.player = player
         self.room_flag = room_flag
 
         self.status_label = None
         self.create_label()
 
     def create_label(self):
-        name_label = Label(self.screen, self.font, self.player_status.name, 500, 10, position="right", color=WHITE)
-        hp_label = Label(self.screen, self.font, f"HP/{self.player_status.HP}", 590, 10, position="right", color=WHITE)
-        mp_label = Label(self.screen, self.font, f"MP/{self.player_status.MP}", 650, 10, position="right", color=WHITE)
+        name_label = Label(self.screen, self.font, self.player.name, 500, 10, position="right", color=WHITE)
+        hp_label = Label(self.screen, self.font, f"HP/{self.player.HP}", 590, 10, position="right", color=WHITE)
+        mp_label = Label(self.screen, self.font, f"MP/{self.player.MP}", 650, 10, position="right", color=WHITE)
         current_room_label = Label(self.screen, self.font, ROOM_NAME[self.room_flag], 770, 10, position="right", color=WHITE)
         self.status_label = [name_label, hp_label, mp_label, current_room_label]
 

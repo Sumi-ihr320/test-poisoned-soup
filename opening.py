@@ -5,6 +5,7 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from menu import MenuController
+from manager.event_manager import EventManager
 from manager.scenario_manager import ScenarioManager
 
 # オープニング関数をクラス化    (chatGPT指南)
@@ -16,8 +17,9 @@ class Opening:
         # 画面の状態
         self.state = State.NONE
 
-        # シナリオマネージャーを初期化
-        self.scenario_manager = ScenarioManager(self.screen, "opening")
+        # マネージャーを初期化
+        event_manager = EventManager(self.screen)
+        self.scenario_manager = ScenarioManager(self.screen, event_manager, "opening")
         
         # メニューボタン
         self.menu_controller = MenuController(self.screen, self.root, self.set_state, save_enabled=False)

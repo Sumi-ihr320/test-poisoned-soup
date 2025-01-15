@@ -1,6 +1,10 @@
 from constans import *
 from ui_elements import *
 
+from characters import *
+from character_item import *
+from skill import *
+
 from profession import ProfessionSelecter, HobbySelecter
 
 class ProfessionPage:
@@ -54,6 +58,19 @@ class ProfessionPage:
         else:
             # セーブデータに主人公データを入れる
             self.save_data["player_status"] = self.player.to_dict()
+
+            # セーブデータに少女のデータを入れる
+            girl = Human("下僕の少女", 4, 6, 10, 5, 10, 10,"-1d4", 8, 10, 10,
+                         {"目星":55, "聞き耳":55, "忍び歩き":40,"隠れる":40,"応急手当":50, "中国語（母国語）":40, "追跡":50, "その他言語（主人公の母国語）":31,"クトゥルフ神話":15, "拳銃":20},
+                         17, "woman", 13, 6, 50, 50, 30, 0, 0, "放浪者")
+            bloody_robe = Armor("血まみれの白いローブ")
+            gun = Weapon("22口径ショート・オートマチック", img_name="Pistol.png", skill_point=20,
+                         damage_dice="1d6", attack_range="10m", one_round=3, bullets=6, durability=6)
+            girl.add_item(bloody_robe)
+            girl.add_item(gun)
+
+            self.save_data["girl_status"] = girl.to_dict()
+
             self.callback(State.SAVE)
 
     def draw(self, selected_profession, is_pulldown_open):
@@ -113,9 +130,9 @@ class ProfessionPage:
     # 選択した職業から主人公のステータスにデータを入れるよ
     def profession_data_set(self):
         # 主人公の所持スキルをリセット
-        self.player["skill"] = {}
+        self.player.skill = {}
         # 回避もスキル一覧にあるので回避もリセット
-        self.player.Avo = self.player.DEX * 2
+        self.player.Dodge = self.player.DEX * 2
 
         profession_list = load_json(PROF_DATA_PATH)
         skill_list = load_json(SKILL_DATA_PATH)
@@ -133,7 +150,7 @@ class ProfessionPage:
 
             # 基本技能ポイント
             if skill == "回避":
-                current_skill_value = self.player.Avo
+                current_skill_value = self.player.Dodge
             else:
                 current_skill_value = skill_list[skill]
 
@@ -142,9 +159,9 @@ class ProfessionPage:
 
             # 主人公のステータスにポイントを入力
             if skill == "回避":
-                self.player.Avo = new_skill_value
+                self.player.Dodge = new_skill_value
             else:
-                self.player["skill"][skill] = new_skill_value
+                self.player.skill[skill] = new_skill_value
 
             # 技能ポイント - 使用した技能ポイント + 余りの技能ポイント
             remaining_points = remaining_points - bonus_points + surplus_points
@@ -160,8 +177,8 @@ class ProfessionPage:
             while remaining_points > 0:
                 lists = {}
                 # スキルリストから90以下のスキルをリスト化する
-                for skill in self.player["skill"]:
-                    skill_value = self.player["skill"][skill]
+                for skill in self.player.skill:
+                    skill_value = self.player.skill[skill]
                     if skill_value < 90:
                         lists[skill] = skill_value
                 if len(lists) > 0:
@@ -173,17 +190,17 @@ class ProfessionPage:
                         # 計算していく
                         for skill, current_skill_value in lists.items():
                             new_skill_value, surplus_points = Calculation(current_skill_value, bonus_points, 90)
-                            self.player["skill"][skill] = new_skill_value
+                            self.player.skill[skill] = new_skill_value
                             remaining_points = remaining_points - bonus_points + surplus_points
                     else:
                         select = random.choice(list(lists))
-                        self.player["skill"][select]  += remaining_points
+                        self.player.skill[select]  += remaining_points
                         remaining_points -= remaining_points
 
     # 選択した趣味から主人公のステータスにデータを入れるよ
     def hobby_data_set(self, selected_hobby):
         # 主人公の持っている技能データ
-        my_skills = self.player["skill"]
+        my_skills = self.player.skill
 
         # 趣味リストの技能データ
         hobby_list = load_json(HOBBY_DATA_PATH)
@@ -208,7 +225,7 @@ class ProfessionPage:
                 # 計算する
                 new_value, surplus_points = Calculation(current_value, bonus_points, 90)
                 # スキルに値を入れる
-                self.player["skill"][skill] = new_value
+                self.player.skill[skill] = new_value
                 # 残りのポイントを算出
                 remaining_points = remaining_points - bonus_points + surplus_points
 
@@ -217,5 +234,5 @@ class ProfessionPage:
                 for i, skill in enumerate(hobby_skills):
                     current_value = my_skills[skill]
                     new_value, surplus_points = Calculation(current_value, remaining_points, 90)
-                    self.player["skill"][skill] = new_value
+                    self.player.skill[skill] = new_value
                     remaining_points = surplus_points

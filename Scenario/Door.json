@@ -1,8 +1,8 @@
 {
     "northDoor":[
-        {"type":"text", "text":"真っ白でドアノブがない、板のような押し扉だ。"},
-        {"type":"interaction",
-         "intaractions":[
+        {"type":"text", "text":"真っ白でドアノブがない、板のような押し扉だ。", "progression":"click"},
+        {"type":"interaction", "progression":"click",
+         "interactions":[
             {"text":"目星", "next":"northDoor_objective"},
             {"text":"聞き耳", "next":"northDoor_listen"},
             {"text":"叩く", "next":"northDoor_knock"},
@@ -10,21 +10,21 @@
          ]}
     ],
     "northDoor_objective":[
-        {"type":"text", "text":"特に分かることはなかった。"}
+        {"type":"text", "text":"特に分かることはなかった。", "progression":"click"}
     ],
     "northDoor_listen":[
-        {"type":"text", "text":"何も聞こえなかった。"}
+        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"}
     ],
     "northDoor_knock":[
-        {"type":"text", "text":"何の反応もない。"}
+        {"type":"text", "text":"何の反応もない。", "progression":"click"}
     ],
     "northDoor_open":[
         {"type":"action", "action":"move_to_room", "room_id":"north-room"}
     ],
     "eastDoor":[
-        {"type":"text", "text":"扉は錆びた鉄で出来ている。"},
-        {"type":"interaction",
-         "intaractions":[
+        {"type":"text", "text":"扉は錆びた鉄で出来ている。", "progression":"click"},
+        {"type":"interaction", "progression":"click",
+         "interactions":[
             {"text":"目星", "next":"eastDoor_objective"},
             {"text":"聞き耳", "next":""},
             {"text":"叩く", "next":""},
@@ -32,7 +32,7 @@
          ]}
     ],
     "eastDoor_objective":[
-        {"type":"text", "text":"特に分かることはなかった"}
+        {"type":"text", "text":"特に分かることはなかった", "progression":"click"}
     ],
     "eastDoor_open":[
         {"type": "conditional",
@@ -43,28 +43,28 @@
         }
     ],
     "eastDoor_locked":[
-        {"type":"text", "text":"どうやら鍵がかかっているようだ。\nしかし少し力を入れれば開きそうに思える。\n《STR》⇒"},
+        {"type":"text", "text":"どうやら鍵がかかっているようだ。\nしかし少し力を入れれば開きそうに思える。\n《STR》⇒", "progression":"click"},
         {"type":"VS_active", "statue":"STR", "enemy_status":5, "dice":"1d100",
          "success":"eastDoor_open_success",
          "failure":"eastDoor_open_failure"}
     ],
     "eastDoor_locked_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}"},
-        {"type":"text", "text":"鍵を壊すことができた。"},
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"鍵を壊すことができた。", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"east_room_flag" ,"flag":"open", "value":true},
         {"type":"action", "action":"move_to_room", "room_id":"east-room"}
     ],
     "eastDoor_locked_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}"},
-        {"type":"text", "text":"鍵を壊すことはできなかった。"}
+        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"鍵を壊すことはできなかった。", "progression":"click"}
     ],
     "eastDoor_unlocked":[
         {"type":"action", "action":"move_to_room", "room_id":"east-room"}
     ],
     "southDoor":[
-        {"type":"text", "text":"大きな厚い鉄扉だ。小窓がついている。"},
-        {"type":"interaction",
-        "intaractions":[
+        {"type":"text", "text":"大きな厚い鉄扉だ。小窓がついている。", "progression":"click"},
+        {"type":"interaction", "progression":"click",
+        "interactions":[
            {"text":"小窓を覗く", "next":"southDoor_look_through_window"},
            {"text":"聞き耳", "next":"southDoor_listen"},
            {"text":"叩く", "next":""},
@@ -72,21 +72,22 @@
         ]}
     ],
     "southDoor_look_through_window":[
-        {"type":"text", "text":"小窓を覗いてみた。"},
-        {"type":"text", "text":"ぼんやりと青白い部屋の中に、\n一枚だけの翼を持った巨大なクサリヘビのような怪物がうろついている。"},
-        {"type":"text", "text":"この怪物を目撃したあなたは0/1d10のSANチェックだ。"},
+        {"type":"text", "text":"小窓を覗いてみた。", "progression":"click"},
+        {"type":"text", "text":"ぼんやりと青白い部屋の中に、\n一枚だけの翼を持った巨大なクサリヘビのような怪物が\nうろついている。", "progression":"click"},
+        {"type":"text", "text":"この怪物を目撃したあなたは0/1d10のSANチェックだ。", "progression":"click"},
         {"type":"dice_check", "check_type":"SAN", "dice":"1d100",
          "success":"southDoor_look_SAN_success",
          "failure":"southDoor_look_SAN_failure"}
     ],
     "southDoor_look_SAN_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}"},
-        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ"}
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ", "progression":"click"}
     ],
     "southDoor_look_SAN_failure":[
-        {"tyep":"text", "text":"失敗！ {roll}/{threshold}"},
-        {"type":"damage", "action":"damage", "status":"SAN", "dice":"1d10"},
-        {"type":"text", "text":"おぞましい怪物を目撃してしまったあなたは{damage}ポイントの正気度を失った"}
+        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"damage", "dice":"1d10"},
+        {"type":"text", "text":"おぞましい怪物を目撃してしまったあなたは\n{damage}ポイントの正気度を失った", "progression":"click"},
+        {"type":"action", "action":"damage", "status":"SAN", "damage":0}
     ],
     "southDoor_listen":[
         {"type":"dice_check", "check_type":"skill", "skill":"聞き耳", "dice":"1d100",
@@ -94,25 +95,25 @@
          "failure":"southDoor_listen_failure"}
     ],
     "southDoor_listen_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}"},
-        {"type":"text", "text":"部屋の向こうからは何かの荒い呼吸音と\nズルズルという何か重いものを引きずるような音が聞こえる。"}
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"部屋の向こうからは何かの荒い呼吸音と\nズルズルという何か重いものを引きずるような音が\n聞こえる。", "progression":"click"}
     ],
     "southDoor_listen_failure":[
-        {"tyep":"text", "text":"失敗！ {roll}/{threshold}"},
-        {"type":"text", "text":"何も聞こえなかった。"}
+        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"}
     ],
     "southDoor_open":[
         {"type":"interaction",
-         "intaractions":[
+         "interactions":[
             {"text":"普通に入る", "next":""},
             {"text":"静かに入る", "next":""},
             {"text":"勢いよく入る", "next":""}
          ]}
     ],
     "westDoor":[
-        {"type":"text", "text":"綺麗な木製の扉だ。"},
+        {"type":"text", "text":"綺麗な木製の扉だ。", "progression":"click"},
         {"type":"interaction",
-        "intaractions":[
+        "interactions":[
            {"text":"目星", "next":"westDoor_objective"},
            {"text":"聞き耳", "next":""},
            {"text":"叩く", "next":""},

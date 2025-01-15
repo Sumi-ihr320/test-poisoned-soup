@@ -32,7 +32,7 @@ WINDOW_CENTER_Y = DISPLAY_SIZE[1] // 2
 PATH = os.path.dirname(__file__)
 SCENARIO = "/Scenario/"
 PICTURE ="/Picture/"
-MUSIC = "/Music/"
+SOUND = "/Sound/"
 SAVE_FOLDER = "/Save/"
 JSON_FOLDER = "/Json/"
 
@@ -41,6 +41,18 @@ STATUS_DATA_PATH = "Status.json"
 PROF_DATA_PATH = "Profession.json"
 SKILL_DATA_PATH = "SkillList.json"
 HOBBY_DATA_PATH = "Hobby.json"
+
+SCENARIO_FILES = [
+    "Opening.json",
+    "CenterRoom.json",
+    "Door.json",
+    "Light.json",
+    "Soup.json",
+    "CenterMemo.json",
+    "EastRoom.json",
+    "SouthRoom.json",
+    "WestRoom.json"
+]
 
 # フォント
 FONT_PATH = os.path.join(PATH,"HGRKK.TTC")

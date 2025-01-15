@@ -1,6 +1,6 @@
 {
     "opening":[
-        {"type":"text", "text":"この物語はクトゥルフ神話TRPGを元に作成しています。"},
-        {"type":"text", "text":"まずは探索者を作成しましょう。"}
+        {"type":"text", "text":"この物語はクトゥルフ神話TRPGを元に作成しています。", "progression":"click"},
+        {"type":"text", "text":"まずは探索者を作成しましょう。", "progression":"click"}
     ]
 }

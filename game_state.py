@@ -13,6 +13,17 @@ class GameStatus:
             "direction": self.direction
         }
 
+    # 辞書からクラスインスタンスを作成    
+    @classmethod
+    def from_dict(cls, data):
+        state = cls()
+        for key, value in data.items():
+            if hasattr(state, key):
+                setattr(state, key, value)
+        
+        return state
+
+
 # フラグ管理用のクラス
 class Flags:
     def __init__(self):
