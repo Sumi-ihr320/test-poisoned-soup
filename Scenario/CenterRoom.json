@@ -11,10 +11,10 @@
         {"type":"text", "text":"着ている衣服は全て白いローブのようなぼろきれで、\n他には何もありません。\n財布等の貴重品はもちろん、\n普段身に着けているアクセサリーなどもありません。", "progression":"click"},
         {"type":"text", "text":"天井の薄暗い豆電球だけが部屋を照らし、\n真ん中には古い木製の長机と椅子が一つあります。\n更に机の上には、\n木製の器に入った赤い無臭のスープが一つと、\n古い紙切れが二つ。", "progression":"click"},
         {"type":"text", "text":"さて、この部屋であなたは何をしましょうか。", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"center_room_scenario", "value":true}
+        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"center_room_scenario", "value":true, "progression":"auto"}
     ],
     "center-room_second":[
-        {"type":"text", "text":"四方に扉がある部屋だ。\n真ん中には机と椅子がある。"}
+        {"type":"text", "text":"四方に扉がある部屋だ。\n真ん中には机と椅子がある。", "progression":"click"}
     ],
     "Table":[
         {"type":"text", "text":"木製の机だ。\n上にはスープとメモが乗っている。", "progression":"click"},

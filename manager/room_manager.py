@@ -19,9 +19,11 @@ class RoomManager:
 
     # 二つ目の部屋表示チェック
     def room2_flag_check(self):
-        if self.room == "east":
-            return self.flags.get_flag("rooms", "east_room_visivle")
-        elif self.room == "west":
+        if self.game_state.room == "center":
+            return self.flags.get_flag("rooms", "center_room_light")
+        elif self.game_state.room == "east":
+            return not self.flags.get_flag("rooms", "east_room_visivle")
+        elif self.game_state.room == "west":
             return self.flags.get_flag("items", "book_found")
         else:
             return False
@@ -43,26 +45,19 @@ class RoomManager:
         return "center", direction_map.get(room, "north")
 
     # 部屋の移動を管理
-    def move_to_room(self, position):
+    def move_to_room(self, position=None, next_room=None):
         if position == "under":
             if self.flags.get_flag("items", "book_get"):
                 self.game_state.room, self.game_state.direction = "center", self.game_state.room
             else:
                 self.game_state.room, self.game_state.direction = self.room_move_direction_get(self.game_state.room)
-        else:
+        elif position == "right" or position == "left":
             self.game_state.direction = self.direction_move_get(position, self.game_state.direction)
+
+        elif next_room:
+            self.game_state.room = next_room
 
         self.create_room()
 
-    def handle_item_click(self, pos):
-        clickd_item = None
-        for item in self.room.items_select_list:
-            if item.handle_click(pos):
-                clickd_item = item
-                break
-
-        if clickd_item:
-            self.event_manager.handle_event("item_click", {"item_name":clickd_item.name})
-
-    def draw(self, selected_item, flags):
-        self.room.draw(selected_item, flags)            # 部屋の表示
+    def draw(self):
+        self.room.draw()            # 部屋の表示

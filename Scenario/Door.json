@@ -1,5 +1,6 @@
 {
     "northDoor":[
+        {"type":"image_display", "image":"northDoor.png"},
         {"type":"text", "text":"真っ白でドアノブがない、板のような押し扉だ。", "progression":"click"},
         {"type":"interaction", "progression":"click",
          "interactions":[
@@ -10,58 +11,69 @@
          ]}
     ],
     "northDoor_objective":[
-        {"type":"text", "text":"特に分かることはなかった。", "progression":"click"}
+        {"type":"text", "text":"特に分かることはなかった。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "northDoor_listen":[
-        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"}
+        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "northDoor_knock":[
-        {"type":"text", "text":"何の反応もない。", "progression":"click"}
+        {"type":"text", "text":"何の反応もない。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "northDoor_open":[
-        {"type":"action", "action":"move_to_room", "room_id":"north-room"}
+        {"type":"action", "action":"move_to_room", "room_id":"north-room", "progression":"click"}
     ],
     "eastDoor":[
+        {"type":"image_display", "image":"eastDoor.png"},
         {"type":"text", "text":"扉は錆びた鉄で出来ている。", "progression":"click"},
-        {"type":"interaction", "progression":"click",
+        {"type":"interaction",
          "interactions":[
             {"text":"目星", "next":"eastDoor_objective"},
-            {"text":"聞き耳", "next":""},
+            {"text":"聞き耳", "next":"eastDoor_listen"},
             {"text":"叩く", "next":""},
             {"text":"開ける", "next":"eastDoor_open"}
          ]}
     ],
     "eastDoor_objective":[
-        {"type":"text", "text":"特に分かることはなかった", "progression":"click"}
+        {"type":"text", "text":"特に分かることはなかった", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "eastDoor_listen":[
+        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "eastDoor_open":[
         {"type": "conditional",
          "conditions":[
-            {"flags":[{"category":"east_room_flag", "flag": "open", "value":false}], "next":"eastDoor_locked"},
-            {"flags":[{"category":"east_room_flag", "flag": "open", "value":true}], "next":"eastDoor_unlocked"}
+            {"flags":[{"category":"rooms", "flag": "east_room_open", "value":false}], "next":"eastDoor_locked"},
+            {"flags":[{"category":"rooms", "flag": "east_room_open", "value":true}], "next":"eastDoor_unlocked"}
          ]
         }
     ],
     "eastDoor_locked":[
         {"type":"text", "text":"どうやら鍵がかかっているようだ。\nしかし少し力を入れれば開きそうに思える。\n《STR》⇒", "progression":"click"},
-        {"type":"VS_active", "statue":"STR", "enemy_status":5, "dice":"1d100",
-         "success":"eastDoor_open_success",
-         "failure":"eastDoor_open_failure"}
+        {"type":"dice_check", "check_type":"VS_active", "status":"STR", "enemy_status":5, "dice":"1d100",
+         "success":"eastDoor_locked_success",
+         "failure":"eastDoor_locked_failure"}
     ],
     "eastDoor_locked_success":[
         {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
         {"type":"text", "text":"鍵を壊すことができた。", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"east_room_flag" ,"flag":"open", "value":true},
+        {"type":"action", "action":"set_flag", "category":"rooms" ,"flag":"east_room_open", "value":true},
         {"type":"action", "action":"move_to_room", "room_id":"east-room"}
     ],
     "eastDoor_locked_failure":[
         {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
-        {"type":"text", "text":"鍵を壊すことはできなかった。", "progression":"click"}
+        {"type":"text", "text":"鍵を壊すことはできなかった。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "eastDoor_unlocked":[
         {"type":"action", "action":"move_to_room", "room_id":"east-room"}
     ],
     "southDoor":[
+        {"type":"image_display", "image":"southDoor.png"},
         {"type":"text", "text":"大きな厚い鉄扉だ。小窓がついている。", "progression":"click"},
         {"type":"interaction", "progression":"click",
         "interactions":[
@@ -75,13 +87,14 @@
         {"type":"text", "text":"小窓を覗いてみた。", "progression":"click"},
         {"type":"text", "text":"ぼんやりと青白い部屋の中に、\n一枚だけの翼を持った巨大なクサリヘビのような怪物が\nうろついている。", "progression":"click"},
         {"type":"text", "text":"この怪物を目撃したあなたは0/1d10のSANチェックだ。", "progression":"click"},
-        {"type":"dice_check", "check_type":"SAN", "dice":"1d100",
+        {"type":"dice_check", "check_type":"status", "status":"SAN", "dice":"1d100",
          "success":"southDoor_look_SAN_success",
          "failure":"southDoor_look_SAN_failure"}
     ],
     "southDoor_look_SAN_success":[
         {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
-        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ", "progression":"click"}
+        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "southDoor_look_SAN_failure":[
         {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
@@ -96,11 +109,13 @@
     ],
     "southDoor_listen_success":[
         {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
-        {"type":"text", "text":"部屋の向こうからは何かの荒い呼吸音と\nズルズルという何か重いものを引きずるような音が\n聞こえる。", "progression":"click"}
+        {"type":"text", "text":"部屋の向こうからは何かの荒い呼吸音と\nズルズルという何か重いものを引きずるような音が\n聞こえる。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "southDoor_listen_failure":[
         {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
-        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"}
+        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "southDoor_open":[
         {"type":"interaction",
@@ -111,6 +126,7 @@
          ]}
     ],
     "westDoor":[
+        {"type":"image_display", "image":"westDoor.png"},
         {"type":"text", "text":"綺麗な木製の扉だ。", "progression":"click"},
         {"type":"interaction",
         "interactions":[

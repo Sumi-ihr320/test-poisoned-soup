@@ -53,7 +53,7 @@ class PageNavigation:
         self.navi_rect = self.navi_img.get_rect()
         # ナビゲーションの表示
         if self.position_flag == Position.UNDER:
-            self.navi_rect.centerx = self.screen.get_width() / 2 - self.navi_rect.centerx
+            self.navi_rect.centerx = WINDOW_CENTER_X
         else:
             self.navi_rect.centerx += self.rect_dic[self.position_flag]["x"]
         self.navi_rect.centery += self.rect_dic[self.position_flag]["y"]

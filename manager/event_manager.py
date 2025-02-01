@@ -1,37 +1,62 @@
 import re
 
 from constans import *
-from ui_elements import CommandMenu, DiceRoll
+from ui_elements import CommandMenu, DiceRoll, Image
 from utils import TextDraw, opposition_percent, load_json
 
 class EventManager:
-    def __init__(self, screen, player=None, game_state=None, flags=None, next_scenario_call_back=None):
+    def __init__(self, screen, player=None, game_state=None, flags=None,
+                 next_scenario_call_back=None, move_to_room_call_back=None, room_new_view=None):
         self.screen = screen
         self.player = player
         self.game_state = game_state
         self.flags = flags
         self.skill_list = load_json(SKILL_DATA_PATH)
 
+        # コールバック関数
         self.next_scenario_call_back = next_scenario_call_back
+        self.move_to_room_call_back = move_to_room_call_back
+        self.room_new_view_call_back = room_new_view
 
         self.command_menu = None
+        self.item_image = None
 
         self.roll_result = None     # ダイスロールの結果
         self.threshold = None       # ダイスロールの比較値
         self.damage_point = None    # ダメージポイント
 
     # コマンドメニューの生成
-    def create_command_menu(self, commands, item=None):
+    def create_command_menu(self, commands):
         if commands:
-            start_position = item.get_position() if item else (WINDOW_CENTER_X+100, 100)
+            start_position = self.get_position()
             self.command_menu = CommandMenu(self.screen, commands, start_position)
+
+    # 画像イメージの作成
+    def create_image(self, file_name):
+        size = 0.6 if "Memo" in file_name else (0.5 if "center-room_Light" in file_name else 0.35)
+        img_path = f"{PATH}{PICTURE}{file_name}"
+        self.item_image = Image(self.screen, img_path, size, x="center", centery=200, line_flag=True, bg_flag=True)
+
+    # コマンドメニューの表示位置を取得
+    def get_position(self):
+        max_x, max_y = 620, 220     # これ以上端に配置すると見えなくなる
+
+        # コマンド表示の指標となる画像位置。クリック時画像があればそこを起点とする。
+        if self.item_image:
+            image_rect = self.item_image.rect
+
+            # 画像の右側にコマンドボタンを表示する。最大値以上になる場合は左側に配置する。
+            x = image_rect.right + 30 if (image_rect.right + 30) <= max_x else image_rect.x - 130
+            y = image_rect.y if image_rect.y <= max_y else image_rect.y - 50
+        else:
+            x, y = WINDOW_CENTER_X + 120, 100
+
+        return (x, y)
 
     # シナリオから受け取ったイベントを進行する
     def handle_scenario_event(self, step):
         if step["type"] == "text":
             text = step["text"]
-            if "{" in text:
-                text = self.process_text_template(text)
             self.display_text(text)
 
         elif step["type"] == "next_step":
@@ -55,7 +80,14 @@ class EventManager:
             self.handle_conditional(step["conditions"])
 
         elif step["type"] == "interaction":
+            item = step.get("item", None)
             self.create_command_menu(step["interactions"])
+
+        elif step["type"] == "image_display":
+            self.create_image(step["image"])
+
+        elif step["type"] == "image_hidden":
+            self.item_image = None
 
     # アクションを実行する
     def handle_action(self, action, step):
@@ -68,11 +100,23 @@ class EventManager:
             flag = step["flag"]
             value = step["value"]
             self.set_flag(category, flag, value)
+            if flag == "center_room_light" and value == True:
+                self.room_new_view("center-room")
+            elif flag == "east_room_visivle" and value == True:
+                self.room_new_view("east-room")
+            elif flag == "book_found" and value == True:
+                self.room_new_view("west-room")
 
         elif action == "damage":
             status = step.get("status", None)
             damage = step.get("damage", None)
             self.take_damage(status, damage)
+
+        elif action == "get_item":
+            self.player.add_item(ITEM_LIST[step["item"]])
+
+        elif action == "lost_item":
+            self.player.remove_item(ITEM_LIST[step["item"]])
 
     # ダイスロールを処理
     def handle_dice_roll(self, step):
@@ -92,9 +136,10 @@ class EventManager:
         elif check_type == "skill":
             skill = step["skill"]
             threshold = self.player.skill.get(skill, self.skill_list[skill])
+
+        elif check_type == "status":
+            threshold = getattr(self.player, step["status"])
         
-        elif check_type == "SAN":
-            threshold = self.player.SAN
 
         dice = DiceRoll(dice_text)
         check_result = dice.check(threshold)
@@ -107,9 +152,12 @@ class EventManager:
             # 全部のフラグがtrueだったら次のシナリオ
             if all(self.flag_check(flag) for flag in condition["flags"]):
                 self.to_callback_next_scenario(condition["next"])
+                break
 
     # 現在のテキストを描画する
     def display_text(self, text):
+        if "{" in text:
+            text = self.process_text_template(text)
         TextDraw(self.screen, text)
 
     # テンプレートにダイス結果等を表示
@@ -124,9 +172,19 @@ class EventManager:
 
     # フラグをチェックする
     def flag_check(self, flags):
-        if self.flags.get_flag(flags["category"], flags["flag"]) == flags["value"]:
-            return True        
-        return False
+        if flags["category"] == "game_state":
+            value = getattr(self.game_state, flags["flag"])
+            if flags["flag"] == "time":
+                if value > flags["value"]:
+                    return True
+            else:
+                if value == flags["value"]:
+                    return True
+            return False
+        else:
+            if self.flags.get_flag(flags["category"], flags["flag"]) == flags["value"]:
+                return True        
+            return False
 
     # コールバック関数にデータを渡す
     def to_callback_next_scenario(self, next_scenario):
@@ -134,20 +192,25 @@ class EventManager:
 
     # 部屋移動イベント
     def move_to_room(self, room_id):
-        self.game_state.room = room_id
+        self.item_image = None
+        self.move_to_room_call_back(room_id)
 
+    # 部屋の状態変化による再描画
+    def room_new_view(self, room_id):
+        self.item_image = None
+        self.room_new_view_call_back(room_id)
         
     # フラグをセットするイベント
     def set_flag(self, category, flag, value):
         if type(value) == str:
             obj = re.match(r"\+|-", value)
             if obj:
-                value = value.split[1:]
+                int_value = int(value[1:])
                 flag_value = self.flags.get_flag(category, flag)
-                if obj.group == "+":
-                    value = flag_value + value
+                if value[0] == "+":
+                    value = flag_value + int_value
                 else:
-                    value = flag_value - value
+                    value = flag_value - int_value
 
         self.flags.update_flag(category, flag, value)
 
@@ -207,7 +270,7 @@ class EventManager:
             
             self.command_menu = None    # コマンドメニューを閉じる
 
-    def draw(self, step):
+    def draw(self, step):        
         if step["type"] == "text":
             self.display_text(step["text"])
 

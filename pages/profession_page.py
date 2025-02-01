@@ -63,11 +63,8 @@ class ProfessionPage:
             girl = Human("下僕の少女", 4, 6, 10, 5, 10, 10,"-1d4", 8, 10, 10,
                          {"目星":55, "聞き耳":55, "忍び歩き":40,"隠れる":40,"応急手当":50, "中国語（母国語）":40, "追跡":50, "その他言語（主人公の母国語）":31,"クトゥルフ神話":15, "拳銃":20},
                          17, "woman", 13, 6, 50, 50, 30, 0, 0, "放浪者")
-            bloody_robe = Armor("血まみれの白いローブ")
-            gun = Weapon("22口径ショート・オートマチック", img_name="Pistol.png", skill_point=20,
-                         damage_dice="1d6", attack_range="10m", one_round=3, bullets=6, durability=6)
-            girl.add_item(bloody_robe)
-            girl.add_item(gun)
+            girl.add_item(ITEM_LIST["bloody_robe"])
+            girl.add_item(ITEM_LIST["gun"])
 
             self.save_data["girl_status"] = girl.to_dict()
 

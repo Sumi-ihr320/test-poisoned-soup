@@ -1,6 +1,7 @@
 import os
 from enum import Enum
 from pygame.locals import Rect
+from character_item import *
 
 
 DISPLAY_SIZE = (800, 600)
@@ -86,3 +87,15 @@ class State(Enum):
     LOAD = 2
     SETTING = 3
     CLOSE = 4
+
+
+ITEM_LIST = {
+    "white_robe": Armor("白いローブ"),
+    "bloody_robe": Armor("血まみれの白いローブ"),
+    "gun": Weapon("22口径ショート・オートマチック", img_name="Pistol.png", skill_point=20, damage_dice="1d6",
+                  attack_range="10m", one_round=3, bullets=6, durability=6),
+    "light_bulb": CharacterItem("電球", img_name="Light_bulb.png"),
+    "bottle": CharacterItem("瓶", img_name="Bottle.png"),
+    "book": CharacterItem("黒い本", img_name="Book.png"),
+    "candle": CharacterItem("ろうそく")
+}

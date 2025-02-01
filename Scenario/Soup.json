@@ -3,18 +3,28 @@
         {"type":"conditional",
          "conditions":[
             {"flags":[{"category":"items", "flag":"soup_drink", "value":true}], "next":"Soup_drink"},
+            {"flags":[{"category":"items", "flag":"soup_destruction", "value":true}], "next":"Soup_destruction_after"},
             {"flags":[{"category":"items", "flag":"soup_in_poison", "value":true}], "next":"Soup_in_poison"},
             {"flags":[{"category":"items", "flag":"soup_temperature", "value":0}],"next":"Soup_time1"},
             {"flags":[{"category":"items", "flag":"soup_temperature", "value":1}],"next":"Soup_time2"},
             {"flags":[{"category":"items", "flag":"soup_temperature", "value":2}],"next":"Soup_time3"},
             {"flags":[{"category":"items", "flag":"soup_temperature", "value":3}],"next":"Soup_time4"}
-        ],
+        ]}
+    ],
     "Soup_drink":[
-        {"type":"text", "text":"飲み干してしまったスープの器。中身は空だ。", "progression":"click"}
+        {"type":"image_display", "image":"Soup_none.png"},
+        {"type":"text", "text":"飲み干してしまったスープの器。中身は空だ。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Soup_destruction_after":[
+        {"type":"image_display", "image":"Soup_none.png"},
+        {"type":"text", "text":"スープの器。捨ててしまったので中身は空だ。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "Soup_in_poison":[
-        {"type":"text", "text":"毒の入ったスープ。毒々しい色をしている。", "progression":"click"},
-        {"type":"interaction",
+        {"type":"image_display", "image":"Soup_poison.png"},
+        {"type":"text", "text":"毒の入ったスープ。黒い。", "progression":"click"},
+        {"type":"interaction", "item":"Soup",
          "interactions":[
             {"text":"目星", "next":""},
             {"text":"触る", "next":""},
@@ -23,6 +33,7 @@
          ]}
     ],
     "Soup_time1":[
+        {"type":"image_display", "image":"Soup.png"},
         {"type":"conditional",
          "conditions":[
             {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time1"},
@@ -30,6 +41,7 @@
         ]}
     ],
     "Soup_time2":[
+        {"type":"image_display", "image":"Soup.png"},
         {"type":"conditional",
          "conditions":[
             {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time2"},
@@ -37,6 +49,7 @@
         ]}
     ],
     "Soup_time3":[
+        {"type":"image_display", "image":"Soup.png"},
         {"type":"conditional",
          "conditions":[
             {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time3"},
@@ -44,6 +57,7 @@
         ]}
     ],
     "Soup_time4":[
+        {"type":"image_display", "image":"Soup.png"},
         {"type":"conditional",
          "conditions":[
             {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time4"},
@@ -104,18 +118,17 @@
         ]}
     ],
     "Soup_interaction_know_for_get":[
-        {"type":"interaction", "progression":"click",
+        {"type":"interaction", "item":"Soup",
             "interactions":[
                 {"text":"目星", "next":""},
                 {"text":"触る", "next":""},
                 {"text":"毒を入れる","next":""},
                 {"text":"飲む", "next":""},
                 {"text":"捨てる", "next":"Soup_destruction"}
-             ]}    
-        ]}
+            ]}
     ],
     "Soup_interaction_know_not_have":[
-        {"type":"interaction", "progression":"click",
+        {"type":"interaction", "item":"Soup",
             "interactions":[
                 {"text":"目星", "next":""},
                 {"text":"触る", "next":""},
@@ -124,7 +137,7 @@
             ]}    
     ],
     "Soup_interaction_unknown_for_get":[
-        {"type":"interaction", "progression":"click",
+        {"type":"interaction", "item":"Soup",
             "interactions":[
                 {"text":"目星", "next":""},
                 {"text":"医学", "next":"Soup_medicine"},
@@ -135,7 +148,7 @@
             ]}
     ],
     "Soup_interaction_unknown_not_have":[
-        {"type":"interaction", "progression":"click",
+        {"type":"interaction", "item":"Soup",
             "interactions":[
                 {"text":"目星", "next":""},
                 {"text":"医学", "next":"Soup_medicine"},
@@ -152,48 +165,53 @@
     "Soup_medicine_success":[
         {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"items", "item":"soup", "flag":"know", "value":true},
-        {"type":"text", "text":"あなたは医学の知識によって、このスープが確かに人間の血液であることを確信するだろう。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。", "progression":"click"},
-        {"type":"text", "text":"そのことを知ってしまったあなたは0/1d4のSANチェックだ。", "progression":"click"},
-        {"type":"dice_check", "check_type":"SAN", "dice":"1d100",
+        {"type":"text", "text":"あなたは医学の知識によって、\nこのスープが確かに人間の血液であることを確信するだろう。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。", "progression":"click"},
+        {"type":"text", "text":"そのことを知ってしまったあなたは\n0/1d4のSANチェックだ。", "progression":"click"},
+        {"type":"dice_check", "check_type":"status", "status":"SAN", "dice":"1d100",
          "success":"Soup_medicine_SAN_success",
          "failure":"Soup_medicine_SAN_failure"}
     ],
     "Soup_medicine_SAN_success":[
         {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
-        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ", "progression":"click"}
+        {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "Soup_medicine_SAN_failure":[
         {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
         {"type":"damage", "dice":"1d4"},
-        {"type":"text", "text":"おぞましい事実に気づいてしまったあなたは{damege}ポイントの正気度を失った", "progression":"click"},
-        {"type":"action", "action":"damage", "status":"SAN", "damage":0}
+        {"type":"text", "text":"おぞましい事実に気づいてしまったあなたは\n{damege}ポイントの正気度を失った", "progression":"click"},
+        {"type":"action", "action":"damage", "status":"SAN", "damage":0},
+        {"type":"image_hidden"}
     ],
     "Soup_medicine_failure":[
         {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
-        {"type":"text", "text":"何もわからなかった。", "progression":"click"}
+        {"type":"text", "text":"何もわからなかった。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "Soup_destruction":[
         {"type":"text", "text":"あなたはスープを捨てることにした。", "progression":"click"},
         {"type":"conditional",
          "conditions":[
-            {"flags":[{"category":"girl","flag":"fellow", "value":true}], "next":"Soup_destruction_with_girl"},
-            {"flags":[{"category":"girl","flag":"fellow", "value":false}], "next":"Soup_destruction_only_me"}
+            {"flags":[{"category":"characters","flag":"girl_fellow", "value":true}], "next":"Soup_destruction_with_girl"},
+            {"flags":[{"category":"characters","flag":"girl_fellow", "value":false}], "next":"Soup_destruction_only_me"}
          ]}
     ],
     "Soup_destruction_only_me":[
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_destruction", "value":false},
-        {"type":"text", "text":"あなたはスープを捨てた。", "progression":"click"}
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_destruction", "value":true},
+        {"type":"text", "text":"あなたはスープを捨てた。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "Soup_destruction_with_girl":[
         {"type":"text", "text":"少女がじっとあなたを見ている。", "progression":"click"},
         {"type":"text", "text":"本当に捨てていいのか？と問うているようだ。", "progression":"click"},
-        {"type":"interaction", "progression":"click",
-            "interactions":[
+        {"type":"interaction", "item":"Soup",
+        "interactions":[
                 {"text":"捨てる", "next":"Soup_destruction_only_me"},
                 {"text":"捨てない", "next":"Soup_not_destruction"}
         ]}
     ],
     "Soup_not_destruction":[
-        {"type":"text", "text":"やはり捨てるのはやめよう。", "progression":"click"}
+        {"type":"text", "text":"やはり捨てるのはやめよう。", "progression":"click"},
+        {"type":"image_hidden"}
     ]
 }

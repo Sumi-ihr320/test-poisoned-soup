@@ -44,11 +44,13 @@ class Opening:
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 if self.menu_controller.handle_click(event.pos):
                     return
-                self.scenario_manager.update()
+                self.scenario_manager.on_click()
                 if self.scenario_manager.is_active == False:
                     self.state = State.CLOSE
 
     def update(self):
+        if self.scenario_manager.is_active:
+            self.scenario_manager.update()
         self.draw()
         self.handle_mouse_hover()
         self.handle_events()

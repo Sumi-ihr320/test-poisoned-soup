@@ -1,11 +1,45 @@
 {
     "Light":[
+        {"type":"image_display", "image":"center-room_Light.png"},
         {"type":"text", "text":"薄暗い豆電球が部屋を照らしている。", "progression":"click"},
         {"type":"interaction", "progression":"click",
          "interactions":[
-            {"text":"目星", "next":""},
-            {"text":"外す", "next":""},
-            {"text":"壊す", "next":""}
+            {"text":"目星", "next":"Light_objective"},
+            {"text":"外す", "next":"Light_remove"},
+            {"text":"壊す", "next":"Light_break"}
          ]}
+    ],
+    "Light_objective":[
+        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
+         "success":"Light_objective_success",
+         "failure":"Light_objective_failure"}
+    ],
+    "Light_objective_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"電球をよく見ると、中に何か入っているように見えた。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Light_objective_failure":[
+        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"何もわからなかった。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Light_remove":[
+        {"type":"text", "text":"テーブルに乗り電球を外した。", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"center_room_light", "value":true},
+        {"type":"text", "text":"部屋が暗くなった。", "progression":"click"},
+        {"type":"image_display", "image":"Light_bulb.png"},
+        {"type":"action", "action":"get_item", "item":"light_bulb"},
+        {"type":"text", "text":"電球を手に入れた。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Light_break":[
+        {"type":"text", "text":"どうやって壊そうか？", "progression":"click"},
+        {"type":"interaction",
+         "interactions":[
+            {"text":"攻撃する", "next":""},
+            {"text":"外してから落として割る", "next":""},
+            {"text":"やっぱりやめる", "next":""}
+         ]}        
     ]
 }

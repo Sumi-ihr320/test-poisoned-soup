@@ -34,11 +34,8 @@ class CharacterSheet:
         self.selected_hobby = ""            # 選択中の趣味
 
         # 設定する主人公のステータス
-        #chara_data = load_json(CHARA_DATA_PATH)
-        #self.hero_data = chara_data["Hero"]
         self.player = Player()
-        white_robe = Armor("白いローブ")
-        self.player.add_item(white_robe)
+        self.player.add_item(ITEM_LIST["white_robe"])
 
         # セーブデータ
         self.save_data = load_json("SaveData.json")

@@ -193,7 +193,9 @@ def create_file_path(item, room, direction):
         return f"{room_path}.jpg"
 
     if item == "room2":
-        if room == "east":
+        if room == "center":
+            return f"{room_path}_dark.jpg"
+        elif room == "east":
             return f"{path}black-room.jpg"
         elif room == "west":
             return f"{room_path}_PicupBook.jpg"

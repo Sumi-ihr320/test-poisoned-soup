@@ -478,12 +478,12 @@ class CommandMenu:
 
 # 主人公の名前・HP・MP・現在地を右上に表示する
 class PlayerDataView:
-    def __init__(self, screen, player, room_flag) -> None:
+    def __init__(self, screen, player, game_state) -> None:
         self.screen = screen
         self.font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
 
         self.player = player
-        self.room_flag = room_flag
+        self.room_flag = game_state.room
 
         self.status_label = None
         self.create_label()
@@ -498,6 +498,13 @@ class PlayerDataView:
     def draw(self):
         for label in self.status_label:
             label.draw()
+
+    def update(self, player, game_state):
+        self.player = player
+        self.room_flag = game_state.room
+        self.create_label()
+        self.draw()
+
 
 # simpledialogの代わり(モーダルはうまくいかないがエラーメッセージの日本語化はできた)
 class CustomDialog(simpledialog.Dialog):

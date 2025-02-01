@@ -27,16 +27,20 @@ class MainPlay:
         # メニューコントローラー
         self.menu_controller = MenuController(self.screen, self.root, self.set_state)
     
+        #self.game_state.room = "east"
+    
         # ナビゲーションバー
         self.navigation = Navigation(self.screen)
         self.setup_navigetion()
 
         # 主人公のステータス表示
-        self.player_label = PlayerDataView(self.screen, self.player_status, self.game_state.room)
+        self.player_label = PlayerDataView(self.screen, self.player_status, self.game_state)
 
         # 管理用
-        self.event_manager = EventManager(self.screen, self.player_status, self.game_state, self.flags, self.handle_next_scenario)
-        self.scenario_manager = ScenarioManager(self.screen, self.event_manager, "center-room")
+        self.event_manager = EventManager(self.screen, self.player_status, self.game_state, self.flags,
+                                          self.handle_next_scenario, self.handle_move_room, self.handle_room_view)
+        room_id = f"{self.game_state.room}-room"
+        self.scenario_manager = ScenarioManager(self.screen, self.event_manager, room_id)
  
         # 部屋の管理
         self.room_manager = RoomManager(self.screen, self.event_manager, self.flags, self.game_state)
@@ -101,6 +105,9 @@ class MainPlay:
         else:
             if clicked_position is not None:
                 self.room_manager.move_to_room("under")
+                self.setup_navigetion()
+                room_id = f"{self.game_state.room}-room"
+                self.scenario_manager.start_scenario(room_id)
                 state = True
         
         if state:
@@ -111,6 +118,17 @@ class MainPlay:
     # イベントマネージャーから次のシナリオを受け取るためのコールバック関数
     def handle_next_scenario(self, next_scenario):
         self.scenario_manager.start_scenario(next_scenario)
+
+    # イベントマネージャーから次の部屋に移るためのコールバック関数
+    def handle_move_room(self, room_id):
+        next_room = room_id.split("-")[0]
+        self.handle_room_view(next_room)
+        self.scenario_manager.start_scenario(room_id)
+        
+    # 部屋の再作成をする（コールバック関数としても使う)
+    def handle_room_view(self, room_id):
+        self.room_manager.move_to_room(next_room=room_id)
+        self.setup_navigetion()
 
     # マウスオーバー
     def handle_mouse_hover(self):
@@ -158,16 +176,16 @@ class MainPlay:
 
         self.menu_controller.draw()     # メニューの表示
 
-        self.room_manager.draw(self.selected_item, self.flags)  # 部屋の表示
+        self.room_manager.draw()        # 部屋の表示
 
         self.navigation.draw()          # ナビゲーションバーの表示
 
         # 主人公のステータスの表示
-        self.player_label.draw()
+        self.player_label.update(self.player_status, self.game_state)
 
         # コマンドメニューの表示
-        if self.event_manager.command_menu:
-            self.event_manager.command_menu.draw()
+        #if self.event_manager.command_menu:
+        #    self.event_manager.draw()
             
         # シナリオマネージャーの表示
         self.scenario_manager.draw()

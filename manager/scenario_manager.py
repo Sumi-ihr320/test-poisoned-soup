@@ -30,8 +30,28 @@ class ScenarioManager:
     def start_scenario(self, scenario_id):
         self.current_scenario = self.scenario_data.get(scenario_id, [])
         self.current_index = 0
+        self.wait_for_click = False
         print(f"シナリオ開始：{scenario_id}")   # デバッグ用
         self.is_active = True
+
+        if self.current_scenario:
+            step = self.scenario_progress()
+            if step:
+                self.event_manager.draw(step)
+
+    # シナリオ進行
+    def scenario_progress(self):
+        step = self.current_scenario[self.current_index]
+        # 進行タイプに応じて処理を分岐
+        progression = step.get("progression", "auto")       # デフォルトは自動進行
+
+        # クリック待ちの場合は進行を停止
+        if progression == "click" and self.wait_for_click:
+            return None
+
+        # 現在のステップがclickならクリック待ち状態を設定        
+        self.wait_for_click = progression == "click"
+        return step
 
     # 次のシナリオステップを進める
     def update(self):
@@ -41,18 +61,11 @@ class ScenarioManager:
             self.is_active = False
             return
 
-        # ステップを進める        
-        step = self.current_scenario[self.current_index]
-
-        # 進行タイプに応じて処理を分岐
-        progression = step.get("progression", "auto")       # デフォルトは自動進行
-
-        # クリック待ちの場合は進行を停止
-        if progression == "click" and self.wait_for_click:
+        step = self.scenario_progress()
+        if not step:
             return
-        
-        # 次のステップに進む準備
-        self.wait_for_click = progression == "click"
+
+        # 次のステップに進む
         self.current_index += 1
 
         # イベント処理をevent_managerに委譲
@@ -67,6 +80,9 @@ class ScenarioManager:
 
     # 現在のステップの描画をイベントマネージャーに依頼
     def draw(self):
-        if self.is_active and self.current_index > 0:
-           step = self.current_scenario[self.current_index - 1]
-           self.event_manager.draw(step)
+        if self.event_manager.item_image:
+            self.event_manager.item_image.draw()
+
+        if self.is_active and self.current_index < len(self.current_scenario):
+            step = self.current_scenario[self.current_index]
+            self.event_manager.draw(step)
