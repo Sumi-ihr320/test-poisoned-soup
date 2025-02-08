@@ -52,7 +52,8 @@ SCENARIO_FILES = [
     "CenterMemo.json",
     "EastRoom.json",
     "SouthRoom.json",
-    "WestRoom.json"
+    "WestRoom.json",
+    "Candle.json"
 ]
 
 # フォント
@@ -97,5 +98,8 @@ ITEM_LIST = {
     "light_bulb": CharacterItem("電球", img_name="Light_bulb.png"),
     "bottle": CharacterItem("瓶", img_name="Bottle.png"),
     "book": CharacterItem("黒い本", img_name="Book.png"),
-    "candle": CharacterItem("ろうそく")
+    "candle1": CharacterItem("ろうそく", img_name="Candle_0.png"),
+    "candle2": CharacterItem("ろうそく", img_name="Candle_1.png"),
+    "candle_goes_out1": CharacterItem("消えたろうそく", img_name="Candle_0_goes_out.png"),
+    "candle_goes_out2": CharacterItem("消えたろうそく", img_name="Candle_1_goes_out.png"),
 }

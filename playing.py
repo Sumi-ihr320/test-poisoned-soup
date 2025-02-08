@@ -104,6 +104,7 @@ class MainPlay:
                 state = True
         else:
             if clicked_position is not None:
+                self.game_state.time -= 2
                 self.room_manager.move_to_room("under")
                 self.setup_navigetion()
                 room_id = f"{self.game_state.room}-room"
@@ -127,7 +128,8 @@ class MainPlay:
         
     # 部屋の再作成をする（コールバック関数としても使う)
     def handle_room_view(self, room_id):
-        self.room_manager.move_to_room(next_room=room_id)
+        next_room = room_id.split("-")[0] if "-room" in room_id else room_id
+        self.room_manager.move_to_room(next_room=next_room)
         self.setup_navigetion()
 
     # マウスオーバー

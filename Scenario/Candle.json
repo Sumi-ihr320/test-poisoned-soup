@@ -1,0 +1,128 @@
+{
+    "Candle":[
+        {"type":"conditional",
+         "conditions":[
+            {"flags":[{"category":"items", "flag":"candle_goes_out", "value":1}], "next":"Candle_goes_out_time1"},
+            {"flags":[{"category":"items", "flag":"candle_goes_out", "value":2}], "next":"Candle_goes_out_time2"},
+            {"flags":[{"category":"game_state", "flag":"time", "value":45}], "next":"Candle_time1"},
+            {"flags":[{"category":"game_state", "flag":"time", "value":15}], "next":"Candle_time2"},
+            {"flags":[{"category":"game_state", "flag":"time", "value":0}], "next":"Candle_time3"}
+        ]}
+    ],
+    "Candle_time1":[
+        {"type":"image_display", "image":"Candle1.png"},
+        {"type":"text", "text":"ろうそくの炎が揺らめいている。", "progression":"click"},
+        {"type":"interaction",
+         "interactions":[
+            {"text":"目星", "next":"Candle_objective_time1"},
+            {"text":"消す", "next":"Candle_put_out_time1"},
+            {"text":"持っていく", "next":"Candle_take_it_time1"}
+         ]}
+    ],
+    "Candle_goes_out_time1":[
+        {"type":"image_display", "image":"Candle1_goes_out.png"},
+        {"type":"text", "text":"火が消えたろうそくがある。", "progression":"click"},
+        {"type":"interaction",
+         "interactions":[
+            {"text":"目星", "next":"Candle_objective_time1"},
+            {"text":"持っていく", "next":"Candle_goes_out_take_it_time1"}
+         ]}
+    ],
+    "Candle_objective_time1":[
+        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
+         "success":"Candle_objective_time1_success",
+         "failure":"Candle_objective_failure"},
+        {"type":"action", "action":"time_passage", "time":3}
+    ],
+    "Candle_objective_time1_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"何の変哲もない普通のろうそくだ。\n蝋はあとしばらくはもつだろう。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Candle_put_out_time1":[
+        {"type":"image_display", "image":"Candle1_goes_out.png"},
+        {"type":"text", "text":"ろうそくを吹き消した。", "progression":"click"},
+        {"type":"action", "action":"set_flag","category":"items", "flag":"candle_goes_out", "value":1},
+        {"type":"action", "action":"time_passage", "time":3},
+        {"type":"text", "text":"明かりがなくなったため部屋が暗くなった。", "progression":"click"},
+        {"type":"text", "text":"探し物が難しくなりそうだ。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Candle_take_it_time1":[
+        {"type":"text", "text":"ろうそくを持って行くことにした。", "progression":"click"},
+        {"type":"action", "action":"get_item", "item":"candle1"},
+        {"type":"action", "action":"set_flag","category":"items", "flag":"candle_get", "value":true},
+        {"type":"text", "text":"ろうそくを手に入れた。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Candle_goes_out_take_it_time1":[
+        {"type":"text", "text":"ろうそくを持って行くことにした。", "progression":"click"},
+        {"type":"action", "action":"get_item", "item":"candle_goes_out1"},
+        {"type":"action", "action":"set_flag","category":"items", "flag":"candle_get", "value":true},
+        {"type":"text", "text":"消えたろうそくを手に入れた。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Candle_time2":[
+        {"type":"image_display", "image":"Candle2.png"},
+        {"type":"text", "text":"ろうそくの炎が揺らめいている。", "progression":"click"},
+        {"type":"interaction",
+         "interactions":[
+            {"text":"目星", "next":"Candle_objective_time2"},
+            {"text":"消す", "next":"Candle_put_out_time2"},
+            {"text":"持っていく", "next":"Candle_take_it_time2"}
+         ]}
+    ],
+    "Candle_goes_out_time2":[
+        {"type":"image_display", "image":"Candle2_goes_out.png"},
+        {"type":"text", "text":"火が消えたろうそくがある。", "progression":"click"},
+        {"type":"interaction",
+         "interactions":[
+            {"text":"目星", "next":"Candle_objective_time2"},
+            {"text":"持っていく", "next":"Candle_goes_out_take_it_time2"}
+         ]}
+    ],
+    "Candle_objective_time2":[
+        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
+         "success":"Candle_objective_time2_success",
+         "failure":"Candle_objective_failure"},
+        {"type":"action", "action":"time_passage", "time":3}
+    ],
+    "Candle_objective_time2_success":[
+        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"何の変哲もない普通のろうそくだ。\n蝋はもう半分ほどに減っている。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Candle_put_out_time2":[
+        {"type":"image_display", "image":"Candle2_goes_out.png"},
+        {"type":"text", "text":"ろうそくを吹き消した。", "progression":"click"},
+        {"type":"action","action":"set_flag","category":"items", "flag":"candle_goes_out", "value":2},
+        {"type":"action", "action":"time_passage", "time":3},
+        {"type":"text", "text":"明かりがなくなったため部屋が暗くなった。", "progression":"click"},
+        {"type":"text", "text":"探し物が難しくなりそうだ。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Candle_take_it_time2":[
+        {"type":"text", "text":"ろうそくを持って行くことにした。", "progression":"click"},
+        {"type":"action", "action":"get_item", "item":"candle2"},
+        {"type":"action", "action":"set_flag","category":"items", "flag":"candle_get", "value":true},
+        {"type":"text", "text":"ろうそくを手に入れた。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Candle_goes_out_take_it_time2":[
+        {"type":"text", "text":"ろうそくを持って行くことにした。", "progression":"click"},
+        {"type":"action", "action":"get_item", "item":"candle_goes_out2"},
+        {"type":"action", "action":"set_flag","category":"items", "flag":"candle_get", "value":true},
+        {"type":"text", "text":"消えたろうそくを手に入れた。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Candle_time3":[
+        {"type":"image_display", "image":"Candle3.png"},
+        {"type":"text", "text":"ろうそくは燃え尽きてしまっている。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Candle_objective_failure":[
+        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"普通のろうそくだ。", "progression":"click"},
+        {"type":"image_hidden"}
+    ]
+}

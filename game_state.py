@@ -58,17 +58,21 @@ class Flags:
 
         # アイテムの状態フラグ
         self.items = {
-            # スープに関するフラグ  (毒が入っているか、血だと知っているか、飲んだか、捨てたか、時間経過)
+            # スープに関するフラグ  (毒が入っているか、血だと知っているか、飲んだか、捨てたか)
             "soup_know":False,
             "soup_in_poison":False,
             "soup_drink": False,
             "soup_destruction": False,
-            "soup_temperature":0,
             # 中央の部屋メモのフラグ (裏に気づいているか)
             "center_memo_objective":False,
             # 西の部屋の本に関するフラグ (見つけているか、入手しているか)
             "book_found":False,
             "book_get":False,
+            # 西の部屋のろうそくに関するフラグ（消したか、入手しているか）
+            "candle_goes_out":False,
+            "candle_get":False,
+            # 西の部屋の本棚に関するフラグ（目星成功しているか）
+            "bookshelf_objective":False,
             # 毒に関するフラグ (持っているか)
             "poison_get":False
         }

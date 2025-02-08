@@ -14,7 +14,7 @@
         "skill": "どのスキルでチェックを行うか",
         "status": "どのステータスを利用するか",
         "enemy_status": "敵側のステータス" ,
-        "category": "なんて名前のフラグか", "item": "なんのアイテムのフラグか", "flag": "どのフラグか", "value": "どんな値か",
+        "category": "どのカテゴリのフラグか", "flag": "どのフラグか", "value": "どんな値か",
         "type: conditional": "開始前にフラグチェックをする",
         "conditions": [
             {"flags":[

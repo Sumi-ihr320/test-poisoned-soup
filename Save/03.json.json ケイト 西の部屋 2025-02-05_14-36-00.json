@@ -1,0 +1,132 @@
+﻿{
+  "player_status": {
+    "type": "Player",
+    "name": "ケイト",
+    "STR": 13,
+    "CON": 11,
+    "SIZ": 13,
+    "DEX": 15,
+    "INT": 10,
+    "POW": 12,
+    "DB": "+1D4",
+    "HP": 12,
+    "MP": 12,
+    "Dodge": 30,
+    "skill": {
+      "化学": 57,
+      "機械修理": 47,
+      "重機械操作": 38,
+      "電気修理": 24,
+      "図書館": 90,
+      "物理学": 47,
+      "コンピューター": 44,
+      "電子工学": 33,
+      "歴史": 90
+    },
+    "age": 22,
+    "sex": "neuter",
+    "APP": 13,
+    "EDU": 16,
+    "Luck": 60,
+    "Idea": 50,
+    "Know": 80,
+    "SAN": 60,
+    "max_SAN": 0,
+    "Profession": "エンジニア",
+    "inventory": [],
+    "Hobby": "読書",
+    "girl_like_ability": 0
+  },
+  "girl_status": {
+    "type": "Human",
+    "name": "下僕の少女",
+    "STR": 4,
+    "CON": 6,
+    "SIZ": 10,
+    "DEX": 5,
+    "INT": 10,
+    "POW": 10,
+    "DB": "-1d4",
+    "HP": 8,
+    "MP": 10,
+    "Dodge": 10,
+    "skill": {
+      "目星": 55,
+      "聞き耳": 55,
+      "忍び歩き": 40,
+      "隠れる": 40,
+      "応急手当": 50,
+      "中国語（母国語）": 40,
+      "追跡": 50,
+      "その他言語（主人公の母国語）": 31,
+      "クトゥルフ神話": 15,
+      "拳銃": 20
+    },
+    "age": 17,
+    "sex": "woman",
+    "APP": 13,
+    "EDU": 6,
+    "Luck": 50,
+    "Idea": 50,
+    "Know": 30,
+    "SAN": 0,
+    "max_SAN": 0,
+    "Profession": "放浪者",
+    "inventory": [
+      {
+        "name": "血まみれの白いローブ",
+        "img_name": null,
+        "category": "armor",
+        "armor_point": 0
+      },
+      {
+        "name": "22口径ショート・オートマチック",
+        "img_name": "Pistol.png",
+        "category": "weapon",
+        "skill_point": 20,
+        "damage_dice": "1d6",
+        "attack_range": "10m",
+        "one_round": 3,
+        "bullets": 6,
+        "durability": 6
+      }
+    ]
+  },
+  "game_state": {
+    "time": 60,
+    "room": "west",
+    "direction": "south"
+  },
+  "flags": {
+    "characters": {
+      "girl_fellow": false,
+      "girl_like_ability": 0,
+      "girl_death": false
+    },
+    "rooms": {
+      "center_room_scenario": true,
+      "center_room_light": false,
+      "east_room_open": false,
+      "east_room_scenario": false,
+      "east_room_visivle": false,
+      "east_room_time": 5,
+      "west_room_scenario": false,
+      "north_room_scenario": false,
+      "south_room_scenario": false,
+      "south_room_find_enemy": false,
+      "south_room_escape_enemy": false,
+      "south_room_there_enemy": true
+    },
+    "items": {
+      "soup_know": false,
+      "soup_in_poison": false,
+      "soup_drink": false,
+      "soup_destruction": false,
+      "center_memo_objective": false,
+      "book_found": true,
+      "book_get": false,
+      "bookshelf_objective": true,
+      "poison_get": false
+    }
+  }
+}

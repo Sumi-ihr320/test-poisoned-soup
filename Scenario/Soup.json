@@ -5,10 +5,10 @@
             {"flags":[{"category":"items", "flag":"soup_drink", "value":true}], "next":"Soup_drink"},
             {"flags":[{"category":"items", "flag":"soup_destruction", "value":true}], "next":"Soup_destruction_after"},
             {"flags":[{"category":"items", "flag":"soup_in_poison", "value":true}], "next":"Soup_in_poison"},
-            {"flags":[{"category":"items", "flag":"soup_temperature", "value":0}],"next":"Soup_time1"},
-            {"flags":[{"category":"items", "flag":"soup_temperature", "value":1}],"next":"Soup_time2"},
-            {"flags":[{"category":"items", "flag":"soup_temperature", "value":2}],"next":"Soup_time3"},
-            {"flags":[{"category":"items", "flag":"soup_temperature", "value":3}],"next":"Soup_time4"}
+            {"flags":[{"category":"game_state", "flag":"time", "value":45}],"next":"Soup_time1"},
+            {"flags":[{"category":"game_state", "flag":"time", "value":30}],"next":"Soup_time2"},
+            {"flags":[{"category":"game_state", "flag":"time", "value":15}],"next":"Soup_time3"},
+            {"flags":[{"category":"game_state", "flag":"time", "value":0}],"next":"Soup_time4"}
         ]}
     ],
     "Soup_drink":[
@@ -163,7 +163,7 @@
          "failure":"Soup_medicine_failure"}
     ],
     "Soup_medicine_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《医学》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"items", "item":"soup", "flag":"know", "value":true},
         {"type":"text", "text":"あなたは医学の知識によって、\nこのスープが確かに人間の血液であることを確信するだろう。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。", "progression":"click"},
         {"type":"text", "text":"そのことを知ってしまったあなたは\n0/1d4のSANチェックだ。", "progression":"click"},
@@ -172,19 +172,19 @@
          "failure":"Soup_medicine_SAN_failure"}
     ],
     "Soup_medicine_SAN_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《SAN》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
         {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "Soup_medicine_SAN_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《SAN》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
         {"type":"damage", "dice":"1d4"},
         {"type":"text", "text":"おぞましい事実に気づいてしまったあなたは\n{damege}ポイントの正気度を失った", "progression":"click"},
         {"type":"action", "action":"damage", "status":"SAN", "damage":0},
         {"type":"image_hidden"}
     ],
     "Soup_medicine_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《医学》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
         {"type":"text", "text":"何もわからなかった。", "progression":"click"},
         {"type":"image_hidden"}
     ],

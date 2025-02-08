@@ -55,46 +55,58 @@ class EventManager:
 
     # シナリオから受け取ったイベントを進行する
     def handle_scenario_event(self, step):
+        # テキストを表示する
         if step["type"] == "text":
             text = step["text"]
             self.display_text(text)
 
+        # 次のシナリオに進む
         elif step["type"] == "next_step":
             self.to_callback_next_scenario(step["next"])
         
+        # アクションを起こす
         elif step["type"] == "action":
             action = step["action"]
             if action == "damage":
                 step["damage"] = self.damage_point
             self.handle_action(action, step)
 
+        # ダイスチェックを行う
         elif step["type"] == "dice_check":
             self.roll_result, self.threshold, check_result = self.handle_dice_roll(step)
             next_scenario = step["success"] if check_result else step["failure"]
             self.to_callback_next_scenario(next_scenario)
 
+        # ダメージを計算する
         elif step["type"] == "damage":
             self.damage_calculator(step)
 
+        # フラグによる分岐をおこなう
         elif step["type"] == "conditional":
             self.handle_conditional(step["conditions"])
 
+        # コマンドを表示する
         elif step["type"] == "interaction":
             item = step.get("item", None)
             self.create_command_menu(step["interactions"])
 
+        # 画像を表示する
         elif step["type"] == "image_display":
             self.create_image(step["image"])
 
+        # 画像を非表示にする
         elif step["type"] == "image_hidden":
             self.item_image = None
 
     # アクションを実行する
     def handle_action(self, action, step):
+        # 部屋移動
         if action == "move_to_room":
+            self.game_state.time -= 2
             room_id = step.get("room_id", None)
             self.move_to_room(room_id)
 
+        # フラグセット
         elif action == "set_flag":
             category = step["category"]
             flag = step["flag"]
@@ -107,16 +119,23 @@ class EventManager:
             elif flag == "book_found" and value == True:
                 self.room_new_view("west-room")
 
+        # ダメージを受ける
         elif action == "damage":
             status = step.get("status", None)
             damage = step.get("damage", None)
             self.take_damage(status, damage)
 
+        # アイテムを取得する
         elif action == "get_item":
             self.player.add_item(ITEM_LIST[step["item"]])
 
+        # アイテムを手放す
         elif action == "lost_item":
             self.player.remove_item(ITEM_LIST[step["item"]])
+
+        # 時間を経過させる
+        elif action == "time_passage":
+            self.game_state.time -= step["time"]
 
     # ダイスロールを処理
     def handle_dice_roll(self, step):
@@ -186,7 +205,7 @@ class EventManager:
                 return True        
             return False
 
-    # コールバック関数にデータを渡す
+    # コールバック関数に次のシナリオ名を渡す
     def to_callback_next_scenario(self, next_scenario):
         self.next_scenario_call_back(next_scenario)
 

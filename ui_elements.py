@@ -484,6 +484,7 @@ class PlayerDataView:
 
         self.player = player
         self.room_flag = game_state.room
+        self.time = str(game_state.time)     # デバッグ用
 
         self.status_label = None
         self.create_label()
@@ -493,7 +494,8 @@ class PlayerDataView:
         hp_label = Label(self.screen, self.font, f"HP/{self.player.HP}", 590, 10, position="right", color=WHITE)
         mp_label = Label(self.screen, self.font, f"MP/{self.player.MP}", 650, 10, position="right", color=WHITE)
         current_room_label = Label(self.screen, self.font, ROOM_NAME[self.room_flag], 770, 10, position="right", color=WHITE)
-        self.status_label = [name_label, hp_label, mp_label, current_room_label]
+        current_time_label = Label(self.screen, self.font, self.time, 700, 10, position="right", color=WHITE)   # デバッグ用
+        self.status_label = [name_label, hp_label, mp_label, current_room_label, current_time_label]
 
     def draw(self):
         for label in self.status_label:
@@ -502,6 +504,7 @@ class PlayerDataView:
     def update(self, player, game_state):
         self.player = player
         self.room_flag = game_state.room
+        self.time = str(game_state.time)     # デバッグ用
         self.create_label()
         self.draw()
 

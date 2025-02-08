@@ -59,13 +59,13 @@
          "failure":"eastDoor_locked_failure"}
     ],
     "eastDoor_locked_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《STR》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
         {"type":"text", "text":"鍵を壊すことができた。", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"rooms" ,"flag":"east_room_open", "value":true},
         {"type":"action", "action":"move_to_room", "room_id":"east-room"}
     ],
     "eastDoor_locked_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《STR》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
         {"type":"text", "text":"鍵を壊すことはできなかった。", "progression":"click"},
         {"type":"image_hidden"}
     ],
@@ -92,12 +92,12 @@
          "failure":"southDoor_look_SAN_failure"}
     ],
     "southDoor_look_SAN_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《SAN》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
         {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "southDoor_look_SAN_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《SAN》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
         {"type":"damage", "dice":"1d10"},
         {"type":"text", "text":"おぞましい怪物を目撃してしまったあなたは\n{damage}ポイントの正気度を失った", "progression":"click"},
         {"type":"action", "action":"damage", "status":"SAN", "damage":0}
@@ -108,12 +108,12 @@
          "failure":"southDoor_listen_failure"}
     ],
     "southDoor_listen_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《聞き耳》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
         {"type":"text", "text":"部屋の向こうからは何かの荒い呼吸音と\nズルズルという何か重いものを引きずるような音が\n聞こえる。", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "southDoor_listen_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《聞き耳》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
         {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
         {"type":"image_hidden"}
     ],

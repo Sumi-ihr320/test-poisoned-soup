@@ -3,19 +3,106 @@
         {"type":"text", "text":"四方が大きな本棚に囲まれた部屋だ。", "progression":"click"},
         {"type":"text", "text":"中央には古い机があり、\nその上にあるキャンドル皿に乗せられたろうそくが\nうっすらと部屋を照らしている。", "progression":"click"}
     ],
-    "west-room_BookShelf":[
+    "BookShelf":[
         {"type":"text", "text":"大きな本棚がある。", "progression":"click"},
-        {"type":"interaction", "progression":"click",
-         "interactions":[
-            {"text":"目星", "next":""},
-            {"text":"図書館", "next":""}
-         ]}
-    ],
-    "west-room_Candle":[
         {"type":"conditional",
-         "conditions":[
-            {"flags":[{"category":"game_state", "flag":"time", "value":45}], "next":""},
-            {"flags":[{"category":"game_state", "flag":"time", "value":15}], "next":""}
+        "conditions":[
+            {"flags":[{"category":"items", "flag":"bookshelf_objective", "value":true}],
+             "next":"BookShelf_flag_objective"},
+            {"flags":[{"category":"items", "flag":"book_found", "value":true}],
+             "next":"BookShelf_book_found"},
+            {"flags":[
+                {"category":"items", "flag":"book_found", "value":false},
+                {"category":"items", "flag":"bookshelf_objective", "value":false}
+                ], "next":"BookShelf_book_no_flag"}
         ]}
+    ],
+    "BookShelf_flag_objective":[
+        {"type":"text", "text":"本棚にはいろんな本が丁寧に収められていて、\nどれもジャンルがバラバラのようだ。", "progression":"click"},
+        {"type":"conditional",
+        "conditions":[
+            {"flags":[{"category":"items", "flag":"book_found", "value":false}], "next":"BookShelf_book_not_found"}
+           ]}
+    ],
+    "BookShelf_book_not_found":[
+        {"type":"interaction",
+         "interactions":[
+            {"text":"図書館", "next":"BookShelf_library"}
+        ]}
+    ],
+    "BookShelf_book_found":[
+        {"type":"interaction",
+         "interactions":[
+           {"text":"目星", "next":"BookShelf_objective"}
+        ]}
+    ],
+    "BookShelf_book_no_flag":[
+        {"type":"interaction",
+          "interactions":[
+             {"text":"目星", "next":"BookShelf_objective"},
+             {"text":"図書館", "next":"BookShelf_library"}
+          ]}
+    ],
+    "BookShelf_objective":[
+        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
+         "success":"BookShelf_objective_success",
+         "failure":"BookShelf_objective_failure"},
+        {"type":"action", "action":"time_passage", "time":5}
+    ],
+    "BookShelf_objective_success":[
+        {"type":"text", "text":"《目星》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"bookshelf_objective", "value":true},
+        {"type":"text", "text":"本棚にはいろんな本が丁寧に収められている。\nどれもジャンルがバラバラのものばかりのようだ。", "progression":"click"}
+    ],
+    "BookShelf_objective_failure":[
+        {"type":"text", "text":"《目星》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"本がたくさん詰まっている。", "progression":"click"}
+    ],
+    "BookShelf_library":[
+        {"type":"dice_check", "check_type":"skill", "skill":"図書館", "dice":"1d100",
+         "success":"BookShelf_library_success",
+         "failure":"BookShelf_library_failure"},
+        {"type":"action", "action":"time_passage", "time":10}
+        ],
+    "BookShelf_library_success":[
+        {"type":"text", "text":"《図書館》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"image_display", "image":"Book.png"},
+        {"type":"text", "text":"『スープの夢について』と書かれた\n真っ黒な本を見つけた。", "progression":"click"},
+        {"type":"text", "text":"本はべったりと湿っていて、\n本を手に取ると黒い液体が\n付着した。", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"book_found", "value":true},
+        {"type":"next_step", "next":"Black_liquid"}
+    ],
+    "BookShelf_library_failure":[
+        {"type":"text", "text":"《図書館》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"何も見つけられなかった。", "progression":"click"}
+    ],
+    "Black_liquid":[
+        {"type":"text", "text":"《博物学》⇒", "progression":"click"},
+        {"type":"dice_check", "check_type":"skill", "skill":"博物学", "dice":"1d100",
+         "success":"Black_liquid_success",
+         "failure":"Black_liquid_failure"}
+    ],
+    "Black_liquid_success":[
+        {"type":"text", "text":"《博物学》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"黒い液体からは\n花の蜜の香りとよく似た甘い香りがした。", "progression":"click"},
+        {"type":"next_step", "next":"Black_liquid_to_hand"}
+    ],
+    "Black_liquid_failure":[
+        {"type":"text", "text":"《博物学》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"黒い液体からは僅かに甘い香りがする。", "progression":"click"},
+        {"type":"next_step", "next":"Black_liquid_to_hand"}
+    ],
+    "Black_liquid_to_hand":[
+        {"type":"text", "text":"手に付いた黒い液体をあなたは……", "progression":"click"},
+        {"type": "interaction",
+         "interactions":[
+            {"text":"拭う", "next":""},
+            {"text":"舐める", "next":""},
+            {"text":"調べる", "next":""},
+            {"text":"そのままにする", "next":""}
+        ]}
+    ],
+    "":[
+        {"type":"image_hidden"}
     ]
 }
