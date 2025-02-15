@@ -11,6 +11,7 @@ from save_or_load import Save_or_Load
 from opening import Opening
 from character_sheet import CharacterSheet
 from playing import MainPlay
+from ending import Ending
 
 
 # tkinterの起動 ---------------------------------------------------
@@ -106,6 +107,9 @@ class MainApp:
                     self.create_save_or_load(event, "save", "play")
                 elif self.event_name == "load":
                     self.create_save_or_load(event, "load", "play")
+                elif self.event_name == "ending":
+                    self.event_map["ending"] = Ending(self.screen, root, self.save_data)
+
             else:
                 self.event_name = event(self.screen)
 

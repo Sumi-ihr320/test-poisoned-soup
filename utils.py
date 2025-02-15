@@ -49,13 +49,50 @@ def TextDraw(screen, text):
     font = pygame.font.Font(FONT_PATH, FONT_SIZ)
 
     texts = []
-    y = 435
+    x, y = 45, 435
     texts = text.splitlines()
     for txt in texts:
-        surface = font.render(txt,True,WHITE)
-        rect = surface.get_rect(left=45,top=y)
-        screen.blit(surface,rect)
+        RendarText(screen, txt, font, (x, y))
+        """
+        surface = font.render(txt, True, WHITE)
+        rect = surface.get_rect(left=x,top=y)
+        screen.blit(surface, rect)
+        """
         y += 25
+
+# タグを使って色を付けられるようにする。
+def RendarText(screen, text, font, pos, default_color=WHITE):
+    # <color=color_name>～<color/> を解析して部分的に色を変える
+    x, y = pos
+    color = default_color
+    pattern = re.compile(r"(.*?)<color=([\w]+)>(.*?)<color/>(.*)")
+
+    while text:
+        match = pattern.match(text)
+        if match:
+            befor, new_color, colored_text, after = match.groups()
+
+            # タグの前の部分
+            if befor:
+                rendered = font.render(befor, True, color)
+                screen.blit(rendered, (x, y))
+                x += rendered.get_width()
+
+            # タグの中の部分
+            if new_color in COLOR_MAP:
+                new_color = COLOR_MAP[new_color]    # 色を変更
+            rendered = font.render(colored_text, True, new_color)
+            screen.blit(rendered, (x, y))
+            x += rendered.get_width()
+
+            # タグの後の部分 次のループで描画
+            text = after
+
+        else:
+            # タグが無い場合そのまま描画
+            rendered = font.render(text, True, color)
+            screen.blit(rendered, (x, y))
+            break
 
 # テキストファイルのロード
 def load_text(file_path):

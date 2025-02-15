@@ -40,17 +40,17 @@ class Character:
 
         # HPが半分以上削られたかどうか判定
         if (self.hp / 2) < effective_damage:
-            state = "shock"
+            state = "Shock"
 
         self.hp = max(self.hp - effective_damage, 0)            # HPを減らす (0未満にならない)
 
         # 瀕死判定
         if self.hp == 0:
-            state = "dying"
+            state = "Dying"
 
         # 気絶判定
         elif self.hp <= 2:
-            state = "faint"
+            state = "Faint"
 
         return state
     
@@ -142,13 +142,13 @@ class Human(Character):
 
         # 一時的狂気の判定
         if damage >= 5:
-            state = "temporary_madness"
+            state = "Temporary_madness"
 
         self.SAN = max(self.SAN - damage, 0)
 
         # 不定の狂気の判定
         if (self.max_SAN - self.SAN) > (int(self.max_SAN / 0.2)):
-            state = "indeterminate_madness"
+            state = "Indeterminate_madness"
 
         return state
 

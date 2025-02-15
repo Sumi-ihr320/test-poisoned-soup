@@ -1,0 +1,17 @@
+{
+    "Shock":[
+        {"type":"text", "text":"ショックロール判定", "progression":"click"}
+    ],
+    "Faint":[
+        {"type":"text", "text":"あなたは気絶してしまった。", "progression":"click"}        
+    ],
+    "Dying":[
+        {"type":"text", "text":"あなたは瀕死状態に陥ってしまった。", "progression":"click"}
+    ],
+    "Temporary_madness":[
+        {"type":"text", "text":"一時的狂気", "progression":"click"}
+    ],
+    "Indeterminate_madness":[
+        {"type":"text", "text":"不定の狂気", "progression":"click"}
+    ]
+}

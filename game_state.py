@@ -68,13 +68,23 @@ class Flags:
             # 西の部屋の本に関するフラグ (見つけているか、入手しているか)
             "book_found":False,
             "book_get":False,
-            # 西の部屋のろうそくに関するフラグ（消したか、入手しているか）
-            "candle_goes_out":False,
+            # 西の部屋のろうそくに関するフラグ（0:消してない 1:長い時に消した 2:短い時に消した 3:蝋が尽きた、入手しているか）
+            "candle_goes_out":0,
             "candle_get":False,
             # 西の部屋の本棚に関するフラグ（目星成功しているか）
             "bookshelf_objective":False,
+            # 黒い液体が手に付着しているか
+            "black_liquid_to_hand":False,
             # 毒に関するフラグ (持っているか)
             "poison_get":False
+        }
+
+        self.ending = {
+            1:False,
+            2:False,
+            3:False,
+            4:False,
+            5:False
         }
 
     def update_flag(self, categry, key, value):

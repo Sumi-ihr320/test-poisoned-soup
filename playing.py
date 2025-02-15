@@ -37,8 +37,8 @@ class MainPlay:
         self.player_label = PlayerDataView(self.screen, self.player_status, self.game_state)
 
         # 管理用
-        self.event_manager = EventManager(self.screen, self.player_status, self.game_state, self.flags,
-                                          self.handle_next_scenario, self.handle_move_room, self.handle_room_view)
+        self.event_manager = EventManager(self.screen, self.player_status, self.girl_status, self.game_state, self.flags,
+                                          self.handle_next_scenario, self.handle_move_room, self.handle_room_view, self.set_state)
         room_id = f"{self.game_state.room}-room"
         self.scenario_manager = ScenarioManager(self.screen, self.event_manager, room_id)
  
@@ -213,4 +213,6 @@ class MainPlay:
         elif self.state == State.LOAD:
             self.state = State.NONE
             return "load", self.save_data
+        elif self.state == State.CLOSE:
+            return "ending", self.save_data
         return "play", self.save_data

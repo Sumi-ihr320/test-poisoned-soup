@@ -29,12 +29,12 @@
          "failure":"east-room_spot_hidden_failure"}
     ],
     "east-room_spot_hidden_success": [
-        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
         {"type": "text", "text": "よく目を凝らすと中がうっすらと見えるようになった", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_visivle", "value":true}
     ],
     "east-room_spot_hidden_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
         {"type": "text", "text": "何も見えない", "progression":"click"}
     ],
     "east-room_listen":[
@@ -44,11 +44,11 @@
          "failure": "east-room_listen_failure"}
     ],
     "east-room_listen_success": [
-        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
         {"type": "text", "text": "ひたひたという足音が近づいて来ているようだ。", "progression":"click"}
     ],
     "east-room_listen_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
         {"type": "text", "text": "特に何も聞こえなかった。"}
     ]
 }

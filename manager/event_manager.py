@@ -5,10 +5,11 @@ from ui_elements import CommandMenu, DiceRoll, Image
 from utils import TextDraw, opposition_percent, load_json
 
 class EventManager:
-    def __init__(self, screen, player=None, game_state=None, flags=None,
-                 next_scenario_call_back=None, move_to_room_call_back=None, room_new_view=None):
+    def __init__(self, screen, player=None, girl=None, game_state=None, flags=None,
+                 next_scenario_call_back=None, move_to_room_call_back=None, room_new_view=None, set_state=None):
         self.screen = screen
         self.player = player
+        self.girl = girl
         self.game_state = game_state
         self.flags = flags
         self.skill_list = load_json(SKILL_DATA_PATH)
@@ -17,12 +18,15 @@ class EventManager:
         self.next_scenario_call_back = next_scenario_call_back
         self.move_to_room_call_back = move_to_room_call_back
         self.room_new_view_call_back = room_new_view
+        self.set_state_call_back = set_state
 
         self.command_menu = None
         self.item_image = None
 
-        self.roll_result = None     # ダイスロールの結果
-        self.threshold = None       # ダイスロールの比較値
+        self.player_roll_result = None     # ダイスロールの結果
+        self.girl_roll_result = None
+        self.player_threshold = None       # ダイスロールの比較値
+        self.girl_threshold = None
         self.damage_point = None    # ダメージポイント
 
     # コマンドメニューの生成
@@ -73,7 +77,7 @@ class EventManager:
 
         # ダイスチェックを行う
         elif step["type"] == "dice_check":
-            self.roll_result, self.threshold, check_result = self.handle_dice_roll(step)
+            self.player_roll_result, self.player_threshold, check_result = self.handle_dice_roll(step)
             next_scenario = step["success"] if check_result else step["failure"]
             self.to_callback_next_scenario(next_scenario)
 
@@ -97,6 +101,10 @@ class EventManager:
         # 画像を非表示にする
         elif step["type"] == "image_hidden":
             self.item_image = None
+
+        # エンディングに移行する
+        elif step["type"] == "ending":
+            self.set_ending()
 
     # アクションを実行する
     def handle_action(self, action, step):
@@ -141,6 +149,7 @@ class EventManager:
     def handle_dice_roll(self, step):
         dice_text = step["dice"]
         check_type = step["check_type"]
+        half = step.get("half", False)
 
         if check_type == "VS_active":
             active = getattr(self.player, step["status"])
@@ -159,6 +168,8 @@ class EventManager:
         elif check_type == "status":
             threshold = getattr(self.player, step["status"])
         
+        if half:
+            threshold = threshold // 2
 
         dice = DiceRoll(dice_text)
         check_result = dice.check(threshold)
@@ -219,6 +230,10 @@ class EventManager:
         self.item_image = None
         self.room_new_view_call_back(room_id)
         
+    # エンディングに移行するためにコールバック関数にステータスを渡す
+    def set_ending(self):
+        self.set_state_call_back(State.CLOSE)
+
     # フラグをセットするイベント
     def set_flag(self, category, flag, value):
         if type(value) == str:
@@ -240,10 +255,18 @@ class EventManager:
 
     # ダメージを受けるイベント
     def take_damage(self, status, damage):
+        if type(damage) == str:
+            if damage == "1/2":
+                status_point = getattr(self.player, status)
+                damage = status_point // 2
+
         if status == "SAN":
-            self.player.take_SAN_damage(damage)
+            state = self.player.take_SAN_damage(int(damage))
         elif status == "HP":
-            self.player.take_damage("event", damage)
+            state = self.player.take_damage("event", int(damage))
+
+        if state:
+            self.to_callback_next_scenario(state)
 
     # イベントを処理
     def handle_event(self, event_name, event_data):

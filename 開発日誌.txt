@@ -326,3 +326,10 @@
 2025/2/8
 	WestRoom.jsonからCandle.jsonを分離
 	アイテム一覧に消えたろうそくを追加
+
+2025/2/12
+	WestRoom.jsonのシナリオを追加
+	Other.json、Ending.jsonを追加
+
+2025/2/15
+	

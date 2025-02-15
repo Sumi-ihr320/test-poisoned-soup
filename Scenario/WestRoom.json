@@ -50,12 +50,12 @@
         {"type":"action", "action":"time_passage", "time":5}
     ],
     "BookShelf_objective_success":[
-        {"type":"text", "text":"《目星》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《目星》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"items", "flag":"bookshelf_objective", "value":true},
         {"type":"text", "text":"本棚にはいろんな本が丁寧に収められている。\nどれもジャンルがバラバラのものばかりのようだ。", "progression":"click"}
     ],
     "BookShelf_objective_failure":[
-        {"type":"text", "text":"《目星》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《目星》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"text", "text":"本がたくさん詰まっている。", "progression":"click"}
     ],
     "BookShelf_library":[
@@ -65,7 +65,7 @@
         {"type":"action", "action":"time_passage", "time":10}
         ],
     "BookShelf_library_success":[
-        {"type":"text", "text":"《図書館》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《図書館》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"image_display", "image":"Book.png"},
         {"type":"text", "text":"『スープの夢について』と書かれた\n真っ黒な本を見つけた。", "progression":"click"},
         {"type":"text", "text":"本はべったりと湿っていて、\n本を手に取ると黒い液体が\n付着した。", "progression":"click"},
@@ -73,7 +73,7 @@
         {"type":"next_step", "next":"Black_liquid"}
     ],
     "BookShelf_library_failure":[
-        {"type":"text", "text":"《図書館》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《図書館》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"text", "text":"何も見つけられなかった。", "progression":"click"}
     ],
     "Black_liquid":[
@@ -83,12 +83,12 @@
          "failure":"Black_liquid_failure"}
     ],
     "Black_liquid_success":[
-        {"type":"text", "text":"《博物学》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《博物学》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"text", "text":"黒い液体からは\n花の蜜の香りとよく似た甘い香りがした。", "progression":"click"},
         {"type":"next_step", "next":"Black_liquid_to_hand"}
     ],
     "Black_liquid_failure":[
-        {"type":"text", "text":"《博物学》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《博物学》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"text", "text":"黒い液体からは僅かに甘い香りがする。", "progression":"click"},
         {"type":"next_step", "next":"Black_liquid_to_hand"}
     ],
@@ -96,13 +96,78 @@
         {"type":"text", "text":"手に付いた黒い液体をあなたは……", "progression":"click"},
         {"type": "interaction",
          "interactions":[
-            {"text":"拭う", "next":""},
-            {"text":"舐める", "next":""},
-            {"text":"調べる", "next":""},
-            {"text":"そのままにする", "next":""}
+            {"text":"拭う", "next":"Black_liquid_wipe"},
+            {"text":"舐める", "next":"Black_liquid_lick"},
+            {"text":"調べる", "next":"Black_liquid_check_up"},
+            {"text":"そのままにする", "next":"Black_liquid_nothing"}
         ]}
     ],
-    "":[
+    "Black_liquid_wipe":[
+        {"type":"text", "text":"黒い液体を服で拭った。", "progression":"click"},
         {"type":"image_hidden"}
+    ],
+    "Black_liquid_nothing":[
+        {"type":"text", "text":"そのまま気にしないことにした。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Black_liquid_check_up":[
+        {"type": "interaction",
+         "interactions":[
+            {"text":"医学", "next":"Black_liquid_check_medicine"},
+            {"text":"薬学", "next":"Black_liquid_check_pharmacology"}
+        ]}
+    ],
+    "Black_liquid_check_medicine":[
+        {"type":"text", "text":"《医学 ÷ 2》⇒", "progression":"click"},
+        {"type":"dice_check", "check_type":"skill", "skill":"医学", "half":true, "dice":"1d100",
+         "success":"Black_liquid_check_medicine_success",
+         "failure":"Black_liquid_check_failure"}
+    ],
+    "Black_liquid_check_medicine_success":[
+        {"type":"text", "text":"《医学 ÷ 2》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"next_step", "next":"Black_liquid_check_success"}
+    ],
+    "Black_liquid_check_medicine_failure":[
+        {"type":"text", "text":"《医学 ÷ 2》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"next_step", "next":"Black_liquid_check_failure"}
+    ],
+    "Black_liquid_check_pharmacology":[
+        {"type":"text", "text":"《薬学》⇒", "progression":"click"},
+        {"type":"dice_check", "check_type":"skill", "skill":"薬学", "dice":"1d100",
+         "success":"Black_liquid_check_pharmacology_success",
+         "failure":"Black_liquid_check_failure"}
+    ],
+    "Black_liquid_check_pharmacology_success":[
+        {"type":"text", "text":"《薬学》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"next_step", "next":"Black_liquid_check_success"}
+    ],
+    "Black_liquid_check_pharmacology_failure":[
+        {"type":"text", "text":"《薬学》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"next_step", "next":"Black_liquid_check_failure"}
+    ],
+    "Black_liquid_check_success":[
+        {"type":"text", "text":"あなたはこの液体が猛毒である可能性が\n高いと感じた。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Black_liquid_check_failure":[
+        {"type":"text", "text":"何も分からなかった。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Black_liquid_lick":[
+        {"type":"text", "text":"黒い液体を舐めてみた。", "progression":"click"},
+        {"type":"image_display", "image":"Squishy_red.gif"},
+        {"type":"text", "text":"突然呼吸と脈拍が早くなり、\n幻覚が見えだした。", "progression":"click"},
+        {"type":"text", "text":"猛毒を摂取したあなたは\n毒対抗ロールに成功しなければ死んでしまう。", "progression":"click"},
+        {"type":"dice_check", "check_type":"VS_passive", "status":"CON", "enemy_status":25, "dice":"1d100",
+         "success":"Black_liquid_VS_POT_success",
+         "failure":"Black_liquid_VS_POT_failure"}
+    ],
+    "Black_liquid_VS_POT_success":[
+        {"type":"text", "text":"毒対抗ロール ⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"", "progression":"click"}
+    ],
+    "Black_liquid_VS_POT_failure":[
+        {"type":"text", "text":"毒対抗ロール ⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"", "progression":"click"}
     ]
 }

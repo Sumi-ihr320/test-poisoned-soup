@@ -34,7 +34,7 @@
          "failure":"centerMemo_objective_failure"}
     ],
     "centerMemo_objective_success":[
-        {"type":"text", "text":"《目星》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《目星》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"text", "text":"あなたは、紙の裏にも文字が書かれていることに気付いた。", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"items", "flag":"center_memo_objective", "value":true},
         {"type":"image_display", "image":"centerMemo_objctive.png"},
@@ -44,7 +44,7 @@
          "failure":"centerMemo_objective_idea_failure"}
     ],
     "centerMemo_objective_idea_success":[
-        {"type":"text", "text":"《アイデア》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《アイデア》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_know", "value":true},
         {"type":"text", "text":"このスープはどうやら本当に人間の血のようだ。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。", "progression":"click"},
         {"type":"text", "text":"このおぞましい事実に気付いてしまったあなたは\n0/1d4のSANチェックだ。", "progression":"click"},
@@ -53,23 +53,23 @@
          "failure":"centerMemo_objective_idea_SAN_failure"}
     ],
     "centerMemo_objective_idea_SAN_success":[
-        {"type":"text", "text":"《SAN》⇒ 成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《SAN》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "centerMemo_objective_idea_SAN_failure":[
-        {"type":"text", "text":"《SAN》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《SAN》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"action", "action":"damage", "status":"SAN", "dice":"1d4"},
         {"type":"text", "text":"おぞましい事実に気づいてしまったあなたは\n{damege}ポイントの正気度を失った", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "centerMemo_objective_idea_failure":[
-        {"type":"text", "text":"《アイデア》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《アイデア》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"text", "text":"どういう意味だろうか……", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "centerMemo_objective_failure":[
-        {"type":"text", "text":"《目星》⇒ 失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《目星》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"text", "text":"何もわからなかった。", "progression":"click"},
         {"type":"image_hidden"}
     ]

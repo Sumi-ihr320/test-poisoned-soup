@@ -13,6 +13,13 @@ WHITE = (255,255,255)
 GRAY = (73,74,65)
 RED = (183,40,46)
 BLUE = (71,131,132)
+COLOR_MAP = {"black": (0, 0, 0),
+             "white": (255, 255, 255),
+             "gray":  (73, 74, 65),
+             "red":   (255, 0, 0),
+             "blue":  (0, 0, 255),
+             "yellow":(255, 217, 0),
+             "green": (0, 128, 0)}
 
 # キャラクターシート
 SHEET_COLOR = (189,183,107)
@@ -53,7 +60,9 @@ SCENARIO_FILES = [
     "EastRoom.json",
     "SouthRoom.json",
     "WestRoom.json",
-    "Candle.json"
+    "Candle.json",
+    "Other.json",
+    "Ending.json"
 ]
 
 # フォント
@@ -102,4 +111,8 @@ ITEM_LIST = {
     "candle2": CharacterItem("ろうそく", img_name="Candle_1.png"),
     "candle_goes_out1": CharacterItem("消えたろうそく", img_name="Candle_0_goes_out.png"),
     "candle_goes_out2": CharacterItem("消えたろうそく", img_name="Candle_1_goes_out.png"),
+    "kitchen_knife": Weapon("包丁", img_name="", damage_dice="",attack_range="近接"),
+    "knife": Weapon("ナイフ", img_name="Knife.png", damage_dice="",attack_range="近接"),
+    "fork": Weapon("フォーク", img_name="Fork.png", damage_dice="",attack_range="近接"),
+    "spoon": Weapon("スプーン", img_name="Spoon.png", damage_dice="",attack_range="近接")
 }

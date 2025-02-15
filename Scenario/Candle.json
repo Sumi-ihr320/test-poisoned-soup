@@ -35,7 +35,7 @@
         {"type":"action", "action":"time_passage", "time":3}
     ],
     "Candle_objective_time1_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"text", "text":"何の変哲もない普通のろうそくだ。\n蝋はあとしばらくはもつだろう。", "progression":"click"},
         {"type":"image_hidden"}
     ],
@@ -88,7 +88,7 @@
         {"type":"action", "action":"time_passage", "time":3}
     ],
     "Candle_objective_time2_success":[
-        {"type":"text", "text":"成功！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"text", "text":"何の変哲もない普通のろうそくだ。\n蝋はもう半分ほどに減っている。", "progression":"click"},
         {"type":"image_hidden"}
     ],
@@ -121,7 +121,7 @@
         {"type":"image_hidden"}
     ],
     "Candle_objective_failure":[
-        {"type":"text", "text":"失敗！ {roll}/{threshold}", "progression":"click"},
+        {"type":"text", "text":"失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
         {"type":"text", "text":"普通のろうそくだ。", "progression":"click"},
         {"type":"image_hidden"}
     ]
