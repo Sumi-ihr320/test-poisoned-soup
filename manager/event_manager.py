@@ -77,8 +77,11 @@ class EventManager:
 
         # ダイスチェックを行う
         elif step["type"] == "dice_check":
-            self.player_roll_result, self.player_threshold, check_result = self.handle_dice_roll(step)
-            next_scenario = step["success"] if check_result else step["failure"]
+            player_check_result, girl_check_result = False, False
+            self.player_roll_result, self.player_threshold, player_check_result = self.handle_dice_roll(step)
+            if step.get("girl", False):
+                self.girl_roll_result, self.girl_threshold, girl_check_result = self.handle_dice_roll(step)
+            next_scenario = step["success"] if player_check_result or girl_check_result else step["failure"]
             self.to_callback_next_scenario(next_scenario)
 
         # ダメージを計算する
@@ -192,13 +195,17 @@ class EventManager:
 
     # テンプレートにダイス結果等を表示
     def process_text_template(self, text_tamplate):
-        if "{roll}" in text_tamplate and self.roll_result is not None:
-            text = text_tamplate.format(roll=self.roll_result, threshold=self.threshold)
-        elif "{damage}" in text_tamplate and self.damage_point is not None:
-            text = text_tamplate.format(damage=self.damage_point)
-        else:
-            text = text_tamplate
-        return text
+        format_kwargs = {}
+        if "{player_roll}" in text_tamplate and self.player_roll_result is not None:
+            format_kwargs["player_roll"] = self.player_roll_result
+            format_kwargs["player_threshold"] = self.player_threshold
+        if "{girl_roll}" in text_tamplate and self.girl_roll_result is not None:
+            format_kwargs["girl_roll_result"] = self.girl_roll_result
+            format_kwargs["girl_threshold"] = self.girl_threshold
+        if "{damage}" in text_tamplate and self.damage_point is not None:
+            format_kwargs["damage"] = self.damage_point
+
+        return text_tamplate.format(**format_kwargs) if format_kwargs else text_tamplate
 
     # フラグをチェックする
     def flag_check(self, flags):

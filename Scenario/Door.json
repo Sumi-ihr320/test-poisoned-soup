@@ -32,7 +32,7 @@
          "interactions":[
             {"text":"目星", "next":"eastDoor_objective"},
             {"text":"聞き耳", "next":"eastDoor_listen"},
-            {"text":"叩く", "next":""},
+            {"text":"叩く", "next":"eastDoor_knock"},
             {"text":"開ける", "next":"eastDoor_open"}
          ]}
     ],
@@ -44,6 +44,10 @@
         {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
         {"type":"image_hidden"}
     ],
+    "eastDoor_knock":[
+        {"type":"text", "text":"何の反応もない。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
     "eastDoor_open":[
         {"type": "conditional",
          "conditions":[
@@ -53,24 +57,48 @@
         }
     ],
     "eastDoor_locked":[
-        {"type":"text", "text":"どうやら鍵がかかっているようだ。\nしかし少し力を入れれば開きそうに思える。\n《STR》⇒", "progression":"click"},
-        {"type":"dice_check", "check_type":"VS_active", "status":"STR", "enemy_status":5, "dice":"1d100",
-         "success":"eastDoor_locked_success",
-         "failure":"eastDoor_locked_failure"}
+        {"type":"text", "text":"どうやら鍵がかかっているようだ。\nしかし少し力を入れれば開きそうに思える。", "progression":"click"},
+        {"type":"interaction",
+         "interactions":[
+            {"text":"力づくで開ける", "next":"eastDoor_vs_str"},
+            {"text":"鍵開けを試みる", "next":"eastDoor_locksmith"}
+         ]}
     ],
-    "eastDoor_locked_success":[
-        {"type":"text", "text":"《STR》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+    "eastDoor_vs_str":[
+        {"type":"text", "text":"《STR》⇒", "progression":"click"},
+        {"type":"dice_check", "check_type":"VS_active", "status":"STR", "enemy_status":5, "dice":"1d100",
+         "success":"eastDoor_vs_str_success",
+         "failure":"eastDoor_vs_str_failure"}
+    ],
+    "eastDoor_vs_str_success":[
+        {"type":"text", "text":"《STR》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"鍵を壊すことができた。", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"rooms" ,"flag":"east_room_open", "value":true},
         {"type":"action", "action":"move_to_room", "room_id":"east-room"}
     ],
-    "eastDoor_locked_failure":[
-        {"type":"text", "text":"《STR》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+    "eastDoor_vs_str_failure":[
+        {"type":"text", "text":"《STR》⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"鍵を壊すことはできなかった。", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "eastDoor_unlocked":[
         {"type":"action", "action":"move_to_room", "room_id":"east-room"}
+    ],
+    "eastDoor_locksmith":[
+        {"type":"text", "text":"《鍵開け》⇒", "progression":"click"},
+        {"type":"dice_check", "check_type":"skill", "skill":"鍵開け", "dice":"1d100",
+         "success":"eastDoor_locksmith_success",
+         "failure":"eastDoor_locksmith_failure"}
+    ],
+    "eastDoor_locksmith_success":[
+        {"type":"text", "text":"《鍵開け》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
+        {"type":"text", "text":"鍵が開いた。", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"rooms" ,"flag":"east_room_open", "value":true}
+    ],
+    "eastDoor_locksmith_failure":[
+        {"type":"text", "text":"《鍵開け》⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
+        {"type":"text", "text":"鍵を開けることはできなかった。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "southDoor":[
         {"type":"image_display", "image":"southDoor.png"},
@@ -92,12 +120,12 @@
          "failure":"southDoor_look_SAN_failure"}
     ],
     "southDoor_look_SAN_success":[
-        {"type":"text", "text":"《SAN》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《SAN》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"あなたは驚いたが正気度は減らずに済んだ", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "southDoor_look_SAN_failure":[
-        {"type":"text", "text":"《SAN》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《SAN》⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"damage", "dice":"1d10"},
         {"type":"text", "text":"おぞましい怪物を目撃してしまったあなたは\n{damage}ポイントの正気度を失った", "progression":"click"},
         {"type":"action", "action":"damage", "status":"SAN", "damage":0}
@@ -108,12 +136,12 @@
          "failure":"southDoor_listen_failure"}
     ],
     "southDoor_listen_success":[
-        {"type":"text", "text":"《聞き耳》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《聞き耳》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"部屋の向こうからは何かの荒い呼吸音と\nズルズルという何か重いものを引きずるような音が\n聞こえる。", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "southDoor_listen_failure":[
-        {"type":"text", "text":"《聞き耳》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《聞き耳》⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
         {"type":"image_hidden"}
     ],

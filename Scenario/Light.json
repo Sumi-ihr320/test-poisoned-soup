@@ -15,12 +15,12 @@
          "failure":"Light_objective_failure"}
     ],
     "Light_objective_success":[
-        {"type":"text", "text":"成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"電球をよく見ると、中に何か入っているように見えた。", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "Light_objective_failure":[
-        {"type":"text", "text":"失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"何もわからなかった。", "progression":"click"},
         {"type":"image_hidden"}
     ],

@@ -102,7 +102,7 @@ class State(Enum):
 ITEM_LIST = {
     "white_robe": Armor("白いローブ"),
     "bloody_robe": Armor("血まみれの白いローブ"),
-    "gun": Weapon("22口径ショート・オートマチック", img_name="Pistol.png", skill_point=20, damage_dice="1d6",
+    "gun": Weapon("22口径ショート・オートマチック", img_name="Pistol.png", skill="拳銃", damage_dice="1d6",
                   attack_range="10m", one_round=3, bullets=6, durability=6),
     "light_bulb": CharacterItem("電球", img_name="Light_bulb.png"),
     "bottle": CharacterItem("瓶", img_name="Bottle.png"),
@@ -111,8 +111,8 @@ ITEM_LIST = {
     "candle2": CharacterItem("ろうそく", img_name="Candle_1.png"),
     "candle_goes_out1": CharacterItem("消えたろうそく", img_name="Candle_0_goes_out.png"),
     "candle_goes_out2": CharacterItem("消えたろうそく", img_name="Candle_1_goes_out.png"),
-    "kitchen_knife": Weapon("包丁", img_name="", damage_dice="",attack_range="近接"),
-    "knife": Weapon("ナイフ", img_name="Knife.png", damage_dice="",attack_range="近接"),
-    "fork": Weapon("フォーク", img_name="Fork.png", damage_dice="",attack_range="近接"),
-    "spoon": Weapon("スプーン", img_name="Spoon.png", damage_dice="",attack_range="近接")
+    "kitchen_knife": Weapon("包丁", img_name="", skill="こぶし", damage_dice="1D4+DB",attack_range="近接", one_round=1,durability=8),
+    "knife": Weapon("ナイフ", img_name="Knife.png", skill="こぶし", damage_dice="1D3+DB",attack_range="近接",durability=5),
+    "fork": Weapon("フォーク", img_name="Fork.png", skill="こぶし", damage_dice="1D3",attack_range="近接",durability=4),
+    "spoon": Weapon("スプーン", img_name="Spoon.png", skill="こぶし", damage_dice="1D2",attack_range="近接",durability=3)
 }

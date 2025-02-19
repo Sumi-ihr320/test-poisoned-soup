@@ -50,12 +50,12 @@
         {"type":"action", "action":"time_passage", "time":5}
     ],
     "BookShelf_objective_success":[
-        {"type":"text", "text":"《目星》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《目星》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"items", "flag":"bookshelf_objective", "value":true},
         {"type":"text", "text":"本棚にはいろんな本が丁寧に収められている。\nどれもジャンルがバラバラのものばかりのようだ。", "progression":"click"}
     ],
     "BookShelf_objective_failure":[
-        {"type":"text", "text":"《目星》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《目星》⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"本がたくさん詰まっている。", "progression":"click"}
     ],
     "BookShelf_library":[
@@ -65,7 +65,7 @@
         {"type":"action", "action":"time_passage", "time":10}
         ],
     "BookShelf_library_success":[
-        {"type":"text", "text":"《図書館》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《図書館》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"image_display", "image":"Book.png"},
         {"type":"text", "text":"『スープの夢について』と書かれた\n真っ黒な本を見つけた。", "progression":"click"},
         {"type":"text", "text":"本はべったりと湿っていて、\n本を手に取ると黒い液体が\n付着した。", "progression":"click"},
@@ -73,7 +73,7 @@
         {"type":"next_step", "next":"Black_liquid"}
     ],
     "BookShelf_library_failure":[
-        {"type":"text", "text":"《図書館》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《図書館》⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"何も見つけられなかった。", "progression":"click"}
     ],
     "Black_liquid":[
@@ -83,12 +83,12 @@
          "failure":"Black_liquid_failure"}
     ],
     "Black_liquid_success":[
-        {"type":"text", "text":"《博物学》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《博物学》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"黒い液体からは\n花の蜜の香りとよく似た甘い香りがした。", "progression":"click"},
         {"type":"next_step", "next":"Black_liquid_to_hand"}
     ],
     "Black_liquid_failure":[
-        {"type":"text", "text":"《博物学》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《博物学》⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"黒い液体からは僅かに甘い香りがする。", "progression":"click"},
         {"type":"next_step", "next":"Black_liquid_to_hand"}
     ],
@@ -124,11 +124,11 @@
          "failure":"Black_liquid_check_failure"}
     ],
     "Black_liquid_check_medicine_success":[
-        {"type":"text", "text":"《医学 ÷ 2》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《医学 ÷ 2》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"next_step", "next":"Black_liquid_check_success"}
     ],
     "Black_liquid_check_medicine_failure":[
-        {"type":"text", "text":"《医学 ÷ 2》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《医学 ÷ 2》⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"next_step", "next":"Black_liquid_check_failure"}
     ],
     "Black_liquid_check_pharmacology":[
@@ -138,11 +138,11 @@
          "failure":"Black_liquid_check_failure"}
     ],
     "Black_liquid_check_pharmacology_success":[
-        {"type":"text", "text":"《薬学》⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《薬学》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"next_step", "next":"Black_liquid_check_success"}
     ],
     "Black_liquid_check_pharmacology_failure":[
-        {"type":"text", "text":"《薬学》⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"《薬学》⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"next_step", "next":"Black_liquid_check_failure"}
     ],
     "Black_liquid_check_success":[
@@ -163,11 +163,11 @@
          "failure":"Black_liquid_VS_POT_failure"}
     ],
     "Black_liquid_VS_POT_success":[
-        {"type":"text", "text":"毒対抗ロール ⇒ 成功！ <color=blue>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"毒対抗ロール ⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"", "progression":"click"}
     ],
     "Black_liquid_VS_POT_failure":[
-        {"type":"text", "text":"毒対抗ロール ⇒ 失敗！ <color=red>{roll}<color/>/{threshold}", "progression":"click"},
+        {"type":"text", "text":"毒対抗ロール ⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"", "progression":"click"}
     ]
 }

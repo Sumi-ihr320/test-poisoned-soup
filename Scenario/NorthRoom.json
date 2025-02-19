@@ -1,6 +1,11 @@
 {
     "north-room":[
         {"type":"text", "text":"明るくて綺麗な部屋だ。", "progression":"click"}
+    ],
+    "Pot":[
+        {"type":"image_display", "image":"Pot.png"},
+        {"type":"text", "text":"大きな鍋がある。", "progression":"click"},
+        {"type":"image_hidden"}
     ]
 
 }

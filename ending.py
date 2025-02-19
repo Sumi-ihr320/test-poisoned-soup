@@ -68,6 +68,9 @@ class Ending:
         if self.state == State.LOAD:
             self.state = State.NONE
             return "load"
+        elif self.state == State.SAVE:
+            self.state = State.NONE
+            return "save"
         elif self.state == State.CLOSE:
             return "title"
         return "ending"

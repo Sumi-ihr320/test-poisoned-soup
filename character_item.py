@@ -18,7 +18,7 @@ class CharacterItem:
             return Armor(data["name"], data["img_name"], data["category"], data["armor_point"])
         
         elif data["category"] == "weapon":
-            return Weapon(data["name"], data["img_name"], data["category"], data["skill_point"],
+            return Weapon(data["name"], data["img_name"], data["category"], data["skill"],
                           data["damage_dice"], data["attack_range"], data["one_round"], data["bullets"], data["durability"])
         
         return cls(data["name"], data["img_name"], data["category"])
@@ -36,10 +36,10 @@ class Armor(CharacterItem):
 
 # 武器
 class Weapon(CharacterItem):
-    def __init__(self, name="", img_name=None, category="weapon", skill_point=0, damage_dice="", attack_range="", one_round=1, bullets=1, durability=1):
+    def __init__(self, name="", img_name=None, category="weapon", skill="", damage_dice="", attack_range="", one_round=1, bullets=1, durability=1):
         super().__init__(name, category, img_name)
         
-        self.skill_point = skill_point      # ％
+        self.skill = skill                  # 対応スキル(使うのに必要なスキル)
         self.damage_dice = damage_dice      # ダメージ
         self.attack_range = attack_range    # 射程距離
         self.one_round = one_round          # 1ラウンドに何発撃てるか
@@ -48,7 +48,7 @@ class Weapon(CharacterItem):
 
     def to_dict(self):
         data = super().to_dict()
-        data["skill_point"] = self.skill_point
+        data["skill"] = self.skill
         data["damage_dice"] = self.damage_dice
         data["attack_range"] = self.attack_range
         data["one_round"] = self.one_round
