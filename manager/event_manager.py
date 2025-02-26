@@ -3,6 +3,7 @@ import re
 from constans import *
 from ui_elements import CommandMenu, DiceRoll, Image
 from utils import TextDraw, opposition_percent, load_json
+from .sound_manager import SoundManager
 
 class EventManager:
     def __init__(self, screen, player=None, girl=None, game_state=None, flags=None,
@@ -19,6 +20,9 @@ class EventManager:
         self.move_to_room_call_back = move_to_room_call_back
         self.room_new_view_call_back = room_new_view
         self.set_state_call_back = set_state
+
+        # サウンドマネージャー
+        self.sound_manager = SoundManager()
 
         self.command_menu = None
         self.item_image = None
@@ -105,6 +109,10 @@ class EventManager:
         elif step["type"] == "image_hidden":
             self.item_image = None
 
+        # サウンドを鳴らす
+        elif step["type"] == "sound":
+            self.handle_sound(step)
+
         # エンディングに移行する
         elif step["type"] == "ending":
             self.set_ending()
@@ -127,7 +135,7 @@ class EventManager:
                 self.room_new_view("center-room")
             elif flag == "east_room_visivle" and value == True:
                 self.room_new_view("east-room")
-            elif flag == "book_found" and value == True:
+            elif (flag == "book_found" and value == True) or (flag == "candle_goes_out" and value > 0) or (flag == "candle_get" and value == True):
                 self.room_new_view("west-room")
 
         # ダメージを受ける
@@ -186,6 +194,15 @@ class EventManager:
             if all(self.flag_check(flag) for flag in condition["flags"]):
                 self.to_callback_next_scenario(condition["next"])
                 break
+
+    # サウンド処理
+    def handle_sound(self, step):
+        sound_name = step["name"]
+        if self.sound_manager:
+            if not self.sound_manager.sounds:
+                if sound_name not in self.sound_manager.sounds:
+                    self.sound_manager.load_sound(sound_name, step["path"], step.get("loop", False))
+            self.sound_manager.play(sound_name)
 
     # 現在のテキストを描画する
     def display_text(self, text):

@@ -6,15 +6,17 @@
         "type: dice_check": "ダイスの結果によって次のシナリオへ移行。",
         "type: item_display": "画像を表示する",
         "type: item_hidden": "画像を非表示にする",
+        "type: sound":"サウンドを再生する",
+        "name":"サウンドの名前", "path":"サウンドのパス", "loop":"ループするかどうか",
         "action: move_to_room": "部屋を移動する",
         "action: set_flag": "フラグをセットする",
+        "category": "どのカテゴリのフラグか", "flag": "どのフラグか", "value": "どんな値か",
         "action: damege": "SAN値チェックやダメージチェックなどの結果、数値を減らす",
         "action: damege_check": "ダメージが多かった場合にショックロールや狂気判定を行う",
         "check_type": "どのタイプのチェックか(スキル、対抗など)",
         "skill": "どのスキルでチェックを行うか",
         "status": "どのステータスを利用するか",
         "enemy_status": "敵側のステータス" ,
-        "category": "どのカテゴリのフラグか", "flag": "どのフラグか", "value": "どんな値か",
         "type: conditional": "開始前にフラグチェックをする",
         "conditions": [
             {"flags":[

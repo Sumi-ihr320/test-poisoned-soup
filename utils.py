@@ -219,25 +219,38 @@ def create_item_path(item):
     return glob.glob(search_text)
 
 # 画像のファイル名を作って返す
-def create_file_path(item, room, direction):
+def create_file_path(item, room, direction, flag=None):
+    if flag is None:
+        flag = {}
+    
     path = f"{PATH}{PICTURE}"
     room_path = f"{path}{room}-room"
-    if room == "center":
-        if direction != "":
-            room_path += f"_{direction}"
 
+    # 中央の部屋には方向情報を追加
+    if room == "center" and direction:
+        room_path += f"_{direction}"
+
+        # 電球が外されていたら_darkを加える
+        if flag.get("light_remove"):
+            room_path = f"{room_path}_dark"
+
+    # 西の部屋では
+    elif room == "west":
+        # キャンドルが消えている場合暗くなる
+        if flag.get("candle_goes_out") != 0:
+            room_path = f"{room_path}_dark"
+    
     if item == "room":
-        return f"{room_path}.jpg"
+        if room == "east" and flag.get("east_room_visible"):
+            room_path = f"{path}black-room"
 
-    if item == "room2":
-        if room == "center":
-            return f"{room_path}_dark.jpg"
-        elif room == "east":
-            return f"{path}black-room.jpg"
-        elif room == "west":
-            return f"{room_path}_PicupBook.jpg"
-        else:
-            return ""
+        elif room == "west" and (flag.get("book_found") or flag.get("candle_get")):
+            if flag.get("book_found"):
+                room_path = f"{room_path}_PickupBook"
+            if flag.get("candle_get"):
+                room_path = f"{room_path}_NoCandle"
+
+        return f"{room_path}.jpg"
 
     # アイテムのパスを作っていく
     img_path = f"{room_path}_{item}.png"

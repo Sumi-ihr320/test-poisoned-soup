@@ -14,19 +14,22 @@ class RoomManager:
 
     # 部屋の作成
     def create_room(self):
-        room2_flag = self.room2_flag_check()
-        self.room = Room(self.screen, self.game_state.room, self.game_state.direction, room2_flag)
+        room_change_flag = self.room_change_flag_check()
+        self.room = Room(self.screen, self.game_state.room, self.game_state.direction, room_change_flag)
 
-    # 二つ目の部屋表示チェック
-    def room2_flag_check(self):
+    # フラグによって変化する部屋の表示チェック
+    def room_change_flag_check(self):
+        flag = {}
         if self.game_state.room == "center":
-            return self.flags.get_flag("rooms", "center_room_light")
+            flag["light_remove"] = self.flags.get_flag("items", "light_remove")
         elif self.game_state.room == "east":
-            return not self.flags.get_flag("rooms", "east_room_visivle")
+            flag["east_room_visible"] = self.flags.get_flag("rooms", "east_room_visible")
         elif self.game_state.room == "west":
-            return self.flags.get_flag("items", "book_found")
-        else:
-            return False
+            flag["book_found"] = self.flags.get_flag("items", "book_found")
+            flag["candle_goes_out"] = self.flags.get_flag("items", "candle_goes_out")
+            flag["candle_get"] = self.flags.get_flag("items", "candle_get")
+        
+        return flag if flag else None
 
     # 向き移動先を取得
     def direction_move_get(self, position, direction):

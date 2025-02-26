@@ -19,6 +19,7 @@
         {"type":"image_hidden"}
     ],
     "northDoor_knock":[
+        {"type":"sound", "name":"木の扉をノック", "path":"Knock_the_wood_door.mp3", "progression":"click"},
         {"type":"text", "text":"何の反応もない。", "progression":"click"},
         {"type":"image_hidden"}
     ],
@@ -45,6 +46,7 @@
         {"type":"image_hidden"}
     ],
     "eastDoor_knock":[
+        {"type":"sound", "name":"鉄の扉をノック", "path":"Knock_the_iron_door.mp3", "progression":"click"},
         {"type":"text", "text":"何の反応もない。", "progression":"click"},
         {"type":"image_hidden"}
     ],
@@ -107,7 +109,7 @@
         "interactions":[
            {"text":"小窓を覗く", "next":"southDoor_look_through_window"},
            {"text":"聞き耳", "next":"southDoor_listen"},
-           {"text":"叩く", "next":""},
+           {"text":"叩く", "next":"southDoor_knock"},
            {"text":"開ける", "next":"southDoor_open"}
         ]}
     ],
@@ -145,6 +147,11 @@
         {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
         {"type":"image_hidden"}
     ],
+    "southDoor_knock":[
+        {"type":"sound", "name":"鉄の扉をノック", "path":"Knock_the_iron_door.mp3", "progression":"click"},
+        {"type":"text", "text":"扉の向こうから何かの気配がする。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
     "southDoor_open":[
         {"type":"interaction",
          "interactions":[
@@ -160,9 +167,14 @@
         "interactions":[
            {"text":"目星", "next":"westDoor_objective"},
            {"text":"聞き耳", "next":""},
-           {"text":"叩く", "next":""},
+           {"text":"叩く", "next":"westDoor_knock"},
            {"text":"開ける", "next":"westDoor_open"}
         ]}
+    ],
+    "westDoor_knock":[
+        {"type":"sound", "name":"木の扉をノック", "path":"Knock_the_wood_door.mp3", "progression":"click"},
+        {"type":"text", "text":"何の反応もない。", "progression":"click"},
+        {"type":"image_hidden"}
     ],
     "westDoor_open":[
         {"type":"action", "action":"move_to_room", "room_id":"west-room"}

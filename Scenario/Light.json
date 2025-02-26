@@ -1,8 +1,20 @@
 {
     "Light":[
+        {"type":"conditional", "conditions":[
+            {"flags":[{"category":"items", "flag":"light_remove", "value":false}], "next":"Light_illuminating"},
+            {"flags":[{"category":"items", "flag":"light_remove", "value":true}], "next":"Light_nothing"}
+        ]}
+    ],
+    "Light_illuminationg":[
         {"type":"image_display", "image":"center-room_Light.png"},
+        {"type":"conditional", "conditions":[
+            {"flags":[{"category":"items", "flag":"light_objective", "value":false}], "next":"Light_not_objective"},
+            {"flags":[{"category":"items", "flag":"light_objective", "value":true}], "next":"Light_spotted"}
+        ]}
+    ],
+    "Light_not_objective":[
         {"type":"text", "text":"薄暗い豆電球が部屋を照らしている。", "progression":"click"},
-        {"type":"interaction", "progression":"click",
+        {"type":"interaction",
          "interactions":[
             {"text":"目星", "next":"Light_objective"},
             {"text":"外す", "next":"Light_remove"},
@@ -15,20 +27,31 @@
          "failure":"Light_objective_failure"}
     ],
     "Light_objective_success":[
-        {"type":"text", "text":"成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
+        {"type":"text", "text":"《目星》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"light_objective", "value":true},
         {"type":"text", "text":"電球をよく見ると、中に何か入っているように見えた。", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "Light_objective_failure":[
-        {"type":"text", "text":"失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
+        {"type":"text", "text":"《目星》⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"何もわからなかった。", "progression":"click"},
         {"type":"image_hidden"}
     ],
+    "Light_spotted":[
+        {"type":"text", "text":"薄暗い豆電球が部屋を照らしている。", "progression":"click"},
+        {"type":"text", "text":"薄暗いのは、中に何か入っているからのようだ。", "progression":"click"},
+        {"type":"interaction",
+         "interactions":[
+            {"text":"外す", "next":"Light_remove"},
+            {"text":"壊す", "next":"Light_break"}
+         ]}
+    ],
     "Light_remove":[
         {"type":"text", "text":"テーブルに乗り電球を外した。", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"center_room_light", "value":true},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"light_remove", "value":true},
         {"type":"text", "text":"部屋が暗くなった。", "progression":"click"},
         {"type":"image_display", "image":"Light_bulb.png"},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"light_get", "value":true},
         {"type":"action", "action":"get_item", "item":"light_bulb"},
         {"type":"text", "text":"電球を手に入れた。", "progression":"click"},
         {"type":"image_hidden"}
@@ -38,8 +61,31 @@
         {"type":"interaction",
          "interactions":[
             {"text":"攻撃する", "next":""},
-            {"text":"外してから落として割る", "next":""},
-            {"text":"やっぱりやめる", "next":""}
-         ]}        
+            {"text":"外して慎重に割る", "next":""},
+            {"text":"やっぱりやめる", "next":"Light_not_break"}
+         ]}
+    ],
+    "Light_not_break":[
+        {"type":"text", "text":"電球を壊すのはやめた。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Light_nothing":[
+        {"type":"image_display", "image":"center-room_Light_remove.png"},
+        {"type":"text", "text":"電球が付いていない照明だ。", "progression":"click"},
+        {"type":"conditional", "conditions":[
+            {"flags":[{"category":"items", "flag":"light_get", "value":true}], "next":"Light_have"},
+            {"flags":[{"category":"items", "flag":"light_break", "value":true}], "next":"Light_broken"}
+        ]}
+    ],
+    "Light_have":[
+        {"type":"interaction",
+         "interactions":[
+            {"text":"電球を戻す", "next":""},
+            {"text":"戻さない", "next":""}
+         ]}
+    ],
+    "Light_broken":[
+        {"type":"text", "text":"電球は壊してしまったので何もできない。", "progression":"click"},
+        {"type":"image_hidden"}
     ]
 }

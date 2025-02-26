@@ -10,7 +10,7 @@ from pygame.locals import *
 
 from constans import *
 from utils import *
-
+from manager.sound_manager import SoundManager
 
 # ラベル作成をクラス化するよ    (chatGPT指南)
 class Label:
@@ -416,7 +416,11 @@ class DiceRoll:
         
         # 計算結果
         self.result = self.dice_roll()
-    
+
+        # ダイス音を鳴らす
+        self.sound_manager = SoundManager()
+        self.sound()
+
     # ダイスロールの計算
     def dice_roll(self):
         val = 0
@@ -438,6 +442,12 @@ class DiceRoll:
         return: 成否 (bool)
         """
         return self.result <= threshold
+    
+    def sound(self):
+        sound_name = "ダイスを振る"
+        if not self.sound_manager.sounds or sound_name not in self.sound_manager.sounds:
+            self.sound_manager.load_sound(sound_name, "W-DISE.mp3")
+        self.sound_manager.play(sound_name)
 
 # コマンドメニュー
 class CommandMenu:

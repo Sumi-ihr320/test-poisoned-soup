@@ -32,9 +32,6 @@ class MainApp:
         # タイトルバーキャプション
         pygame.display.set_caption(TITLE_TEXT)
 
-        # サウンドミキサー初期化
-        pygame.mixer.init()
-
         self.clock = pygame.time.Clock()
 
         self.event_name = "title"

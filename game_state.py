@@ -37,13 +37,11 @@ class Flags:
         
         # 部屋の状態フラグ
         self.rooms = {
-            # 中央の部屋 (初回シナリオが済んでいるか、電球が取られてないか)
+            # 中央の部屋 (初回シナリオが済んでいるか)
             "center_room_scenario":False,
-            "center_room_light":False,
-            # 東の部屋 (鍵が開いてるか、初回シナリオが済んでいるか、室内が見えてるか、少女と遭遇するまでの時間経過)
+            # 東の部屋 (鍵が開いてるか、室内が見えてるか、少女と遭遇するまでの時間経過)
             "east_room_open":False,
-            "east_room_scenario":False,
-            "east_room_visivle":False,
+            "east_room_visible":False,
             "east_room_time":5,
             # 西の部屋 (初回シナリオが済んでいるか)
             "west_room_scenario":False,
@@ -65,12 +63,19 @@ class Flags:
             "soup_destruction": False,
             # 中央の部屋メモのフラグ (裏に気づいているか)
             "center_memo_objective":False,
+            # 電球に関するフラグ (目星成功しているか, 外したか, 持っているか, 壊したか)
+            "light_objective":False,
+            "light_remove":False,
+            "light_get":False,
+            "light_break":False,
             # 西の部屋の本に関するフラグ (見つけているか、入手しているか)
             "book_found":False,
             "book_get":False,
-            # 西の部屋のろうそくに関するフラグ（0:消してない 1:長い時に消した 2:短い時に消した 3:蝋が尽きた、入手しているか）
+            # 西の部屋のろうそくに関するフラグ
+            # （0:消してない 1:長い時に消した 2:短い時に消した 3:蝋が尽きた、所持しているか、別の部屋に置いているか）
             "candle_goes_out":0,
             "candle_get":False,
+            "candle_out":False,
             # 西の部屋の本棚に関するフラグ（目星成功しているか）
             "bookshelf_objective":False,
             # 黒い液体が手に付着しているか

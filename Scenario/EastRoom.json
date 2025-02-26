@@ -1,19 +1,19 @@
 {
     "east-room":[
-        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_time", "value":"+1"},
+        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_time", "value":"-1"},
         {"type":"conditional", "conditions":[
             {"flags":[
-                {"category":"rooms", "flag":"east_room_visivle", "value":false},
+                {"category":"rooms", "flag":"east_room_visible", "value":false},
                 {"category":"characters", "flag":"girl_fellow", "value":false},
                 {"category":"characters", "flag":"girl_death", "value":false}
-            ], "next":"east-room_visivle_girl_false"},
-            {"flags":[{"category":"rooms", "flag":"east_room_visivle", "value":true}], "next":"east-room_visivle_true"}
+            ], "next":"east-room_visible_girl_false"},
+            {"flags":[{"category":"rooms", "flag":"east_room_visible", "value":true}], "next":"east-room_visible_true"}
         ]}
     ],
-    "east-room_visivle_true":[
+    "east-room_visible_true":[
         {"type":"text", "text":"中は真っ暗だ。", "progression":"click"}
     ],
-    "east-room_visivle_girl_false":[
+    "east-room_visible_girl_false":[
         {"type":"text", "text":"中は真っ暗で、\n中央の部屋の明かりも奥までは届かないようだ。", "progression":"click"},
         {"type":"interaction",
          "interactions":[
@@ -24,24 +24,24 @@
          ]}
     ],
     "east-room_spot_hidden":[
-        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_time", "value":"+1"},
+        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_time", "value":"-1"},
         {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
-         "success":"east-room_spot_hidden_success",
-         "failure":"east-room_spot_hidden_failure"}
+         "success":"east-room_objective_success",
+         "failure":"east-room_objective_failure"}
     ],
-    "east-room_spot_hidden_success": [
+    "east-room_objective_success": [
         {"type":"text", "text":"《目星》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"よく目を凝らすと中がうっすらと見えるようになった", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_visivle", "value":true}
+        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_visible", "value":true}
     ],
-    "east-room_spot_hidden_failure":[
+    "east-room_objective_failure":[
         {"type":"text", "text":"《目星》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"何も見えない", "progression":"click"}
     ],
     "east-room_listen":[
-        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_time", "value":"+1"},
+        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_time", "value":"-1"},
         {"type":"dice_check", "check_type":"skill", "skill":"聞き耳", "dice":"1d100",
          "success": "east-room_listen_success",
          "failure": "east-room_listen_failure"}
@@ -49,7 +49,8 @@
     "east-room_listen_success": [
         {"type":"text", "text":"《聞き耳》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
-        {"type":"text", "text":"ひたひたという足音が近づいて来ているようだ。", "progression":"click"}
+        {"type":"sound", "name":"足音", "path":"footstep_01.mp3"},
+        {"type":"text", "text":"どうやら足音が近づいて来ているようだ。", "progression":"click"}
     ],
     "east-room_listen_failure":[
         {"type":"text", "text":"《聞き耳》⇒ 失敗！ <color=red>{player_roll}<color/>/{player_threshold}", "progression":"click"},
