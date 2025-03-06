@@ -8,12 +8,14 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from ui_elements import Label
+from manager.sound_manager import SoundManager
 
 # データロード
 class Save_or_Load:
     def __init__(self, screen, root, save_load_flag, return_flag, save_data=None):
         self.screen = screen
         self.root = root
+
         # フォントの設定
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)                    # 基本フォント
         self.contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)        # メニュー用フォント
@@ -46,15 +48,21 @@ class Save_or_Load:
         self.button_list = []
         self.create_label()
 
+        # クリック音
+        self.sound_manager = SoundManager()
+        sound_check(self.sound_manager)
+
+        self.hovered = False
+
     # データ表示ボックスを表示
     def create_window(self):
         w = 600
         h = 500
         x = (self.screen.get_width() / 2) - (w / 2)
         y = (self.screen.get_height() / 2) - (h / 2)
-        self.window_rect = Rect(x,y,w,h)
-        pygame.draw.rect(self.screen, SHEET_COLOR, self.window_rect)
-        pygame.draw.rect(self.screen, BLACK,self. window_rect,2)
+        window_rect = Rect(x,y,w,h)
+        pygame.draw.rect(self.screen, SHEET_COLOR, window_rect)
+        pygame.draw.rect(self.screen, BLACK, window_rect,2)
 
    # ラベルの作成
     def create_label(self):
@@ -262,9 +270,16 @@ class Save_or_Load:
     # マウスオーバーで枠を表示するよ
     def handle_mouse_hover(self):
         pos = pygame.mouse.get_pos()
+        hovering = False
+
         for item in self.button_list:
             if item.rect.collidepoint(pos):
+                hovering = True
                 pygame.draw.rect(self.screen, BLACK, item.rect, 1)
+
+        if hovering and not self.hovered:
+            self.sound_manager.play("カーソル移動")
+        self.hovered = hovering
 
     def handle_event(self):
         for event in pygame.event.get():
@@ -280,10 +295,12 @@ class Save_or_Load:
     def handle_ckick(self, event):
         # 閉じるボタン
         if self.close.rect.collidepoint(event.pos):
+            self.sound_manager.play("選択")
             self.state = State.CLOSE
 
         # 決定ボタン
         elif self.enter.rect.collidepoint(event.pos):
+            self.sound_manager.play("選択")
             if self.save_load_flag == "save":
                 self.save()                
             else:
@@ -291,11 +308,13 @@ class Save_or_Load:
 
         # 削除ボタン
         elif self.delete_label.rect.collidepoint(event.pos):
+            self.sound_manager.play("選択")
             self.data_delete()
 
         # データ一覧の選択
         for label, save_data in zip(self.data_label_list, self.save_data_list):
             if label.rect.collidepoint(event.pos):
+                self.sound_manager.play("クリック")            
                 self.select_file_name = save_data
                 print(self.select_file_name)
 

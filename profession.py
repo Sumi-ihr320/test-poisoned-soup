@@ -4,6 +4,7 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from ui_elements import *
+from manager.sound_manager import SoundManager
 
 # 職業クラス
 class Profession:
@@ -20,7 +21,11 @@ class Profession:
         # 画像は最初に一度だけロードしキャッシュする
         self.small_img = self.load_img(self.x, self.y, 0.1)
         self.big_img = self.load_img(self.view_x, self.view_y, 0.35)
-        
+    
+        # サウンドの設定
+        self.sound_manager = SoundManager()
+        sound_check(self.sound_manager)
+
     # 画像インスタンスを作成
     def load_img(self, x, y, size):
         try:
@@ -73,6 +78,7 @@ class Profession:
 
     def handle_click(self, pos):
         if self.small_img.rect.collidepoint(pos):
+            self.sound_manager.play("クリック")
             return True
         return False
 

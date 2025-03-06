@@ -112,10 +112,6 @@ class SexChange:
         self.screen = screen
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)
 
-        # フラグがtrueなら男、falseなら女が選択されている
-        #self.man = self.create_button("男", x, y, flag)
-        #self.woman = self.create_button("女", x+40, y, not flag)
-
         # フラグをman, woman, neuterにする
         man_flag, woman_flag, neuter_flag = self.flag_check(flag)
 

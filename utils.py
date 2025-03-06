@@ -120,6 +120,26 @@ def load_scenario(file):
     else:
         print(f"{file_path} が見つかりません")
 
+# 基本のサウンドファイルが入っているかのチェック
+def sound_check(sound_manager):
+    sounds_to_load = {
+        "選択":"Choice.mp3",
+        "クリック":"Click.mp3",
+        "カーソル移動":"Move.mp3"
+    }
+
+    # sound_manager.soundsが空の時はすべてロード
+    if not sound_manager.sounds:
+        for name, file in sounds_to_load.items():
+            sound_manager.load_sound(name, file)
+
+    else:
+        # まだロードされていないサウンドのみロード
+        for name, file in sounds_to_load.items():
+            if name not in sound_manager.sounds:
+                sound_manager.load_sound(name, file)
+
+
 # "〇D〇" のテキストから何個のダイスか、何面ダイスか、+〇、-〇が付いてるかを抽出する
 def dice_confirmation(text):
     # テキストに+か-が入っているか確認

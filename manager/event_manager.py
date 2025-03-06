@@ -199,9 +199,8 @@ class EventManager:
     def handle_sound(self, step):
         sound_name = step["name"]
         if self.sound_manager:
-            if not self.sound_manager.sounds:
-                if sound_name not in self.sound_manager.sounds:
-                    self.sound_manager.load_sound(sound_name, step["path"], step.get("loop", False))
+            if not self.sound_manager.sounds or (self.sound_manager and sound_name not in self.sound_manager.sounds):
+                self.sound_manager.load_sound(sound_name, step["path"], step.get("loop", False))
             self.sound_manager.play(sound_name)
 
     # 現在のテキストを描画する

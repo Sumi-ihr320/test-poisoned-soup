@@ -86,6 +86,13 @@ class Button:
         # ボタンが有効か無効か
         self.enabled = True
 
+        # クリック音
+        self.sound_manager = SoundManager()
+        sound_check(self.sound_manager)
+
+        # hover状態を記録するフラグ
+        self.hovered = False
+
     # テキストの作成
     def create_text(self):
         total_h = 0
@@ -143,11 +150,16 @@ class Button:
     # 更新
     def update(self, pos, click=None):
         hover = self.is_clicked(pos)
+        if hover and not self.hovered:  # 初めてホバーした時
+            self.sound_manager.play("カーソル移動")
+        self.hovered = hover
+
         self.draw_button(hover)
         self.draw_text()
 
         if hover and click and self.enabled:
             if self.on_click:
+                self.sound_manager.play("クリック")
                 self.on_click() # コールバック関数を呼び出す
             return True
         else:
@@ -307,6 +319,10 @@ class PullDown:
         self.items = []
         self.pd_h = pd_h            # プルダウンボックスの最大高さ
         self.list_box = None
+
+        self.sound_manager = SoundManager()
+        sound_check(self.sound_manager)
+        self.hovered = False
 
     # ボックス作るよ
     def create_box(self, rect):

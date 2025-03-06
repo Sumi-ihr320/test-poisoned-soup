@@ -33,6 +33,9 @@ class SoundManager:
             loop = -1 if self.sounds[name]["loop"] else 0
             sound.play(loops=loop)
 
+    def set_volume(self, name, volume):
+        self.sounds[name]["sound"].set_volume(volume)
+
     # サウンドを停止
     def stop(self, name):
         self.sounds[name]["sound"].stop()

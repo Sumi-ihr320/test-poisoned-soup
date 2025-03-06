@@ -13,6 +13,7 @@ from navigation import Navigation
 from manager.room_manager import RoomManager
 from manager.scenario_manager import ScenarioManager
 from manager.event_manager import EventManager
+from manager.sound_manager import SoundManager
 
 # プレイ画面
 class MainPlay:
@@ -47,6 +48,10 @@ class MainPlay:
 
         # 選択されたアイテム
         self.selected_item = None
+
+        # サウンド
+        self.sound_manager = SoundManager()
+        sound_check(self.sound_manager)
 
     # データをセットする
     def set_data(self, save_data):
@@ -172,6 +177,9 @@ class MainPlay:
             # アイテムクリックイベント
             elif self.handle_item_click_event(event):
                 return
+
+        self.sound_manager.play("クリック")
+        
 
     def draw(self):
         create_frame(self.screen)       # テキストフレームの表示

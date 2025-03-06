@@ -6,6 +6,7 @@ from character_item import *
 from skill import *
 
 from profession import ProfessionSelecter, HobbySelecter
+from manager.sound_manager import SoundManager
 
 class ProfessionPage:
     def __init__(self, screen, root, player, save_data, callback) -> None:
@@ -19,7 +20,10 @@ class ProfessionPage:
         self.prof_selecter = None
         self.end_button = None
         self.hoby_selecter = None
-        
+
+        self.sound_manager = SoundManager()
+        sound_check(self.sound_manager)
+
     def load_selecter(self, selected_hobby):
         # 職業選択画面
         self.prof_selecter = ProfessionSelecter(self.screen)
@@ -96,6 +100,7 @@ class ProfessionPage:
     def handle_click(self, pos, is_pulldown_open, selected_profession, selected_hobby):
         # プルダウンのクリック処理
         if self.hoby_selecter.pull.box.rect.collidepoint(pos):
+            self.sound_manager.play("クリック")
             is_pulldown_open = not is_pulldown_open
             print(f"is_pulldown_open:{is_pulldown_open}")
 
@@ -104,6 +109,7 @@ class ProfessionPage:
             # 趣味欄のクリック処理
             selected_item = self.hoby_selecter.pull.handle_click(pos, is_pulldown_open)
             if selected_item:
+                self.sound_manager.play("クリック")
                 selected_hobby = selected_item
                 self.player.Hobby = selected_item
                 self.hoby_selecter.pull.update_label(f"{selected_item}")

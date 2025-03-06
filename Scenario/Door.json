@@ -19,7 +19,7 @@
         {"type":"image_hidden"}
     ],
     "northDoor_knock":[
-        {"type":"sound", "name":"木の扉をノック", "path":"Knock_the_wood_door.mp3", "progression":"click"},
+        {"type":"sound", "name":"木の扉をノック", "path":"Knock_the_wood_door.mp3"},
         {"type":"text", "text":"何の反応もない。", "progression":"click"},
         {"type":"image_hidden"}
     ],
@@ -46,7 +46,7 @@
         {"type":"image_hidden"}
     ],
     "eastDoor_knock":[
-        {"type":"sound", "name":"鉄の扉をノック", "path":"Knock_the_iron_door.mp3", "progression":"click"},
+        {"type":"sound", "name":"鉄の扉をノック", "path":"Knock_the_iron_door.mp3"},
         {"type":"text", "text":"何の反応もない。", "progression":"click"},
         {"type":"image_hidden"}
     ],
@@ -76,6 +76,7 @@
         {"type":"text", "text":"《STR》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
         {"type":"text", "text":"鍵を壊すことができた。", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"rooms" ,"flag":"east_room_open", "value":true},
+        {"type":"sound", "name":"古いドアを開ける", "path":"Open_the_old_door.mp3"},
         {"type":"action", "action":"move_to_room", "room_id":"east-room"}
     ],
     "eastDoor_vs_str_failure":[
@@ -84,6 +85,7 @@
         {"type":"image_hidden"}
     ],
     "eastDoor_unlocked":[
+        {"type":"sound", "name":"古いドアを開ける", "path":"Open_the_old_door.mp3"},
         {"type":"action", "action":"move_to_room", "room_id":"east-room"}
     ],
     "eastDoor_locksmith":[
@@ -94,6 +96,7 @@
     ],
     "eastDoor_locksmith_success":[
         {"type":"text", "text":"《鍵開け》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
+        {"type":"sound", "name":"鍵を開ける", "path":"Open_the_lock.mp3"},        
         {"type":"text", "text":"鍵が開いた。", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"rooms" ,"flag":"east_room_open", "value":true}
     ],
@@ -148,7 +151,7 @@
         {"type":"image_hidden"}
     ],
     "southDoor_knock":[
-        {"type":"sound", "name":"鉄の扉をノック", "path":"Knock_the_iron_door.mp3", "progression":"click"},
+        {"type":"sound", "name":"鉄の扉をノック", "path":"Knock_the_iron_door.mp3"},
         {"type":"text", "text":"扉の向こうから何かの気配がする。", "progression":"click"},
         {"type":"image_hidden"}
     ],
@@ -172,11 +175,12 @@
         ]}
     ],
     "westDoor_knock":[
-        {"type":"sound", "name":"木の扉をノック", "path":"Knock_the_wood_door.mp3", "progression":"click"},
+        {"type":"sound", "name":"木の扉をノック", "path":"Knock_the_wood_door.mp3"},
         {"type":"text", "text":"何の反応もない。", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "westDoor_open":[
+        {"type":"sound", "name":"木のドアを開ける", "path":"Open_the_door_02.mp3"},
         {"type":"action", "action":"move_to_room", "room_id":"west-room"}
     ]
 }

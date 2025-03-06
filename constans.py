@@ -21,6 +21,9 @@ COLOR_MAP = {"black": (0, 0, 0),
              "yellow":(255, 217, 0),
              "green": (0, 128, 0)}
 
+# 設定
+SETTING_COLOR = (0,82,67)
+
 # キャラクターシート
 SHEET_COLOR = (189,183,107)
 SHEET_RECT = Rect(30,30,740,375)

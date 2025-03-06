@@ -1,4 +1,6 @@
+from utils import sound_check
 from status import Status, SexChange
+from manager.sound_manager import SoundManager
 
 class StatusPage:
     def __init__(self, screen, root, player):
@@ -8,6 +10,8 @@ class StatusPage:
 
         self.sex_button = None  # 性別ボタン
         self.status_items = []  # ステータスのアイテム一覧
+        self.sound_manager = SoundManager()
+        sound_check(self.sound_manager)
 
     def load_status_items(self, status_json):
         if not self.status_items:   # すでにアイテムがあるか確認
@@ -68,6 +72,7 @@ class StatusPage:
             on_button = True
 
         if on_button:
+            self.sound_manager.play("クリック")
             self.sex_button.update_sex(self.player.sex)
         
         return on_button
