@@ -20,20 +20,16 @@ class MainPlay:
     def __init__(self, screen, root, save_data=None):
         self.screen = screen
         self.root = root
+
+        self.window_size = self.screen.get_size()
         self.save_data = save_data
         
         # セーブデータから各データをセットする
         self.set_data(save_data)
 
         # メニューコントローラー
-        self.menu_controller = MenuController(self.screen, self.root, self.set_state)
-    
-        #self.game_state.room = "east"
-    
-        # ナビゲーションバー
-        self.navigation = Navigation(self.screen)
-        self.setup_navigetion()
-
+        self.menu_controller = MenuController(self.screen, self.root, self.window_size, self.set_state)
+        
         # 主人公のステータス表示
         self.player_label = PlayerDataView(self.screen, self.player_status, self.game_state)
 
@@ -45,6 +41,10 @@ class MainPlay:
  
         # 部屋の管理
         self.room_manager = RoomManager(self.screen, self.event_manager, self.flags, self.game_state)
+
+        # ナビゲーションバー
+        self.navigation = Navigation(self.screen, self.room_manager.room.img.rect)
+        self.setup_navigetion()
 
         # 選択されたアイテム
         self.selected_item = None
@@ -86,6 +86,7 @@ class MainPlay:
     def handle_item_click_event(self, event):
         for item in self.room_manager.room.items_select_list:
             if item.handle_click(event.pos):
+                self.sound_manager.play("選択")
                 self.selected_item = item
                 print(item.name)                # デバッグ用
                 self.scenario_manager.start_scenario(item.name)
@@ -221,6 +222,9 @@ class MainPlay:
         elif self.state == State.LOAD:
             self.state = State.NONE
             return "load", self.save_data
+        elif self.state == State.SETTING:
+            self.state = State.NONE
+            return "setting", self.save_data
         elif self.state == State.CLOSE:
             return "ending", self.save_data
         return "play", self.save_data

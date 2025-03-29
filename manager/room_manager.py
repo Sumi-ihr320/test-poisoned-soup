@@ -27,7 +27,7 @@ class RoomManager:
         elif self.game_state.room == "west":
             flag["book_found"] = self.flags.get_flag("items", "book_found")
             flag["candle_goes_out"] = self.flags.get_flag("items", "candle_goes_out")
-            flag["candle_get"] = self.flags.get_flag("items", "candle_get")
+            flag["candle_out"] = self.flags.get_flag("items", "candle_out")
         
         return flag if flag else None
 

@@ -6,12 +6,8 @@ import tkinter as tk
 from constans import *
 from utils import *
 
-from title import Title
-from save_or_load import Save_or_Load
-from opening import Opening
-from character_sheet import CharacterSheet
-from playing import MainPlay
-from ending import Ending
+from manager.setting_manager import SettingManager
+from manager.scene_manager import SceneManager
 
 
 # tkinterの起動 ---------------------------------------------------
@@ -25,8 +21,14 @@ class MainApp:
     def __init__(self):
         # pygame初期化    
         pygame.init()
-        # 画面サイズ
-        self.screen = pygame.display.set_mode(DISPLAY_SIZE)
+
+        # セッティングマネージャー
+        self.setting_manager = SettingManager()
+
+        # 画面サイズ等のデータロード
+        self.screen = None
+        self.load_data()
+
         # キーリピート設定
         pygame.key.set_repeat(100, 100)
         # タイトルバーキャプション
@@ -34,14 +36,21 @@ class MainApp:
 
         self.clock = pygame.time.Clock()
 
-        self.event_name = "title"
-        #self.event_name = "charasheet"
-        #self.event_name = "play"
+        # シーンマネージャー
+        self.scene_manager = SceneManager(self.screen, root, self.setting_manager)
 
-        # イベントマップ
-        self.event_map = {"title": Title(self.screen, root),
-                          "opening": Opening(self.screen, root),
-                          "charasheet": CharacterSheet(self.screen, root)}
+    # 設定ファイルをロードする
+    def load_data(self):
+        self.setting_manager.load_settings()
+        settings = self.setting_manager.settings
+
+        # 画面サイズ
+        if settings["fullscreen"]:
+            self.screen = pygame.display.set_mode(tuple(settings["resolution"]), pygame.FULLSCREEN)
+        else:
+            self.screen = pygame.display.set_mode(tuple(settings["resolution"]))
+
+        # ボリューム設定 
 
     # 画面の描写
     def run(self):
@@ -52,7 +61,7 @@ class MainApp:
             self.screen.fill(BLACK)
             
             # 現在のイベントを処理
-            self.process_event()
+            self.scene_manager.update()
 
             self.update_display()
 
@@ -64,56 +73,13 @@ class MainApp:
             # 閉じるボタンで終了
             if event.type == QUIT:
                 self.close()
-            elif event.type == KEYDOWN and event.key == K_ESCAPE:
-                self.close()
-
-    # 現在のイベントを処理
-    def process_event(self):
-        if self.event_name in self.event_map:
-            event = self.event_map[self.event_name]
-            if self.event_name == "title":
-                self.event_name = event.update()
-                if self.event_name == "load":
-                    self.event_map["load"] = Save_or_Load(self.screen, root, "load", "title")
-
-            elif self.event_name == "opening":
-                self.event_name = event.update()
-                if self.event_name == "load":
-                    self.event_map["load"] = Save_or_Load(self.screen, root, "load", "opening")
-
-            elif self.event_name == "charasheet":
-                self.event_name = event.update()
-                if self.event_name == "save":
-                    self.create_save_or_load(event, "save", "charasheet")
-                elif self.event_name == "load":
-                    self.event_map["load"] = Save_or_Load(self.screen, root, "load", "charasheet")
-
-            elif self.event_name == "save":
-                self.event_name, self.save_data = self.event_map["save"].update()
-                if self.event_name == "play" and self.save_data:
-                    self.event_map["play"] = MainPlay(self.screen, root, self.save_data)
-
-            elif self.event_name == "load":
-                self.event_name, self.save_data = self.event_map["load"].update()
-                if self.event_name == "play" and self.save_data:
-                    self.event_map["play"] = MainPlay(self.screen, root, self.save_data)
-
-            elif self.event_name == "play":
-                self.event_name, self.save_data = self.event_map["play"].update()
-                if self.event_name == "save":
-                    self.create_save_or_load(event, "save", "play")
-                elif self.event_name == "load":
-                    self.create_save_or_load(event, "load", "play")
-                elif self.event_name == "ending":
-                    self.event_map["ending"] = Ending(self.screen, root, self.save_data)
-
-            else:
-                self.event_name = event(self.screen)
-
-    # セーブデータを取得してイベントマップを更新
-    def create_save_or_load(self, event, next_stage, old_stage):
-        self.save_data = event.save_data
-        self.event_map[next_stage] = Save_or_Load(self.screen, root, next_stage, old_stage, self.save_data)
+            elif event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    self.close()
+                elif event.key == pygame.K_F5:
+                    pygame.display.toggle_fullscreen()
+                    self.setting_manager.set("fullscreen", bool(pygame.display.get_surface().get_flags()&pygame.FULLSCREEN))
+            
 
     # 画面を更新
     def update_display(self):

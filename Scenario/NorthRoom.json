@@ -5,7 +5,25 @@
     "Pot":[
         {"type":"image_display", "image":"Pot.png"},
         {"type":"text", "text":"大きな鍋がある。", "progression":"click"},
+        {"type":"conditional",
+         "conditions": [
+            {"flags":[{"category":"items", "flag":"pot_looked", "value":false}], "next":"Pot_no_look"},
+            {"flags":[{"category":"items", "flag":"pot_looked", "value":true}], "next":""}
+        ]}
+    ],
+    "Pot_no_look":[
+        {"type":"interaction",
+         "interactions":[
+            {"text":"蓋を開ける", "next":""},
+            {"text":"蓋を開けない", "next":""}
+         ]},
         {"type":"image_hidden"}
+    ],
+    "UnderSinkStorage":[
+        {"type":"interaction",
+         "interactions":[
+            {"text":"目星", "next":""},
+            {"text":"何か持って行く", "next":""}
+         ]}
     ]
-
 }

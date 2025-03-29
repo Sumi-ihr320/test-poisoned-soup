@@ -8,7 +8,7 @@ from ui_elements import *
 from characters import Player
 from character_item import *
 
-from menu import MenuController
+from menu import MenuController, update_menu
 from navigation import Navigation
 from status_calculator import *
 from pages.status_page import StatusPage
@@ -23,10 +23,13 @@ class CharacterSheet:
         # メニューボタン
         self.menu_controller = MenuController(self.screen, self.root, self.set_state, save_enabled=False)
 
+        # surfaceを作成
+        self.create_surface()
+
         self.now_page = 0       # 現在のページ
 
         # ナビゲーション
-        self.navigetion = Navigation(self.screen)
+        self.navigetion = Navigation(self.screen, self.sheet_rect)
         self.setup_navigation()
 
         self.selected_profession = None     # 選択中の職業
@@ -49,12 +52,27 @@ class CharacterSheet:
         # 状態フラグ
         self.state = State.NONE
 
+    # シート用のsurfaceを作る
+    def create_surface(self):
+        self.window_size = self.screen.get_size()
+        w_percent, h_percent = RATIO[self.window_size]
+        sheet_w, sheet_h = SHEET_SIZE
+        self.sheet_surface = pygame.Surface((int(sheet_w * w_percent), int(sheet_h * h_percent)))
+
+        # テキストフレームの位置からシート位置を算出
+        frame_rect = get_frame(self.screen)
+        self.sheet_rect = self.sheet_surface.get_rect(centerx=(self.screen.get_width()//2),bottom=frame_rect.top - 20)
+
+        self.sheet_surface.fill(SHEET_COLOR)
+
     # シートの描画
     def draw_sheet(self):
-        pygame.draw.rect(self.screen, SHEET_COLOR, SHEET_RECT)
+        self.screen.blit(self.sheet_surface, self.sheet_rect.topleft)
+        #pygame.draw.rect(self.screen, SHEET_COLOR, SHEET_RECT)
     
     # ページを表示する
     def draw_page(self):
+        self.menu_controller = update_menu(self.screen, self.menu_controller)
         self.menu_controller.draw()
         self.navigetion.draw()
         if self.now_page == 0:
@@ -168,6 +186,16 @@ class CharacterSheet:
             if item.status_name == name:
                 item.input.update_label(f"{val}")
 
+    # 画面サイズ更新時にポジションを変更する
+    def update_item_position(self):
+        # シートを作り直す
+        self.create_surface()
+        # ナビゲーションを作り直す
+        self.navigetion.screen = self.screen
+        self.navigetion.surface_rect = self.sheet_rect
+        self.setup_navigation()
+
+
     def update(self):
         create_frame(self.screen)
         self.draw_sheet()
@@ -177,15 +205,20 @@ class CharacterSheet:
         return self.next_state()
 
     # メニューボタン用のコールバック関数
-    def set_state(self, state=State.NONE):
+    def set_state(self, state=State.NONE, save_data=None):
         self.state = state
+        if save_data:
+            self.save_data = save_data
 
     def next_state(self):
         if self.state == State.SAVE:
-            return "save"
+            return "save", self.save_data
         elif self.state == State.LOAD:
             self.state = State.NONE
             return "load"
+        elif self.state == State.SETTING:
+            self.state = State.NONE
+            return "setting"
         elif self.state == State.CLOSE:
             self.state = State.NONE
             Close()

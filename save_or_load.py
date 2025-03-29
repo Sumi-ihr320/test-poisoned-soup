@@ -12,7 +12,7 @@ from manager.sound_manager import SoundManager
 
 # データロード
 class Save_or_Load:
-    def __init__(self, screen, root, save_load_flag, return_flag, save_data=None):
+    def __init__(self, screen, root, save_load_flag, befor_event, save_data=None):
         self.screen = screen
         self.root = root
 
@@ -21,7 +21,7 @@ class Save_or_Load:
         self.contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)        # メニュー用フォント
 
         self.save_load_flag = save_load_flag    # save か load か
-        self.return_flag = return_flag          # どこに戻るかのフラグ
+        self.befor_event = befor_event          # 来る前にしてたイベント
 
         self.state = State.NONE                 # 閉じるフラグや完了フラグ等の状態管理フラグ
 
@@ -29,6 +29,12 @@ class Save_or_Load:
         self.load_data = None                   # ロードするデータ
 
         self.forder_name = f"{PATH}{SAVE_FOLDER}"   # セーブフォルダ
+
+        # ウィンドウサイズ
+        w, h = 600, 500
+        x = (self.screen.get_width() // 2) - (w // 2)
+        y = (self.screen.get_height() // 2) - (h // 2)
+        self.window_rect = Rect(x,y,w,h)
 
         # 選択したデータ
         self.select_file_name = None
@@ -56,13 +62,8 @@ class Save_or_Load:
 
     # データ表示ボックスを表示
     def create_window(self):
-        w = 600
-        h = 500
-        x = (self.screen.get_width() / 2) - (w / 2)
-        y = (self.screen.get_height() / 2) - (h / 2)
-        window_rect = Rect(x,y,w,h)
-        pygame.draw.rect(self.screen, SHEET_COLOR, window_rect)
-        pygame.draw.rect(self.screen, BLACK, window_rect,2)
+        pygame.draw.rect(self.screen, SHEET_COLOR, self.window_rect)
+        pygame.draw.rect(self.screen, GRAY, self.window_rect, 2)
 
    # ラベルの作成
     def create_label(self):
@@ -73,10 +74,10 @@ class Save_or_Load:
             top_text = "ロード"
             enter_text = "ロード"
 
-        self.top = Label(self.screen, self.contents_font, top_text, y=80, centerx=WINDOW_CENTER_X)
-        self.enter = Label(self.screen, self.contents_font, enter_text, 200, 500)
-        self.delete_label = Label(self.screen, self.contents_font, "削除", y=500, centerx=WINDOW_CENTER_X)
-        self.close = Label(self.screen, self.contents_font, "閉じる", 520, 500)
+        self.top = Label(self.screen, self.contents_font, top_text, y=self.window_rect.top+30, centerx=self.window_rect.centerx)
+        self.enter = Label(self.screen, self.contents_font, enter_text, y=self.window_rect.bottom-50, centerx=self.window_rect.centerx-150)
+        self.delete_label = Label(self.screen, self.contents_font, "削除", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx)
+        self.close = Label(self.screen, self.contents_font, "閉じる", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx+150)
         self.button_list = [self.enter, self.delete_label, self.close]
 
     # セーブデータ一覧を探してくる
@@ -88,10 +89,13 @@ class Save_or_Load:
         # フォルダ内にあるデータ一覧を持ってくる
         self.save_data_list = os.listdir(self.forder_name)
 
+        # 設定データはリストに含まない
+        self.save_data_list.remove("setting.json")
+
     # セーブデータ一覧を表示する
     def create_save_data_list(self):
-        x = (self.screen.get_width() // 2) - 250
-        start_y = 120
+        x = self.window_rect.centerx - 250
+        start_y = self.window_rect.top + 100
         y = start_y
         w = 500
         if self.save_data_list:
@@ -327,13 +331,10 @@ class Save_or_Load:
     def next_state(self):
         # 閉じるボタン
         if self.state == State.CLOSE:
-            if self.return_flag == "title":
-                return "title", None
+            if self.befor_event in ["title", "opening"]:
+                return self.befor_event, None
             
-            elif self.return_flag == "opening":
-                return "opening", None
-            
-            elif self.return_flag == "charasheet":
+            elif self.befor_event == "charasheet":
                 if self.save_load_flag == "save":
                     with TopmostManager(self.root):
                         if messagebox.askokcancel("閉じる", "セーブせずに本編に進みますか？"):
@@ -344,7 +345,7 @@ class Save_or_Load:
                 else:
                     return "charasheet", None
 
-            elif self.return_flag == "play":
+            elif self.befor_event == "play":
                 return "play", self.save_data
         
         # セーブボタン

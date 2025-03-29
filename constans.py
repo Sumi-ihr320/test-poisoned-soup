@@ -4,8 +4,23 @@ from pygame.locals import Rect
 from character_item import *
 
 
-DISPLAY_SIZE = (800, 600)
+#DISPLAY_SIZE = (800, 600)
 TITLE_TEXT = "毒入りスープ"
+SIZE_MAP = {
+    "800x600":  (800, 600),
+    "1024x768": (1024, 768),
+    "1280x720": (1280, 720),
+    "1280x960": (1280, 960),
+    "1920x1080":(1920, 1080),
+    "フルスクリーン":()
+}
+RATIO = {
+    (800,600):(1,1),
+    (1024,768):(1.28, 1.28),
+    (1280,720):(1.6, 1.2),
+    (1280,960):(1.6, 1.6),
+    (1920,1080):(2.4, 1.8)
+}
 
 # 色
 BLACK = (0,0,0)
@@ -26,18 +41,23 @@ SETTING_COLOR = (0,82,67)
 
 # キャラクターシート
 SHEET_COLOR = (189,183,107)
+SHEET_SIZE = (740, 375)
 SHEET_RECT = Rect(30,30,740,375)
 
 # Rect
-FRAME_RECT = Rect(30,420,580,150)
+FRAME_W, FRAME_H = 740, 150
+#FRAME_SIZE = (740, 150)
+#FRAME_RECT = Rect(30,420,580,150)
+FRAME_RECT = Rect(30,420,730,150)
 MENU_FRAME_RECT = Rect(620,420,150,150)
+
 
 FILL_RECT = Rect(20,20,800,410)
 ROOM_AREA = Rect(0,0,820,375)
 
 # 画面中央の座標
-WINDOW_CENTER_X = DISPLAY_SIZE[0] // 2
-WINDOW_CENTER_Y = DISPLAY_SIZE[1] // 2
+#WINDOW_CENTER_X = DISPLAY_SIZE[0] // 2
+#WINDOW_CENTER_Y = DISPLAY_SIZE[1] // 2
  
 # パスの指定
 PATH = os.path.dirname(__file__)

@@ -4,7 +4,7 @@ from pygame.locals import *
 
 from constans import *
 from utils import *
-from menu import MenuController
+from menu import MenuController, update_menu
 from manager.event_manager import EventManager
 from manager.scenario_manager import ScenarioManager
 
@@ -27,6 +27,7 @@ class Opening:
     # 表示
     def draw(self):
         create_frame(self.screen)
+        self.menu_controller = update_menu(self.screen, self.menu_controller)
         self.menu_controller.draw()
         self.scenario_manager.draw()
     
@@ -64,6 +65,9 @@ class Opening:
         if self.state == State.LOAD:
             self.state = State.NONE
             return "load"
+        elif self.state == State.SETTING:
+            self.state = State.NONE
+            return "setting"
         elif self.state == State.CLOSE:
             return "charasheet"
         return "opening"

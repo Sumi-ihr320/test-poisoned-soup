@@ -24,12 +24,18 @@
         {"type":"text", "text":"火が消えたろうそくがある。", "progression":"click"},
         {"type":"interaction",
          "interactions":[
-            {"text":"目星", "next":"Candle_objective_time1"},
+            {"text":"目星", "next":"Candle_goes_out_objective_time1"},
             {"text":"持っていく", "next":"Candle_goes_out_take_it_time1"}
          ]}
     ],
     "Candle_objective_time1":[
         {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
+         "success":"Candle_objective_time1_success",
+         "failure":"Candle_objective_failure"},
+        {"type":"action", "action":"time_passage", "time":3}
+    ],
+    "Candle_goes_out_objective_time1":[
+        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100", "half":true,
          "success":"Candle_objective_time1_success",
          "failure":"Candle_objective_failure"},
         {"type":"action", "action":"time_passage", "time":3}
@@ -77,12 +83,18 @@
         {"type":"text", "text":"火が消えたろうそくがある。", "progression":"click"},
         {"type":"interaction",
          "interactions":[
-            {"text":"目星", "next":"Candle_objective_time2"},
+            {"text":"目星", "next":"Candle_goes_out_objective_time2"},
             {"text":"持っていく", "next":"Candle_goes_out_take_it_time2"}
          ]}
     ],
     "Candle_objective_time2":[
         {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
+         "success":"Candle_objective_time2_success",
+         "failure":"Candle_objective_failure"},
+        {"type":"action", "action":"time_passage", "time":3}
+    ],
+    "Candle_goes_out_objective_time2":[
+        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100", "half":true,
          "success":"Candle_objective_time2_success",
          "failure":"Candle_objective_failure"},
         {"type":"action", "action":"time_passage", "time":3}

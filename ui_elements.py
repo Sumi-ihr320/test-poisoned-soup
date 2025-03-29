@@ -12,7 +12,7 @@ from constans import *
 from utils import *
 from manager.sound_manager import SoundManager
 
-# ラベル作成をクラス化するよ    (chatGPT指南)
+# 比率変更に対応するラベル
 class Label:
     def __init__(self, screen, font, text, x=0, y=0, centerx=None, centery=None, position="left", color=BLACK, background=None):
         self.screen = screen
@@ -20,12 +20,24 @@ class Label:
         self.text = text
         self.color = color
         self.background = background
-        self.rect = self.create_label(x, y, centerx, centery, position)
+        self.position = position
+
+        # 画面サイズを取得（初期サイズ）
+        self.screen_width, self.screen_height = self.screen.get_size()
+
+        # 座標を「画面サイズに対する割割合（比率）」で保存
+        self.relative_x = x / self.screen_width
+        self.relative_y = y / self.screen_height
+        self.relative_centerx = centerx / self.screen_width if centerx else None
+        self.relative_centery = centery / self.screen_height if centery else None
+
+        # ラベルの描画領域を作成
+        self.rect = self.create_label(x, y, centerx, centery)
 
     # ラベルを作る
-    def create_label(self, x, y, centerx, centery, position):
+    def create_label(self, x, y, centerx, centery):
         surface = self.font.render(self.text, True, self.color, self.background)
-        if position == "right":
+        if self.position == "right":
             rect = surface.get_rect(right=x, top=y)
         else:
             rect = surface.get_rect(left=x, top=y)
@@ -34,6 +46,19 @@ class Label:
         if centery:
             rect.centery = centery
         return rect
+
+    # 画面サイズが変わった時に呼び出す
+    def resize(self, new_size):
+        self.screen_width, self.screen_height = new_size
+
+        # 保存していた比率を使って新しい座標を計算
+        new_x = int(self.relative_x * self.screen_width)
+        new_y = int(self.relative_y * self.screen_height)
+        new_centerx = int(self.relative_centerx * self.screen_width) if self.relative_centerx else None
+        new_centery = int(self.relative_centery * self.screen_height) if self.relative_centery else None
+
+        # ラベルの描画領域を作成
+        self.rect = self.create_label(new_x, new_y, new_centerx, new_centery)
 
     # ラベルを描画する
     def draw(self):
@@ -44,19 +69,15 @@ class Label:
     def update_text(self, new_text):
         self.text = new_text
         self.draw()
-        #surface = self.font.render(new_text, True, self.color, self.background)
-        #self.screen.blit(surface, self.rect)
 
     def set_background_color(self, color):
         self.background = color
         self.draw()
-        #surface = self.font.render(self.text, True, self.color, color)
-        #self.screen.blit(surface, self.rect)
         
     # 指定した点が描画内かをチェック
     def collidepoint(self, pos):
         return self.rect.collidepoint(pos)
-
+    
 # ボタン作成をクラス化 やってみた     (chatGPT修正)
 class Button:
     def __init__(self, screen, font, text, rect, on_click=None, text_color=BLACK, in_color=WHITE, out_color=GRAY, on_color=BLUE):
@@ -381,7 +402,13 @@ class PullDown:
             if current_y >= (y_initial + self.pd_h):
                 current_x += w
                 max_w += w
-                current_y = y_initial
+                current_y = y_initial                
+        
+        # ボックスのサイズよりリストの量が少なければボックスサイズをリストのサイズに合わせる
+        if max_w == self.box.rect.w:
+            box_heigth = int(current_y - y_initial)
+            if box_heigth and box_heigth < self.pd_h:
+                self.pd_h = box_heigth
 
         # リストボックスを作る
         self.list_box = Box(self.screen, x, y_initial, max_w+2, self.pd_h+1)
@@ -479,11 +506,19 @@ class CommandMenu:
     def create_buttons(self):
         font = pygame.font.Font(FONT_PATH, SMALL_SIZ)
         x, y = self.start_x, self.start_y
-        w, h = 120, 30
+        h = 30
+
+        # コマンドの中で最も長いwidthを取得する
+        max_width = 120     # 最小値
+        if self.commands:
+            for command in self.commands:
+                text_surface = font.render(command["text"], True, BLACK)
+                text_width = text_surface.get_width() + 10
+                max_width = max(max_width, text_width)
 
         if self.commands:
             for command in self.commands:
-                button = Button(self.screen, font, command["text"], (x,y,w,h), out_color=BLACK)
+                button = Button(self.screen, font, command["text"], (x,y,max_width,h), out_color=BLACK)
                 self.buttons.append({"button":button, "next_scenario": command["next"]})
                 y += h
 
@@ -514,6 +549,11 @@ class PlayerDataView:
 
         self.status_label = None
         self.create_label()
+
+    # 半透明のウィンドウを作成する
+    def create_surface(self):
+        
+        pass
 
     def create_label(self):
         name_label = Label(self.screen, self.font, self.player.name, 500, 10, position="right", color=WHITE)

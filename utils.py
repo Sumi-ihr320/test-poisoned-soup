@@ -38,18 +38,30 @@ def create_size_tkinter(root):
 
 # フレームの作成
 def create_frame(screen):
-    # テキストフレーム
-    pygame.draw.rect(screen, WHITE, FRAME_RECT,3)
+    frame_rect = get_frame(screen)
+    pygame.draw.rect(screen, WHITE, frame_rect, 3)
     # メニューフレーム
-    pygame.draw.rect(screen, WHITE, MENU_FRAME_RECT,3)
+    #pygame.draw.rect(screen, WHITE, MENU_FRAME_RECT,3)
+
+# テキストフレームのrectを割り出す
+def get_frame(screen):
+    window_size = screen.get_size()
+    w_percent, h_percent = RATIO[window_size]
+    frame_w, frame_h = int(FRAME_W * w_percent), int(FRAME_H * h_percent)
+    frame_x = (window_size[0] // 2) - (frame_w // 2)
+    frame_y = window_size[1] - (frame_h + 30)
+
+    return Rect(frame_x, frame_y, frame_w, frame_h)
 
 # テキストフレームに文字を表示するよ
 def TextDraw(screen, text):
     # フォントの設定
     font = pygame.font.Font(FONT_PATH, FONT_SIZ)
+    # フレームの位置を得る
+    frame_rect = get_frame(screen)
 
     texts = []
-    x, y = 45, 435
+    x, y = frame_rect.x + 10, frame_rect.y + 10
     texts = text.splitlines()
     for txt in texts:
         RendarText(screen, txt, font, (x, y))
@@ -138,7 +150,6 @@ def sound_check(sound_manager):
         for name, file in sounds_to_load.items():
             if name not in sound_manager.sounds:
                 sound_manager.load_sound(name, file)
-
 
 # "〇D〇" のテキストから何個のダイスか、何面ダイスか、+〇、-〇が付いてるかを抽出する
 def dice_confirmation(text):
@@ -256,18 +267,18 @@ def create_file_path(item, room, direction, flag=None):
 
     # 西の部屋では
     elif room == "west":
-        # キャンドルが消えている場合暗くなる
-        if flag.get("candle_goes_out") != 0:
+        # キャンドルが消えているか別の部屋に置いてある場合暗くなる
+        if flag.get("candle_goes_out") != 0 or flag.get("candle_out"):
             room_path = f"{room_path}_dark"
     
     if item == "room":
-        if room == "east" and flag.get("east_room_visible"):
+        if room == "east" and not flag.get("east_room_visible"):
             room_path = f"{path}black-room"
 
-        elif room == "west" and (flag.get("book_found") or flag.get("candle_get")):
+        elif room == "west" and (flag.get("book_found") or flag.get("candle_out")):
             if flag.get("book_found"):
                 room_path = f"{room_path}_PickupBook"
-            if flag.get("candle_get"):
+            if flag.get("candle_out"):
                 room_path = f"{room_path}_NoCandle"
 
         return f"{room_path}.jpg"

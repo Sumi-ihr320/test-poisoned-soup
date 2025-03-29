@@ -47,7 +47,7 @@ class EventManager:
 
     # コマンドメニューの表示位置を取得
     def get_position(self):
-        max_x, max_y = 620, 220     # これ以上端に配置すると見えなくなる
+        max_x, max_y = 650, 220     # これ以上端に配置すると見えなくなる
 
         # コマンド表示の指標となる画像位置。クリック時画像があればそこを起点とする。
         if self.item_image:
@@ -135,7 +135,7 @@ class EventManager:
                 self.room_new_view("center-room")
             elif flag == "east_room_visivle" and value == True:
                 self.room_new_view("east-room")
-            elif (flag == "book_found" and value == True) or (flag == "candle_goes_out" and value > 0) or (flag == "candle_get" and value == True):
+            elif (flag == "book_found" and value == True) or (flag == "candle_goes_out" and value > 0):
                 self.room_new_view("west-room")
 
         # ダメージを受ける
@@ -199,7 +199,7 @@ class EventManager:
     def handle_sound(self, step):
         sound_name = step["name"]
         if self.sound_manager:
-            if not self.sound_manager.sounds or (self.sound_manager and sound_name not in self.sound_manager.sounds):
+            if not self.sound_manager.sounds or (sound_name not in self.sound_manager.sounds):
                 self.sound_manager.load_sound(sound_name, step["path"], step.get("loop", False))
             self.sound_manager.play(sound_name)
 
@@ -233,11 +233,14 @@ class EventManager:
             else:
                 if value == flags["value"]:
                     return True
-            return False
         else:
-            if self.flags.get_flag(flags["category"], flags["flag"]) == flags["value"]:
-                return True        
-            return False
+            if flags.get("not", False):
+                if self.flags.get_flag(flags["category"], flags["flag"]) != flags["value"]:
+                    return True
+            else:
+                if self.flags.get_flag(flags["category"], flags["flag"]) == flags["value"]:
+                    return True
+        return False
 
     # コールバック関数に次のシナリオ名を渡す
     def to_callback_next_scenario(self, next_scenario):

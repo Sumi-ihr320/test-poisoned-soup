@@ -350,3 +350,33 @@
 
 2025/3/6
 	サウンドの設定
+
+2025/3/8
+	音源データの音量アップ
+	setting.pyを作成
+	event_managerのフラグ分岐にnotを追加
+	シナリオ追加
+
+2025/3/12
+	setting.py更新
+	画面サイズ変更のプルダウンを表示
+	setting_manager作成
+
+2025/3/19
+	画面サイズ変更に対応するための作業
+
+2025/3/22
+	scene_managerを作成
+
+2025/3/26
+	title、opening、settingをサイズ変更に対応
+	frameとmenuをサイズ変更に対応
+	utils.pyにget_frameとupdate_menuを作成
+	character_sheetをサイズ変更に対応するために奮闘中
+
+2025/3/29
+	scene_managerのdeta更新をisinstanceでの判別に変更
+	character_sheetのシートを画像サイズ変更に対応
+	ナビゲーションを画面サイズ変更に対応
+	titleの文字サイズを画面サイズ変更に対応
+

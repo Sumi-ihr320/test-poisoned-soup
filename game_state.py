@@ -81,7 +81,10 @@ class Flags:
             # 黒い液体が手に付着しているか
             "black_liquid_to_hand":False,
             # 毒に関するフラグ (持っているか)
-            "poison_get":False
+            "poison_get":False,
+            # 北の部屋の鍋に関するフラグ（鍋の中身を見ているか、鍋の中身は残っているか）
+            "pot_looked":False,
+            "pot_in_nothing":False
         }
 
         self.ending = {

@@ -1,8 +1,8 @@
 {
     "centerMemo":[
-        {"type":"image_display", "image":"centerMemo1.png"},
+        {"type":"image_display", "image":"centerMemo1.png", "progression":"click"},
         {"type":"text", "text":"1枚目のメモには絵が描かれている。\nおそらくこの部屋の地図だろう。", "progression":"click"},
-        {"type":"image_display", "image":"centerMemo2.png"},
+        {"type":"image_display", "image":"centerMemo2.png", "progression":"click"},
         {"type":"text", "text":"もう一枚のメモを手に取ると、\nそこにはこう書かれていた。", "progression":"click"},
         {"type":"text", "text":"～帰りたいなら 一時間以内に 毒入りスープを飲め。\n  飲むまでは 君じゃあここから 出られない。\n  一時間以内に 飲めなかったら お迎えが来るぞ～", "progression":"click"},
         {"type":"conditional", 
@@ -35,11 +35,11 @@
     ],
     "centerMemo_objective_success":[
         {"type":"text", "text":"《目星》⇒ 成功！ <color=blue>{player_roll}<color/>/{player_threshold}", "progression":"click"},
-        {"type":"text", "text":"あなたは、紙の裏にも文字が書かれていることに気付いた。", "progression":"click"},
+        {"type":"text", "text":"あなたは、\n紙の裏にも文字が書かれていることに気付いた。", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"items", "flag":"center_memo_objective", "value":true},
         {"type":"image_display", "image":"centerMemo_objctive.png"},
-        {"type":"text", "text":"～暖かい 人間の 血の スープ 冷めない 内に 召し上がれ～\n《アイデア》⇒", "progression":"click"},
-        {"type":"dice_check", "check_type":"status", "status":"Idea", "dice":"1d100",
+        {"type":"text", "text":"～暖かい 人間の 血の スープ\n  冷めない 内に 召し上がれ～\n《アイデア》⇒", "progression":"click"},
+        {"type":"dice_check", "check_type":"status", "status":"Idea", "dice":"1d100", "progression":"click",
          "success":"centerMemo_objective_idea_success",
          "failure":"centerMemo_objective_idea_failure"}
     ],

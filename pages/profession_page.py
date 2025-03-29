@@ -72,7 +72,7 @@ class ProfessionPage:
 
             self.save_data["girl_status"] = girl.to_dict()
 
-            self.callback(State.SAVE)
+            self.callback(State.SAVE, self.save_data)
 
     def draw(self, selected_profession, is_pulldown_open):
         if self.prof_selecter:

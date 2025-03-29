@@ -9,22 +9,20 @@ from manager.sound_manager import SoundManager
 
 # タイトル関数をクラス化    (chatGPT指南)
 class Title:
-    def __init__(self, screen, root):
+    def __init__(self, screen, root, setting_manager):
         self.screen = screen
         self.root = root
 
-        # フォントの設定
-        self.title_font = pygame.font.Font(TITLE_FONT_PATH,TITLE_SIZ)    # タイトル用のフォント
-        self.contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)    # メニュー用フォント
+        self.setting_manager = setting_manager
 
-        # タイトル
-        self.title = Label(self.screen, self.title_font, TITLE_TEXT, y=150, centerx=WINDOW_CENTER_X, color=RED, background=BLACK)
-        self.start = Label(self.screen, self.contents_font, "はじめる", y=280, centerx=WINDOW_CENTER_X, color=WHITE, background=BLACK)
-        self.load = Label(self.screen, self.contents_font, "つづきから", y=350, centerx=WINDOW_CENTER_X, color=WHITE, background=BLACK)
-        self.setting = Label(self.screen, self.contents_font, "設定", y=420, centerx=WINDOW_CENTER_X, color=WHITE, background=BLACK)
-        self.close = Label(self.screen, self.contents_font, "おわる", y=490, centerx=WINDOW_CENTER_X, color=WHITE, background=BLACK)
+        # 現在の画面サイズ
+        self.window_size = self.screen.get_size()
 
-        self.contents_list = [self.start, self.load, self.setting, self.close]
+        # フォント設定
+        self.set_font()
+
+        # 表示するアイテムの作成
+        self.create_item()
 
         # サウンド設定
         self.sound_manager = SoundManager()
@@ -32,6 +30,36 @@ class Title:
 
         # ホバー状態を管理するフラグ
         self.hovered = False
+
+    # フォントを設定する
+    def set_font(self):        
+        # フォントサイズの計算に画面の縦サイズの比率を使う
+        h_percent = RATIO[self.window_size][1]
+
+        # フォントの設定
+        self.title_font = pygame.font.Font(TITLE_FONT_PATH, int(TITLE_SIZ * h_percent))    # タイトル用のフォント
+        self.contents_font = pygame.font.Font(FONT_PATH, int(CONTENTS_SIZ * h_percent))    # メニュー用フォント
+
+    # アイテムを作成
+    def create_item(self):
+        # 画面中央の算出
+        center_x = self.screen.get_width() // 2
+        center_y = self.screen.get_height() // 2
+
+        # タイトル
+        self.title = Label(self.screen, self.title_font, TITLE_TEXT, centerx=center_x, centery=center_y-130, color=RED, background=BLACK)
+        self.start = Label(self.screen, self.contents_font, "はじめる", centerx=center_x,centery=center_y, color=WHITE, background=BLACK)
+        self.load = Label(self.screen, self.contents_font, "つづきから", centerx=center_x, centery=center_y+70, color=WHITE, background=BLACK)
+        self.setting = Label(self.screen, self.contents_font, "設定", centerx=center_x, centery=center_y+140, color=WHITE, background=BLACK)
+        self.close = Label(self.screen, self.contents_font, "おわる", centerx=center_x, centery=center_y+210, color=WHITE, background=BLACK)
+
+        self.contents_list = [self.start, self.load, self.setting, self.close]
+
+    # 画面サイズ変更時に呼び出す
+    def update_item_position(self):
+        self.window_size = self.screen.get_size()
+        self.set_font()
+        self.create_item()
 
     def sound(self):
         # ロード

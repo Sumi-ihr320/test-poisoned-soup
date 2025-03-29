@@ -75,7 +75,10 @@ class Room:
                     ("Corpse", "east", "", 401, 188),
                     ("eastMemo", "east", "", 241, 229)],
                 "select_order":["eastMemo", "Corpse"]
-            } if self.room_change_flag.get("east_room_visible") else {},
+            } if self.room_change_flag.get("east_room_visible") else {
+                "draw_order":[],
+                "select_order":[]
+            },
             "south":{
                 "draw_order":[
                     ("StoneStatue", "south", "", 287, 69),
