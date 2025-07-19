@@ -1,0 +1,106 @@
+﻿{
+  "player_status": {
+    "type": "Player",
+    "name": "高尾",
+    "image": "silhouette_neuter.png",
+    "STR": 16,
+    "CON": 15,
+    "SIZ": 12,
+    "DEX": 15,
+    "INT": 8,
+    "POW": 9,
+    "DB": "+1D4",
+    "HP": 13,
+    "MP": 9,
+    "Dodge": 48,
+    "skill": {
+      "言いくるめ": 50,
+      "応急手当": 33,
+      "組みつき": 28,
+      "心理学": 8,
+      "法律": 30,
+      "運転（自動車）": 31,
+      "マーシャルアーツ": 73,
+      "機械修理": 76,
+      "電気修理": 34
+    },
+    "age": 38,
+    "sex": "neuter",
+    "APP": 9,
+    "EDU": 9,
+    "Luck": 45,
+    "Idea": 40,
+    "Know": 45,
+    "SAN": 45,
+    "max_SAN": 0,
+    "Profession": "警官",
+    "inventory": [
+      {
+        "name": "白いローブ",
+        "img_name": null,
+        "category": "armor",
+        "armor_point": 0
+      }
+    ],
+    "Hobby": "機械いじり",
+    "girl_like_ability": 0
+  },
+  "girl_status": {
+    "type": "Human",
+    "name": "下僕の少女",
+    "image": "Girl.png",
+    "STR": 4,
+    "CON": 6,
+    "SIZ": 10,
+    "DEX": 5,
+    "INT": 10,
+    "POW": 10,
+    "DB": "-1d4",
+    "HP": 8,
+    "MP": 10,
+    "Dodge": 10,
+    "skill": {
+      "目星": 55,
+      "聞き耳": 55,
+      "忍び歩き": 40,
+      "隠れる": 40,
+      "応急手当": 50,
+      "中国語（母国語）": 40,
+      "追跡": 50,
+      "その他言語（主人公の母国語）": 31,
+      "クトゥルフ神話": 15,
+      "拳銃": 20
+    },
+    "age": 17,
+    "sex": "woman",
+    "APP": 13,
+    "EDU": 6,
+    "Luck": 50,
+    "Idea": 50,
+    "Know": 30,
+    "SAN": 0,
+    "max_SAN": 0,
+    "Profession": "放浪者",
+    "inventory": [
+      {
+        "name": "血まみれの白いローブ",
+        "img_name": null,
+        "category": "armor",
+        "armor_point": 0
+      },
+      {
+        "name": "22口径ショート・オートマチック",
+        "img_name": "Pistol.png",
+        "category": "weapon",
+        "skill": "拳銃",
+        "damage_dice": "1d6",
+        "attack_range": "10m",
+        "one_round": 3,
+        "bullets": 6,
+        "durability": 6
+      }
+    ]
+  },
+  "game_state": {},
+  "flags": {}
+}

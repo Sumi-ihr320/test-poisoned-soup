@@ -1,10 +1,9 @@
 import pygame
-import pygame.draw
 from pygame.locals import *
 
 from constans import *
 from utils import *
-from menu import MenuController, update_menu
+from ui.menu import MenuController, update_menu
 from manager.event_manager import EventManager
 from manager.scenario_manager import ScenarioManager
 

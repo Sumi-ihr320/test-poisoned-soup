@@ -20,8 +20,12 @@
         {"type":"text", "text":"木製の机だ。\n上にはスープとメモが乗っている。", "progression":"click"},
         {"type":"interaction", "progression":"click",
          "interactions":[
-            {"text":"目星", "next":""}
+            {"text":"目星", "next":"Table_objective"}
          ]
         }
+    ],
+    "Table_objective":[
+        {"type":"time_passage", "value":2},
+        {"type":"text", "text":"なんの変哲もない木製の机だ。", "progression":"click"}
     ]
 }

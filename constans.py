@@ -42,17 +42,19 @@ SETTING_COLOR = (0,82,67)
 # キャラクターシート
 SHEET_COLOR = (189,183,107)
 SHEET_SIZE = (740, 375)
+SHEET_IMG_SIZE = (1600, 1152)
 SHEET_RECT = Rect(30,30,740,375)
 
 # Rect
-FRAME_W, FRAME_H = 740, 150
-#FRAME_SIZE = (740, 150)
+#FRAME_W, FRAME_H = 740, 150
+FRAME_SIZE = (740, 150)
 #FRAME_RECT = Rect(30,420,580,150)
 FRAME_RECT = Rect(30,420,730,150)
 MENU_FRAME_RECT = Rect(620,420,150,150)
 
 
 FILL_RECT = Rect(20,20,800,410)
+ROOM_SIZE = (760, 375)
 ROOM_AREA = Rect(0,0,820,375)
 
 # 画面中央の座標
@@ -77,12 +79,16 @@ SCENARIO_FILES = [
     "Opening.json",
     "CenterRoom.json",
     "Door.json",
+    "SouthDoor.json",
     "Light.json",
     "Soup.json",
     "CenterMemo.json",
     "EastRoom.json",
     "SouthRoom.json",
     "WestRoom.json",
+    "BookShelf.json",
+    "Book.json",
+    "BlackLiquid.json",
     "Candle.json",
     "Other.json",
     "Ending.json"
@@ -134,8 +140,16 @@ ITEM_LIST = {
     "candle2": CharacterItem("ろうそく", img_name="Candle_1.png"),
     "candle_goes_out1": CharacterItem("消えたろうそく", img_name="Candle_0_goes_out.png"),
     "candle_goes_out2": CharacterItem("消えたろうそく", img_name="Candle_1_goes_out.png"),
-    "kitchen_knife": Weapon("包丁", img_name="", skill="こぶし", damage_dice="1D4+DB",attack_range="近接", one_round=1,durability=8),
-    "knife": Weapon("ナイフ", img_name="Knife.png", skill="こぶし", damage_dice="1D3+DB",attack_range="近接",durability=5),
-    "fork": Weapon("フォーク", img_name="Fork.png", skill="こぶし", damage_dice="1D3",attack_range="近接",durability=4),
-    "spoon": Weapon("スプーン", img_name="Spoon.png", skill="こぶし", damage_dice="1D2",attack_range="近接",durability=3)
+    "kitchen_knife": Weapon("包丁", img_name="", skill="こぶし", damage_dice="1D4+DB", attack_range="近接", one_round=1,durability=8),
+    "knife": Weapon("ナイフ", img_name="Knife.png", skill="こぶし", damage_dice="1D3+DB", attack_range="近接", one_round=1, durability=5),
+    "fork": Weapon("フォーク", img_name="Fork.png", skill="こぶし", damage_dice="1D3", attack_range="近接", one_round=1, durability=4),
+    "spoon": Weapon("スプーン", img_name="Spoon.png", skill="こぶし", damage_dice="1D2", attack_range="近接", one_round=1, durability=3),
+    "frying_pan":Weapon("フライパン", img_name="", skill="棍棒", damage_dice="1d8", attack_range="近接", one_round=1, durability=9),
+    "saucepan": Weapon(name="片手鍋", img_name="", skill="棍棒", damage_dice="1d4", attack_range="近接", one_round=1, durability=8),
+    "ladle": Weapon(name="おたま", img_name="", skill="棍棒", damage_dice="1d4", attack_range="近接", one_round=1, durability=3),
+    "kitchen_scissors": Weapon(name="キッチンバサミ", img_name="", skill="ナイフ", damage_dice="1d3", attack_range="近接", one_round=1, durability=4),
+    "lid": Armor("鍋の蓋", armor_point=1),
+    "soup_bowl": CharacterItem("スープの器", img_name="Soup_none.png"),
+    "bowl_in_soup": CharacterItem("赤いスープ", img_name="Soup.png"),
+    "bowl_in_poison_soup": CharacterItem("調味料を入れたスープ", img_name="Soup_poison.png")
 }

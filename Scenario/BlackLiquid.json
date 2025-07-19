@@ -1,0 +1,101 @@
+{
+    "Black_liquid":[
+        {"type":"time_passage", "value":2},
+        {"type":"dice_check", "check_type":"skill", "skill":"博物学", "dice":"1d100", "progression":"click",
+         "success":"Black_liquid_success",
+         "failure":"Black_liquid_failure"},
+        {"type":"result_text", "progression":"click"}
+    ],
+    "Black_liquid_success":[
+        {"type":"text", "text":"黒い液体からは\n花の蜜の香りとよく似た甘い香りがした。", "progression":"click"},
+        {"type":"next_step", "next":"Black_liquid_to_hand"}
+    ],
+    "Black_liquid_failure":[
+        {"type":"text", "text":"黒い液体からは僅かに甘い香りがする。", "progression":"click"},
+        {"type":"next_step", "next":"Black_liquid_to_hand"}
+    ],
+    "Black_liquid_to_hand":[
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"black_liquid_to_hand", "value":true},
+        {"type":"text", "text":"手に付いた黒い液体をあなたは……", "progression":"click"},
+        {"type": "interaction",
+         "interactions":[
+            {"text":"拭う", "next":"Black_liquid_wipe"},
+            {"text":"舐める", "next":"Black_liquid_lick"},
+            {"text":"調べる", "next":"Black_liquid_check_up"},
+            {"text":"そのままにする", "next":"Black_liquid_nothing"}
+        ]}
+    ],
+    "Black_liquid_wipe":[
+        {"type":"text", "text":"黒い液体を服で拭った。", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"black_liquid_to_hand", "value":false},
+        {"type":"image_hidden"}
+    ],
+    "Black_liquid_nothing":[
+        {"type":"text", "text":"そのまま気にしないことにした。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Black_liquid_check_up":[
+        {"type": "interaction",
+         "interactions":[
+            {"text":"医学", "next":"Black_liquid_check_medicine"},
+            {"text":"薬学", "next":"Black_liquid_check_pharmacology"}
+        ]}
+    ],
+    "Black_liquid_check_medicine":[
+        {"type":"time_passage", "value":2},
+        {"type":"dice_check", "check_type":"skill", "skill":"医学", "half":true, "dice":"1d100", "progression":"click",
+         "success":"Black_liquid_check_success",
+         "failure":"Black_liquid_check_failure"},
+        {"type":"result_text", "progression":"click"}
+    ],
+    "Black_liquid_check_pharmacology":[
+        {"type":"time_passage", "value":2},
+        {"type":"dice_check", "check_type":"skill", "skill":"薬学", "dice":"1d100", "progression":"click",
+         "success":"Black_liquid_check_success",
+         "failure":"Black_liquid_check_failure"},
+        {"type":"result_text", "progression":"click"}
+    ],
+    "Black_liquid_check_success":[
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"black_liquid_know", "value":true},
+        {"type":"text", "text":"あなたはこの液体が\n猛毒である可能性が高いと感じた。", "progression":"click"},
+        {"type": "interaction",
+         "interactions":[
+            {"text":"拭う", "next":"Black_liquid_wipe"},
+            {"text":"舐める", "next":"Black_liquid_lick_question"},
+            {"text":"そのままにする", "next":"Black_liquid_nothing"}
+        ]}
+    ],
+    "Black_liquid_check_failure":[
+        {"type":"text", "text":"何も分からなかった。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Black_liquid_lick_question":[
+        {"type":"conditional",
+         "conditions":[
+            {"flags":[{"category":"girl", "flag":"fellow", "value":true}], "next":"Black_liquid_lick_question_with_girl"},
+            {"flags":[{"category":"girl", "flag":"fellow", "value":false}], "next":"Black_liquid_lick_question_only_me"}
+        ]}
+    ],
+    "Black_liquid_lick_question_with_girl":[
+        {"type":"text", "text":"少女がじっとあなたを見ている。", "progression":"click"},
+        {"type":"text", "text":"本当に舐めるのか？と問うているようだ。", "progression":"click"},
+        {"type":"next_step", "next":"Black_liquid_lick_question_command"}
+    ],
+    "Black_liquid_lick_question_only_me":[
+        {"type":"text", "text":"本当に舐めますか？", "progression":"click"},
+        {"type":"next_step", "next":"Black_liquid_lick_question_command"}
+    ],
+    "Black_liquid_lick_question_command":[
+        {"type": "interaction",
+         "interactions":[
+            {"text":"舐める", "next":"Black_liquid_lick"},
+            {"text":"舐めずに拭う", "next":"Black_liquid_wipe"},
+            {"text":"舐めずにそのままにしておく", "next":"Black_liquid_nothing"}
+        ]}
+    ],
+    "Black_liquid_lick":[
+        {"type":"text", "text":"黒い液体を舐めてみた。", "progression":"click"},
+        {"type":"poison_ingestion", "target":"player"},
+        {"type":"next_step", "next":"Poison_ingestion"}
+    ]
+}

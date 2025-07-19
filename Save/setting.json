@@ -1,11 +1,10 @@
 {
-    "fullscreen": true,
+    "fullscreen": false,
     "resolution": [
         800,
         600
     ],
     "str_resolution": "800x600",
     "music_volume": 1,
-    "se_volume": 1,
-    "fullscreeen": false
+    "se_volume": 1
 }

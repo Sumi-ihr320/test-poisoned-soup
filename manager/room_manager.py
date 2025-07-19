@@ -1,4 +1,4 @@
-from room import Room
+from playing.room import Room
 
 class RoomManager:
     def __init__(self, screen, event_manager, flags, game_state):
@@ -22,12 +22,19 @@ class RoomManager:
         flag = {}
         if self.game_state.room == "center":
             flag["light_remove"] = self.flags.get_flag("items", "light_remove")
+            flag["soup_in_poison"] = self.flags.get_flag("items", "soup_in_poison")
+            flag["soup_drink"] = self.flags.get_flag("items", "soup_drink")
+            flag["soup_destruction"] = self.flags.get_flag("items", "soup_destruction")
+            flag["soup_bowl_get"] = self.flags.get_flag("items", "soup_bowl_get")
         elif self.game_state.room == "east":
             flag["east_room_visible"] = self.flags.get_flag("rooms", "east_room_visible")
         elif self.game_state.room == "west":
             flag["book_found"] = self.flags.get_flag("items", "book_found")
+            flag["candle_get"] = self.flags.get_flag("items", "candle_get")
             flag["candle_goes_out"] = self.flags.get_flag("items", "candle_goes_out")
             flag["candle_out"] = self.flags.get_flag("items", "candle_out")
+        elif self.game_state.room == "south":
+            flag["hunting_horrors_offered_sacrifice"] = self.flags.get_flag("enemys", "hunting_horrors_offered_sacrifice")
         
         return flag if flag else None
 
@@ -60,7 +67,16 @@ class RoomManager:
         elif next_room:
             self.game_state.room = next_room
 
+        if self.girl_fellow_check():
+            self.flags.update_flag("girl", "room", self.game_state.room)
+
         self.create_room()
+
+    def girl_fellow_check(self):
+        return self.flags.get_flag("girl", "fellow")
+
+    def handle_mouse_hover(self, pos):
+        self.room.handle_mouse_hover(pos)
 
     def draw(self):
         self.room.draw()            # 部屋の表示

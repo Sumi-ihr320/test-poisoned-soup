@@ -1,10 +1,10 @@
 import pygame
-import pygame.draw
 from pygame.locals import *
 
 from constans import *
 from utils import *
-from ui_elements import Label
+from ui.ui_elements import Label
+from ui.virtual_cursor import *
 from manager.sound_manager import SoundManager
 
 # タイトル関数をクラス化    (chatGPT指南)
@@ -28,17 +28,17 @@ class Title:
         self.sound_manager = SoundManager()
         self.sound()
 
+        # キーボード操作用カーソル
+        self.cursor = VirtualCursor(self.screen)
+        self.use_virtual_cursor = False
+
         # ホバー状態を管理するフラグ
         self.hovered = False
 
     # フォントを設定する
-    def set_font(self):        
-        # フォントサイズの計算に画面の縦サイズの比率を使う
-        h_percent = RATIO[self.window_size][1]
-
-        # フォントの設定
-        self.title_font = pygame.font.Font(TITLE_FONT_PATH, int(TITLE_SIZ * h_percent))    # タイトル用のフォント
-        self.contents_font = pygame.font.Font(FONT_PATH, int(CONTENTS_SIZ * h_percent))    # メニュー用フォント
+    def set_font(self):
+        self.title_font = setting_font(TITLE_FONT_PATH, TITLE_SIZ, self.window_size)    # タイトル用のフォント
+        self.contents_font = setting_font(FONT_PATH, CONTENTS_SIZ, self.window_size)    # メニュー用フォント
 
     # アイテムを作成
     def create_item(self):
@@ -80,9 +80,16 @@ class Title:
         for content in self.contents_list:
             content.draw()
 
+        if self.use_virtual_cursor:
+            self.cursor.draw()
+
     def handle_mouse_hover(self):
         # マウスオーバーで枠を表示するよ
-        pos = pygame.mouse.get_pos()
+        if self.use_virtual_cursor:
+            pos = self.cursor.get_pos()
+        else:
+            pos = pygame.mouse.get_pos()
+
         hovering = False    # ホバー中を管理するフラグ
 
         for content in self.contents_list:
@@ -95,38 +102,59 @@ class Title:
         
         self.hovered = hovering
 
+    # クリックイベント
+    def handle_click(self, pos):
+        if self.start.collidepoint(pos):
+            self.sound_manager.stop("タイトル")
+            self.sound_manager.play("選択")
+            return "opening"
+        elif self.load.collidepoint(pos):
+            self.sound_manager.stop("タイトル")
+            self.sound_manager.play("選択")
+            return "load"
+        elif self.setting.collidepoint(pos):
+            self.sound_manager.stop("タイトル")
+            self.sound_manager.play("選択")
+            return "setting"
+        elif self.close.collidepoint(pos):
+            self.sound_manager.play("選択")
+            Close(self.root)
+        else:
+            pass
+
     def handle_events(self):
         for event in pygame.event.get():
             # 閉じるボタンで終了
             if event.type == QUIT:
                 Close(self.root)
-            elif event.type == KEYDOWN and event.key == K_ESCAPE:
-                Close(self.root)
+
+            # キーボード押下時
+            if event.type == KEYDOWN:
+                if not self.use_virtual_cursor:
+                    self.use_virtual_cursor = on_keybord(self.cursor)
+
+                # ESCキーで終了
+                if event.key == K_ESCAPE:
+                    Close(self.root)
+
+                # エンターキーでクリックイベント
+                elif event.key == K_RETURN or event.key == K_KP_ENTER:
+                    self.handle_click(self.cursor.get_pos())
+
+            # マウスを動かした場合
+            if event.type == MOUSEMOTION:
+                if self.use_virtual_cursor:
+                    self.use_virtual_cursor = off_keybord(self.cursor)
 
             # 左マウスクリック時
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
-                print(event.pos)    # デバッグ用
-                if self.start.rect.collidepoint(event.pos):
-                    self.sound_manager.stop("タイトル")
-                    self.sound_manager.play("選択")
-                    return "opening"
-                elif self.load.rect.collidepoint(event.pos):
-                    self.sound_manager.stop("タイトル")
-                    self.sound_manager.play("選択")
-                    return "load"
-                elif self.setting.rect.collidepoint(event.pos):
-                    self.sound_manager.stop("タイトル")
-                    self.sound_manager.play("選択")
-                    return "setting"
-                elif self.close.rect.collidepoint(event.pos):
-                    self.sound_manager.play("選択")
-                    Close(self.root)
-                else:
-                    pass
+                self.handle_click(event.pos)
             
         return "title"
 
     def update(self):
         self.draw()
+        if self.use_virtual_cursor:
+            handle_cursor_move(self.use_virtual_cursor, self.cursor)
         self.handle_mouse_hover()
         return self.handle_events()

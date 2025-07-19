@@ -1,4 +1,4 @@
-import sys, re, glob, json
+import sys, re, json
 import ctypes, platform, subprocess
 from tkinter import messagebox
 
@@ -38,38 +38,59 @@ def create_size_tkinter(root):
 
 # フレームの作成
 def create_frame(screen):
-    frame_rect = get_frame(screen)
+    frame_rect = get_frame_rect(screen)
     pygame.draw.rect(screen, WHITE, frame_rect, 3)
     # メニューフレーム
     #pygame.draw.rect(screen, WHITE, MENU_FRAME_RECT,3)
 
 # テキストフレームのrectを割り出す
-def get_frame(screen):
+def get_frame_rect(screen):
     window_size = screen.get_size()
-    w_percent, h_percent = RATIO[window_size]
-    frame_w, frame_h = int(FRAME_W * w_percent), int(FRAME_H * h_percent)
+    frame_w, frame_h = get_new_size(window_size, (FRAME_SIZE))
     frame_x = (window_size[0] // 2) - (frame_w // 2)
     frame_y = window_size[1] - (frame_h + 30)
 
     return Rect(frame_x, frame_y, frame_w, frame_h)
 
+# 部屋画像のrectを算出する
+def get_room_rect(screen):
+    window_size = screen.get_size()
+    room_size = get_new_size(window_size, SHEET_SIZE, True)
+    surface = pygame.Surface(room_size)
+
+    window_rect = screen.get_rect()
+    frame_rect = get_frame_rect(screen)
+    surface_rect = surface.get_rect(centerx=window_rect.centerx, bottom=frame_rect.top - 20)
+    return surface_rect
+
+# 現在のウィンドウサイズから新しいサイズを割り出す
+def get_new_size(window_size, item_size, not_change_ratio=False):
+    w_percent, h_percent = RATIO[window_size]
+    if not_change_ratio:
+        new_size = (int(item_size[0] * h_percent), int(item_size[1] * h_percent))
+    else:
+        new_size = (int(item_size[0] * w_percent), int(item_size[1] * h_percent))
+    return new_size
+
+# フォントサイズを計算して設定する
+def setting_font(font_path, font_size, window_size):
+    h_percent = RATIO[window_size][1]
+    new_size = int(font_size * h_percent)
+    return pygame.font.Font(font_path, new_size)
+
 # テキストフレームに文字を表示するよ
 def TextDraw(screen, text):
+    window_size = screen.get_size()
     # フォントの設定
-    font = pygame.font.Font(FONT_PATH, FONT_SIZ)
+    font = setting_font(FONT_PATH, FONT_SIZ, window_size)
     # フレームの位置を得る
-    frame_rect = get_frame(screen)
+    frame_rect = get_frame_rect(screen)
 
     texts = []
     x, y = frame_rect.x + 10, frame_rect.y + 10
     texts = text.splitlines()
     for txt in texts:
         RendarText(screen, txt, font, (x, y))
-        """
-        surface = font.render(txt, True, WHITE)
-        rect = surface.get_rect(left=x,top=y)
-        screen.blit(surface, rect)
-        """
         y += 25
 
 # タグを使って色を付けられるようにする。
@@ -114,18 +135,12 @@ def load_text(file_path):
     else:
         print(f"{file_path} が見つかりません")
 
-# jsonファイルのロード
-def load_json(file):
-    file_path = os.path.join(f"{PATH}{JSON_FOLDER}", file)
-    if os.path.isfile(file_path):
-        with open(file_path, "r", encoding="utf-8_sig") as f:
-            return json.load(f)
-    else:
-        print(f"{file_path} が見つかりません")
+def create_filepath(folder, file):
+    return os.path.join(f"{PATH}{folder}", file)
 
-# シナリオファイルのロード
-def load_scenario(file):
-    file_path = os.path.join(f"{PATH}{SCENARIO}", file)
+# jsonファイルのロード
+def load_json(forder, file):
+    file_path = os.path.join(f"{PATH}{forder}", file)
     if os.path.isfile(file_path):
         with open(file_path, "r", encoding="utf-8_sig") as f:
             return json.load(f)
@@ -243,19 +258,12 @@ def ime_off(event):
         except FileNotFoundError:
             pass
 
-# アイテムイメージファイルのパス名を作って返す
-def create_item_path(item):
-    path = f".{PICTURE}"
-    search_text = f"{path}{item}*.png"
-    return glob.glob(search_text)
-
 # 画像のファイル名を作って返す
 def create_file_path(item, room, direction, flag=None):
     if flag is None:
         flag = {}
     
-    path = f"{PATH}{PICTURE}"
-    room_path = f"{path}{room}-room"
+    room_path = f"{room}-room"
 
     # 中央の部屋には方向情報を追加
     if room == "center" and direction:
@@ -272,16 +280,39 @@ def create_file_path(item, room, direction, flag=None):
             room_path = f"{room_path}_dark"
     
     if item == "room":
-        if room == "east" and not flag.get("east_room_visible"):
-            room_path = f"{path}black-room"
+        # 器を手に入れている場合
+        if room == "center" and flag.get("soup_bowl_get"):
+            room_path = f"{room_path}_NoSoup"
 
-        elif room == "west" and (flag.get("book_found") or flag.get("candle_out")):
+        # 東の部屋が見えていない場合
+        elif room == "east" and not flag.get("east_room_visible"):
+            room_path = "black-room"
+
+        elif room == "west" and (flag.get("book_found") or flag.get("candle_get")):
+            # 本を見つけてる場合
             if flag.get("book_found"):
                 room_path = f"{room_path}_PickupBook"
-            if flag.get("candle_out"):
+            # キャンドルを手に入れている場合
+            if flag.get("candle_get"):
                 room_path = f"{room_path}_NoCandle"
+        
+        # 少女を生贄に捧げてる場合
+        elif room == "south" and flag.get("hunting_horrors_offered_sacrifice"):
+            room_path = f"{room_path}_Blood"
 
         return f"{room_path}.jpg"
+    
+    # テーブルの場合
+    elif item == "Table":
+        # スープが乗っていないテーブル
+        if flag.get("soup_bowl_get"):
+            item = f"{item}_no_bowl"
+    
+    # 石像の場合
+    elif item == "StoneStatue":
+        # 血が点いている石像
+        if flag.get("hunting_horrors_offered_sacrifice"):
+            item = f"{item}_Blood"
 
     # アイテムのパスを作っていく
     img_path = f"{room_path}_{item}.png"

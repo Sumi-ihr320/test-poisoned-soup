@@ -2,23 +2,22 @@ import os, json
 import datetime as dt
 
 import pygame
-#import pygame.draw
 from pygame.locals import *
 
 from constans import *
 from utils import *
-from ui_elements import Label
+from ui.ui_elements import Label
 from manager.sound_manager import SoundManager
 
 # データロード
 class Save_or_Load:
     def __init__(self, screen, root, save_load_flag, befor_event, save_data=None):
         self.screen = screen
+        self.window_size = self.screen.get_size()
         self.root = root
 
         # フォントの設定
-        self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)                    # 基本フォント
-        self.contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)        # メニュー用フォント
+        self.set_font()
 
         self.save_load_flag = save_load_flag    # save か load か
         self.befor_event = befor_event          # 来る前にしてたイベント
@@ -30,11 +29,8 @@ class Save_or_Load:
 
         self.forder_name = f"{PATH}{SAVE_FOLDER}"   # セーブフォルダ
 
-        # ウィンドウサイズ
-        w, h = 600, 500
-        x = (self.screen.get_width() // 2) - (w // 2)
-        y = (self.screen.get_height() // 2) - (h // 2)
-        self.window_rect = Rect(x,y,w,h)
+        # セーブロード用ウィンドウサイズ
+        self.setting_rect()
 
         # 選択したデータ
         self.select_file_name = None
@@ -59,6 +55,19 @@ class Save_or_Load:
         sound_check(self.sound_manager)
 
         self.hovered = False
+
+    # フォントの設定
+    def set_font(self):
+        self.font = setting_font(FONT_PATH, FONT_SIZ, self.window_size)
+        self.contents_font = setting_font(FONT_PATH, CONTENTS_SIZ, self.window_size)
+
+    # ウィンドウサイズを作成する
+    def setting_rect(self):
+        self_size = (600, 500)
+        w, h = get_new_size(self.window_size, self_size)
+        x = (self.screen.get_width() // 2) - (w // 2)
+        y = (self.screen.get_height() // 2) - (h // 2)
+        self.window_rect = Rect(x,y,w,h)
 
     # データ表示ボックスを表示
     def create_window(self):
@@ -184,7 +193,7 @@ class Save_or_Load:
         else:
             file_name = f"{self.forder_name}{self.select_file_name}"
             try:
-                self.load_data = load_json(file_name)
+                self.load_data = load_json(SAVE_FOLDER, self.select_file_name)
                 with TopmostManager(self.root):
                     messagebox.showinfo("ロード", "ロードに成功しました")
                 self.state = State.LOAD
@@ -215,7 +224,7 @@ class Save_or_Load:
 
     # ファイルNoを取得する
     def get_file_no(self, file_name):
-        file_name.replace(".json", "")
+        file_name = file_name.replace(".json", "")
         return file_name.split(" ")[0]
 
     # リスト更新

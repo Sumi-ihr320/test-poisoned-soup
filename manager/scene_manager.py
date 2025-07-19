@@ -4,8 +4,8 @@ from title import Title
 from save_or_load import Save_or_Load
 from setting import Settings
 from opening import Opening
-from character_sheet import CharacterSheet
-from playing import MainPlay
+from character_sheet.character_sheet import CharacterSheet
+from playing.playing import MainPlay
 from ending import Ending
 
 class SceneManager:

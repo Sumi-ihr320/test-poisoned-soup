@@ -1,5 +1,5 @@
-from constans import SCENARIO_FILES
-from utils import load_scenario
+from constans import SCENARIO_FILES, SCENARIO
+from utils import load_json
 
 class ScenarioManager:
     def __init__(self, screen, event_manager, scenario_id):
@@ -17,13 +17,13 @@ class ScenarioManager:
         self.is_active = False
 
         self.wait_for_click = False     # クリック待ちフラグ
-    
+
         self.start_scenario(scenario_id)
 
     # シナリオを各ファイルからロードして統合する
     def load_scenario_file(self):
         for file_path in SCENARIO_FILES:
-            scenario_data = load_scenario(file_path)
+            scenario_data = load_json(SCENARIO, file_path)
             self.scenario_data.update(scenario_data)
 
     # 指定したシナリオを開始
@@ -42,6 +42,7 @@ class ScenarioManager:
     # シナリオ進行
     def scenario_progress(self):
         step = self.current_scenario[self.current_index]
+
         # 進行タイプに応じて処理を分岐
         progression = step.get("progression", "auto")       # デフォルトは自動進行
 
@@ -49,7 +50,7 @@ class ScenarioManager:
         if progression == "click" and self.wait_for_click:
             return None
 
-        # 現在のステップがclickならクリック待ち状態を設定        
+        # 現在のステップがclickならクリック待ち状態を設定
         self.wait_for_click = progression == "click"
         return step
 
@@ -76,10 +77,29 @@ class ScenarioManager:
         if self.wait_for_click:
             # クリック待ちを解除して次のステップへ
             self. wait_for_click = False
+
+            # ダイスチェックなら分岐ジャンプする
+            if hasattr(self.event_manager, "last_dice_step"):
+                step = self.event_manager.last_dice_step
+                result = self.event_manager.dice_check_result
+                next_id = step["success"] if result else step["failure"]
+                del self.event_manager.last_dice_step
+                self.start_scenario(next_id)
+                return
+
+            # ダメージによって状態異常が起こった場合
+            elif self.event_manager.state_record:
+                next_id = "Status_effect"
+                self.start_scenario(next_id)
+                return
+
             self.update()
 
     # 現在のステップの描画をイベントマネージャーに依頼
     def draw(self):
+        if self.event_manager.girl_image:
+            self.event_manager.girl_image.draw()
+            
         if self.event_manager.item_image:
             self.event_manager.item_image.draw()
 

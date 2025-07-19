@@ -5,25 +5,218 @@
     "Pot":[
         {"type":"image_display", "image":"Pot.png"},
         {"type":"text", "text":"大きな鍋がある。", "progression":"click"},
-        {"type":"conditional",
-         "conditions": [
-            {"flags":[{"category":"items", "flag":"pot_looked", "value":false}], "next":"Pot_no_look"},
-            {"flags":[{"category":"items", "flag":"pot_looked", "value":true}], "next":""}
-        ]}
-    ],
-    "Pot_no_look":[
         {"type":"interaction",
          "interactions":[
-            {"text":"蓋を開ける", "next":""},
-            {"text":"蓋を開けない", "next":""}
-         ]},
+            {"text":"蓋を開ける", "next":"Pot_open"},
+            {"text":"蓋を開けない", "next":"Pot_no_open"}
+         ]}
+    ],
+    "Pot_open":[
+        {"type":"girl_check", "true":"Pot_open_girl_question", "false":"Pot_open_only"}
+    ],
+    "Pot_open_girl_question":[
+        {"type":"interaction",
+         "interactions":[
+            {"text":"一人で中を見る", "next":"Pot_open_only"},
+            {"text":"少女と一緒に中を見る", "next":"Pot_open_with_girl"}
+         ]}
+    ],
+    "Pot_open_with_girl":[
+        {"type":"time_passage", "value":2},
+        {"type":"text", "text":"鍋の蓋を開けた。", "progression":"click"},
+        {"type":"image_display", "image":"Pot_open.png"},
+        {"type":"text", "text":"中にはバラバラになった人体が詰まっていた。", "progression":"click"},
+        {"type":"conditional",
+         "conditions": [
+            {"flags":[
+                {"category":"items", "flag":"pot_looked", "value":false},
+                {"category":"girl", "flag":"pot_looked", "value":false}
+            ], "next":"Pot_open_no_look_with_girl"},
+            {"flags":[
+                {"category":"items", "flag":"pot_looked", "value":false},
+                {"category":"girl", "flag":"pot_looked", "value":true}
+            ], "next":"Pot_open_no_look"},
+            {"flags":[
+                {"category":"items", "flag":"pot_looked", "value":true},
+                {"category":"girl", "flag":"pot_looked", "value":false}
+            ], "next":"Pot_open_no_look_girl"},
+            {"flags":[
+                {"category":"items", "flag":"pot_looked", "value":true},
+                {"category":"girl", "flag":"pot_looked", "value":true}
+            ], "next":"Pot_open_conditions"}
+        ]}
+    ],
+    "Pot_open_only":[
+        {"type":"time_passage", "value":2},
+        {"type":"text", "text":"鍋の蓋を開けた。", "progression":"click"},
+        {"type":"image_display", "image":"Pot_open.png"},
+        {"type":"text", "text":"中にはバラバラになった人体が詰まっていた。", "progression":"click"},
+        {"type":"conditional",
+         "conditions": [
+            {"flags":[{"category":"items", "flag":"pot_looked", "value":false}], "next":"Pot_open_no_look"},
+            {"flags":[{"category":"items", "flag":"pot_looked", "value":true}], "next":"Pot_open_conditions"}
+        ]}
+    ],
+    "Pot_open_no_look":[
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"pot_looked", "value":true},
+        {"type":"text", "text":"見るも無残な死体を直視してしまったあなたは\n1/1d6のSANチェックだ。", "progression":"click"},
+        {"type":"dice_check", "check_type":"SANチェック", "target":"player"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"damage", "status":"SAN", "target":"player", "value":"1/1d6", "text":"無残な死体を目撃してしまった", "progression":"click"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"next_step", "next":"Pot_open_conditions"}
+    ],
+    "Pot_open_no_look_girl":[
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"pot_looked", "value":true},
+        {"type":"text", "text":"見るも無残な死体を直視してしまった少女は\n1/1d6のSANチェックだ。", "progression":"click"},
+        {"type":"dice_check", "check_type":"SANチェック", "target":"girl"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"damage", "status":"SAN", "target":"girl", "value":"1/1d6", "text":"無残な死体を目撃してしまった", "progression":"click"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"next_step", "next":"Pot_open_conditions"}
+    ],
+    "Pot_open_no_look_with_girl":[
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"pot_looked", "value":true},
+        {"type":"text", "text":"見るも無残な死体を直視してしまった二人は\n1/1d6のSANチェックだ。", "progression":"click"},
+        {"type":"dice_check", "check_type":"SANチェック", "target":"all"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"damage", "status":"SAN", "target":"all", "value":"1/1d6", "text":"無残な死体を目撃してしまった", "progression":"click"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"next_step", "next":"Pot_open_conditions"}
+    ],
+    "Pot_open_conditions":[
+        {"type":"conditional",
+         "conditions": [
+            {"flags":[
+                {"category":"items", "flag":"soup_bowl_get", "value":true},
+                {"category":"items", "flag":"soup_bowl_in_soup", "value":false},
+                {"category":"items", "flag":"pot_in_nothing", "value":false}
+            ], "next":"Pot_open_get_bowl_no_soup"},
+            {"flags":[{"category":"items", "flag":"pot_in_nothing", "value":true}], "next":"Pot_in_nothing"},
+            {"flags":[{"category":"items", "flag":"soup_bowl_in_soup", "value":true}], "next":"Pot_open_no_bowl"},
+            {"flags":[{"category":"items", "flag":"soup_bowl_get", "value":false}], "next":"Pot_open_no_bowl"}
+        ]}
+    ],
+    "Pot_open_get_bowl":[
+        {"type":"text", "text":"鍋の底には血が溜まっている。", "progression":"click"},
+        {"type":"text", "text":"持っている空の器に血を注ぎますか？", "progression":"click"},
+        {"type":"interaction",
+         "interactions":[
+            {"text":"血を入れる", "next":"Pot_soup_to_bowl"},
+            {"text":"血を入れない", "next":"Pot_soup_not_to_bowl"}
+         ]}
+    ],
+    "Pot_soup_to_bowl":[
+        {"type":"time_passage", "value":2},
+        {"type":"sound", "name":"注ぐ", "path":"Pour.mp3"},
+        {"type":"image_display", "image":"Soup.png"},
+        {"type":"text", "text":"鍋の底に溜まっていた血を器に注いだ。", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_bowl_in_soup", "value":true},
+        {"type":"text", "text":"鍋の中にはもう血は残っていない。", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"pot_in_nothing", "value":true},
+        {"type":"image_hidden"}
+    ],
+    "Pot_in_nothing":[
+        {"type":"text", "text":"鍋の中身は肉片のみでもう血は残っていない。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "Pot_soup_not_to_bowl":[
+        {"type":"image_hidden"}
+    ],
+    "Pot_open_no_bowl":[
+        {"type":"image_hidden"}
+    ],
+    "Pot_no_open":[
         {"type":"image_hidden"}
     ],
     "UnderSinkStorage":[
+        {"type":"conditional",
+         "conditions": [
+            {"flags":[{"category":"items", "flag":"north_memo_discovery", "value":false}], "next":"UnderSinkStorage_no_objctive"},
+            {"flags":[{"category":"items", "flag":"north_memo_discovery", "value":true}], "next":"UnderSinkStorage_true_objctive"}
+        ]}
+    ],
+    "UnderSinkStorage_no_objctive":[
         {"type":"interaction",
          "interactions":[
-            {"text":"目星", "next":""},
-            {"text":"何か持って行く", "next":""}
+            {"text":"目星", "next":"UnderSinkStorage_objctive"},
+            {"text":"何か持って行く", "next":"UnderSinkStorage_get_item"}
          ]}
+    ],
+    "UnderSinkStorage_true_objctive":[
+        {"type":"interaction",
+         "interactions":[
+            {"text":"紙切れを確認する", "next":"northMemo"},
+            {"text":"何か持って行く", "next":"UnderSinkStorage_get_item"}
+         ]}
+    ],
+    "UnderSinkStorage_objctive":[
+        {"type":"time_passage", "value":2},
+        {"type":"dice_check", "check_type":"skill", "skill":"目星", "progression":"click",
+         "success":"UnderSinkStorage_objective_success",
+         "failure":"UnderSinkStorage_objective_failure"},
+        {"type":"result_text", "progression":"click"}
+    ],
+    "UnderSinkStorage_objctive_success":[
+        {"type":"text", "text":"隅の方に紙切れを発見した。", "progression":"click"},
+        {"type":"image_display", "image":"northMemo.png"},
+        {"type":"text", "text":"～大事な  調味料は  現在  在庫切れ～", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"items", "flag":"north_memo_discovery", "value":true},
+        {"type":"image_hidden"}
+    ],
+    "UnderSinkStorage_objctive_failure":[
+        {"type":"text", "text":"何も見つからなかった。", "progression":"click"}
+    ],
+    "UnderSinkStorage_get_item":[
+        {"type":"text", "text":"調理台の下には調理器具が置いてある。", "progression":"click"},
+        {"type":"text", "text":"何を持っていこうか……", "progression":"click"},
+        {"type":"time_passage", "value":2},
+        {"type":"interaction",
+         "interactions":[
+            {"text":"包丁", "next":"UnderSinkStorage_get_item_kitchen_knife"},
+            {"text":"おたま", "next":"UnderSinkStorage_get_item_ladle"},
+            {"text":"片手鍋", "next":"UnderSinkStorage_get_item_saucepan"},
+            {"text":"フライパン", "next":"UnderSinkStorage_get_item_frying_pan"},
+            {"text":"鍋の蓋", "next":"UnderSinkStorage_get_item_lid"},
+            {"text":"持っていかない", "next":"UnderSinkStorage_get_item_done"}
+         ]}
+    ],
+    "UnderSinkStorage_get_item_kitchen_knife":[
+        {"type":"text", "text":"包丁を持って行くことにした。", "progression":"click"},
+        {"type":"action", "action":"get_item", "target":"player", "item":"kitchen_knife"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"next_step", "next":"UnderSinkStorage_get_item"}
+    ],
+    "UnderSinkStorage_get_item_ladle":[
+        {"type":"text", "text":"おたまを持って行くことにした。", "progression":"click"},
+        {"type":"action", "action":"get_item", "target":"player", "item":"ladle"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"next_step", "next":"UnderSinkStorage_get_item"}
+    ],
+    "UnderSinkStorage_get_item_saucepan":[
+        {"type":"text", "text":"片手鍋を持って行くことにした。", "progression":"click"},
+        {"type":"action", "action":"get_item", "target":"player", "item":"saucepan"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"next_step", "next":"UnderSinkStorage_get_item"}
+    ],
+    "UnderSinkStorage_get_item_frying_pan":[
+        {"type":"text", "text":"フライパンを持って行くことにした。", "progression":"click"},
+        {"type":"action", "action":"get_item", "target":"player", "item":"frying_pan"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"next_step", "next":"UnderSinkStorage_get_item"}
+    ],
+    "UnderSinkStorage_get_item_lid":[
+        {"type":"text", "text":"鍋の蓋を持って行くことにした。", "progression":"click"},
+        {"type":"action", "action":"get_item", "target":"player", "item":"lid"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"next_step", "next":"UnderSinkStorage_get_item"}
+    ],
+    "UnderSinkStorage_get_item_done":[
+        {"type":"text", "text":"やめておこう。", "progression":"click"}
+    ],
+    "northMemo":[
+        {"type":"image_display", "image":"northMemo.png"},
+        {"type":"text", "text":"～大事な  調味料は  現在  在庫切れ～", "progression":"click"},
+        {"type":"image_hidden"}
     ]
 }

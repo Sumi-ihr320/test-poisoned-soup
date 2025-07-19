@@ -1,5 +1,4 @@
 import pygame
-import pygame.draw
 from pygame.locals import *
 import tkinter as tk
 

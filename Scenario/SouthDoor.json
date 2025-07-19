@@ -1,0 +1,188 @@
+{
+    "southDoor":[
+        {"type":"image_display", "image":"southDoor.png"},
+        {"type":"text", "text":"大きな厚い鉄扉だ。小窓がついている。", "progression":"click"},
+        {"type": "conditional",
+         "conditions":[
+            {"flags":[{"category":"enemys", "flag":"hunting_horrors_there", "value":true}], "next":"southDoor_enemy_there"},
+            {"flags":[{"category":"enemys", "flag":"hunting_horrors_there", "value":false}], "next":"southDoor_enemy_none"}
+         ]
+        }
+    ],
+    "southDoor_enemy_none":[
+        {"type":"interaction", "progression":"click",
+        "interactions":[
+           {"text":"小窓を覗く", "next":"southDoor_enemy_none_look"},
+           {"text":"聞き耳", "next":"southDoor_enemy_none_listen"},
+           {"text":"叩く", "next":"southDoor_enemy_none_knock"},
+           {"text":"開ける", "next":"southDoor_enemy_none_open"}
+        ]}
+    ],
+    "southDoor_enemy_none_look":[
+        {"type":"time_passage", "value":2},
+        {"type":"text", "text":"小窓を覗いてみた。", "progression":"click"},
+        {"type":"text", "text":"部屋の中は薄暗くてよく見えない。", "progression":"click"}
+    ],
+    "southDoor_enemy_none_listen":[
+        {"type":"time_passage", "value":2},
+        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "southDoor_enemy_none_knock":[
+        {"type":"time_passage", "value":1},
+        {"type":"sound", "name":"鉄の扉をノック", "path":"Knock_the_iron_door.mp3"},
+        {"type":"text", "text":"何の反応もない。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "southDoor_enemy_none_open":[
+        {"type":"sound", "name":"鉄のドアを開ける", "path":"Open_the_door_01.mp3"},
+        {"type":"action", "action":"move_to_room", "room_id":"south-room"}
+    ],
+    "southDoor_enemy_there":[
+        {"type":"interaction", "progression":"click",
+        "interactions":[
+           {"text":"小窓を覗く", "next":"southDoor_look_window_girl_check"},
+           {"text":"聞き耳", "next":"southDoor_listen"},
+           {"text":"叩く", "next":"southDoor_knock"},
+           {"text":"開ける", "next":"southDoor_open"}
+        ]}
+    ],
+    "southDoor_look_window_girl_check":[
+        {"type":"girl_check", "true":"southDoor_look_window_question", "false":"southDoor_look_window_only"}
+    ],
+    "southDoor_look_window_question":[
+        {"type":"interaction", "progression":"click",
+        "interactions":[
+           {"text":"一人で覗く", "next":"southDoor_look_window_only"},
+           {"text":"少女と一緒に覗く", "next":"southDoor_look_window_with_girl"},
+           {"text":"少女にだけ覗かせる", "next":"southDoor_look_window_only_girl"}
+        ]}
+    ],
+    "southDoor_look_window_only":[
+        {"type":"time_passage", "value":2},
+        {"type":"text", "text":"小窓を覗いてみた。", "progression":"click"},
+        {"type":"image_display", "image":"Hunting Horrors.png"},
+        {"type":"text", "text":"ぼんやりと青白い部屋の中に、\n一枚だけの翼を持った巨大なクサリヘビのような怪物が\nうろついている。", "progression":"click"},
+        {"type": "conditional",
+         "conditions":[
+            {"flags":[{"category":"enemys", "flag":"hunting_horrors_look", "value":false}], "next":"southDoor_look_window_only_first"},
+            {"flags":[{"category":"enemys", "flag":"hunting_horrors_look", "value":true}], "next":"southDoor_look_window_done"}
+         ]}
+    ],
+    "southDoor_look_window_only_first":[
+        {"type":"text", "text":"この怪物を目撃したあなたは0/1d10のSANチェックだ。", "progression":"click"},
+        {"type":"dice_check", "check_type":"SANチェック", "target":"player"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"damage", "status":"SAN", "value":"0/1d10", "target":"player", "text":"おぞましい怪物を目撃してしまった"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"enemys", "flag":"hunting_horrors_look", "value":true},
+        {"type":"image_hidden"}
+    ],
+    "southDoor_look_window_done":[
+        {"type":"image_hidden"}
+    ],
+    "southDoor_look_window_only_girl":[
+        {"type":"time_passage", "value":2},
+        {"type":"text", "text":"少女が小窓を覗いている。", "progression":"click"},
+        {"type":"text", "text":"部屋の中に何か恐ろしいものがいたようで、少女は青ざめている。", "progression":"click"},
+        {"type": "conditional",
+         "conditions":[
+            {"flags":[{"category":"girl", "flag":"hunting_horrors_look", "value":false}], "next":"southDoor_look_window_only_girl_first"},
+            {"flags":[{"category":"girl", "flag":"hunting_horrors_look", "value":true}], "next":"southDoor_look_window_done"}
+         ]
+        }
+    ],
+    "southDoor_look_window_only_girl_first":[
+        {"type":"text", "text":"恐ろしいものを目撃した少女は0/1d10のSANチェックだ。", "progression":"click"},
+        {"type":"dice_check", "check_type":"SANチェック", "target":"girl"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"damage", "status":"SAN", "value":"0/1d10", "target":"girl", "text":"おぞましい怪物を目撃してしまった"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"girl", "flag":"hunting_horrors_look", "value":true},
+        {"type":"image_hidden"}
+    ],
+    "southDoor_look_window_with_girl":[
+        {"type":"time_passage", "value":2},
+        {"type":"text", "text":"小窓を覗いてみた。", "progression":"click"},
+        {"type":"image_display", "image":"Hunting Horrors.png"},
+        {"type":"text", "text":"ぼんやりと青白い部屋の中に、\n一枚だけの翼を持った巨大なクサリヘビのような怪物が\nうろついている。", "progression":"click"},
+        {"type": "conditional",
+         "conditions":[
+            {"flags":[
+                {"category":"enemys", "flag":"hunting_horrors_look", "value":false},
+                {"category":"girl", "flag":"hunting_horrors_look", "value":false}
+                ], "next":"southDoor_look_window_with_girl_first"},
+            {"flags":[
+                {"category":"enemys", "flag":"hunting_horrors_look", "value":false},
+                {"category":"girl", "flag":"hunting_horrors_look", "value":true}
+                ], "next":"southDoor_look_window_with_girl_player_first"},
+            {"flags":[
+                {"category":"enemys", "flag":"hunting_horrors_look", "value":true},
+                {"category":"girl", "flag":"hunting_horrors_look", "value":false}
+                ], "next":"southDoor_look_window_with_girl_girl_first"},
+            {"flags":[
+                {"category":"enemys", "flag":"hunting_horrors_look", "value":true},
+                {"category":"girl", "flag":"hunting_horrors_look", "value":true}
+                ], "next":"southDoor_look_window_done"}
+         ]
+        }
+    ],
+    "southDoor_look_window_with_girl_first":[
+        {"type":"text", "text":"この怪物を目撃したあなたたちは0/1d10のSANチェックだ。", "progression":"click"},
+        {"type":"dice_check", "check_type":"SANチェック", "target":"all"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"damage", "status":"SAN", "value":"0/1d10", "target":"all", "text":"おぞましい怪物を目撃してしまった"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"enemys", "flag":"hunting_horrors_look", "value":true},
+        {"type":"action", "action":"set_flag", "category":"girl", "flag":"hunting_horrors_look", "value":true},
+        {"type":"image_hidden"}
+    ],
+    "southDoor_look_window_with_girl_player_first":[
+        {"type":"text", "text":"この怪物を初めて目撃したあなたは0/1d10のSANチェックだ。", "progression":"click"},
+        {"type":"dice_check", "check_type":"SANチェック", "target":"player"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"damage", "status":"SAN", "value":"0/1d10", "target":"player", "text":"おぞましい怪物を目撃してしまった"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"enemys", "flag":"hunting_horrors_look", "value":true},
+        {"type":"image_hidden"}
+    ],
+    "southDoor_look_window_with_girl_girl_first":[
+        {"type":"text", "text":"この怪物を初めて目撃した少女は0/1d10のSANチェックだ。", "progression":"click"},
+        {"type":"dice_check", "check_type":"SANチェック", "target":"girl"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"damage", "status":"SAN", "value":"0/1d10", "target":"girl", "text":"おぞましい怪物を目撃してしまった"},
+        {"type":"result_text", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"girl", "flag":"hunting_horrors_look", "value":true},
+        {"type":"image_hidden"}
+    ],
+    "southDoor_listen":[
+        {"type":"time_passage", "value":2},
+        {"type":"dice_check", "check_type":"skill", "skill":"聞き耳", "dice":"1d100", "progression":"click",
+         "success":"southDoor_listen_success",
+         "failure":"southDoor_listen_failure"},
+        {"type":"result_text", "progression":"click"}
+    ],
+    "southDoor_listen_success":[
+        {"type":"text", "text":"部屋の向こうからは何かの荒い呼吸音と\nズルズルという何か重いものを引きずるような音が\n聞こえる。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "southDoor_listen_failure":[
+        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
+        {"type":"image_hidden"}
+    ],
+    "southDoor_knock":[
+        {"type":"time_passage", "value":1},
+        {"type":"sound", "name":"鉄の扉をノック", "path":"Knock_the_iron_door.mp3"},
+        {"type":"text", "text":"扉の向こうから何かの気配がする。", "progression":"click"},
+        {"type":"action", "action":"set_flag", "category":"enemys", "flag":"hunting_horrors_knock", "value":true},
+        {"type":"image_hidden"}
+    ],
+    "southDoor_open":[
+        {"type":"interaction",
+         "interactions":[
+            {"text":"普通に入る", "next":""},
+            {"text":"静かに入る", "next":""},
+            {"text":"勢いよく入る", "next":""}
+         ]}
+    ]
+}

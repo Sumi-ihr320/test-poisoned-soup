@@ -380,3 +380,131 @@
 	ナビゲーションを画面サイズ変更に対応
 	titleの文字サイズを画面サイズ変更に対応
 
+2025/4/2
+	utilsにget_new_sizeを作成
+	roomにsurface作成
+	x,yの位置がsurfaceごとの相対位置であることにやっと気付いたので修正。
+	やっとちゃんとした位置でアイテム判定できるようになったぁあああ
+
+2025/4/5
+	utilsにsetting_fontを作成
+	これによりテキスト表示のフォントサイズを画面サイズに連動できるように
+
+2025/4/12
+	プルダウンボックスのサイズ設計をテキストベースに変更
+
+2025/4/16
+	職業選択画面の画面サイズ変更対応をしていたのだがそもそもの画面設計を見直すことになった。
+	キャラクターシート作成画面終了ボタンではなく、3ページ目、内容確認ページを作成することにした。
+	画面遷移をページをめくるような演出にしたいと思う。まずは古紙風画像を探してきた。
+
+2025/4/19
+	character_sheet関係のファイルをcharacter_sheetフォルダに。
+	ui関係のファイルをuiに。
+	playing関係のファイルをplayingに。
+	character_sheetの3ページ目を作成
+	character_sheetの各ページをsurfaceにするために奮闘中
+
+2025/4/26
+	navigation.pyのNavigationをMainNavigationに変更。
+	navigation.pyにCharasheetNavigationを追加。
+	basepageにupdate_item_positionを追加
+	CharasheetNavigation表示されてねぇえええ
+
+2025/4/30
+	charasheetnavigationが表示されるようになった
+	charactersheetの各画像が表示されてなかったのを表示されるようになった
+	charactersheetをスライドさせることができた。
+	statusのインプットボックスやダイスボタンが動いてないのでどうにかしないと
+	どうにかできた
+
+2025/5/8
+	confirm_pageに現在の主人公データを表示するように
+	職業アイコンの並び方の調整
+
+2025/5/10
+	職業アイコンの並び方の調整
+	部屋アイテムの表示位置を画面サイズ変更に対応できるように
+
+2025/5/17
+	部屋アイテムの表示位置修正(途中)
+	
+2025/5/21
+	ステータス表示画面の変更(途中)
+
+2025/5/24
+	batlle.pyを作成
+	characterクラスにimageを追加
+
+2025/5/28
+	batlle.pyをbatlle_manager.pyに変更
+	RightClickCommandMenuに着手
+	door.jsonを少女が仲間にいるパターンに書き換え途中
+
+2025/5/31
+	pulldownにupdate_positionを追加
+	labelにset_positionを追加
+	professionのhobby_selecterの表示位置調整
+	RightClickCommandMenuを別ファイルに
+
+2025/6/4
+	scenario_managerとevent_managerの調整
+	複数人のダイスチェックに対応したい。
+	ダイスチェックの結果表示をうまくできない
+
+2025/6/7
+	結果表示できるようになった
+	dice_checkに毒対抗ロールを追加
+
+2025/6/12
+	event_managerのdice_checkとdamageにSANチェックの場合を追加
+
+2025/6/14
+	handle_damageを作成
+	複数キャラクターのダメージに対応
+
+2025/6/18
+	黒い本のシナリオを追加
+	scenario_managerにstate_recordによる分岐を追加
+	event_managerにhandle_status_effectを追加
+	damageを受けた際に起こる状態異常の処理を書こうとしている
+	部屋移動した際にgirlの現在地も同時に更新する処理を追加
+
+2025/6/21
+	time_passageをtype:actionから分離
+	空になったスープの器をゲットできるように変更(調理室でスープの予備を手に入れられるようにするため)
+	それにともなってスープのない部屋の画像作成
+	room、room_manager、event_managerのフラグ関係の修正
+
+2025/6/25
+	event_managerにtarget_checkを追加
+	ダイスチェックもtargetで誰のチェックを行うかを選択できるように
+
+2025/6/28
+	imageにpositionを追加
+	event_managerにblack_outを追加
+	status_effectにfaintとshock_rollを追加
+
+2025/7/2
+	WestRoomからBook.json、BookShelf.json、BlackLiquid.jsonを分離
+	event_managerで少女の立ち絵を表示できるように記述（まだ試してない）
+	
+2025/7/5
+	東の部屋のシナリオ更新
+	少女の立ち絵を表示できるようになった
+
+2025/7/9
+	少女を番人に食わせている場合南の部屋が血だらけになるように画像を用意
+	Door.jsonからSouthDoor.jsonを分離
+	
+2025/7/12
+	北の部屋のシナリオ更新
+	水を注ぐ音、走る音をsoundに追加
+	キッチンで入手できるアイテムを追加
+
+2025/7/17
+	virtual_cursor.pyを作成（中身はまだ）
+
+2025/7/19
+	virtual_cursor.pyの中身を記述
+	playingとtitleで仮想カーソルを動かせるように

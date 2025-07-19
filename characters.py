@@ -3,9 +3,10 @@ from character_item import *
 
 # キャラクタークラス
 class Character:
-    def __init__(self, name="", STR=0, CON=0, SIZ=0, DEX=0, INT=0, POW=0, DB="", HP=0, MP=0, Dodge=0, skill={}):
+    def __init__(self, name="", image="", STR=0, CON=0, SIZ=0, DEX=0, INT=0, POW=0, DB="", HP=0, MP=0, Dodge=0, skill={}):
         # 基本情報
         self.name = name
+        self.image = image
         
         # ステータス
         self.STR = STR
@@ -59,6 +60,7 @@ class Character:
         return {
             "type": self.__class__.__name__,
             "name":self.name,
+            "image":self.image,
             "STR":self.STR, "CON":self.CON, "SIZ":self.SIZ,
             "DEX":self.DEX, "INT":self.INT, "POW":self.POW,
             "DB":self.DB, "HP":self.HP, "MP":self.MP, "Dodge":self.Dodge,
@@ -69,33 +71,47 @@ class Character:
     @classmethod
     def from_dict(cls, data):
         if data["type"] == "Player":
-            character = Player(data["name"], data["age"], data["sex"], data["STR"], data["CON"], data["SIZ"],
+            character = Player(data["name"], data["image"], data["age"], data["sex"], data["STR"], data["CON"], data["SIZ"],
                                data["DEX"], data["APP"], data["EDU"], data["INT"], data["POW"], data["Luck"],
                                data["Idea"], data["Know"], data["DB"], data["HP"], data["MP"], data["Dodge"],
                                data["SAN"], data["max_SAN"], data["Profession"], data["skill"], [], data["Hobby"], data["girl_like_ability"])
 
         elif data["type"] == "Human":
-            character = Human(data["name"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
+            character = Human(data["name"], data["image"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
                             data["DB"], data["HP"], data["MP"], data["Dodge"], data["skill"],
                             data["age"], data["sex"], data["APP"], data["EDU"], data["Luck"], data["Idea"], data["Know"],
                             data["SAN"], data["max_SAN"], data["Profession"], [])
             character.inventory = [CharacterItem.from_dict(item) for item in data["inventory"]]
 
         elif data["type"] == "Enemy":
-            character = Enemy(data["name"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
+            character = Enemy(data["name"], data["image"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
                             data["DB"], data["HP"], data["MP"], data["Dodge"], data["skill"], data["armor"])
 
         else:
-            character = cls(data["name"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
+            character = cls(data["name"], data["image"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
                             data["DB"], data["HP"], data["MP"], data["Dodge"], data["skill"])
 
         return character
 
+# 敵クラス
+class Enemy(Character):
+    def __init__(self, name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill, armor):
+        super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
+        self.armor = armor
+
+    def check_armor(self):
+        return self.armor
+    
+    def to_dict(self):
+        data = super().to_dict()
+        data["armor"] = self.armor
+        return data
+
 # 人間クラス
 class Human(Character):
-    def __init__(self, name="", STR=0, CON=0, SIZ=0, DEX=0, INT=0, POW=0, DB="", HP=0, MP=0, Dodge=0, skill={}, age=0, sex="man",
+    def __init__(self, name="", image="", STR=0, CON=0, SIZ=0, DEX=0, INT=0, POW=0, DB="", HP=0, MP=0, Dodge=0, skill={}, age=0, sex="man",
                  APP=0, EDU=0, Luck=0, Idea=0, Know=0, SAN=0, max_SAN=0, Profession="", inventory=[]):
-        super().__init__(name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
+        super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
         
         # 基本情報
         self.age = age
@@ -167,25 +183,11 @@ class Human(Character):
         data["inventory"] = [item.to_dict() for item in self.inventory]
         return data
 
-# 敵クラス
-class Enemy(Character):
-    def __init__(self, name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill, armor):
-        super().__init__(name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
-        self.armor = armor
-
-    def check_armor(self):
-        return self.armor
-    
-    def to_dict(self):
-        data = super().to_dict()
-        data["armor"] = self.armor
-        return data
-
 # 主人公クラス
 class Player(Human):
-    def __init__(self, name="", age=0, sex="man", STR=0, CON=0, SIZ=0, DEX=0, APP=0, EDU=0, INT=0, POW=0, Luck=0, Idea=0, Know=0, 
+    def __init__(self, name="", image="silhouette_man.png", age=0, sex="man", STR=0, CON=0, SIZ=0, DEX=0, APP=0, EDU=0, INT=0, POW=0, Luck=0, Idea=0, Know=0, 
                  DB="", HP=0, MP=0, Dodge=0, SAN=0, max_SAN=0, profession="", skill={}, inventory=[], hobby="", girl_like_ability=0):
-        super().__init__(name, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill,
+        super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill,
                          age, sex, APP, EDU, Luck, Idea, Know, SAN, max_SAN, profession, inventory)
         self.Hobby = hobby
         self.girl_like_ability = girl_like_ability

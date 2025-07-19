@@ -1,22 +1,20 @@
 import pygame
-import pygame.draw
 from pygame.locals import *
 
 from constans import *
 from utils import *
-from ui_elements import Label, PullDown
+from ui.ui_elements import Label, PullDown
 from manager.sound_manager import SoundManager
 
 # 設定ページ
 class Settings:
     def __init__(self, screen, root, manager, before_event):
         self.screen = screen
+        self.window_size = self.screen.get_size()
         self.root = root
+
         self.manager = manager
         self.before_event = before_event
-
-        # 画面サイズ
-        self.window_size = self.screen.get_size()
 
         # フォントの設定
         self.set_font()
@@ -39,9 +37,9 @@ class Settings:
 
     # フォントの設定
     def set_font(self):
-        self.font = pygame.font.Font(FONT_PATH, FONT_SIZ)                    # 基本フォント
-        self.contents_font = pygame.font.Font(FONT_PATH,CONTENTS_SIZ)        # メニュー用フォント
-        self.title_font = pygame.font.Font(FONT_PATH, TITLE_SIZ)             # 表題用フォント
+        self.font = setting_font(FONT_PATH, FONT_SIZ, self.window_size)                    # 基本フォント
+        self.contents_font = setting_font(FONT_PATH, CONTENTS_SIZ, self.window_size)       # メニュー用フォント
+        self.title_font = setting_font(FONT_PATH, TITLE_SIZ, self.window_size)             # 表題用フォント
 
     # 画面がフルスクリーンかを確認する
     def is_fullscreen(self):
@@ -49,19 +47,15 @@ class Settings:
 
     # ウィンドウ用surfaceを作成
     def create_surface(self):
-        self.window_surface = pygame.Surface((700, 500))
-        self.window_rect = self.window_surface.get_rect(center=(self.screen.get_width()//2, self.screen.get_height()//2))
+        surface_size = get_new_size(self.window_size, (700, 500))
+        self.window_surface = pygame.Surface(surface_size)
+        self.window_rect = self.window_surface.get_rect(center=(self.window_size[0]//2, self.window_size[1]//2))
 
     # ウィンドウの背景を描画する
     def create_window(self):
         self.window_surface.fill(SETTING_COLOR)
         pygame.draw.rect(self.window_surface, GRAY, self.window_surface.get_rect(), 2)
-        pygame.draw.rect(self.window_surface, GRAY, pygame.Rect(4, 4, 692, 492), 2)
-
-    # 画面サイズ変更時にポジションを更新する
-    def update_item_position(self):
-        self.window_rect = self.window_surface.get_rect(center=(self.screen.get_width()//2, self.screen.get_height()//2))
-        self.create_item()
+        pygame.draw.rect(self.window_surface, GRAY, pygame.Rect(4, 4, self.window_rect.w-8, self.window_rect.h-8), 2)
 
     # 画面のUIを描画する
     def create_item(self):
@@ -69,7 +63,7 @@ class Settings:
 
         self.size = Label(self.screen, self.contents_font, "・画面サイズ", x=self.window_rect.x+50, y=self.window_rect.top+110, color=BLACK)
         puludown_label = "フルスクリーン" if self.is_fullscreen() else (self.select_size if self.select_size else "800x600")
-        self.size_pulldown = PullDown(self.screen, self.font, (self.window_rect.x+250, self.window_rect.top+100, 200, 45), list(SIZE_MAP), puludown_label)
+        self.size_pulldown = PullDown(self.screen, self.font, Rect(self.size.rect.right+50, self.size.rect.top, 200, 45), list(SIZE_MAP), puludown_label, 500)
         
         self.volume = Label(self.screen, self.contents_font, "・音量", x=self.window_rect.x+50, y=self.window_rect.top+200, color=BLACK)
         self.other = Label(self.screen, self.contents_font, "・他",x=self.window_rect.x+50, y=self.window_rect.top+370, color=BLACK)
@@ -90,9 +84,17 @@ class Settings:
             screen_size = SIZE_MAP.get(self.select_size, (800, 600))
             if self.fullscreen or screen_size != self.screen.get_size():
                 pygame.display.set_mode(screen_size)
-                self.manager.set("fullscreeen", False)
+                self.manager.set("fullscreen", False)
                 self.manager.set("resolution", list(screen_size))
                 self.manager.set("str_resolution", self.select_size)
+
+    # 画面サイズ変更時にポジションを更新する
+    def update_item_position(self):
+        self.window_size = self.screen.get_size()
+        self.set_font()
+        self.create_surface()
+        self.create_window()
+        self.create_item()
 
     def draw(self):
         # ウィンドウを描画
