@@ -4,6 +4,7 @@ import tkinter as tk
 
 from constans import *
 from utils import *
+from input.virtual_cursor import *
 
 from manager.setting_manager import SettingManager
 from manager.scene_manager import SceneManager
@@ -18,11 +19,11 @@ root.withdraw()
 # main関数をクラス化    (chatGPT指南)
 class MainApp:
     def __init__(self):
-        # pygame初期化    
+        # pygame初期化
         pygame.init()
 
         # セッティングマネージャー
-        self.setting_manager = SettingManager()
+        self.setting_manager = SettingManager(root)
 
         # 画面サイズ等のデータロード
         self.screen = None
@@ -37,6 +38,7 @@ class MainApp:
 
         # シーンマネージャー
         self.scene_manager = SceneManager(self.screen, root, self.setting_manager)
+
 
     # 設定ファイルをロードする
     def load_data(self):
@@ -78,7 +80,6 @@ class MainApp:
                 elif event.key == pygame.K_F5:
                     pygame.display.toggle_fullscreen()
                     self.setting_manager.set("fullscreen", bool(pygame.display.get_surface().get_flags()&pygame.FULLSCREEN))
-            
 
     # 画面を更新
     def update_display(self):

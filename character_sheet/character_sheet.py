@@ -4,24 +4,27 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from ui.ui_elements import *
+from input.virtual_cursor import *
 from characters import *
 
-from ui.menu import MenuController, update_menu
+from ui.menu import MenuController
 from ui.navigation import CharasheetNavigation
 from character_sheet.status_calculator import *
 from character_sheet.status_page import StatusPage
 from character_sheet.profession_page import ProfessionPage
 from character_sheet.confirm_page import ConfirmPage
+from base_scene import BaseScene
+from input.focus_manager import *
 
 # キャラクターシート作成画面をクラス化してみる
-class CharacterSheet:
+class CharacterSheet(BaseScene):
     def __init__(self, screen, root):
-        self.screen = screen
-        self.window_size = self.screen.get_size()
-        self.root = root
+        super().__init__(screen, root)
 
         # メニューボタン
-        self.menu_controller = MenuController(self.screen, self.root, self.set_state, save_enabled=False)
+        self.menu_controller = MenuController(self.screen, self.root, self.set_state, enableds=(False, True, False))
+        # テキストフレーム用ラベル
+        self.text_frame_label = TextFrameLabel(self.screen)
 
         self.selected_profession = None     # 選択中の職業
         self.is_pulldown_open = False       # プルダウン用のフラグ
@@ -61,13 +64,15 @@ class CharacterSheet:
         surface_rect = self.status_page.rect
         self.navigation = CharasheetNavigation(self.screen, surface_rect)
 
+        # キーボード操作用カーソル
+        self.cursor = VirtualCursor(self.screen)
+        self.use_virtual_cursor = False
+
         # 状態フラグ
         self.state = State.NONE
     
     # ページを表示する
     def draw_page(self):
-        if self.menu_controller.window_size != self.window_size:
-            self.menu_controller.update_item_position(self.screen)
         self.menu_controller.draw()
         current, current_rect = self.page_check(self.current_page)
         current_x = current_rect.x - self.slide_offset
@@ -75,10 +80,11 @@ class CharacterSheet:
 
         if self.is_sliding:
             target, target_rect = self.page_check(self.target_page)
-            target_x = self.window_size[0] - self.slide_offset if self.target_page > self.current_page else - self.window_size[0] - self.slide_offset
+            target_x = self.screen_size[0] - self.slide_offset if self.target_page > self.current_page else - self.screen_size[0] - self.slide_offset
             self.screen.blit(target, (target_x, target_rect.y))
 
         self.navigation.draw(self.current_page)
+        self.text_frame_label.draw()
 
     # どのページかを確認して必要な引数を入力する
     def page_check(self, page):
@@ -102,7 +108,10 @@ class CharacterSheet:
     # マウスオーバーイベント
     def handle_mouse_hover(self):
         # マウスオーバーでテキスト表示するよ
-        key = pygame.mouse.get_pos()
+        if self.use_virtual_cursor:
+            key = self.cursor.get_pos()
+        else:
+            key = pygame.mouse.get_pos()
         horver_text = None
 
         self.menu_controller.handle_mouse_hover(key)
@@ -114,7 +123,10 @@ class CharacterSheet:
             horver_text = self.profession_page.handle_mouse_hover(key, self.is_pulldown_open)
 
         if horver_text:
-            TextDraw(self.screen, horver_text)
+            self.text_frame_label.set_text(horver_text)
+        else:
+            self.text_frame_label.set_text("")
+            #TextDraw(self.screen, horver_text)
 
     # イベントハンドラ
     def handle_events(self):
@@ -242,16 +254,18 @@ class CharacterSheet:
             self.state = State.SAVE
 
     # 画面サイズ更新時にポジションを変更する
-    def update_item_position(self):
-        self.window_size = self.screen.get_size()
+    def update_item_position(self, screen):
+        super().update_item_position(screen)
+        create_frame(screen)
+        self.menu_controller.update_item_position(screen)
         # ステータスページをupdate
-        self.status_page.update_item_position(self.screen)
+        self.status_page.update_item_position(screen)
         # 職業ページをupdate
-        self.profession_page.update_item_position(self.screen, self.selected_hobby)
+        self.profession_page.update_item_position(screen)
         # 確認ページをupdate
-        self.confirm_page.update_item_position(self.screen)
+        self.confirm_page.update_item_position(screen)
         # ナビゲーションをupdate
-        self.navigation.update_item_position(self.screen, self.status_page.rect)
+        self.navigation.update_item_position(screen, self.status_page.rect)
 
     def update(self):
         create_frame(self.screen)
@@ -261,7 +275,7 @@ class CharacterSheet:
             self.slide_offset += self.slide_speed * direction
 
             # 1ページ分スライドしきったら
-            if abs(self.slide_offset) >= self.window_size[0]:
+            if abs(self.slide_offset) >= self.screen_size[0]:
                 self.current_page = self.target_page
                 self.slide_offset = 0
                 self.is_sliding = False

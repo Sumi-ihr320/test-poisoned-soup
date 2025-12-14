@@ -108,7 +108,7 @@
     ],
     "Pot_soup_to_bowl":[
         {"type":"time_passage", "value":2},
-        {"type":"sound", "name":"注ぐ", "path":"Pour.mp3"},
+        {"type":"sound", "name":"注ぐ"},
         {"type":"image_display", "image":"Soup.png"},
         {"type":"text", "text":"鍋の底に溜まっていた血を器に注いだ。", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_bowl_in_soup", "value":true},

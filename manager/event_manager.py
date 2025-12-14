@@ -1,15 +1,19 @@
 import re
 
 from constans import *
-from ui.ui_elements import CommandMenu, DiceRoll, Image
+from ui.ui_elements import CommandMenu, DiceRoll, Image, TextFrameLabel, ImageCache
+from ui.ui_panels import TextFramePanel
+from ui.ui_command import Command
+from ui.log_view import LogView
 from utils import *
-from .sound_manager import SoundManager
+from .render_manager import RenderManager
+from .sound_manager import sound_manager
 
 class EventManager:
-    def __init__(self, screen, player=None, girl=None, game_state=None, flags=None,
+    def __init__(self, screen, player=None, girl=None, game_state=None, flags=None, text_frame_panel=None, log_view=None,
                  next_scenario_call_back=None, move_to_room_call_back=None, room_new_view=None, set_state=None):
         self.screen = screen
-        self.window_size = self.screen.get_size()
+        self.screen_size = self.screen.get_size()
         self.player = player
         self.girl = girl
         self.game_state = game_state
@@ -22,83 +26,31 @@ class EventManager:
         self.room_new_view_call_back = room_new_view
         self.set_state_call_back = set_state
 
-        # サウンドマネージャー
-        self.sound_manager = SoundManager()
+        # テキスト表示関連
+        self.text_frame_label = TextFrameLabel(self.screen)
+        self.log_view = log_view if log_view else LogView(self.screen)
 
-        self.command_menu = None
-        self.item_image = None
+        # 画像表示用cache
+        self.image_cache = ImageCache()
 
-        # 少女の立ち絵
-        self.girl_image = None
+        # 表示関連
+        self.render_manager = RenderManager(self.screen)
 
         self.player_roll_result = None     # ダイスロールの結果
         self.girl_roll_result = None
         self.result_text = None             # 結果の表示テキスト
         self.dice_check_result = None       # ダイスロールの総合結果
         self.damage_point = None    # ダメージポイント
-        self.state_record = {}      # キャラクターの特殊状態の記録        self.blackout_index = 5
+        self.state_record = {}      # キャラクターの特殊状態の記録
 
-        self.blackout_index = 6         # ブラックアウト画像のインデックス
-        self.blackout_timer = None      # ブラックアウトのタイマー
-        self.blackout_phase = None      # ブラックアウトのフェーズ
-        self.blackout_wait = None       # ブラックアウトの待ち時間
-        self.blackout_done = False      # ブラックアウトの完了フラグ
         self.is_blackout_active = False  # ブラックアウトの状態フラグ
         self.next_after_black_out = {}    # ブラックアウトの後のステップ
 
-    # コマンドメニューの生成
-    def create_command_menu(self, commands):
-        if commands:
-            start_position = self.get_position()
-            self.command_menu = CommandMenu(self.screen, commands, start_position)
-
-    # 画像イメージの作成
-    def create_image(self, file_name):
-        size = 0.6 if "Memo" in file_name or file_name == "Book1" else (0.5 if "center-room_Light" in file_name else 0.35)
-        self.item_image = Image(self.screen, file_name, size, x="center", centery=200, line_flag=True, bg_flag=True)
-
-    # 少女の立ち絵の作成
-    def create_girl(self, state=None, position="right"):
-        if state:
-            file_name = f"Girl_{state}.png"
-        else:
-            file_name = "Girl.png"
-        percent_w, percent_h = RATIO[self.window_size]
-        scale = 0.6 * percent_h
-        frame_rect = get_frame_rect(self.screen)
-        x = 500 if position == "right" else (100 if position == "left" else "center")
-        if x != "center":
-            x = x * percent_w
-        self.girl_image = Image(self.screen, file_name, scale, x, frame_rect.top, position="bottom")
-
-    # コマンドメニューの表示位置を取得
-    def get_position(self):
-        #self.window_size = self.screen.get_size()
-        max_x, max_y = self.window_size[0] // 4 * 3, self.window_size[1] // 2      # これ以上端に配置すると見えなくなる
-
-        # コマンド表示の指標となる画像位置。クリック時画像があればそこを起点とする。
-        if self.item_image:
-            image_rect = self.item_image.rect
-
-            # 画像の右側にコマンドボタンを表示する。最大値以上になる場合は左側に配置する。
-            x = image_rect.right + 30 if (image_rect.right + 30) <= max_x else image_rect.x - 130
-            y = image_rect.y if image_rect.y <= max_y else image_rect.y - 50
-        else:
-            x, y = self.window_size[0]//2 + 120, 100
-
-        return (x, y)
-
     # シナリオから受け取ったイベントを進行する
     def handle_scenario_event(self, step):
-        # テキストを表示する
+        # テキストを表示する or 結果を表示する
         if step["type"] == "text" or step["type"] == "result_text":
             self.draw(step)
-            #text = step["text"]
-            #self.display_text(text)
-
-        # 結果を表示する
-        #elif step["type"] == "result_text":
-        #    self.draw(step)
 
         # 次のシナリオに進む
         elif step["type"] == "next_step":
@@ -136,25 +88,29 @@ class EventManager:
 
         # コマンドを表示する
         elif step["type"] == "interaction":
-            self.create_command_menu(step["interactions"])
+            commands = []
+            for cmd in step["interactions"]:
+                commands.append(Command(cmd["text"], cmd["next_scenario"]))
+            target = step.get("target", None)
+            self.render_manager.set_command_menu(commands, target)
 
         # 画像を表示する
         elif step["type"] == "image_display":
-            self.create_image(step["image"])
+            self.render_manager.show_item_image(step["image"])
 
         # 画像を非表示にする
         elif step["type"] == "image_hidden":
-            self.item_image = None
+            self.render_manager.hidden_item_image()
 
         # 少女の立ち絵を表示する
         elif step["type"] == "girl_display":
             state = step.get("state", None)
             position = step.get("position", "right")
-            self.create_girl(state, position)
+            self.render_manager.show_girl_image(state, position)
 
         # 少女の立ち絵を非表示にする
         elif step["type"] == "girl_hidden":
-            self.girl_image = None
+            self.render_manager.hidden_girl_image()
 
         # サウンドを鳴らす
         elif step["type"] == "sound":
@@ -461,7 +417,9 @@ class EventManager:
 
                 if character == self.player:
                     # 主人公が気絶したらブラックアウトする
-                    self.handle_black_out(wait_duration, recovery_time)
+                    self.next_after_black_out = self.render_manager.handle_black_out(wait_duration)
+                    self.game_state.time = recovery_time
+                    #self.handle_black_out(wait_duration, recovery_time)
                 else:
                     self.set_flag("girl", "faint", recovery_time)
                     self.set_flag("girl", "dice_check", False)
@@ -506,60 +464,25 @@ class EventManager:
                 self.to_callback_next_scenario(condition["next"])
                 break
 
-    # ブラックアウト処理
-    def handle_black_out(self, wait_duration, recovery_time):
-        # 画像の拡大率を計算する
-        parcent = RATIO[self.window_size][1]
-        scale = 0.2 * parcent
-        # 画像の表示位置を得る
-        room_rect = get_room_rect(self.screen)
-
-        # 徐々に黒になる画像0～5を用意する
-        image_paths = [f"to_black{i}.png" for i in range(6)]
-        self.blackout_images = []
-        for path in image_paths:
-            self.blackout_images.append(Image(self.screen, path, scale, centerx=room_rect.centerx, centery=room_rect.centery))
-        self.blackout_index = 5
-
-        # タイマー
-        self.blackout_timer = pygame.time.get_ticks()
-
-        # フェーズ
-        self.blackout_phase = "fade_out"
-
-        # 待ち時間
-        self.blackout_wait = wait_duration
-
-        # ブラックアウト完了フラグ
-        self.blackout_done = False
-
-        # UI表示のための状態フラグ
-        self.is_blackout_active = True
-
-        # ゲーム時間の進行処理
-        self.game_state.time = recovery_time
-
-        # 次ステップ遷移を予約しておく
-        self.next_after_black_out = {"type":"text", "text":f"しばらく経ったあとあなたは目を覚ました。", "progression":"click"}
-
     # サウンド処理
     def handle_sound(self, step):
         sound_name = step["name"]
-        if self.sound_manager:
-            if not self.sound_manager.sounds or (sound_name not in self.sound_manager.sounds):
-                self.sound_manager.load_sound(sound_name, step["path"], step.get("loop", False))
-            self.sound_manager.play(sound_name)
+        if sound_name in sound_manager.sounds:
+            sound_manager.play(sound_name)
+        else:
+            print(f"その名前のサウンドは登録されていません。{sound_name}")  # デバッグ用
 
     # テキストを表示するステップを作成して表示する
     def create_text_step(self, text):
         next_step = {"type":"text", "text":text, "progression":"click"}
         self.handle_scenario_event(next_step)
 
-    # 現在のテキストを描画する
-    def display_text(self, text):
+    # テキスト描画領域にテキストをセットする
+    def set_text(self, text):
         if "{" in text:
             text = self.process_text_template(text)
-        TextDraw(self.screen, text)
+        self.text_frame_label.set_text(text)
+        self.log_manager.append(text)
 
     # テンプレートにダイス結果等を表示
     def process_text_template(self, text_tamplate):
@@ -713,57 +636,6 @@ class EventManager:
             
             self.command_menu = None    # コマンドメニューを閉じる
 
-    # 少女がクリックされた際に実行
-    def handle_girl_click(self, pos):
-        if self.girl_image:
-            if self.girl_image.rect.collidepoint(pos):
-                pass
-        pass
-
     # 表示する
     def draw(self, step):
-        # ブラックアウトの処理
-        if self.is_blackout_active:
-            now = pygame.time.get_ticks()
-
-            if self.blackout_phase == "fade_out":
-                if now - self.blackout_timer > 100:
-                    self.blackout_index -= 1
-                    self.blackout_timer = now
-
-                    # 画像が最後の1枚になったら
-                    if self.blackout_index <= 0:
-                        self.blackout_phase == "black"
-                        self.blackout_timer = now
-
-                self.blackout_images[self.blackout_index].draw()
-            
-            elif self.blackout_phase == "black":
-                if now - self.blackout_timer > self.blackout_wait:
-                    self.blackout_phase = "fade_in"
-                    self.blackout_index = 0
-                    self.blackout_timer = now
-            
-            elif self.blackout_phase == "fade_in":
-                if now - self.blackout_timer > 100:
-                    self.blackout_index += 1
-                    self.blackout_timer = now
-                    if self.blackout_index >= len(self.blackout_images):
-                        self.is_blackout_active = False
-                        # ブラックアウトが終了したら目覚めのシナリオへ
-                        self.to_callback_next_scenario("Wake_up")
-                        return
-                self.blackout_images[self.blackout_index].draw()
-            return
-
-        # テキストを表示する
-        if step["type"] == "text":
-            self.display_text(step["text"])
-
-        # 結果を表示する
-        elif step["type"] == "result_text" and self.result_text:
-            self.display_text(self.result_text)
-        
-        # コマンドメニューを表示する
-        elif step["type"] == "interaction" and self.command_menu:
-            self.command_menu.draw()
+        self.render_manager.draw(step)

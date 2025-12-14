@@ -3,22 +3,11 @@ import pygame
 from constans import *
 
 class SoundManager:
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False  # 初期化フラグ
-        return cls._instance
-
     def __init__(self):
-        if not self._initialized:  # 初回のみ初期化
-            # サウンドミキサー初期化
-            pygame.mixer.init()
+        # サウンドミキサー初期化
+        pygame.mixer.init()
         
-            self.sounds = {}
-
-            self._initialized = True   # 初期化済みフラグを設定
+        self.sounds = {}
 
     # サウンドをロードして辞書に登録
     def load_sound(self, name, path, loop=False):
@@ -43,3 +32,5 @@ class SoundManager:
     # 全てのサウンドを停止
     def stop_all(self):
         pygame.mixer.stop()
+
+sound_manager = SoundManager()

@@ -9,34 +9,27 @@ class StatusPage(BacePage):
         self.status_data = status_data
 
         self.sex_button = None  # 性別ボタン
-        self.status_items = []  # ステータスのアイテム一覧
 
     def create_status_items(self):
-        percentage = RATIO[self.window_size]
-        font = self.fonts[0]
+        font_data = self.font_datas[0]
         for status, items in self.status_data.items():
-            item_x, item_y = self.position_calculation(items["x"], items["y"], percentage)
-            item = Status(self.surface, self.root, percentage, font, items["name"], status, items["view_name"], getattr(self.player, status),
-                        item_x, item_y, items["w"], items["h"], items["text"],
+            item = Status(self.screen, self, self.root, font_data, items["name"], status, items["view_name"], getattr(self.player, status),
+                        items["x"], items["y"], items["w"], items["h"], items["text"],
                         items["button_flag"], items["input_flag"], items["box_flag"], items["dice_text"])
             self.add_elements(item)
             if status == "sex":
-                self.sex_button = SexChange(self.surface, self.rect, percentage, font, items["view_name"], item_x, item_y, self.player.sex)
-
-    def position_calculation(self, x, y, percentage):
-        new_x = int(self.rect.x + (x * percentage[0]))
-        new_y = int(self.rect.y + (y * percentage[1]))
-        return new_x, new_y
+                self.sex_button = SexChange(self.screen, self, self.rect, font_data, items["view_name"], items["x"], items["y"], self.player.sex)
 
     def load_status_items(self):
-        if not self.status_items:   # すでにアイテムがあるか確認
+        if not self.elements:   # すでにアイテムがあるか確認
             self.create_status_items()
 
     # 画面サイズ変更時にポジション等を更新する
     def update_item_position(self, screen):
         super().update_item_position(screen)
-        self.status_items = []
-        self.load_status_items()
+        for item in self.elements:
+            item.update_item_position(screen, self)
+        self.sex_button.update_item_position(screen, self)
 
     def draw(self):
         surface, rect = super().draw()
@@ -45,17 +38,17 @@ class StatusPage(BacePage):
         return surface, rect
     
     def handle_mouse_hover(self, pos):
-        pos = self.pos_calculation(pos)
+        #pos = self.pos_calculation(pos)
         for item in self.elements:
             if item.button:
-                item.button.update(pos)
+                item.button.handle_mouse_hover(pos)
             text = item.handle_mouse_hover(pos)
             if text is not None:
                 return text
         return None
 
     def handle_click(self, pos):
-        pos = self.pos_calculation(pos)
+        #pos = self.pos_calculation(pos)
         if self.handle_sex_button(pos):
             return None
         else:
@@ -66,7 +59,7 @@ class StatusPage(BacePage):
                     item.input_process(self.player.EDU)
                     return item
                 # ダイスボタン
-                if item.button and item.button.update(pos, True):
+                if item.button and item.button.handle_click(pos):
                     return item
 
     # 性別ボタンを押したとき

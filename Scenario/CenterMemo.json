@@ -13,7 +13,7 @@
     ],
     "centerMemo_obj_true":[
         {"type":"image_display", "image":"centerMemo_objctive.png"},
-        {"type":"text", "text":"裏には\n～暖かい 人間の 血の スープ 冷めない 内に 召し上がれ～\nと書かれている。", "progression":"click"},
+        {"type":"text", "text":"裏には\n～暖かい 人間の 血の スープ\n 冷めない 内に 召し上がれ～\nと書かれている。", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "centerMemo_obj_false":[

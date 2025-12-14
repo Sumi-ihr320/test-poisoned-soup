@@ -6,6 +6,7 @@ from character_item import *
 
 #DISPLAY_SIZE = (800, 600)
 TITLE_TEXT = "毒入りスープ"
+BASE_SIZE = (800, 600)
 SIZE_MAP = {
     "800x600":  (800, 600),
     "1024x768": (1024, 768),
@@ -15,16 +16,18 @@ SIZE_MAP = {
     "フルスクリーン":()
 }
 RATIO = {
-    (800,600):(1,1),
-    (1024,768):(1.28, 1.28),
-    (1280,720):(1.6, 1.2),
-    (1280,960):(1.6, 1.6),
-    (1920,1080):(2.4, 1.8)
+    (800, 600):(1,1),
+    (1024, 768):(1.28, 1.28),
+    (1280, 720):(1.6, 1.2),
+    (1280, 960):(1.6, 1.6),
+    (1920, 1080):(2.4, 1.8)
 }
 
 # 色
 BLACK = (0,0,0)
 WHITE = (255,255,255)
+BLACK_ALPHA = (0,0,0,100)
+WHITE_ALPHA = (255,255,255,100)
 GRAY = (73,74,65)
 RED = (183,40,46)
 BLUE = (71,131,132)
@@ -41,7 +44,7 @@ SETTING_COLOR = (0,82,67)
 
 # キャラクターシート
 SHEET_COLOR = (189,183,107)
-SHEET_SIZE = (740, 375)
+SHEET_SIZE = (740, 370)
 SHEET_IMG_SIZE = (1600, 1152)
 SHEET_RECT = Rect(30,30,740,375)
 
@@ -125,8 +128,14 @@ class State(Enum):
     SAVE = 1
     LOAD = 2
     SETTING = 3
-    CLOSE = 4
+    LOG = 4
+    CLOSE = 5
 
+# インプットモードの管理フラグ
+class InputMode(Enum):
+    MOUSE = "mouse"
+    CURSOR = "cursor"
+    KEYBOARD = "keyboard"
 
 ITEM_LIST = {
     "white_robe": Armor("白いローブ"),
@@ -153,3 +162,18 @@ ITEM_LIST = {
     "bowl_in_soup": CharacterItem("赤いスープ", img_name="Soup.png"),
     "bowl_in_poison_soup": CharacterItem("調味料を入れたスープ", img_name="Soup_poison.png")
 }
+
+SOUND_LIST=[
+    {"name":"タイトル", "path":"arashinoyokan.mp3", "loop":True},
+    {"name":"選択", "path":"Choice.mp3", "loop":False},
+    {"name":"クリック", "path":"Click.mp3", "loop":False},
+    {"name":"カーソル移動", "path":"Move.mp3", "loop":False},
+    {"name":"鉄のドアを開ける", "path":"Open_the_door_01.mp3", "loop":False},
+    {"name":"木のドアを開ける", "path":"Open_the_door_02.mp3", "loop":False},
+    {"name":"古いドアを開ける", "path":"Open_the_old_door.mp3", "loop":False},
+    {"name":"鉄の扉をノック", "path":"Knock_the_iron_door.mp3", "loop":False},
+    {"name":"木の扉をノック", "path":"Knock_the_wood_door.mp3", "loop":False},
+    {"name":"鍵を開ける", "path":"Open_the_lock.mp3", "loop":False},
+    {"name":"足音1", "path":"footstep_01.mp3", "loop":False},
+    {"name":"注ぐ", "path":"Pour.mp3", "loop":False},
+]

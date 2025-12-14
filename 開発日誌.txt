@@ -508,3 +508,164 @@
 2025/7/19
 	virtual_cursor.pyの中身を記述
 	playingとtitleで仮想カーソルを動かせるように
+
+2025/7/23
+	titleでは仮想カーソルではなく上下TABキーで選択ができるようにしたい。
+	focus_manager.pyを作成
+	
+2025/7/26
+	focus_manager.pyにキーボードとマウスを切り替える関数を追加
+	input_mode_manager.pyを追加
+
+2025/7/30
+	Labelにカーソル移動音、クリック音を鳴らす設定を追加
+	sound_managerを修正
+	constansにSOUND_LISTを追加。titleですべての音源をロードする設定に
+
+2025/8/2
+	セーブ画面で設定データも保存するように追記
+	設定画面の音量設定用画像の作成
+	設定画面で保存されている音量データが反映されるように(変更はまだ)
+
+2025/8/6
+	inputフォルダを作成、input関連をまとめる
+	constansにInputModeを作成。
+	input_mode_managerに切り替えトグルと各モードかどうかの判断関数を作成
+	ui_elementsにuiクラスのスーパークラスUIElementを作成中
+
+2025/8/9
+	ui_elementsにUIElementとTextMixinとRectSettingMixinを作成
+
+2025/8/16
+	labelクラス、buttonクラス、imageクラス、TextMixinとRectSettingMixinの修正
+
+2025/8/21
+	SurfaceCacheMixin、class HasLabelMixinの作成
+	TextMixinの更新、InputBoxの変更(途中)
+
+2025/8/23
+	InputBoxの変更
+	PullDownの変更（途中）
+
+2025/8/27
+	PullDownの変更
+	util.pyにget_scaleを作成
+	ResizableMixinを作成（勉強中）
+/
+2025/8/30
+	ResizebleMixinに合わせてRectSettingMixinの更新
+	TextMixinをフォント指定ではなくフォントデータ指定にしてフォントサイズ変更機能をTextMixin内でできるように
+	Label、Button、Imageにupdate_item_positionを追加
+
+2025/9/3
+	Label、Button、Image、InputBox、Pulldownの手直し
+	base_scene.pyの作成
+	title.py、setting.py、save_or_load.pyの手直し
+
+2025/9/6
+	save_or_load.pyの手直し
+	character_sheet.py、base_page.py、status_page.py、status.pyの手直し
+
+2025/9/10
+	UIElementにparentを追加
+	各UIアイテムの手直し
+	base_page.py、status_page.py、profession_page.py、status.py、profession.py、confirm_page.pyの手直し
+
+2025/9/13
+	confirm_page.py、opening.py、menu.pyの手直し
+
+2025/9/17
+	TextFrameLabelの作成
+
+2025/9/25
+	ColorTextMixinの作成
+	log_view.py、log_manager.pyの作成
+
+2025/10/8
+	TextMixinをTextBaseに変更、RectSettingMixinをRectSettingBaseに変更
+
+2025/10/11
+	parse_color_tagsをutils.pyに追加（ui_elementsのColorTextMixinから変更）
+	SurfaceCacheを作成(Mixinではない形に)
+
+2025/10/15
+	RichTextRendererを作成
+
+2025/10/18
+	TextFrameLabelの書き換え
+	
+2025/10/22
+	LogViewクラスの作成
+	TextFrameLabelに基づく様々な修正
+
+2025/10/25
+	character_sheetの調整からのuiアイテム微調整
+
+2025/10/30
+	confirm_pageの修正
+	ImageCache作成、それに伴うImageクラスの修正
+	room.py、room_manager.pyの修正
+	event_managerの修正
+	playing.pyにlog_view非表示用のコールバック関数を作成
+	log_viewに閉じるボタン画像追加
+
+2025/11/1
+	focus_managerの変更
+
+2025/11/5
+	room、base_page等にget_global_offsetを追加
+	util.pyにpos_calculationを追加
+
+2025/11/7
+	focus_managerの修正
+	virtual_cursorの修正(途中)
+
+2025/11/8
+	virtual_cursorの修正
+	pos_calculationの修正 => parent_check、pos_to_local、pos_to_globalに変更
+	それにともなうUIElementの修正
+	
+2025/11/12
+	Imageクラスにset_positionを追加
+	virtual_cursorの修正
+	focus_managerの修正
+
+2025/11/15
+	focus_managerの修正
+	virtual_cursorの修正
+	titleにfocus_managerを入れようとしたけどまだ
+
+2025/11/19
+	UIElementにsound_typeを追加、handle_clickのサウンド選択を引数からself.sound_typeを参照に変更
+	focus_managerの修正
+
+2025/11/22
+	TextFramePanelを作成
+	utils.pyからcreate_text_frameとget_frame_rectを削除（text_frame_panelに吸収）
+	menu.pyをtext_frame_panelに吸収予定
+
+2025/11/25
+	text_frame_panel.pyをui_panels.pyに変更
+	ui_panels.pyにMenuButtonクラスを作成
+	ui_panels.pyにMenuBarクラスを作成（途中）
+
+2025/12/5
+	MenuBarクラスの作成
+	TextFramePanelを修正
+
+2025/12/6
+	TextFramePanelを修正
+	title、openingの修正
+
+2025/12/9
+	event_managerの修正
+
+2025/12/10
+	event_managerの機能をrender_managerに分離
+
+2025/12/12
+	render_managerの作成
+
+2025/12/13
+	CommandMenuクラスを分離しui_command.pyを作成。commandsをdataclassに変更
+	render_managerの作成続き

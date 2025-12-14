@@ -76,7 +76,7 @@
          ]}
     ],
     "east-room_girl_no_meet_to_meet":[
-        {"type":"sound", "name":"足音", "path":"footstep_01.mp3"},
+        {"type":"sound", "name":"足音1"},
         {"type":"time_passage", "value":2},
         {"type":"girl_display", "state":"gun_dark", "position":"center"},
         {"type":"text", "text":"周囲が暗くて相手のことがよく見えない。", "progression":"click"},
@@ -101,7 +101,7 @@
     ],
     "east-room_listen_success": [
         {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_listen", "value":true},
-        {"type":"sound", "name":"足音", "path":"footstep_01.mp3"},
+        {"type":"sound", "name":"足音1"},
         {"type":"text", "text":"誰かの足音が聞こえる。\nその足音はこちらに近づいて来ているようだ。", "progression":"click"},
         {"type":"interaction",
          "interactions":[

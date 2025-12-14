@@ -8,12 +8,12 @@ from ui.ui_elements import *
 class Status:
     MAX_STATUS_VALUE = 99
 
-    def __init__(self, screen, root, percentage, font, name, status_name, label_name, status, x, y, w, h, text="", button_flag=True, input_flag=True, box_flag=True, dice_text=""):
+    def __init__(self, screen, parent, root, font_data, name, status_name, label_name, status, x, y, w, h, text="", button_flag=True, input_flag=True, box_flag=True, dice_text=""):
         self.screen = screen
+        self.parent = parent
         self.root = root
 
-        self.font = font
-        self.percentage = percentage
+        self.font_data = font_data
 
         self.name = name                # ステータスの名前
         self.status_name = status_name  # CharaStatusでの名前
@@ -38,14 +38,14 @@ class Status:
 
     # ラベル作成
     def create_label(self, x, y):
-        self.status_label = Label(self.screen, self.font, self.label_name, x, y)    # ラベル作成
+        self.status_label = Label(self.screen, self.font_data, self.label_name, x, y, parent=self.parent)    # ラベル作成
 
     # インプットボックスを作成
     def create_input(self, x, y, w, h):
         # ステータスラベルの隣
         input_x = x + self.status_label.rect.w + 5
         input_y = y - 4     # ラベルより大きいので少し上に
-        self.input = InputBox(self.screen, self.font, Rect(input_x, input_y, w, h), str(self.status), self.input_flag)
+        self.input = InputBox(self.screen, self.font_data, Rect(input_x, input_y, w, h), str(self.status), self.input_flag, parent=self.parent)
 
     # ダイスボタンを作成
     def create_dice_button(self):
@@ -53,12 +53,22 @@ class Status:
         rect = self.input.rect.copy() if self.input else self.status_label.rect.copy()
         # その幅分隣
         rect.x = rect.x + rect.w + 5
-        self.button = Button(self.screen, self.font, self.dice_text, rect, self.dice_process)
+        self.button = Button(self.screen, self.font_data, self.dice_text, rect, self.dice_process, parent=self.parent)
+
+    def update_item_position(self, screen, parent):
+        self.screen = screen
+        self.parent = parent
+        if self.status_label:
+            self.status_label.update_item_position(screen, parent)
+        if self.input:
+            self.input.update_item_position(screen, parent)
+        if self.button:
+            self.button.update_item_position(screen, parent)
 
     def draw(self):
         self.status_label.draw()
         if self.input:
-            self.input.draw_box()
+            self.input.draw()
         if self.button:
             self.button.draw()
 
@@ -104,52 +114,56 @@ class Status:
         self.input.update_label(f"{dice.result}")
 
     def handle_mouse_hover(self, pos):
-        if self.status_label.rect.collidepoint(pos):
+        if self.status_label.collidepoint(pos):
             return self.text
-        elif self.input and self.input.rect.collidepoint(pos):
+        elif self.input and self.input.collidepoint(pos):
             return self.text
-        elif self.button and self.button.rect.collidepoint(pos):
+        elif self.button and self.button.collidepoint(pos):
             return "ダイスでランダムに値を決めることができます"
         return None
 
 # 選んだ性別によって画像が変わるようにするよ
 class SexChange:
-    def __init__(self, screen, sheet_rect, percentage, font, title_text, x, y, flag):
+    def __init__(self, screen, parent, sheet_rect, font_data, title_text, x, y, flag):
         self.screen = screen
+        self.parent = parent
         self.sheet_rect = sheet_rect
-        self.font = font
-
-        self.percentage = percentage
+        self.font_data = font_data
 
         self.title_text = title_text
         self.title_x, self.title_y = x, y
         self.flag = flag
 
-        # 性別ボタン配置
+        self.push_color = (106,93,33)   # ボタンを押したときの色
+        # 性別ボタン作成
+        self.create_button()
+        # ボタンを配置
         self.button_placement()
+
+        self.image_cache = ImageCache()
 
         # 画像を作成
         self.man_image = self.create_image("man")
         self.woman_image = self.create_image("woman")
         self.neuter_image = self.create_image("neuter")
+        self.image_list = [self.man_image, self.woman_image, self.neuter_image]
 
     # 性別ボタンの配置
     def button_placement(self):
-        # フラグをman, woman, neuterにする
-        man_flag, woman_flag, neuter_flag = self.flag_check(self.flag)
+        font = pygame.font.Font(self.font_data[0], self.font_data[1])
 
         # 性別欄のテキストの位置
-        text_width = self.font.size(self.title_text)[0]
-        start_width = self.font.size(self.title_text[:3])[0]
-        end_width = self.font.size(self.title_text[-1])[0]
+        text_width = font.size(self.title_text)[0]
+        start_width = font.size(self.title_text[:3])[0]
+        end_width = font.size(self.title_text[-1])[0]
 
         # 配置したいスペースの幅
         text_max_size = text_width - (start_width + end_width)
 
         # 各ラベルの幅
-        man_width = self.font.size("男")[0]
-        woman_width = self.font.size("女")[0]
-        neuter_width = self.font.size("その他")[0]
+        man_width = font.size("男")[0]
+        woman_width = font.size("女")[0]
+        neuter_width = font.size("その他")[0]
 
         # ボタンの全幅
         total_button_width = man_width + woman_width + neuter_width
@@ -159,34 +173,28 @@ class SexChange:
 
         # 最初のボタンの表示位置
         text_x = self.title_x + start_width + spacing
-        self.man = self.create_button("男", text_x, self.title_y, man_flag)
-
-        text_x += man_width + spacing
-        self.woman = self.create_button("女", text_x, self.title_y, woman_flag)
-
-        text_x += woman_width + spacing
-        self.neuter = self.create_button("その他", text_x, self.title_y, neuter_flag)
+        for label in self.label_list:
+            label.x = text_x
+            label.y = self.title_y
+            label.rect.topleft = (text_x, self.title_y)
+            text_x += man_width + spacing
 
     # ボタン作るよ
-    def create_button(self, text, x, y, flag):
-        push_color = (106,93,33)
-        no_push_color = None
-        
-        # 背景色と文字色をフラグによって変える
-        background = push_color if flag else no_push_color
-        color = WHITE if flag else BLACK
-        return Label(self.screen, self.font, text, x, y, color=color, background=background)
+    def create_button(self):
+        self.man = Label(self.screen, self.font_data, "男", parent=self.parent)
+        self.woman = Label(self.screen, self.font_data, "女", parent=self.parent)
+        self.neuter = Label(self.screen, self.font_data, "その他", parent=self.parent)
+        self.label_list = [self.man, self.woman, self.neuter]
 
     # 画像作るよ
     def create_image(self, flag):
-        w_percent, h_percent = self.percentage
-        image_x = (self.sheet_rect.x + 10) * w_percent
-        image_y = (self.sheet_rect.y + 10) * h_percent
-        img_siz = 0.5 * h_percent
+        image_x = 10
+        image_y = 10
+        img_siz = 0.5
 
         img_path = f"silhouette_{flag}.png"
         
-        return Image(self.screen, img_path, img_siz, image_x, image_y, line_flag=True, bg_flag=True, line_width=2)
+        return Image(self.screen, img_path, scale=img_siz, x=image_x, y=image_y, line_flag=True, bg_flag=True, line_width=2, parent=self.parent)
 
     # どれが選択されているかのフラグチェック
     def flag_check(self, flag):
@@ -208,13 +216,24 @@ class SexChange:
     # 性別が変わった時にボタンの状態を更新する
     def update_sex(self, flag):
         self.flag = flag
-        self.button_placement()
+
+    def update_item_position(self, screen, parent):
+        self.screen = screen
+        self.parent = parent
+        for label in self.label_list:
+            label.update_item_position(screen, parent)
+        for image in self.image_list:
+            image.update_item_position(screen, parent)
 
     # 描画するよ
     def draw(self):
-        self.man.draw()
-        self.woman.draw()
-        self.neuter.draw()
+        sex_dict = {"男":"man",
+                    "女":"woman",
+                    "その他":"neuter"}
+        for label in self.label_list:
+            flag = True if sex_dict[label.texts[0]] == self.flag else False
+            label.draw(forcused=flag, text_color=WHITE, back_color=self.push_color)
+        
         if self.flag == "man":
             self.man_image.draw()
         elif self.flag == "woman":

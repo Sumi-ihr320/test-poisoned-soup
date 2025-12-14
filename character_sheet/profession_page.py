@@ -13,22 +13,23 @@ class ProfessionPage(BacePage):
 
     def load_selecter(self, selected_hobby):
         # 職業選択画面
-        self.prof_selecter = ProfessionSelecter(self.surface, self.rect, self.window_size, self.fonts)
+        self.prof_selecter = ProfessionSelecter(self.screen, self, self.rect, self.font_datas)
 
         # 趣味選択画面
-        self.hobby_selecter = HobbySelecter(self.surface, selected_hobby, self.fonts, self.prof_selecter.rect)
+        self.hobby_selecter = HobbySelecter(self.screen, self, selected_hobby, self.font_datas, self.prof_selecter.rect)
 
-    def update_item_position(self, screen, selected_hobby):
+    def update_item_position(self, screen):
         super().update_item_position(screen)
-        self.load_selecter(selected_hobby)
+        self.prof_selecter.update_item_position(screen, self, self.rect)
+        self.hobby_selecter.update_item_position(screen, self)
         
     def draw(self, selected_profession, is_pulldown_open):
         surface, rect = super().draw()
         if self.prof_selecter:
             self.prof_selecter.draw()
         if selected_profession:
-            selected_profession.image_draw(is_selected=True)
-        self.hobby_selecter.draw_item(is_pulldown_open)
+            selected_profession.draw(is_selected=True)
+        self.hobby_selecter.draw(is_pulldown_open)
         return surface, rect
 
     def handle_mouse_hover(self, pos, is_pulldown_open):
@@ -43,10 +44,10 @@ class ProfessionPage(BacePage):
         return None
     
     def handle_click(self, pos, is_pulldown_open, selected_profession, selected_hobby):
-        pos = self.pos_calculation(pos)
+        #pos = self.pos_calculation(pos)
         # プルダウンのクリック処理
         if self.hobby_selecter.pull.collidepoint(pos):
-            self.sound_manager.play("クリック")
+            #self.sound_manager.play("クリック")
             is_pulldown_open = not is_pulldown_open
             print(f"is_pulldown_open:{is_pulldown_open}")
 

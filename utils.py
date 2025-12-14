@@ -36,69 +36,44 @@ def create_size_tkinter(root):
     y = (sh - h) // 2
     return f"+{x}+{y}"
 
-# フレームの作成
-def create_frame(screen):
-    frame_rect = get_frame_rect(screen)
-    pygame.draw.rect(screen, WHITE, frame_rect, 3)
-    # メニューフレーム
-    #pygame.draw.rect(screen, WHITE, MENU_FRAME_RECT,3)
-
-# テキストフレームのrectを割り出す
-def get_frame_rect(screen):
-    window_size = screen.get_size()
-    frame_w, frame_h = get_new_size(window_size, (FRAME_SIZE))
-    frame_x = (window_size[0] // 2) - (frame_w // 2)
-    frame_y = window_size[1] - (frame_h + 30)
-
-    return Rect(frame_x, frame_y, frame_w, frame_h)
-
 # 部屋画像のrectを算出する
-def get_room_rect(screen):
+def get_room_rect(screen, frame_rect):
     window_size = screen.get_size()
     room_size = get_new_size(window_size, SHEET_SIZE, True)
     surface = pygame.Surface(room_size)
 
     window_rect = screen.get_rect()
-    frame_rect = get_frame_rect(screen)
     surface_rect = surface.get_rect(centerx=window_rect.centerx, bottom=frame_rect.top - 20)
     return surface_rect
 
-# 現在のウィンドウサイズから新しいサイズを割り出す
-def get_new_size(window_size, item_size, not_change_ratio=False):
-    w_percent, h_percent = RATIO[window_size]
+# 比率を取得する
+def get_scales(screen_size):
+    base_w, base_h = BASE_SIZE
+    cur_w, cur_h = screen_size
+    scale_x = cur_w / base_w
+    scale_y = cur_h / base_h
+    aspect_scale = min(scale_x, scale_y)
+    return scale_x, scale_y, aspect_scale
+
+# 現在のサイズから新しいサイズを割り出す
+def get_new_size(screen_size, item_size, not_change_ratio=False):
+    scale_x, scale_y, aspect_scale = get_scales(screen_size)
     if not_change_ratio:
-        new_size = (int(item_size[0] * h_percent), int(item_size[1] * h_percent))
+        new_size = (int(item_size[0] * aspect_scale), int(item_size[1] * aspect_scale))
     else:
-        new_size = (int(item_size[0] * w_percent), int(item_size[1] * h_percent))
+        new_size = (int(item_size[0] * scale_x), int(item_size[1] * scale_y))
     return new_size
 
 # フォントサイズを計算して設定する
-def setting_font(font_path, font_size, window_size):
-    h_percent = RATIO[window_size][1]
-    new_size = int(font_size * h_percent)
+def setting_font(font_path, font_size, screen_size):
+    _, scale_y, _ = get_scales(screen_size)
+    new_size = int(font_size * scale_y)
     return pygame.font.Font(font_path, new_size)
 
-# テキストフレームに文字を表示するよ
-def TextDraw(screen, text):
-    window_size = screen.get_size()
-    # フォントの設定
-    font = setting_font(FONT_PATH, FONT_SIZ, window_size)
-    # フレームの位置を得る
-    frame_rect = get_frame_rect(screen)
-
-    texts = []
-    x, y = frame_rect.x + 10, frame_rect.y + 10
-    texts = text.splitlines()
-    for txt in texts:
-        RendarText(screen, txt, font, (x, y))
-        y += 25
-
-# タグを使って色を付けられるようにする。
-def RendarText(screen, text, font, pos, default_color=WHITE):
-    # <color=color_name>～<color/> を解析して部分的に色を変える
-    x, y = pos
-    color = default_color
+# タグで色を解析してsegmentを返す
+def parse_color_tags(text, default_color=WHITE):
     pattern = re.compile(r"(.*?)<color=([\w]+)>(.*?)<color/>(.*)")
+    segments = []
 
     while text:
         match = pattern.match(text)
@@ -107,25 +82,38 @@ def RendarText(screen, text, font, pos, default_color=WHITE):
 
             # タグの前の部分
             if befor:
-                rendered = font.render(befor, True, color)
-                screen.blit(rendered, (x, y))
-                x += rendered.get_width()
+                segments.append((befor, default_color))
 
             # タグの中の部分
-            if new_color in COLOR_MAP:
-                new_color = COLOR_MAP[new_color]    # 色を変更
-            rendered = font.render(colored_text, True, new_color)
-            screen.blit(rendered, (x, y))
-            x += rendered.get_width()
+            new_color = COLOR_MAP.get(new_color, default_color)    # 色を変更
+            
+            segments.append((colored_text, new_color))
 
             # タグの後の部分 次のループで描画
             text = after
 
         else:
             # タグが無い場合そのまま描画
-            rendered = font.render(text, True, color)
-            screen.blit(rendered, (x, y))
+            segments.append((text, default_color))
             break
+    return segments
+
+# parentを確認してオフセットを取得する
+def parent_check(parent):
+    if parent is not None:
+        ox, oy = parent.get_global_offset()
+        return ox, oy
+    return 0, 0
+
+# posをオフセットを確認してローカル座標に変換する
+def pos_to_local(pos, parent):
+    ox, oy = parent_check(parent)
+    return (pos[0] - ox, pos[1] - oy)
+
+# posをオフセットを確認してグローバル座標に変換する
+def pos_to_global(pos, parent):
+    ox, oy = parent_check(parent)
+    return (pos[0] + ox, pos[1] + oy)
 
 # テキストファイルのロード
 def load_text(file_path):

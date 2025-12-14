@@ -10,140 +10,494 @@ from pygame.locals import *
 
 from constans import *
 from utils import *
-from manager.sound_manager import SoundManager
+from manager.sound_manager import sound_manager
 
-# ラベル
-class Label:
-    def __init__(self, screen, font, text, x=0, y=0, centerx=None, centery=None, ofset=(0, 0), position="left", color=BLACK, background=None):
+# 各エレメントの基礎となるもの(基礎クラス)
+class UIElement:
+    def __init__(self, screen, parent=None, sound_type="click", row=0, col=0, focusable=False, **kwargs):
         self.screen = screen
-        self.font = font
-        self.text = text
+        self.screen_size = screen.get_size()
 
-        self.ofset = ofset
-        self.color = color
-        self.background = background
-        self.position = position
+        self.parent = parent
 
-        # 画面サイズを取得（初期サイズ）
-        self.screen_width, self.screen_height = self.screen.get_size()
+        self.parent_surface = parent.surface if parent is not None else screen
 
-        # ラベルの描画領域を作成
-        self.surface = None
         self.rect = None
-        self.create_label(x, y, centerx, centery)
 
-    # ラベルを作る
-    def create_label(self, x=None, y=None, centerx=None, centery=None):
-        self.surface = self.font.render(self.text, True, self.color, self.background)
-        self.set_position(x, y, centerx, centery, self.position)
+        self.sound_type = sound_type
 
-    # 表示位置を変更する
-    def set_position(self, x=None, y=None, centerx=None, centery=None, position="left"):
-        ox, oy = self.ofset
-        if position == "right":
-            rect = self.surface.get_rect(right=x-ox, top=y+oy)
-        else:
-            rect = self.surface.get_rect(left=x+ox, top=y+ox)
+        self.row = row
+        self.col = col
+        self.focusable = focusable
 
-        if centerx:
-            rect.centerx = centerx
-        if centery:
-            rect.centery = centery
+        self.hovered = False
+        self.focused = False
+        super().__init__(**kwargs)
 
-        self.rect = rect
+    # フォーカス制御 ------------------------------------------
+    def set_focus(self, value: bool):
+        self.focused = value
+        self.on_focus() if value else self.on_blur()
 
-    # ラベルを描画する
+    # フォーカスされた時の処理（継承先でオーバーライド可能）
+    def on_focus(self):
+        self.focused = True
+
+    # フォーカスが外れた時の処理（継承先でオーバーライド可能）
+    def on_blur(self):
+        self.focused = False
+
+    def is_focusable(self):
+        return self.focusable
+    
+    # 決定音を鳴らす
+    def on_dicide(self):
+        if self.sound_type == "click":
+            sound_manager.play("クリック")
+        elif self.sound_type == "select":
+            sound_manager.play("選択")
+    
+    # ホバー制御 ------------------------------------------
+    def set_hover(self, value: bool):
+        self.hovered = value
+
+    # 描画・更新 -------------------------------------------
+    # UI描画処理 -- 継承先で実装
     def draw(self):
-        # 必要に応じて再描画をできる
-        surface = self.font.render(self.text, True, self.color, self.background)
-        self.screen.blit(surface, self.rect)
+        raise NotImplementedError
 
-    def update_text(self, new_text):
-        self.text = new_text
-        self.draw()
+    # UI更新処理（キー入力やマウス操作の処理）
+    def update(self):
+        pass
 
-    def set_background_color(self, color):
-        self.background = color
-        self.draw()
-        
+    # 衝突判定 ---------------------------------------------
     # 指定した点が描画内かをチェック
     def collidepoint(self, pos):
-        return self.rect.collidepoint(pos)
+        return self.rect.collidepoint(pos_to_local(pos, self.parent))
     
-# ボタン作成をクラス化 やってみた     (chatGPT修正)
-class Button:
-    def __init__(self, screen, font, text, rect, on_click=None, text_color=BLACK, in_color=WHITE, out_color=GRAY, on_color=BLUE):
+    # 中心点を取得
+    def get_center(self):
+        return pos_to_global(self.rect.center, self.parent)
+
+    # イベント系 -------------------------------------------
+    # マウスクリックやホバーの処理（必要に応じてオーバーライド）
+    def handle_mouse_event(self, event):
+        pass
+
+    # マウスオーバー時に音を鳴らす
+    def handle_mouse_hover(self, pos):
+        hover = self.collidepoint(pos)
+        if hover and not self.hovered:  # 初めてホバーした時
+            sound_manager.play("カーソル移動")
+        self.hovered = hover
+
+    # キー入力処理（必要に応じてオーバーライド）
+    def handle_key_event(self, event):
+        pass
+
+    # クリックした時にはクリック音を鳴らす
+    def handle_click(self, pos):
+        if self.collidepoint(pos):
+            self.on_dicide()
+            return True
+        return False
+    
+    def update_item_position(self, screen, parent=None):
         self.screen = screen
-        self.font = font
-        self.text = text
-        self.texts = self.text.splitlines()
+        self.screen_size = screen.get_size()
+        self.parent = parent
+        self.parent_surface = parent.surface if parent is not None else screen
+
+# surfasceをキャッシュに保存しそこから取ってくるクラス
+class SurfaceCache:
+    def __init__(self):
+        self._cache = {}
+
+    def get_surface(self, font, text, color, back_color=None):
+        key = (id(font), text, color, back_color)
+        surf = self._cache.get(key)
+        if surf is None:
+            surf = font.render(text, True, color, back_color)
+            self._cache[key] = surf
+        return surf
+
+    def clear(self):
+        self._cache.clear()
+
+# テキスト表示クラス
+class TextBase:
+    def __init__(self, font_data, text, text_color=BLACK, background_color=None, **kwargs):
+        self.font_path = font_data[0]
+        self.font_size = font_data[1]
+        self.font = pygame.font.Font(self.font_path, self.font_size)
+
+        self.cache = SurfaceCache()
+
+        self.texts = text.splitlines()
+        self.text_color = text_color
+        self.background_color = background_color
+
+        #self.update_text_surface()
+        super().__init__(**kwargs)
+
+    def update_text_surface(self, color=None, back_color=None):
+        if color is None:
+            color = self.text_color
+        if back_color is None:
+            back_color = self.background_color
+        self.text_surfaces = []
+        self.max_width, self.max_height = 0, 0
+        for text in self.texts:
+            surface = self.cache.get_surface(self.font, text, color, back_color)
+            self.text_surfaces.append(surface)
+            width, height = surface.get_size()
+            if self.max_width < width:
+                self.max_width = width
+            self.max_height += height
         
+    def set_text(self, text):
+        self.texts = text.splitlines()
+        self.update_text_surface()
+
+    def set_text_color(self, color):
+        self.text_color = color
+        self.update_text_surface()
+
+    def set_background_color(self, color):
+        self.background_color = color
+        self.update_text_surface()
+
+    def set_font(self, new_font):
+        self.font = new_font
+        self.update_text_surface()
+
+    def resize_font(self, screen_size):
+        self.font = setting_font(self.font_path, self.font_size, screen_size)
+        self.update_text_surface()
+
+# サイズ変更するmixin
+class ResizableMixin:
+    def __init__(self, **kwargs):
+        self.bace_rect = None   # 初期配置（元サイズ）
+        super().__init__(**kwargs)
+    
+    def set_bace_rect(self, rect):
+        if self.bace_rect is None:
+            self.bace_rect = rect.copy()
+
+    def resize(self, screen_size, anchor=("left", "top"), scale_mode="free"):
+        """
+        anchor: 固定する基準点（left, right, center / top, bottom, center）
+        scale_mode: free→縦横別々, aspect→アスペクト比固定 
+        """
+        if not self.bace_rect:
+            return None
+        
+        scale_x, scale_y, aspect_scale = get_scales(screen_size)
+
+        if scale_mode == "aspect":
+            sx = sy = aspect_scale
+        else:
+            sx, sy = scale_x, scale_y
+
+        new_rect = pygame.Rect(0, 0, int(self.bace_rect.w * sx), int(self.bace_rect.h * sy))
+
+        if anchor[0] == "center":
+            new_rect.centerx = int(self.bace_rect.centerx * sx)
+        elif anchor[0] == "right":
+            new_rect.right = int(self.bace_rect.right * sx)
+        else:
+            new_rect.x = int(self.bace_rect.x * sx)
+
+        if anchor[1] == "center":
+            new_rect.centery = int(self.bace_rect.centery * sy)
+        elif anchor[1] == "bottom":
+            new_rect.bottom = int(self.bace_rect.bottom * sy)
+        else:
+            new_rect.y = int(self.bace_rect.y * sy)
+
+        return new_rect
+
+# rect変更できるクラス
+class RectSettingBase(ResizableMixin):
+    def __init__(self, x=0, y=0, centerx=None, centery=None, anchor=("left", "top"), **kwargs):
+        self.x = x
+        self.y = y
+        self.centerx = centerx
+        self.centery = centery
+        self.anchor = anchor
+        super().__init__(**kwargs)
+
+    def set_rect(self, rect):
+        if self.x == "center":
+            self.centerx = self.parent_surface.get_rect().centerx
+        
+        if self.centerx:
+            rect.centerx = self.centerx
+        
+        else:
+            if self.anchor[0] == "right":
+                rect.right = self.x
+            else:
+                rect.left = self.x
+
+        if self.y == "center":
+            self.centery = self.parent_surface.get_rect().centery
+
+        if self.centery:
+            rect.centery = self.centery
+        else:
+            if self.anchor[1] == "bottom":
+                rect.bottom = self.y
+            else:
+                rect.top = self.y
+        return rect
+
+# ラベル
+class Label(UIElement, RectSettingBase, TextBase):
+    def __init__(self, screen, font_data, text, x=0, y=0, centerx=None, centery=None, anchor=("left", "top"), text_color=BLACK, background_color=None, sound_type="click", row=0, col=0, focusable=None, parent=None, **kwargs):
+        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, font_data=font_data, text=text, x=x, y=y, centerx=centerx, centery=centery, anchor=anchor, text_color=text_color, background_color=background_color, **kwargs)
+        self.update_text_surface()
+
+    def update_text_surface(self, color=None):
+        super().update_text_surface(color)
+        self.rect = Rect(self.x, self.y, self.max_width, self.max_height)
+        self.rect = self.set_rect(self.rect)
+        self.set_bace_rect(self.rect)
+
+    # ラベルを描画する
+    def draw(self, type="box", text_color=None, back_color=WHITE, line_bold=1, new_rect=None):
+        # マウスオーバー時背景に四角を描く
+        if self.hovered or self.focused:
+            rect = new_rect if new_rect else self.rect
+            if type == "box":
+                pygame.draw.rect(self.parent_surface, back_color, rect)
+            elif type == "line":
+                pygame.draw.rect(self.parent_surface, back_color, rect, line_bold)
+
+        # マウスオーバー時文字色を変える(入力があれば)
+        color = self.text_color if not self.hovered else (text_color if text_color else self.text_color)
+        self.update_text_surface(color)
+
+        # 必要に応じて再描画をできる
+        self.draw_text()
+
+    def draw_text(self):
+        current_y = self.rect.y
+        for surface in self.text_surfaces:
+            if self.anchor[0] == "right":
+                text_rect = surface.get_rect(topright=(self.rect.right, current_y))
+            else:
+                text_rect = surface.get_rect(topleft=(self.rect.x, current_y))
+            self.parent_surface.blit(surface, text_rect)
+            current_y += text_rect.h + 2
+
+    # スクリーンサイズ変更によるアップデート
+    def update_item_position(self, screen, parent=None):
+        super().update_item_position(screen, parent)
+        self.rect = self.resize(self.screen_size)
+        self.resize_font(self.screen_size)
+
+# 高度なテキスト表示
+class RichTextRenderer:
+    def __init__(self, surface_cache):
+        self.cache = surface_cache
+        pass
+
+    # テキストを色分けや画面幅などで行を変えたりいろいろして行ごとの塊を作る
+    def layout_paragraphs(self, paragraphs, font, max_width, default_color=WHITE):
+        """
+        paragrapths: list[str]  (各段落は改行で分けられたもの)
+        戻り値: lines: list of [(text, color, x), ...] (行ごと)
+        """
+        lines = []
+        line_h = font.get_height()
+        for para in paragraphs:
+            segs = parse_color_tags(para)
+            cur_line = []
+            cur_x = 0
+
+            for seg_text, color in segs:
+                # 優先は単語単位で折り返す
+                words = re.split(r'(\s+)', seg_text)    # 空白も保持
+                for w in words:
+                    if w == "":
+                        continue
+                    
+                    # 幅チェック: すでに cur_x がある時の幅
+                    test_w = self.cache.get_surface(font, w, color).get_width()
+                    if cur_x + test_w < max_width or cur_x == 0:
+                        # そのまま追加 (同じ色はマージせずチャンクとして追加)
+                        cur_line.append((w, color, cur_x))
+                        cur_x += test_w
+                    else:
+                        # 改行してから入れる
+                        lines.append(cur_line)
+                        cur_line = []
+
+                        # word が長すぎて max_width に収まらない => 文字ごとに分割
+                        if test_w > max_width:
+                            # 文字単位で折る(単語が長い場合)
+                            buf = ""
+                            buf_x = 0
+                            for ch in w:
+                                test = buf + ch
+                                tw = self.cache.get_surface(font, test, color).get_width()
+                                if buf_x + tw <= max_width or buf == "":
+                                    buf = test
+                                else:
+                                    cur_line.append((buf, color, buf_x))
+                                    lines.append(cur_line)
+                                    cur_line = []
+                                    buf = ch
+                                    buf_x = 0
+                            if buf:
+                                cur_line.append((buf, color, buf_x))
+                                cur_x = buf_x + self.cache.get_surface(font, buf, color).get_width()
+                        else:
+                            # 普通に次行の先頭に置く
+                            cur_line.append((w, color, 0))
+                            cur_x = test_w
+            # 段落の終わりで行を確定(空行も1行分として残す)
+            lines.append(cur_line)
+        return lines
+    
+    # surface化(各surfaceとx位置y位置、トータルのwidthとheightを返す)
+    def build_surface(self, lines, font):
+        """
+        lines -> (rendered_list, max_w, total_h)
+        rendered_list: [(surface, x, y), ...]
+        """
+        rendered = []
+        y = 0
+        line_h = font.get_height()
+        max_w = 0
+        for line in lines:
+            for text, color, x in line:
+                surf = self.cache.get_surface(font, text, color)
+                rendered.append((surf, x, y))
+                max_w = max(max_w, x + surf.get_width())
+            y += line_h
+        total_h = y
+        return rendered, max_w, total_h
+
+# テキストフレームに表示する用のラベル
+class TextFrameLabel(UIElement):
+    def __init__(self, screen, frame_rect, parent=None, font_data=(FONT_PATH, FONT_SIZ), padding=10, row=0, col=0, focusable=False, **kwargs):
+        super().__init__(screen=screen, parent=parent, row=row, col=col, focusable=focusable, **kwargs)
+        self.frame_rect = frame_rect
+        self.font_data = font_data
+        self.padding = padding
+
+        # managers
+        self.cache = SurfaceCache()
+        self.renderer = RichTextRenderer(self.cache)
+
+        # font
+        self.font = setting_font(font_data[0], font_data[1], self.screen.get_size())
+
+        # 表示データ
+        self.rendered = []
+        self.total_h = 0
+        self.max_w = 0
+
+        # テキストデータ(外から set_textで入れる)
+        self.paragraphs = []
+
+        # 最初に一度組み立て
+        self.rebuild()
+
+    # テキストを新しくセット
+    def set_text(self, text):
+        if text is None:
+            text = ""
+        self.paragraphs = text.splitlines()
+        self.rebuild()
+
+    def rebuild(self):
+        """
+        段落 -> 折り返しレイアウト -> build -> rendered を作る
+        """
+        maxw = max(1, self.frame_rect.width - self.padding * 2)
+        
+        # layout
+        lines = self.renderer.layout_paragraphs(self.paragraphs, self.font, maxw)
+
+        # build_surface
+        self.rendered, self.max_w, self.total_h = self.renderer.build_surface(lines, self.font)
+
+    def update_item_position(self, screen, frame_rect, parent=None):
+        super().update_item_position(screen, parent)
+        self.frame_rect = frame_rect
+        self.font = setting_font(self.font_data[0], self.font_data[1], screen.get_size())
+        self.cache.clear()
+        self.rebuild()
+    
+    def draw(self):
+        ox = self.frame_rect.x + self.padding
+        oy = self.frame_rect.y + self.padding
+        visible_h = self.frame_rect.height - self.padding * 2
+
+        for surf, x, y in self.rendered:
+            if y >= visible_h:
+                # この行がフレーム下端以降なら描画しない
+                continue
+            self.parent_surface.blit(surf, (ox + x, oy + y))
+
+# ボタン
+class Button(UIElement, ResizableMixin, TextBase):
+    def __init__(self, screen, font_data, text, rect, on_click=None, text_color=BLACK, in_color=WHITE, out_color=GRAY, on_color=BLUE, parent=None, sound_type="click", row=0, col=0, focusable=False, **kwargs):
+        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, font_data=font_data, text=text, text_color=text_color, **kwargs)
+
         self.rect = Rect(rect)
+        self.set_bace_rect(self.rect)
+
+        self.update_text_surface()
 
         # 色情報
         self.in_color = in_color
         self.out_color = out_color
         self.on_color = on_color
-        #self.disabled_color = GRAY
-        self.text_color = text_color
-
-        # テキスト表示用
-        self.surfaces = []
-        self.text_rects = []
-        self.text_total_h = 0
-        self.create_text()
 
         # コールバック関数
         self.on_click = on_click
 
-        # ボタンが有効か無効か
-        self.enabled = True
-
-        # クリック音
-        self.sound_manager = SoundManager()
-        sound_check(self.sound_manager)
-
-        # hover状態を記録するフラグ
-        self.hovered = False
-
     # テキストの作成
-    def create_text(self):
-        total_h = 0
-        for txt in self.texts:
-            surface = self.font.render(txt, True, self.text_color)
-            rect = surface.get_rect()
-            self.surfaces.append(surface)
-            self.text_rects.append(rect)
-            if rect.w > self.rect.w:
-                self.rect.w = rect.w + 4
-            total_h += rect.h
+    def update_text_surface(self):
+        super().update_text_surface()
 
-        # 文字列の高さの合計がボタンの高さより高ければそれをボタンの高さにする
-        if total_h > self.rect.h:
-            self.rect.h = total_h
+        # 文字列の最大幅がボタンの幅より大きければそれをボタンの幅にする
+        if self.max_width > self.rect.w:
+            self.rect.w = self.max_width + 4
 
-        self.text_total_h = total_h
+        # 文字列の最大高さがボタンの高さより高ければそれをボタンの高さにする
+        if self.max_height > self.rect.h:
+            self.rect.h = self.max_height
 
     # ボタンの描画
-    def draw_button(self, hover=False):
-        # enabledがtrueかつhoverした時はon_color、それ以外のenabledがtrueの時にin_color、enabledがfalseの時はdisabled_colorにする
-        #color = self.on_color if (hover and self.enabled) else (self.in_color if self.enabled else self.disabled_color)
-
-        color = self.on_color if (hover and self.enabled) else self.in_color
+    def draw_button(self):
+        # マウスオーバー時ボタンの色を変える
+        color = self.on_color if self.hovered else self.in_color
 
         # ボタンの内側
-        pygame.draw.rect(self.screen, color, self.rect)
+        pygame.draw.rect(self.parent_surface, color, self.rect)
         # ボタンの外枠
-        pygame.draw.rect(self.screen, self.out_color, self.rect, 2)
+        pygame.draw.rect(self.parent_surface, self.out_color, self.rect, 2)
 
     # テキストの描画
     def draw_text(self):
-        current_y = self.rect.y + ((self.rect.h - self.text_total_h) // 2)
-        for i, surface in enumerate(self.surfaces):
-            text_rect = self.text_rects[i]
-            text_rect.center = (self.rect.centerx, current_y + text_rect.h // 2)
-            self.screen.blit(surface, text_rect)
-            current_y += text_rect.h + 2
+        current_y = self.rect.y + ((self.rect.h - self.max_height) // 2)
+        for surface in self.text_surfaces:
+            h = surface.get_height()
+            text_rect = surface.get_rect(center=(self.rect.centerx, current_y + h // 2))
+            self.parent_surface.blit(surface, text_rect)
+            current_y += h + 2
+
+    # rectを設定する
+    def set_rect(self, rect):
+        self.rect = Rect(rect)
+        self.set_bace_rect(self.rect)
+        self.update_text_surface()
 
     # 描画する
     def draw(self):
@@ -152,284 +506,489 @@ class Button:
 
     # クリックされたときTrueを返す
     def is_clicked(self, pos):
-        if not self.enabled:
-            return False
-        return self.rect.collidepoint(pos)
-
-    # ボタンの有効・無効を切り替える    
-    def set_enabled(self, state):
-        self.enabled = state
-
-    # 更新
-    def update(self, pos, click=None):
-        hover = self.is_clicked(pos)
-        if hover and not self.hovered:  # 初めてホバーした時
-            self.sound_manager.play("カーソル移動")
-        self.hovered = hover
-
-        self.draw_button(hover)
-        self.draw_text()
-
-        if hover and click and self.enabled:
-            if self.on_click:
-                self.sound_manager.play("クリック")
-                self.on_click() # コールバック関数を呼び出す
+        return self.collidepoint(pos)
+    
+    def handle_click(self, pos):
+        if self.is_clicked(pos):
+            if self.sound_type == "click":
+                sound_manager.play("クリック")
+            else:
+                sound_manager.play("選択")
+            self.on_click() # コールバック関数を呼び出す
             return True
-        else:
-            return False
-
-# インプットボックスをクラス化するよ    ラベル表示機能を付けるよ(chatGPT指南)
-class InputBox:
-    def __init__(self, screen, font, rect, label_text="", input_flag=True, line_bold=2):
-        self.screen = screen
-        self.font = font
-
-        self.input_flag = input_flag
-        self.rect = rect
-        self.line_bold = line_bold
-        
-        # ボックスのカラーの設定
-        self.update_color()
-
-        # ラベルの設定
-        self.label_text = label_text
-        self.label = None
-        if self.label_text:
-            self.create_label()
+        return False
     
-    # ラベルの作成
-    def create_label(self):
-        self.label = Label(self.screen, self.font, self.label_text, centerx=self.rect.centerx, centery=self.rect.centery)
+    # スクリーンサイズ変更によるアップデート
+    def update_item_position(self, screen, parent=None):
+        super().update_item_position(screen, parent)
+        self.rect = self.resize(self.screen_size)
+        self.resize_font(self.screen_size)
 
-    # ボックスの描画
-    def draw_box(self):
-        # 入力ボックス
-        if self.input_flag:
-            pygame.draw.rect(self.screen, self.color, self.rect)
-        # 下線
-        pygame.draw.line(self.screen, BLACK, (self.rect.x, self.rect.y+self.rect.h-1), (self.rect.x+self.rect.w-1, self.rect.y+self.rect.h-1),
-                         self.line_bold)
-        
-        # ラベルがあれば描写
-        if self.label:
-            self.label.draw()
+class ImageCache:
+    def __init__(self):
+        self.cache = {}
 
-    # 色を更新するメソッド
-    def update_color(self):
-        self.color = WHITE if self.input_flag else None
+    def load(self, path):
+        if path not in self.cache:
+            try:
+                # 画像の読み込み＆アルファ化(透明化)
+                self.cache[path] = pygame.image.load(path).convert_alpha()
+            except pygame.error as e:
+                print(f"Error loading image: {e}")
+        return self.cache[path]
 
-    # フラグを設定して再描画できるようにする
-    def set_input_flag(self, flag):
-        self.input_flag = flag
-        self.update_color()
+# 画像表示
+class Image(UIElement, RectSettingBase):
+    def __init__(self, screen, path, cache=None, scale=None, x=0, y=0, centerx=None, centery=None, line_flag=False, line_width=1, bg_flag=False,
+                 size_wh=None, anchor=("left", "top"), parent=None, sound_type="click", row=0, col=0, focusable=False, **kwargs):
+        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, x=x, y=y, centerx=centerx, centery=centery, anchor=anchor, **kwargs)
 
-    # ボックスの描画を更新
-    def update(self):
-        self.draw_box()
-
-    # ラベルの更新
-    def update_label(self, new_text):
-        self.label_text = new_text
-        self.create_label()
-
-    def get_value(self):
-        # ラベルに表示されている文字を、数字ならintにしてそうでないなら文字列として返す
-        try:
-            val = int(self.label_text)
-        except ValueError:
-            val = self.label_text
-        return val
-    
-    def collidepoint(self, pos):
-        return self.rect.collidepoint(pos)
-
-# 画像表示をクラス化するよ
-class Image:
-    def __init__(self, screen, path, scale=None, x=0, y=0, centerx=None, centery=None ,line_flag=False, line_width=1, bg_flag=False,
-                 fixed_ratio=True, size_wh=None, position=None):
-        self.screen = screen
         path = f"{PATH}{PICTURE}{path}"
+        self.cache = cache
 
         self.scale = scale                  # 比率を変えない拡大縮小率
-        self.fixed_ratio = fixed_ratio      # 比率を保つか、保たないか
         self.size_wh = size_wh              # 縦横サイズ指定
 
-        self.img, self.rect = self.create_image(path)
-        self.set_rect(x, y, centerx, centery, position)
-
+        self.original_img = None
+        self.img = None
+        self.rect = None
+        self.create_image(path)
+        self.rect = self.set_rect(self.rect)
+        self.set_bace_rect(self.rect)
+    
         self.bg_flag = bg_flag
         self.line_flag = line_flag
         self.line_width = line_width
 
     # イメージを作成するよ
     def create_image(self, path):
-        try:
-            # 画像の読み込み＆アルファ化(透明化)
-            self.original_img = pygame.image.load(path).convert_alpha()
+        self.load_image(path)
+        # サイズ変更
+        self.set_transform()
+        # 画像の位置取得
+        self.rect = self.img.get_rect()
 
-            scaled_img = self.set_transform(self.original_img)
-            
-            # 画像の位置取得
-            rect = scaled_img.get_rect()
-            return scaled_img, rect
-        except pygame.error as e:
-            print(f"Error loading image: {e}")
+    # 画像の読み込み
+    def load_image(self, path):
+        if self.cache:
+            self.original_img = self.cache.load(path)
+        else:
+            try:
+                # 画像の読み込み＆アルファ化(透明化)
+                self.original_img = pygame.image.load(path).convert_alpha()
+            except pygame.error as e:
+                print(f"Error loading image: {e}")
 
-    
     # 画像のサイズ変更
-    def set_transform(self, img):
-        if self.fixed_ratio and self.scale:
-            scaled_img = pygame.transform.rotozoom(img, 0, self.scale)
-        elif not self.fixed_ratio and self.size_wh:
-            scaled_img = pygame.transform.smoothscale(img, self.size_wh)
+    def set_transform(self, img=None, scale=None, size=None):
+        # 指定が無ければオリジナルイメージ
+        if img is None:
+            img = self.original_img
+
+        # 指定が無ければ既定のサイズ
+        if scale is None and size is None:
+            scale = self.scale
+            size = self.size_wh
+
+        if scale:
+            self.img = pygame.transform.rotozoom(img, 0, scale)
+        elif size:
+            self.img = pygame.transform.smoothscale(img, size)
         else:
             print("Warning: サイズ指定が不十分なため、画像を変更せずに使用します。")
-            scaled_img = img
-
-        return scaled_img
-
-    # 配置をセットするよ
-    def set_rect(self, x, y, centerx, centery, position="left"):
-        # 位置を変更する
-        if x == "center":
-            self.rect.centerx = self.screen.get_width() // 2
-        elif centerx:
-            self.rect.centerx = centerx
-        else:
-            if position == "right":
-                self.rect.right = x
-            else:
-                self.rect.left = x
-        if y == "center":
-            self.rect.centery = self.screen.get_height() // 2
-        elif centery:
-            self.rect.centery = centery
-        else:
-            if position == "bottom":
-                self.rect.bottom = y
-            else:
-                self.rect.top = y
+            self.img = img
 
     # 縮小サイズを変更するよ
     def set_scale(self, new_scale=None, new_size=None):
         if new_scale:
-            self.img = pygame.transform.rotozoom(self.original_img, 0, new_scale)
+            self.set_transform(scale=new_scale)
         elif new_size:
-            self.img = pygame.transform.smoothscale(self.original_img, new_size)
+            self.set_transform(size=new_size)
         self.rect = self.img.get_rect(center=self.rect.center)
+
+    # 位置をセットする（x,y座標、主にカーソル用)
+    def set_position(self, x=None, y=None, centerx=None, centery=None, global_coords=True):
+        """
+        global_coords=Trueの場合はスクリーン座標。Falseの場合は親座標として扱う
+        """
+        # グローバル座標を親座標に変換する
+        if global_coords and self.parent is not None:
+            if hasattr(self.parent, "get_global_offset"):
+                ox, oy = self.parent.get_global_offset()
+            else:
+                # parentがscreenならoffset 0
+                ox, oy = (0, 0)
+            px = None if centerx is not None else (x - ox if x is not None else None)
+            py = None if centery is not None else (y - oy if y is not None else None)
+            pcx = centerx - ox if centerx is not None else None
+            pcy = centery - ox if centery is not None else None
+        
+        else:
+            # すでに親座標が渡されている場合
+            px, py, pcx, pcy = x, y, centerx, centery
+
+        # rectがNoneの場合は作る
+        if self.rect is None:
+            self.rect = self.img.get_rect()
+
+        # anchorに応じて位置を設定
+        if pcx is not None:
+            self.rect.centerx = int(pcx)
+        elif px is not None:
+            if self.anchor[0] == "right":
+                self.rect.right = int(px)
+            elif self.anchor[0] == "center":
+                self.rect.cneterx = int(px)
+            else:
+                self.rect.x = int(px)
+
+        if pcy is not None:
+            self.rect.centery = int(pcy)
+        elif py is not None:
+            if self.anchor[1] == "bottom":
+                self.rect.bottom = int(py)
+            elif self.anchor[1] == "center":
+                self.rect.centery = int(py)
+            else:
+                self.rect.y = int(py)
+        
+        #必要ならベース矩形を更新
+        self.set_bace_rect(self.rect)
 
     # 画像を切り抜くよ
     def cat_image(self, cat_rect):
         self.img = self.original_img.subsurface(cat_rect).copy()
-        self.img = self.set_transform(self.img)
+        self.set_transform(img=self.img)
         self.rect = self.img.get_rect(topleft=self.rect.topleft)
 
     # 画像を表示するよ
     def draw(self):
         # 背景を白にする場合
         if self.bg_flag:
-            pygame.draw.rect(self.screen, WHITE, self.rect)
+            pygame.draw.rect(self.parent_surface, WHITE, self.rect)
 
         # 画像の描写
-        self.screen.blit(self.img, self.rect)
+        self.parent_surface.blit(self.img, self.rect)
 
         # 画像の枠を描画する場合
         if self.line_flag:
-            pygame.draw.rect(self.screen, BLACK, self.rect, self.line_width)
+            pygame.draw.rect(self.parent_surface, BLACK, self.rect, self.line_width)
+
+    # スクリーンサイズ変更によるアップデート
+    def update_item_position(self, screen, parent=None):
+        super().update_item_position(screen, parent)
+        new_rect = self.resize(self.screen_size)
+        if new_rect is None:
+            self.bace_rect(self.rect)
+            new_rect = self.resize(self.screen_size)
+
+        if self.scale:
+            _, _, aspect_scale = get_scales(self.screen_size)
+            new_scale = self.scale * aspect_scale
+            self.set_scale(new_scale=new_scale)
+            self.rect = self.img.get_rect()
+            self.rect.topleft = (new_rect.x, new_rect.y)
+
+        elif self.size_wh:
+            new_size = get_new_size(self.screen_size, self.size_wh)
+            self.set_scale(new_size=new_size)
+            self.rect = self.img.get_rect()
+            self.rect.topleft = (new_rect.x, new_rect.y)
+
+        else:
+            self.set_scale(new_size=(new_rect.w, new_rect.h))
+            self.rect = new_rect
+
+# ラベルの作成、再配置を共通化
+class HasLabelBase:
+    def __init__(self, label_text, label_padding=8, label_anchor="midleft", **kwargs):
+        self.label_text = label_text
+        self.label_padding = label_padding
+        self.label_anchor = label_anchor    # "center", "midleft", "midright"などrectのアンカー
+        self.label = None
+        super().__init__(**kwargs)
+
+    # Labelを作成
+    def ensure_label(self, screen, font_data, parent=None):
+        if self.label is None and self.label_text is not None:
+            # 初回のみ作成
+            self.label = Label(screen, font_data, self.label_text, x=0, y=0, parent=parent)
+        elif self.label:
+            self.label.set_text(self.label_text)
+    
+    # 親側のrectに対してラベルを配置
+    def place_label_to_rect(self, host_rect):
+        if not self.label:
+            return
+        
+        # ラベルのサーフェイス更新(幅・高さが必要)
+        self.label.update_text_surface()
+
+        # ラベルの描画矩形
+        text_w, text_h = self.label.max_width, self.label.max_height
+        r = pygame.Rect(0, 0, text_w, text_h)
+
+        # アンカーに合わせて座標を決める
+        if self.label_anchor == "center":
+            r.center = host_rect.center
+        elif self.label_anchor == "midright":
+            r.midright = (host_rect.right - self.label_padding, host_rect.centery)
+        else:
+            r.midleft = (host_rect.left + self.label_padding, host_rect.centery)
+
+        # Label自身がrectを持つので更新
+        self.label.x = r.x
+        self.label.y = r.y
+        self.label.rect = r
+
+# ボックス描画を共通化
+class BoxStyleBase:
+    def __init__(self, fill_color=None, border_color=BLACK, border_width=2, under_line=False, **kwargs):
+        self.fill_color = fill_color
+        self.border_color = border_color
+        self.border_width = border_width
+        self.under_line = under_line
+        super().__init__(**kwargs)
+
+    # ボックスを描画する
+    def draw_box_rect(self, parent, rect):
+        if self.fill_color is not None:
+            pygame.draw.rect(parent, self.fill_color, rect)
+
+        if self.under_line:
+            pygame.draw.line(parent, self.border_color, (rect.x, rect.bottom-1), (rect.right-1, rect.bottom-1), self.border_width)
+
+        else:
+            pygame.draw.rect(parent, self.border_color, rect, self.border_width)
+
+# インプットボックス
+class InputBox(UIElement, HasLabelBase, BoxStyleBase, ResizableMixin):
+    def __init__(self, screen, font_data, rect, label_text="", input_flag=True, line_bold=2, sound_type="click", row=0, col=0, focusable=False, parent=None, **kwargs):
+        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, label_text=label_text, label_padding=10, label_anchor="center", fill_color=WHITE if input_flag else None, border_width=line_bold, under_line=True, **kwargs)
+
+        self.font_data = font_data
+        self.font = pygame.font.Font(self.font_data[0], self.font_data[1])
+
+        self.rect = rect
+        self.set_bace_rect(self.rect)
+
+        self.input_flag = input_flag
+        
+        # 1度だけラベルを作成
+        self.create_label()
+
+    # ラベルを作成
+    def create_label(self):
+        self.ensure_label(self.screen, self.font_data, self.parent)
+        self.place_label_to_rect(self.rect)
+
+    # フラグを設定して背景色を変える
+    def set_input_flag(self, flag):
+        self.input_flag = flag
+        self.fill_color = WHITE if flag else None
+
+    # ラベルの更新
+    def update_label(self, new_text):
+        self.label_text = new_text
+        self.create_label()
+
+    # ラベルに表示されている値を取得する
+    def get_value(self):
+        # ラベルに表示されている文字を、数字ならintにしてそうでないなら文字列として返す
+        try:
+            return int(self.label_text)
+        except ValueError:
+            return self.label_text
+
+    # 描画
+    def draw(self):
+        # 入力ボックス
+        self.draw_box_rect(self.parent_surface, self.rect)
+        
+        # ラベルがあれば描写
+        if self.label:
+            self.place_label_to_rect(self.rect)
+            self.label.draw()
+
+    # フォントサイズ変更
+    def resize_font(self, screen_size):
+        self.font = setting_font(self.font_data[0], self.font_data[1], screen_size)
+        self.create_label()
+
+    # スクリーンサイズ変更によるアップデート
+    def update_item_position(self, screen, parent=None):
+        super().update_item_position(screen, parent)
+        self.rect = self.resize(self.screen_size)
+        self.resize_font(self.screen_size)
 
 # 箱をクラスにするよ (主にプルダウンで使ってるよ)
-class Box:
-    def __init__(self, screen, rect):
-        self.screen = screen
+class Box(UIElement):
+    def __init__(self, screen, rect, parent=None, row=0, col=0, focusable=False, **kwargs):
+        super().__init__(screen, parent, row, col, focusable, **kwargs)
         self.rect = rect
 
     def draw(self):
-        pygame.draw.rect(self.screen, GRAY, self.rect)
-        pygame.draw.rect(self.screen, WHITE, (self.rect.x+1, self.rect.y+1, self.rect.w-2, self.rect.h-2))
+        pygame.draw.rect(self.parent_surface, GRAY, self.rect)
+        pygame.draw.rect(self.parent_surface, WHITE, (self.rect.x+1, self.rect.y+1, self.rect.w-2, self.rect.h-2))
 
-# プルダウン機能をクラス化できないかな？
-class PullDown:
-    def __init__(self, screen, font, rect, item_list, label_text="", pd_h=285):
-        self.screen = screen
-        self.font = font
+# プルダウン機能
+class PullDown(UIElement, ResizableMixin):
+    def __init__(self, screen, font_data, rect, item_list, label_text="", pd_h=285, parent=None, sound_type="click", row=0, col=0, focusable=False, **kwargs):
+        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, **kwargs)
 
-        # 文字の最初の位置
+        self.font_data = font_data
+        self.font = pygame.font.Font(self.font_data[0], self.font_data[1])
+
+        # 基準位置
         self.rect = rect
+        self.set_bace_rect(self.rect)
 
         # プルダウンに表示するリスト
         self.item_list = item_list
-
         # ボックスに表示される文字
         self.label_text = label_text
 
-        # ボックスと文字の間
-        self.padding = 10
+        # キャッシュ
+        self.cache = SurfaceCache()
 
-        # ボックスのrectを算出
-        adjusted_rect = self.get_max_width()
+        # 見た目用パラメータ
+        self.padding = 10
+        self.pd_h = pd_h            # プルダウンボックスの最大高さ
 
         # プルダウンする前のボックス
-        self.box = None
-        self.triangle = None        # ボックスに表示される ▼
-        self.create_box(adjusted_rect)
+        self.create_box()
+        
+        # ボックスに表示される ▼ と ラベル(1回だけ作成する)
+        self.triangle = Label(self.screen, self.font_data, "▼", parent=parent)
+        self.label = Label(self.screen, self.font_data, self.label_text, parent=parent) if self.label_text else None
+        self._place_triangle_and_label()
 
-        self.label = None
-        if label_text:
-            self.create_label()
-
-        # プルダウンボックスのアイテムの位置のリスト
-        self.items = []
-        self.pd_h = pd_h            # プルダウンボックスの最大高さ
+        # プルダウンのリスト（描画用キャッシュ）
+        self.entries = []       # entries:[(text, surface, text_rect, hit_rect), ...]
         self.list_box = None
+        self._layout_dirty = True   # レイアウト再計算が必要か
+        self._hovered_item = None   # 前回 hoverを覚えておく(サウンド用)
 
-        self.sound_manager = SoundManager()
-        sound_check(self.sound_manager)
-        self.hovered = False
+        # hover状態
+        self.box_hovered = False
+        self.list_hovered = False
 
-    # ボックスの最大幅を取得
-    def get_max_width(self):
-        max_text_width = max(self.font.size(text)[0] for text in self.item_list + [self.label_text])
-        triangle_width = self.font.size("▼")[0]
-        box_width = max_text_width + triangle_width + self.padding * 3
-        box_height = self.font.get_height() + self.padding * 2
-        return Rect(self.rect.x - self.padding, self.rect.y - self.padding, box_width, box_height)
+    # ボックスのrectを計算
+    def _calc_box_rect(self):
+        # ラベル候補 + ▼ を含めた最大幅
+        texts = self.item_list + ([self.label_text] if self.label_text else [])
+        if texts:
+            max_text_w = max(self.font.size(text)[0] for text in texts)
+        else:
+            max_text_w = 0
 
-    # ボックス作るよ
-    def create_box(self, rect):
-        self.box = Box(self.screen, rect)
+        tri_w = self.font.size("▼")[0]
+        box_w = max((max_text_w + tri_w + self.padding * 3), self.rect.w)
+        box_h = max((self.font.get_height() + self.padding * 2), self.rect.h)
+        return Rect(self.rect.x, self.rect.y, box_w, box_h)
 
-        # 三角作るよ
-        self.triangle = Label(self.screen, self.font, "▼", rect.right-self.padding, centery=rect.centery, position="right")
-    
-    # 表示するラベル作るよ
-    def create_label(self):
-        self.label = Label(self.screen, self.font, self.label_text, x=self.box.rect.x+5, centery=self.box.rect.centery)
+    # プルダウンする前のボックスを作成する
+    def create_box(self):
+        self.box_rect = self._calc_box_rect()           # ボックスのrectを算出
+        self.box = Box(self.screen, self.box_rect, self.parent)
+
+    # ラベルの位置を調整する
+    def _place_triangle_and_label(self):
+        # ▼は右寄せ
+        self.triangle.update_text_surface()
+        tri_rect = self.triangle.text_surfaces[0].get_rect()
+        tri_rect.midright = (self.box.rect.right - self.padding, self.box.rect.centery)
+        self.triangle.rect = tri_rect
+        self.triangle.x, self.triangle.y = tri_rect.x, tri_rect.y
+
+        # labelは左寄せ
+        if self.label:
+            self.label.set_text(self.label_text)
+            self.label.update_text_surface()
+            lbl_w, lbl_h = self.label.max_width, self.label.max_height
+            r = pygame.Rect(0, 0, lbl_w, lbl_h)
+            r.midleft = (self.box.rect.left + self.padding, self.box.rect.centery)
+            self.label.rect = r
+            self.label.x, self.label.y = r.x, r.y
+
+    # プルダウンのレイアウト
+    def _ensure_layout(self):
+        # item_list、位置変更、高さ変更などがあった時だけ再計算
+        if not self._layout_dirty:
+            return
+        
+        # 以前のアイテムをクリア        
+        self.entries.clear()
+
+        # 一列の幅（ボックス幅に合わせる）
+        w = self.box.rect.w
+        y0 = self.box.rect.bottom   # ボックスの下から展開
+        cur_x, cur_y = self.box.rect.x + self.padding, y0 + self.padding   # 現在の位置
+        max_w = w       # 横に広がった際の幅
+
+        for text in self.item_list:
+            surf = self.cache.get_surface(self.font, text, BLACK) # キャッシュ利用
+            text_rect = surf.get_rect(topleft=(cur_x, cur_y))
+            # クリック判定はボックス幅いっぱいに
+            hit_rect = Rect(cur_x, cur_y, w, text_rect.h)
+
+            # 項目名とそのsurface, rect、クリック判定用rectを辞書に登録していく
+            self.entries.append((text, surf, text_rect, hit_rect))
+
+            # 表示位置を下にずらす
+            cur_y += text_rect.h + 1
+            
+            # プルダウンボックスより下は隣に表示する
+            if cur_y >= (y0 + self.pd_h - (self.padding * 2)):
+                cur_x += w
+                max_w += w
+                cur_y = y0 + self.padding
+
+        # ボックスのサイズよりリストの量が少なければボックスサイズをリストのサイズに合わせる
+        if max_w == self.box.rect.w:        # 一列しかない場合
+            box_heigth = cur_y - y0
+            if box_heigth and box_heigth < self.pd_h:   # アイテム全体の高さよりボックス最大値の高さが多い場合
+                self.pd_h = box_heigth + self.padding
+        else:
+            # ボックスサイズが拡大していれば幅をpadding分広げる
+            max_w += self.padding * 2
+
+        # 外枠を作る
+        self.list_box = Box(self.screen, Rect(self.box.rect.x, y0, max_w, self.pd_h), self.parent)
+        self._layout_dirty = False
 
     # 表示位置を変更する
-    def update_position(self, x=None, y=None, centerx=None, centery=None, position="left"):
-        if x:
-            if position == "right":
-                self.rect.right = x-self.box.rect.width
-
+    def update_position(self, x=None, y=None, centerx=None, centery=None, anchor=("left", "top")):
+        if x is not None:
+            if anchor[0] == "right":
+                self.rect.right = x
             else:
                 self.rect.x = x
 
-        if y:
-            if position == "bottom":
-                self.rect.bottom = y-self.box.rect.height
+        if y is not None:
+            if anchor[1] == "bottom":
+                self.rect.bottom = y
             else:
                 self.rect.y = y
 
-        if centerx:
+        if centerx is not None:
             self.rect.centerx = centerx
-        if centery:
+        if centery is not None:
             self.rect.centery = centery
 
-        adjusted_rect = self.get_max_width() 
-        self.create_box(adjusted_rect)
+        # ボックス再計算⇒ラベル再配置⇒レイアウト無効化
+        self.create_box()
+        self._place_triangle_and_label()
+        self._layout_dirty = True
 
-        if self.label_text:
-            self.create_label()
+    # ラベルの更新
+    def update_label(self, new_text):
+        self.label_text = new_text
+        if self.label is None:
+            self.label = Label(self.screen, self.font_data, new_text, parent=self.parent)
+        else:
+            self.label.set_text(new_text)
+        self._place_triangle_and_label()
 
     # ボックスの表示
     def draw(self, is_dropped):
@@ -441,89 +1000,72 @@ class PullDown:
         if self.label:
             self.label.draw()
 
+        # ドロップしている時だけリストを描画
         if is_dropped:
-            self.draw_list_box()
+            self._ensure_layout()
+            self.list_box.draw()
 
-    # ラベルの更新
-    def update_label(self, new_text):
-        self.label_text = new_text
-        self.create_label()
+            for text, surf, text_rect, hit_rect in self.entries:
+                # hoverされてる時は背景色を変える
+                if self._hovered_item == text:
+                    pygame.draw.rect(self.parent_surface, BLUE, hit_rect)
+                else:
+                    pygame.draw.rect(self.parent_surface, WHITE, hit_rect)
 
-    # プルダウン押した時に表示される項目表示したいよ
-    def create_pulldown_list(self):
-        self.create_list(self.item_list, self.rect.x, (self.box.rect.y + self.box.rect.h))
+                # テキストを描画
+                self.parent_surface.blit(surf, text_rect)
 
-    # リストを作成する
-    def create_list(self, list, x, y):
-        w = self.box.rect.w
-        self.items.clear()  # 以前のアイテムをクリア
-        lis_rect = None     # クリック感知の範囲は文字の範囲だけではなく少し広い範囲に設定するためのリスト用rect
-        y_initial = y   # 最初のy位置を記録
-        current_x, current_y = x, y+self.padding   # 現在の位置
-        max_w = w       # 横に広がった際の幅
-        for item in list:
-            surface = self.font.render(item, True, BLACK)
-            rect = surface.get_rect(left=current_x,top=current_y)
-            # 項目名とそのsurface, rectを辞書に登録していく
-            lis_rect = Rect(rect.x, rect.y, w, rect.h)
-            self.items.append((item, surface, lis_rect))
-
-            # 表示位置を下にずらす
-            current_y += rect.h + 1
-            
-            # プルダウンボックスより下は隣に表示する
-            if current_y >= (y_initial + self.pd_h - (self.padding * 2)):
-                current_x += w
-                max_w += w
-                current_y = y_initial + self.padding
-        
-        # ボックスのサイズよりリストの量が少なければボックスサイズをリストのサイズに合わせる
-        if max_w == self.box.rect.w:
-            box_heigth = current_y - y_initial
-            if box_heigth and box_heigth < self.pd_h:
-                self.pd_h = box_heigth + self.padding
-
-        # リストボックスを作る
-        self.list_box = Box(self.screen, Rect(x-self.padding, y_initial, max_w+(self.padding*2), self.pd_h+1))
-
-    # リストボックスを表示する
-    def draw_list_box(self, hover_item=""):
-        self.create_pulldown_list()
-        self.list_box.draw()
-        for item, surface, rect in self.items:
-            # hoverされてる時は背景色を変える
-            if item == hover_item:
-                pygame.draw.rect(self.screen, BLUE, rect)
-            else:
-                pygame.draw.rect(self.screen, WHITE, rect)
-            # テキストを描画
-            self.screen.blit(surface, rect)
-
-    # マウスオーバーで重なってるアイテムを取得    
-    def check_mouse_hover(self, pos):
-        for item, surface, rect in self.items:
-            if rect.collidepoint(pos):
-                return item
-        return None
+    def collidepoint(self, pos):
+        return self.box.collidepoint(pos)
 
     # クリック時の動作
     def handle_click(self, pos, is_dropped):
-        if is_dropped:
-            if self.list_box and self.list_box.rect.collidepoint(pos):
-                for item, surface, lis_rect in self.items:
-                    if lis_rect.collidepoint(pos):
-                        return item
+        if is_dropped and self.list_box and self.list_box.collidepoint(pos):
+            hit_pos = pos_to_local(pos, self.parent)
+            for text, surf, text_rect, hit_rect in self.entries:
+                if hit_rect.collidepoint(hit_pos):
+                    sound_manager.play("クリック")
+                    return text
         return None
     
     # マウスオーバー時の動作
     def handle_mouse_hover(self, pos, is_dropped):
         if is_dropped:
-            hover_item = self.check_mouse_hover(pos)
-            if hover_item:
-                self.draw_list_box(hover_item)
+            self._ensure_layout()
+            hovered = None
+            hit_pos = pos_to_local(pos, self.parent)
+            for text, surf, text_rect, hit_rect in self.entries:
+                if hit_rect.collidepoint(hit_pos):
+                    hovered = text
+                    break
 
-    def collidepoint(self, pos):
-        return self.box.rect.collidepoint(pos)
+            if hovered != self._hovered_item:
+                # 初回 or 切り替えだけでサウンド
+                if hovered is not None:
+                    sound_manager.play("カーソル移動")
+                self._hovered_item = hovered
+                
+        # ボックスhover（縁取り）
+        is_box_hover = self.box.collidepoint(pos)
+        if is_box_hover and not self.box_hovered:  # 初めてホバーした時
+            sound_manager.play("カーソル移動")
+        self.box_hovered = is_box_hover
+        if is_box_hover:
+            pygame.draw.rect(self.parent_surface, BLACK, self.box.rect, 2)
+
+    # フォントサイズ変更
+    def resize_font(self, screen_size):
+        self.font = setting_font(self.font_data[0], self.font_data[1], screen_size)
+        for label in (self.label, self.triangle):
+            label.resize_font(screen_size)
+        self._place_triangle_and_label()
+        self._layout_dirty = True
+
+    # スクリーンサイズ変更によるアップデート
+    def update_item_position(self, screen, parent=None):
+        super().update_item_position(screen, parent)
+        self.rect = self.resize(self.screen_size)
+        self.resize_font(self.screen_size)
 
 # ダイスロールをクラス化するよ（画像表示はやめとこうかなって悩んでるよ）
 class DiceRoll:
@@ -537,7 +1079,6 @@ class DiceRoll:
         self.result = self.dice_roll()
 
         # ダイス音を鳴らす
-        self.sound_manager = SoundManager()
         self.sound()
 
     # ダイスロールの計算
@@ -564,64 +1105,19 @@ class DiceRoll:
     
     def sound(self):
         sound_name = "ダイスを振る"
-        if not self.sound_manager.sounds or sound_name not in self.sound_manager.sounds:
-            self.sound_manager.load_sound(sound_name, "W-DISE.mp3")
-        self.sound_manager.play(sound_name)
+        if not sound_manager.sounds or sound_name not in sound_manager.sounds:
+            sound_manager.load_sound(sound_name, "W-DISE.mp3")
+        sound_manager.play(sound_name)
 
-# コマンドメニュー
-class CommandMenu:
-    def __init__(self, screen, commands, start_position):
-        self.screen = screen
-        self.window_size = self.screen.get_size()
-
-        self.commands = commands
-        self.start_x, self.start_y = start_position
-        self.buttons = []
-        self.create_buttons()
-
-    # コマンドリストからボタンを作成
-    def create_buttons(self):
-        font = setting_font(FONT_PATH, SMALL_SIZ, self.window_size)
-        x, y = self.start_x, self.start_y
-        h = 30
-
-        # コマンドの中で最も長いwidthを取得する
-        max_width = 120     # 最小値
-        if self.commands:
-            for command in self.commands:
-                text_surface = font.render(command["text"], True, BLACK)
-                text_width = text_surface.get_width() + 10
-                max_width = max(max_width, text_width)
-
-        if self.commands:
-            for command in self.commands:
-                button = Button(self.screen, font, command["text"], (x,y,max_width,h), out_color=BLACK)
-                self.buttons.append({"button":button, "next_scenario": command["next"]})
-                y += h
-
-    def draw(self):
-        for item in self.buttons:
-            item["button"].draw()
-
-    def handle_mouse_hover(self, pos):
-        for item in self.buttons:
-            item["button"].update(pos)
-
-    def handle_click(self, pos):
-        # クリックされたイベントを判定
-        for item in self.buttons:
-            if item["button"].is_clicked(pos):
-                return item["next_scenario"]
-        return None
 
 # 主人公の名前・HP・MPを左上、現在地を右上に表示する
 class PlayerDataView:
     def __init__(self, screen, room_surface_rect, player, girl, game_state, flags):
         self.screen = screen
-        self.window_size = self.screen.get_size()
+        self.screen_size = screen.get_size()
         self.room_surface_rect = room_surface_rect
 
-        self.font = setting_font(FONT_PATH, SMALL_SIZ, self.window_size)
+        self.font = setting_font(FONT_PATH, SMALL_SIZ, self.screen_size)
 
         self.player = player
         self.room_flag = game_state.room

@@ -3,43 +3,39 @@ from pygame.locals import *
 
 from constans import *
 from utils import *
-from ui.ui_elements import Label, PullDown
-from manager.sound_manager import SoundManager
+from ui.ui_elements import Label, PullDown, Image
+from manager.sound_manager import sound_manager
+from base_scene import BaseScene
 
 # 設定ページ
-class Settings:
-    def __init__(self, screen, root, manager, before_event):
-        self.screen = screen
-        self.window_size = self.screen.get_size()
-        self.root = root
-
-        self.manager = manager
+class Settings(BaseScene):
+    def __init__(self, screen, root, setting_manager, before_event):
+        super().__init__(screen, root)
+        self.setting_manager = setting_manager
         self.before_event = before_event
 
-        # フォントの設定
-        self.set_font()
+        # フォントデータの設定
+        self.set_font_data()
 
-        self.fullscreen = self.manager.settings.get("fullscreen")
-
-        self.select_size = self.manager.settings.get("str_resolution")
+        self.load_data()
         self.is_pulldown_open = False    # プルダウン用のフラグ
+
+        # 音量用画像のリスト
+        self.create_img_list()
 
         self.create_surface()
         self.create_window()
         self.create_item()
 
-        # サウンド設定
-        self.sound_manager = SoundManager()
-        sound_check(self.sound_manager)
-
         # ホバー状態を管理するフラグ
         self.hovered = False
 
-    # フォントの設定
-    def set_font(self):
-        self.font = setting_font(FONT_PATH, FONT_SIZ, self.window_size)                    # 基本フォント
-        self.contents_font = setting_font(FONT_PATH, CONTENTS_SIZ, self.window_size)       # メニュー用フォント
-        self.title_font = setting_font(FONT_PATH, TITLE_SIZ, self.window_size)             # 表題用フォント
+    # フォントデータの設定
+    def set_font_data(self):
+        self.small_font_data = (FONT_PATH, SMALL_SIZ)             # 小さいフォント
+        self.font_data = (FONT_PATH, SMALL_SIZ)                   # 基本フォント
+        self.contents_font_data = (FONT_PATH, CONTENTS_SIZ)       # メニュー用フォント
+        self.title_font_data = (FONT_PATH, TITLE_SIZ)             # 表題用フォント
 
     # 画面がフルスクリーンかを確認する
     def is_fullscreen(self):
@@ -47,9 +43,9 @@ class Settings:
 
     # ウィンドウ用surfaceを作成
     def create_surface(self):
-        surface_size = get_new_size(self.window_size, (700, 500))
+        surface_size = get_new_size(self.screen_size, (700, 500))
         self.window_surface = pygame.Surface(surface_size)
-        self.window_rect = self.window_surface.get_rect(center=(self.window_size[0]//2, self.window_size[1]//2))
+        self.window_rect = self.window_surface.get_rect(center=(self.screen_size[0]//2, self.screen_size[1]//2))
 
     # ウィンドウの背景を描画する
     def create_window(self):
@@ -59,42 +55,88 @@ class Settings:
 
     # 画面のUIを描画する
     def create_item(self):
-        self.title = Label(self.screen, self.title_font, "設定", x=self.window_rect.x+30, y=self.window_rect.top+30, color=BLACK)
+        # タイトル
+        title = Label(self.screen, font_data=self.title_font_data, text="設定", x=self.window_rect.x+30, y=self.window_rect.top+30, text_color=BLACK)
 
-        self.size = Label(self.screen, self.contents_font, "・画面サイズ", x=self.window_rect.x+50, y=self.window_rect.top+110, color=BLACK)
+        # サイズ
+        size_label = Label(self.screen, font_data=self.contents_font_data, text="・画面サイズ", x=self.window_rect.x+50, y=self.window_rect.top+110, text_color=BLACK)
         puludown_label = "フルスクリーン" if self.is_fullscreen() else (self.select_size if self.select_size else "800x600")
-        self.size_pulldown = PullDown(self.screen, self.font, Rect(self.size.rect.right+50, self.size.rect.top, 200, 45), list(SIZE_MAP), puludown_label, 500)
-        
-        self.volume = Label(self.screen, self.contents_font, "・音量", x=self.window_rect.x+50, y=self.window_rect.top+200, color=BLACK)
-        self.other = Label(self.screen, self.contents_font, "・他",x=self.window_rect.x+50, y=self.window_rect.top+370, color=BLACK)
-        
-        self.set = Label(self.screen, self.contents_font, "決定", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx - 50, color=BLACK)
-        self.close = Label(self.screen, self.contents_font, "戻る", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx + 50, color=BLACK)
+        self.size_pulldown = PullDown(self.screen, font_data=self.font_data, rect=Rect(size_label.rect.right+50, size_label.rect.top, 200, 45), item_list=list(SIZE_MAP), label_text=puludown_label, pd_h=500)
 
-        self.label_list = [self.title, self.size, self.volume, self.other]
+        # 音量
+        volume_label = Label(self.screen, font_data=self.contents_font_data, text="・音量", x=self.window_rect.x+50, y=self.window_rect.top+200, text_color=BLACK)
+        main_volume_label = Label(self.screen, font_data=self.font_data, text="メイン", x=volume_label.rect.right+50, y=volume_label.rect.top)
+        self.music_volume_label = Label(self.screen, font_data=self.font_data, text="曲", x=main_volume_label.rect.top, y=main_volume_label.rect.bottom+10)
+        self.music_volume_list = self.copy_volume_list(self.music_volume_label.rect.y)
+        se_volume_label = Label(self.screen, font_data=self.font_data, text="SE", x=main_volume_label.rect.top, y=self.music_volume_label.rect.bottom+10)
+        self.se_volume_list = self.copy_volume_list(se_volume_label.rect.y)
+        volume_int_labels = self.create_volume_int_label()
+
+        self.other_label = Label(self.screen, font_data=self.contents_font_data, text="・他",x=self.window_rect.x+50, y=self.window_rect.top+370, text_color=BLACK)
+        
+        self.set = Label(self.screen, font_data=self.contents_font_data, text="決定", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx - 50, text_color=BLACK)
+        self.close = Label(self.screen, font_data=self.contents_font_data, text="戻る", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx + 50, text_color=BLACK)
+
+        self.label_list = [title, size_label, volume_label, main_volume_label, self.music_volume_label, se_volume_label, self.other_label]
+        self.label_list += volume_int_labels
+        self.image_list = self.music_volume_list + self.se_volume_list
         self.button_list = [self.set, self.close]
+        self.item_list = self.label_list + self.button_list + [self.size_pulldown] + self.image_list
 
+    # 音量用imageリストの作成
+    def create_img_list(self):
+        self.volume_img_list = []
+        for i in range(1, 21):
+            if i % 2 == 0:
+                num = str(i)
+                path = f"Volume{num.zfill(2)}.png"
+                self.volume_img_list.append(Image(self.screen, path=path, scale=0.3))
+
+    # 各音量用imageの作成
+    def copy_volume_list(self, y):
+        x = self.music_volume_label.rect.right+25
+        new_list = self.volume_img_list.copy()
+        for img in new_list:
+            img.x, img.y = x, y
+            img.set_rect(img.rect)
+        return new_list
+
+    # 音量用ラベルの上に表示する目盛り的なやつ
+    def create_volume_int_label(self):
+        label_0 = Label(self.screen, font_data=self.small_font_data, text="0", x=self.music_volume_list[0].rect.x, y=self.music_volume_list[0].rect.y-20)
+        label_50 = Label(self.screen, font_data=self.small_font_data, text="50", centerx=self.music_volume_list[0].rect.centerx, y=label_0.rect.y)
+        label_100 = Label(self.screen, font_data=self.small_font_data, text="100", x=self.music_volume_list[0].rect.right, y=label_0.rect.y)
+        return [label_0, label_50, label_100]
+
+    # データをロードする
+    def load_data(self):
+        self.fullscreen = self.setting_manager.get("fullscreen")
+        self.select_size = self.setting_manager.get("str_resolution")
+        self.music_volume_value = self.setting_manager.get("music_volume")
+        self.se_volume_value = self.setting_manager.get("se_volume")
+
+    # データを設定する
     def set_data(self):
         if self.select_size == "フルスクリーン":
             if not self.is_fullscreen():
                 screen_size = self.screen.get_size()
                 pygame.display.set_mode(screen_size, pygame.FULLSCREEN)
-                self.manager.set("fullscreen", True)
+                self.setting_manager.set("fullscreen", True)
         else:
             screen_size = SIZE_MAP.get(self.select_size, (800, 600))
             if self.fullscreen or screen_size != self.screen.get_size():
                 pygame.display.set_mode(screen_size)
-                self.manager.set("fullscreen", False)
-                self.manager.set("resolution", list(screen_size))
-                self.manager.set("str_resolution", self.select_size)
+                self.setting_manager.set("fullscreen", False)
+                self.setting_manager.set("resolution", list(screen_size))
+                self.setting_manager.set("str_resolution", self.select_size)
 
     # 画面サイズ変更時にポジションを更新する
-    def update_item_position(self):
-        self.window_size = self.screen.get_size()
-        self.set_font()
+    def update_item_position(self, screen):
+        super().update_item_position(screen)
         self.create_surface()
         self.create_window()
-        self.create_item()
+        for item in self.item_list:
+            item.update_item_position(screen)
 
     def draw(self):
         # ウィンドウを描画
@@ -104,35 +146,30 @@ class Settings:
         for label in self.label_list:
             label.draw()
 
+        # 画像を描画
+        self.music_volume_list[self.music_volume_value].draw()
+        self.se_volume_list[self.se_volume_value].draw()
+
         # ボタンを描画
         for button in self.button_list:
-            button.draw()
+            button.draw(type="line", back_color=WHITE)
 
         # プルダウンを描画
         self.size_pulldown.draw(self.is_pulldown_open)
 
-
     def handle_mouse_hover(self):
         # マウスオーバーで枠を表示するよ
         pos = pygame.mouse.get_pos()
-        hovering = False    # ホバー中を管理するフラグ
 
         if self.is_pulldown_open:
             self.size_pulldown.handle_mouse_hover(pos, self.is_pulldown_open)
         
-        if self.size_pulldown.box.rect.collidepoint(pos):
-            hovering = True
+        if self.size_pulldown.box.collidepoint(pos):
+            #hovering = True
             pygame.draw.rect(self.screen, BLACK, self.size_pulldown.box.rect, 2)
 
         for button in self.button_list:
-            if button.collidepoint(pos):
-                hovering = True     # フラグを更新
-                pygame.draw.rect(self.screen, WHITE, button, 1)
-
-        if hovering and not self.hovered:
-            self.sound_manager.play("カーソル移動")
-        
-        self.hovered = hovering
+            button.handle_mouse_hover(pos)
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -140,24 +177,24 @@ class Settings:
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 # プルダウンのクリック処理
                 if self.size_pulldown.box.rect.collidepoint(event.pos):
-                    self.sound_manager.play("クリック")
+                    sound_manager.play("クリック")
                     self.is_pulldown_open = not self.is_pulldown_open
                 
                 # プルダウンが開いている時
                 if self.is_pulldown_open:
                     self.select_size = self.size_pulldown.handle_click(event.pos, self.is_pulldown_open)
                     if self.select_size:
-                        self.sound_manager.play("クリック")
+                        sound_manager.play("クリック")
                         self.size_pulldown.update_label(self.select_size)
                         self.is_pulldown_open = False
 
-                if self.close.rect.collidepoint(event.pos):
-                    return self.before_event, self.manager
-                elif self.set.rect.collidepoint(event.pos):
+                if self.close.handle_click(event.pos, "select"):
+                    return self.before_event, self.setting_manager
+                elif self.set.handle_click(event.pos, "select"):
                     self.set_data()
-                    return self.before_event, self.manager
+                    return self.before_event, self.setting_manager
 
-        return "setting", self.manager
+        return "setting", self.setting_manager
             
     def update(self):
         self.draw()

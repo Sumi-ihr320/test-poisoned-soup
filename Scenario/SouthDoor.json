@@ -30,12 +30,12 @@
     ],
     "southDoor_enemy_none_knock":[
         {"type":"time_passage", "value":1},
-        {"type":"sound", "name":"鉄の扉をノック", "path":"Knock_the_iron_door.mp3"},
+        {"type":"sound", "name":"鉄の扉をノック"},
         {"type":"text", "text":"何の反応もない。", "progression":"click"},
         {"type":"image_hidden"}
     ],
     "southDoor_enemy_none_open":[
-        {"type":"sound", "name":"鉄のドアを開ける", "path":"Open_the_door_01.mp3"},
+        {"type":"sound", "name":"鉄のドアを開ける"},
         {"type":"action", "action":"move_to_room", "room_id":"south-room"}
     ],
     "southDoor_enemy_there":[
@@ -172,7 +172,7 @@
     ],
     "southDoor_knock":[
         {"type":"time_passage", "value":1},
-        {"type":"sound", "name":"鉄の扉をノック", "path":"Knock_the_iron_door.mp3"},
+        {"type":"sound", "name":"鉄の扉をノック"},
         {"type":"text", "text":"扉の向こうから何かの気配がする。", "progression":"click"},
         {"type":"action", "action":"set_flag", "category":"enemys", "flag":"hunting_horrors_knock", "value":true},
         {"type":"image_hidden"}

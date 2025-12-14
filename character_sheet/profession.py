@@ -4,16 +4,13 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from ui.ui_elements import *
-from manager.sound_manager import SoundManager
 
 # 職業クラス
 class Profession:
-    def __init__(self, screen, sheet_rect, fonts, percentage, name, eng_name, skills, rect, view_rect):
+    def __init__(self, screen, parent, font_datas, name, eng_name, skills, rect, view_rect):
         self.screen = screen
-        self.sheet_rect = sheet_rect
-
-        self.fonts = fonts
-        self.percentage = percentage
+        self.parent = parent
+        self.font_datas = font_datas
 
         self.name = name
         self.eng_name = eng_name
@@ -23,22 +20,37 @@ class Profession:
         self.view_rect = view_rect
 
         self.create_image()
+        self.labels = []
+        self.create_label()
     
-        # サウンドの設定
-        self.sound_manager = SoundManager()
-        sound_check(self.sound_manager)
-
     # 画像を作成する
     def create_image(self):
-        h_percent = self.percentage[1]
-        small_img_size = 0.1 * h_percent
-        big_img_size = 0.35 * h_percent
+        small_img_size = 0.1
+        big_img_size = 0.35
+        self.small_img = Image(self.screen, self.path, scale=small_img_size, x=self.rect.x, y=self.rect.y, line_flag=True, bg_flag=True, parent=self.parent)
+        self.big_img = Image(self.screen, self.path, scale=big_img_size, x=self.view_rect.x, y=self.view_rect.y, line_flag=True, bg_flag=True, parent=self.parent)
 
-        # 画像は最初に一度だけロードしキャッシュする
-        self.small_img = self.load_img(self.rect.x, self.rect.y, small_img_size)
-        self.big_img = self.load_img(self.view_rect.x, self.view_rect.y, big_img_size)
+    # ラベルを作成する
+    def create_label(self):
+        font_data = self.font_datas[0]
+        small_font_data = self.font_datas[1]
 
-    def set_position(self, size="small", x=None, y=None):
+        # 名前ラベル
+        self.lbl_name = Label(self.screen, font_data, f"【{self.name}】", parent=self.parent)
+
+        # 所持技能ラベル
+        self.lbl_skill_title = Label(self.screen, small_font_data, "所持技能： ", parent=self.parent)
+
+        # 各スキル
+        self.lbl_skills = []
+        for skill in self.skills:
+            skill_label = Label(self.screen, small_font_data, skill, parent=self.parent)
+            self.lbl_skills.append(skill_label)
+
+        self.labels = [self.lbl_name, self.lbl_skill_title] + self.lbl_skills
+
+    # 画像の位置をセットする
+    def set_img_position(self, size="small", x=None, y=None):
         if size == "big":
             if x:
                 self.big_img.rect.x = x
@@ -50,16 +62,37 @@ class Profession:
             if y:
                 self.small_img.rect.y = y
 
-    # 画像インスタンスを作成
-    def load_img(self, x, y, size):
-        try:
-            return Image(self.screen, self.path, size, x, y, line_flag=True, bg_flag=True)
-        except FileNotFoundError:
-            print(f"Error: 画像が見つかりません - {self.path}")
-            return None
+    # ラベルの位置をセットする
+    def set_label_position(self):
+        self.lbl_name.x = self.big_img.rect.x+self.big_img.rect.w+5
+        self.lbl_name.y = self.big_img.rect.y
 
-    # 画像を表示
-    def image_draw(self, is_selected=False):
+        # 所持技能ラベルの表示位置
+        self.lbl_skill_title.x = self.big_img.rect.x + self.big_img.rect.w + 15
+        self.lbl_skill_title.y = self.big_img.rect.y + 30
+
+        sk_x, sk_y = self.lbl_skill_title.x + 10, self.lbl_skill_title.y + self.lbl_skill_title.rect.h + 10
+        sx, sy = sk_x, sk_y
+
+        for label in self.lbl_skills:
+            label.rect.x = label.x = sx
+            label.rect.y = label.y = sy
+            
+            sx += label.rect.w + 10
+            if sx > 530:
+                sx = sk_x
+                sy += label.rect.h + 10
+
+    def update_item_position(self, screen, parent):
+        self.screen = screen
+        self.parent = parent
+        self.small_img.update_item_position(screen, parent)
+        self.big_img.update_item_position(screen, parent)
+        for label in self.labels:
+            label.update_item_position(screen, parent)
+
+    # 表示
+    def draw(self, is_selected=False):
         if self.small_img:
             self.small_img.draw()
         if is_selected and self.big_img:
@@ -68,51 +101,29 @@ class Profession:
 
     # 職業ステータスを表示する
     def text_draw(self):
-        font = self.fonts[0]
-        small_font = self.fonts[1]
-
-        # 名前ラベル
-        lbl_name = Label(self.screen, font, f"【{self.name}】", self.big_img.rect.x+self.big_img.rect.w+5, self.big_img.rect.y)
-        lbl_name.draw()
-
-        # 所持技能ラベルの表示位置
-        skill_x, skill_y = self.big_img.rect.x + self.big_img.rect.w + 15, self.big_img.rect.y + 30
-
-        # 所持技能ラベル
-        lbl_skill = Label(self.screen, small_font, "所持技能： ", skill_x, skill_y)
-        lbl_skill.draw()
-
-        # 個々のスキルの表示位置
-        sk_x, sk_y = skill_x + 10, skill_y + lbl_skill.rect.h + 10
-        sx, sy = sk_x, sk_y
-
-        # スキルを順番に表示していく
-        for skill in self.skills:
-            skill_label = Label(self.screen, small_font, skill, sx, sy)
-            skill_label.draw()
-            sx += skill_label.rect.w + 10
-            if sx > 530:
-                sx = sk_x
-                sy += skill_label.rect.h + 10
+        self.lbl_name.draw()
+        self.lbl_skill_title.draw()
+        for label in self.lbl_skills:
+            label.draw()
 
     def handle_mouse_hover(self, pos):
-        if self.small_img and self.small_img.rect.collidepoint(pos):
+        if self.small_img and self.small_img.collidepoint(pos):
             return f"あなたの職業を選択してください\n【{self.name}】"
         return None
 
     def handle_click(self, pos):
-        if self.small_img and self.small_img.rect.collidepoint(pos):
-            self.sound_manager.play("クリック")
+        if self.small_img and self.small_img.handle_click(pos):
             return True
         return False
 
 # 職業選択画面作るよ
 class ProfessionSelecter:
-    def __init__(self, screen, sheet_rect, window_size, fonts):
+    def __init__(self, screen, parent, sheet_rect, font_datas):
         self.screen = screen
+        self.parent = parent
         self.sheet_rect = sheet_rect
-        self.window_size = window_size
-        self.fonts = fonts
+
+        self.font_datas = font_datas
 
         self.prof_items = []
         self.selected_profession = None     # 現在保持している職業
@@ -125,8 +136,8 @@ class ProfessionSelecter:
     # データのロードとセットアップ
     def load_and_setup_data(self):
         self.prof_data = load_json(JSON_FOLDER, PROF_DATA_PATH)
-        if self.prof_data:      # データがロードできていれば描画する
-            self.list_image_view()
+        if self.prof_data:      # データがロードできていれば作成する
+            self.create_profession()
 
     # 最適な行数列数を計算する
     def calculate_best_grid(self, total_items, icon_size, margin):
@@ -160,10 +171,6 @@ class ProfessionSelecter:
         icon_w, icon_h = 50, 50
         margin_x, margin_y = 5, 5
 
-        # ウィンドウサイズによる変更
-        icon_w, icon_h = get_new_size(self.window_size, (icon_w, icon_h))
-        margin_x, margin_y = get_new_size(self.window_size, (margin_x, margin_y))
-
         rows, cols = self.calculate_best_grid(len(self.prof_items), (icon_w, icon_h), (margin_x, margin_y))
 
         total_w = cols * icon_w + (cols - 1) * margin_x
@@ -180,29 +187,30 @@ class ProfessionSelecter:
             col = i % cols
             x = start_x + col * (icon_w + margin_x)
             y = start_y + row * (icon_h + margin_y)
-            prof.set_position("small", x, y)
-            prof.set_position("big", start_x, start_y-(prof.big_img.rect.h+10))
-        
+            prof.set_img_position("small", x, y)
+            prof.set_img_position("big", start_x, start_y-(prof.big_img.rect.h+10))
+            prof.set_label_position()
 
-    # 一覧の表示
-    def list_image_view(self):
+    # 職業一覧の作成
+    def create_profession(self):
         x, y = 100, 230
         view_x, view_y = 100, 40
-        percentage = RATIO[self.window_size]
-
         for prof_key, prof_data in self.prof_data.items():
             name = prof_data["name"]
             skill = prof_data["skill"]
-            item = Profession(self.screen, self.sheet_rect, self.fonts, percentage, prof_key, name, skill, Rect(x, y, 50, 50), Rect(view_x, view_y, 100, 100))
+            item = Profession(self.screen, self.parent, self.font_datas, prof_key, name, skill, Rect(x, y, 50, 50), Rect(view_x, view_y, 100, 100))
             self.prof_items.append(item)
-            #x += 55
-            #if x >= 590:
-            #    y += 55
-            #    x = 100
     
+    def update_item_position(self, screen, parent, sheet_rect):
+        self.screen = screen
+        self.parent = parent
+        self.sheet_rect = sheet_rect
+        for item in self.prof_items:
+            item.update_item_position(screen, parent)
+
     def draw(self):
         for item in self.prof_items:
-            item.image_draw()
+            item.draw()
 
     def handle_click(self, pos):
         for item in self.prof_items:
@@ -212,10 +220,11 @@ class ProfessionSelecter:
 
 # 趣味選択画面作るよ
 class HobbySelecter:
-    def __init__(self, screen, select_item, fonts, profession_rect):
+    def __init__(self, screen, parent, select_item, font_datas, profession_rect):
         self.screen = screen
+        self.parent = parent
         self.select_item = select_item
-        self.fonts = fonts
+        self.font_datas = font_datas
         self.profession_rect = profession_rect
 
         # 趣味データをロード
@@ -228,24 +237,31 @@ class HobbySelecter:
     # アイテム作成
     def create_item(self):
         # フォントの設定
-        font = self.fonts[0]
-        small_font = self.fonts[1]
+        font_data = self.font_datas[0]
+        small_font_data = self.font_datas[1]
 
         hobby_text = "趣味"
+        font = pygame.font.Font(font_data[0], font_data[1])
         text_rect = font.render(hobby_text, True, BLACK).get_rect()
-        self.label = Label(self.screen, font, hobby_text, self.profession_rect.right, self.profession_rect.y-text_rect.h-10, position="right")
+        self.label = Label(self.screen, font_data, hobby_text, self.profession_rect.right, self.profession_rect.y-text_rect.h-10, anchor=("right", "top"), parent=self.parent)
 
         list_item = self.select_item if self.select_item != "" else "未選択"
-        self.pull = PullDown(self.screen, small_font, Rect(440,self.label.rect.y,150,25), list(self.hobby_list), list_item, 207)
-        self.pull.update_position(x=self.label.rect.right+self.label.rect.w+10, position="right")
+        self.pull = PullDown(self.screen, small_font_data, Rect(440,self.label.rect.y-8,150,25), list(self.hobby_list), list_item, 180, parent=self.parent)
+        self.pull.update_position(x=self.label.rect.x-10, anchor=("right", "top"))
 
-    def draw_item(self, is_dropped):
+    def update_item_position(self, screen, parent):
+        self.screen = screen
+        self.parent = parent
+        self.label.update_item_position(screen, parent)
+        self.pull.update_item_position(screen, parent)
+
+    def draw(self, is_dropped):
         self.label.draw()
         self.pull.draw(is_dropped)
 
     def handle_mouse_hover(self, pos, is_dropped):
-        if self.pull.box.rect.collidepoint(pos):
+        if self.pull.collidepoint(pos):
             return "あなたの趣味を選択してください"
-        elif self.pull.list_box and self.pull.list_box.rect.collidepoint(pos):
+        elif self.pull.list_box and self.pull.list_box.collidepoint(pos):
             self.pull.handle_mouse_hover(pos, is_dropped)
         return None

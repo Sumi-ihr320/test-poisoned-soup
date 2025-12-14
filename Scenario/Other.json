@@ -7,7 +7,7 @@
         {"type":"action", "action":"set_flag", "category":"girl", "flag":"meet", "value":true}
     ],
     "Girl_room_wait":[
-        {"type":"sound", "name":"足音", "path":"footstep_01.mp3"},
+        {"type":"sound", "name":"足音1"},
         {"type":"conditional", "conditions":[
             {"flags":[{"category":"girl", "flag":"gun", "value":true}], "next":"Girl_room_wait_have_gun"},
             {"flags":[{"category":"girl", "flag":"gun", "value":false}], "next":"Girl_room_wait_not_have_gun"}

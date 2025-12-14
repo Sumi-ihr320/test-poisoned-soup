@@ -82,7 +82,7 @@ class SceneManager:
         # すでにデータがある場合はデータを更新
         if event_name in self.event_map:
             # スクリーンサイズの更新
-            self.event_map[event_name].screen = self.screen
+            #self.event_map[event_name].screen = self.screen
 
             # 設定画面
             if event_name == "setting":
@@ -90,8 +90,9 @@ class SceneManager:
             
             # 表示位置更新
             if event_name in ["title", "setting", "charasheet"]:
-                if self.event_map[event_name].window_size != self.screen.get_size():
-                    self.event_map[event_name].update_item_position()
+                # スクリーンサイズに変更があった場合は更新
+                if self.event_map[event_name].screen_size != self.screen.get_size():
+                    self.event_map[event_name].update_item_position(self.screen)
             
             # 前のイベント
             if event_name in ["setting", "save", "load"]:

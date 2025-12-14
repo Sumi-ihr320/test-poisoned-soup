@@ -9,42 +9,49 @@ from ui.ui_elements import Image
 class Room:
     # 部屋画像の縮小パーセンテージ
     SIZE = 0.2
-    def __init__(self, screen, room, direction="", room_change_flag=None):
+    def __init__(self, screen, room, direction="", room_change_flag=None, image_cache=None):
         self.screen = screen
-        self.window_size = screen.get_size()
+        self.screen_size = screen.get_size()
 
         # フラグ
         self.room = room
         self.direction = direction
         self.room_change_flag = room_change_flag if room_change_flag else {}    # どの部屋画像を表示するかのフラグ
 
+        # イメージ用cache
+        self.image_cache = image_cache
+
         # 部屋画像表示用surface
         self.create_surface()
-        #self.area_rect = ROOM_AREA
         
         # ファイル名一覧
         self.room_path = create_file_path("room", room, direction, self.room_change_flag)
-        #self.room2_path = create_file_path("room2", room, direction)
 
         # 部屋画像の作成
         self.shrink_percent = self.get_shrink_percentage()
-        self.img = Image(self.surface, self.room_path, scale=self.shrink_percent, x="center", y="center")
+        self.room_img = Image(self.screen, self.room_path, self.image_cache, scale=self.shrink_percent, x="center", y="center", parent=self)
 
         # 部屋にあるアイテムの作成
         self.items = []
         self.items_draw_list = []
         self.items_select_list= []
         self.create_room_item()
-
+        
     # 画像表示するよ
     def draw(self):
         self.screen.blit(self.surface, self.surface_rect.topleft)
         # 部屋表示
-        self.img.draw()
+        self.room_img.draw()
         # アイテム表示
         if self.items_draw_list:
             for item in self.items_draw_list:
                 item.draw()
+
+    def update_item_position(self, screen):
+        self.screen = screen
+        self.screen_size = screen.get_size()
+        self.create_surface()
+        self.room_img.update_item_position(screen, self.surface)
 
     def handle_mouse_hover(self, pos):
         if self.items_select_list:
@@ -55,18 +62,26 @@ class Room:
 
     # 部屋用のsurfaceを作成
     def create_surface(self):
-        self.room_size = get_new_size(self.window_size, SHEET_SIZE, True)
+        self.room_size = get_new_size(self.screen_size, SHEET_SIZE, True)
         self.surface = pygame.Surface(self.room_size)
-        window_rect = self.screen.get_rect()
+        screen_rect = self.screen.get_rect()
         frame_rect = get_frame_rect(self.screen)
-        self.surface_rect = self.surface.get_rect(centerx=window_rect.centerx, bottom=frame_rect.top - 20)
+        self.surface_rect = self.surface.get_rect(centerx=screen_rect.centerx, bottom=frame_rect.top - 20)
 
         self.surface.fill(SHEET_COLOR)
 
+    # オフセットを返す
+    def get_global_offset(self):
+        return self.surface_rect.topleft
+
+    # rectを返す
+    def get_rect(self):
+        return self.surface_rect
+
     # 画像サイズの縮小パーセンテージを取得する
     def get_shrink_percentage(self):
-        h_percent = RATIO[self.window_size][1]
-        return self.SIZE * h_percent
+        _, _, aspect_scale = get_scales(self.screen_size)
+        return self.SIZE * aspect_scale
 
     # 部屋のアイテムを作成する
     def create_room_item(self):
@@ -133,14 +148,14 @@ class Room:
 
         # 該当する部屋のアイテムを作成
         if self.room in room_items:
-            percent_w, percent_h = RATIO[self.window_size]
+            scale_x, scale_y, _ = get_scales(self.screen_size)
             
             items_list = []
             # アイテムを作成
             for item in room_items[self.room]["items"]:
-                item[3] = int(item[3] * percent_w) if type(item[3]) == int else item[3]
-                item[4] = int(item[4] * percent_h) if type(item[4]) == int else item[4]
-                items_list.append(RoomItem(self.surface, self.room_change_flag, self.shrink_percent, *item))
+                item[3] = int(item[3] * scale_x) if type(item[3]) == int else item[3]
+                item[4] = int(item[4] * scale_y) if type(item[4]) == int else item[4]
+                items_list.append(RoomItem(self.screen, self, self.room_change_flag, self.shrink_percent, *item, image_cache=self.image_cache))
 
             # 表示順にアイテムを格納
             item_dict = {obj.name: obj for obj in items_list}     # 作成済みオブジェクトを辞書に
@@ -168,7 +183,7 @@ class Room:
             if self.room_change_flag.get("candle_get"):
                 item_name = f"{item_name}_no_candle"
         return item_name
-             
+    
     # フラグによるアイテム順列を取得する
     def check_flag_item_order(self, room):
         if room == "west":
@@ -228,28 +243,34 @@ class Room:
             "west": ("center", 205)
         }
         return memo_positions.get(self.direction, (306, 217))
+    
 
 # アイテムの型を作るよ
 class RoomItem:
     # アイテム画像の縮小パーセンテージ
     SIZE = 0.19
-    def __init__(self, screen, room_change_flag, shrink_percent, name, room, direction, x, y, position=None):
+    def __init__(self, screen, parent, room_change_flag, shrink_percent, name, room, direction, x, y, anchor=("left", "top"), image_cache=None):
         self.screen = screen
-        self.window_size = self.screen.get_size()
+        self.parent = parent
         self.name = name    # アイテム名
 
         # アイテムの基本情報
         self.path = create_file_path(name, room, direction, room_change_flag)   # ファイルパス
 
-        self.img = Image(self.screen, self.path, shrink_percent, x, y, position=position)       # 画像
+        self.img = Image(self.screen, self.path, image_cache, scale=shrink_percent, x=x, y=y, anchor=anchor, parent=self.parent)       # 画像
+
+    def update_item_position(self, screen, parent=None):
+        self.screen = screen
+        self.parent = parent
+        self.img.update_item_position(screen, parent)
 
     def draw(self):
         self.img.draw()
 
     def handle_mouse_hover(self, pos):
-        if self.img.rect.collidepoint(pos):
+        if self.img.collidepoint(pos):
             pygame.draw.rect(self.screen, BLACK, self.img.rect, 1)  # デバッグ用
 
     def handle_click(self, pos):
-        return self.img.rect.collidepoint(pos)
+        return self.img.collidepoint(pos)
     

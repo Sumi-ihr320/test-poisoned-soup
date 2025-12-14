@@ -4,38 +4,42 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from ui.ui_elements import *
-from ui.virtual_cursor import *
+from input.virtual_cursor import *
 from game_state import *
 from characters import *
 
+from base_scene import BaseScene
 from ui.menu import MenuController
 from ui.navigation import MainNavigation
-from manager.room_manager import RoomManager
+from ui.log_view import LogView
+from playing.room_manager import RoomManager
 from manager.scenario_manager import ScenarioManager
 from manager.event_manager import EventManager
-from manager.sound_manager import SoundManager
+from manager.sound_manager import sound_manager
 
 # プレイ画面
-class MainPlay:
+class MainPlay(BaseScene):
     def __init__(self, screen, root, save_data=None):
-        self.screen = screen
-        self.root = root
+        super().__init__(screen, root)
 
-        self.window_size = self.screen.get_size()
         self.save_data = save_data
         
         # セーブデータから各データをセットする
         self.set_data(save_data)
 
         # キーボード操作用カーソル
-        self.cursor = VirtualCursor(self.screen)
-        self.use_virtual_cursor = False
+        #self.cursor = VirtualCursor(self.screen)
+        #self.use_virtual_cursor = False
+
+        # ログ表示機能
+        self.log_view = LogView(self.screen, callback=self.log_view_end)
+        self.log_view_flag = False
 
         # メニューコントローラー
         self.menu_controller = MenuController(self.screen, self.root, self.set_state)
-        
+
         # 管理用
-        self.event_manager = EventManager(self.screen, self.player_status, self.girl_status, self.game_state, self.flags,
+        self.event_manager = EventManager(self.screen, self.player_status, self.girl_status, self.game_state, self.flags, self.log_view,
                                           self.handle_next_scenario, self.handle_move_room, self.handle_room_view, self.set_state)
         room_id = f"{self.game_state.room}-room"
         self.scenario_manager = ScenarioManager(self.screen, self.event_manager, room_id)
@@ -52,10 +56,6 @@ class MainPlay:
 
         # 選択されたアイテム
         self.selected_item = None
-
-        # サウンド
-        self.sound_manager = SoundManager()
-        sound_check(self.sound_manager)
 
     # データをセットする
     def set_data(self, save_data):
@@ -110,7 +110,7 @@ class MainPlay:
 
             new_pos = (pos_x - surface_rect.x, pos_y - surface_rect.y)
             if item.handle_click(new_pos):
-                self.sound_manager.play("選択")
+                sound_manager.play("選択")
                 self.selected_item = item
                 print(item.name)                # デバッグ用
                 self.scenario_manager.start_scenario(item.name)
@@ -160,33 +160,37 @@ class MainPlay:
 
     # クリックイベント
     def handle_click(self, pos):
-        # シナリオ進行
-        self.scenario_manager.on_click()
+        # ログ表示
+        if self.log_view_flag:
+            self.log_view.handle_click(pos)
+        else:
+            # シナリオ進行
+            self.scenario_manager.on_click()
 
-        # シナリオ進行中ではない場合
-        if not self.scenario_manager.is_active:
+            # シナリオ進行中ではない場合
+            if not self.scenario_manager.is_active:
 
-            # コマンドメニュー表示中はそれを優先
-            if self.event_manager.command_menu:
-                self.handle_command_menu_event(pos)
-            
-            # メニューボタン
-            elif self.menu_controller.handle_click(pos):
-                return
+                # コマンドメニュー表示中はそれを優先
+                if self.event_manager.command_menu:
+                    self.handle_command_menu_event(pos)
+                
+                # メニューボタン
+                elif self.menu_controller.handle_click(pos):
+                    return
 
-            # ナビゲーションバーによる移動
-            elif self.handle_navigation(self.navigation.handle_click(pos)):
-                return
-            
-            # 少女が表示中は少女のクリックイベントがアイテムより優先される
-            elif self.handle_girl_click_event(pos):
-                return
+                # ナビゲーションバーによる移動
+                elif self.handle_navigation(self.navigation.handle_click(pos)):
+                    return
+                
+                # 少女が表示中は少女のクリックイベントがアイテムより優先される
+                elif self.handle_girl_click_event(pos):
+                    return
 
-            # アイテムクリックイベント
-            elif self.handle_item_click_event(pos):
-                return
+                # アイテムクリックイベント
+                elif self.handle_item_click_event(pos):
+                    return
 
-        self.sound_manager.play("クリック")
+            sound_manager.play("クリック")
 
     # マウスオーバー
     def handle_mouse_hover(self):
@@ -259,9 +263,13 @@ class MainPlay:
         # シナリオマネージャーの表示
         self.scenario_manager.draw()
 
+        # ログ表示
+        if self.log_view_flag:
+            self.log_view.draw()
+
         # バーチャルカーソルの表示
-        if self.use_virtual_cursor:
-            self.cursor.draw()
+        #if self.use_virtual_cursor:
+        #    self.cursor.draw()
             
     # 更新
     def update(self):
@@ -276,6 +284,11 @@ class MainPlay:
         self.handle_mouse_hover()
         self.handle_events()
         return self.next_state()
+
+    # ログ表示を閉じる用のコールバック関数
+    def log_view_end(self, flag):
+        if flag:
+            self.log_view_flag = False
 
     # メニューボタン用のコールバック関数
     def set_state(self, state=State.NONE):
@@ -292,6 +305,8 @@ class MainPlay:
         elif self.state == State.SETTING:
             self.state = State.NONE
             return "setting", self.save_data
+        elif self.state == State.LOG:
+            self.log_view_flag = True
         elif self.state == State.CLOSE:
             return "ending", self.save_data
         return "play", self.save_data
