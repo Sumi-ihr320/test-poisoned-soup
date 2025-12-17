@@ -18,10 +18,10 @@ class ProfessionPage(BacePage):
         # 趣味選択画面
         self.hobby_selecter = HobbySelecter(self.screen, self, selected_hobby, self.font_datas, self.prof_selecter.rect)
 
-    def update_item_position(self, screen):
-        super().update_item_position(screen)
-        self.prof_selecter.update_item_position(screen, self, self.rect)
-        self.hobby_selecter.update_item_position(screen, self)
+    def relayout(self, screen):
+        super().relayout(screen)
+        self.prof_selecter.relayout(screen, self, self.rect)
+        self.hobby_selecter.relayout(screen, self)
         
     def draw(self, selected_profession, is_pulldown_open):
         surface, rect = super().draw()

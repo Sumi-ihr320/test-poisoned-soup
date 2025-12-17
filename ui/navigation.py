@@ -46,11 +46,11 @@ class CharasheetNavigation:
                 return click_set.get(navi, None)
         return None
 
-    def update_item_position(self, screen, surface_rect):
+    def relayout(self, screen, surface_rect):
         self.screen = screen
         self.surface_rect = surface_rect
         for label in self.label_list:
-            label.update_item_position(screen)
+            label.relayout(screen)
 
     def draw(self, page):
         navis = self.navi_items[page]
@@ -75,11 +75,11 @@ class MainNavigation:
         for position in positions:
             self.navi_items[position] = PageNavigation(self.screen, self.surface_rect, position)
 
-    def update_item_position(self, screen, surface_rect):
+    def relayout(self, screen, surface_rect):
         self.screen = screen
         self.surface_rect = surface_rect
         for navi in self.navi_items.values():
-            navi.update_item_position(screen, surface_rect)
+            navi.relayout(screen, surface_rect)
 
     def draw(self):
         """現在の位置にあるナビゲーションを描画する"""
@@ -157,7 +157,7 @@ class PageNavigation:
             position.append((l[1]*scale_y)+center_y)
             self.triangle_position.append(position)
 
-    def update_item_position(self, screen, surface_rect):
+    def relayout(self, screen, surface_rect):
         self.screen = screen
         self.screen_size = screen.get_size()
         self.surface_rect = surface_rect

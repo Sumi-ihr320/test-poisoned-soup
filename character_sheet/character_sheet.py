@@ -254,18 +254,18 @@ class CharacterSheet(BaseScene):
             self.state = State.SAVE
 
     # 画面サイズ更新時にポジションを変更する
-    def update_item_position(self, screen):
-        super().update_item_position(screen)
+    def relayout(self, screen):
+        super().relayout(screen)
         create_frame(screen)
-        self.menu_controller.update_item_position(screen)
+        self.menu_controller.relayout(screen)
         # ステータスページをupdate
-        self.status_page.update_item_position(screen)
+        self.status_page.relayout(screen)
         # 職業ページをupdate
-        self.profession_page.update_item_position(screen)
+        self.profession_page.relayout(screen)
         # 確認ページをupdate
-        self.confirm_page.update_item_position(screen)
+        self.confirm_page.relayout(screen)
         # ナビゲーションをupdate
-        self.navigation.update_item_position(screen, self.status_page.rect)
+        self.navigation.relayout(screen, self.status_page.rect)
 
     def update(self):
         create_frame(self.screen)

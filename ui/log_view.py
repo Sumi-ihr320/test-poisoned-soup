@@ -136,7 +136,7 @@ class LogView:
             self.close()
 
     # 画面サイズ変更時の全アイテム更新
-    def update_item_position(self, screen, parent=None):
+    def relayout(self, screen, parent=None):
         self.screen = screen
         self.screen_size = screen.get_size()
         self.parent = parent
@@ -145,7 +145,7 @@ class LogView:
         self._entry_font()
         self.cache.clear()
         self.rebuild_all()
-        self.close_image.update_item_position()
+        self.close_image.relayout()
 
     def draw(self):
         # 背景

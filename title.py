@@ -65,10 +65,10 @@ class Title(BaseScene):
         self.label_items = [self.title, self.start, self.load, self.setting, self.close]
 
     # 画面サイズ変更時に呼び出す
-    def update_item_position(self, screen):
-        super().update_item_position(screen)
+    def relayout(self, screen):
+        super().relayout(screen)
         for label in self.label_items:
-            label.update_item_position(screen)
+            label.relayout(screen)
 
     def sound(self):
         # サウンドデータの読み込み

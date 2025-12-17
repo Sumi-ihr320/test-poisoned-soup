@@ -275,14 +275,14 @@ class Save_or_Load(BaseScene):
         self.set_save_data_rect()
 
     # 画面サイズ変更時のアイテム表示位置の変更
-    def update_item_position(self, screen):
-        super().update_item_position(screen)
+    def relayout(self, screen):
+        super().relayout(screen)
         label_list = []
         for data in self.data_label_list:
             label_list.append(data["label"])
         self.label_list += label_list
         for label in self.label_list:
-            label.update_item_position(screen)
+            label.relayout(screen)
     
     # ファイル名を作る
     def create_file_name(self):

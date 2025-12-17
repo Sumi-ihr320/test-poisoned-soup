@@ -4,6 +4,7 @@ from typing import Sequence
 from constans import *
 from utils import setting_font
 from ui.ui_elements import Button
+from ui.ui_container import UIContainer
 
 @dataclass(frozen=True)
 class Command:
@@ -11,14 +12,12 @@ class Command:
     next_scenario: str
 
 # コマンドメニュー
-class CommandMenu:
-    def __init__(self, screen, commands: Sequence[Command], start_position):
-        self.screen = screen
-        self.screen_size = screen.get_size()
+class CommandMenu(UIContainer):
+    def __init__(self, screen, commands: Sequence[Command], start_position, parent=None):
+        super().__init__(screen, parent)
         
         self.commands = commands
         self.start_x, self.start_y = start_position
-        self.buttons = []
         self._build()
 
     # コマンドリストからボタンを作成
@@ -31,7 +30,7 @@ class CommandMenu:
         if self.commands:
             for i, cmd in enumerate(self.commands):
                 btn = Button(screen=self.screen, font_data=(FONT_PATH, SMALL_SIZ), text=cmd.text, rect=(x,y,max_width,h), out_color=BLACK, row=i, focusable=True)
-                self.buttons.append((btn, cmd))
+                self.add((btn, cmd))
                 y += h
 
     # コマンドの中で最も長いwidthを取得する
@@ -45,27 +44,17 @@ class CommandMenu:
 
         return max_width
 
-    def register_all(self, focus_manager):
-        for btn in self.buttons:
-            if btn.is_focusable():
-                focus_manager.register(btn)
-
-    def unregister_all(self, focus_manager):
-        for btn in self.buttons:
-            if btn in focus_manager.elements:
-                focus_manager.elements.remove(btn)
-
     def draw(self):
-        for btn, _ in self.buttons:
+        for btn, _ in self.children:
             btn.draw()
 
     def handle_mouse_hover(self, pos):
-        for btn, _ in self.buttons:
+        for btn, _ in self.children:
             btn.update(pos)
 
     def handle_click(self, pos):
         # クリックされたイベントを判定
-        for btn, cmd in self.buttons:
+        for btn, cmd in self.children:
             if btn.is_clicked(pos):
                 return cmd.next_scenario
         return None

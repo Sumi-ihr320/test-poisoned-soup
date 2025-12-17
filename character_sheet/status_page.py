@@ -25,11 +25,11 @@ class StatusPage(BacePage):
             self.create_status_items()
 
     # 画面サイズ変更時にポジション等を更新する
-    def update_item_position(self, screen):
-        super().update_item_position(screen)
+    def relayout(self, screen):
+        super().relayout(screen)
         for item in self.elements:
-            item.update_item_position(screen, self)
-        self.sex_button.update_item_position(screen, self)
+            item.relayout(screen, self)
+        self.sex_button.relayout(screen, self)
 
     def draw(self):
         surface, rect = super().draw()

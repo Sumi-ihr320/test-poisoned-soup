@@ -41,11 +41,11 @@ class BacePage:
     def add_elements(self, element):
         self.elements.append(element)
     
-    def update_item_position(self, screen):
+    def relayout(self, screen):
         self.screen = screen
         self.screen_size = screen.get_size()
         self.create_surface()
-        self.bg_img.update_item_position(screen, self)
+        self.bg_img.relayout(screen, self)
 
     def get_global_offset(self):
         return self.rect.topleft

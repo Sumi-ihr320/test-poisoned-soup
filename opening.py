@@ -43,9 +43,9 @@ class Opening(BaseScene):
         #self.cursor = VirtualCursor(self.screen)
         #self.use_virtual_cursor = False
 
-    def update_item_position(self, screen):
-        super().update_item_position(screen)
-        self.menu_controller.update_item_position(screen)
+    def relayout(self, screen):
+        super().relayout(screen)
+        self.menu_controller.relayout(screen)
 
     # 表示
     def draw(self):

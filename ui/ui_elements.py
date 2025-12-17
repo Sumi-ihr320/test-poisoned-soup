@@ -91,10 +91,6 @@ class UIElement:
             sound_manager.play("カーソル移動")
         self.hovered = hover
 
-    # キー入力処理（必要に応じてオーバーライド）
-    def handle_key_event(self, event):
-        pass
-
     # クリックした時にはクリック音を鳴らす
     def handle_click(self, pos):
         if self.collidepoint(pos):
@@ -102,7 +98,7 @@ class UIElement:
             return True
         return False
     
-    def update_item_position(self, screen, parent=None):
+    def relayout(self, screen, parent=None):
         self.screen = screen
         self.screen_size = screen.get_size()
         self.parent = parent
@@ -293,8 +289,8 @@ class Label(UIElement, RectSettingBase, TextBase):
             current_y += text_rect.h + 2
 
     # スクリーンサイズ変更によるアップデート
-    def update_item_position(self, screen, parent=None):
-        super().update_item_position(screen, parent)
+    def relayout(self, screen, parent=None):
+        super().relayout(screen, parent)
         self.rect = self.resize(self.screen_size)
         self.resize_font(self.screen_size)
 
@@ -426,8 +422,8 @@ class TextFrameLabel(UIElement):
         # build_surface
         self.rendered, self.max_w, self.total_h = self.renderer.build_surface(lines, self.font)
 
-    def update_item_position(self, screen, frame_rect, parent=None):
-        super().update_item_position(screen, parent)
+    def relayout(self, screen, frame_rect, parent=None):
+        super().relayout(screen, parent)
         self.frame_rect = frame_rect
         self.font = setting_font(self.font_data[0], self.font_data[1], screen.get_size())
         self.cache.clear()
@@ -519,8 +515,8 @@ class Button(UIElement, ResizableMixin, TextBase):
         return False
     
     # スクリーンサイズ変更によるアップデート
-    def update_item_position(self, screen, parent=None):
-        super().update_item_position(screen, parent)
+    def relayout(self, screen, parent=None):
+        super().relayout(screen, parent)
         self.rect = self.resize(self.screen_size)
         self.resize_font(self.screen_size)
 
@@ -675,8 +671,8 @@ class Image(UIElement, RectSettingBase):
             pygame.draw.rect(self.parent_surface, BLACK, self.rect, self.line_width)
 
     # スクリーンサイズ変更によるアップデート
-    def update_item_position(self, screen, parent=None):
-        super().update_item_position(screen, parent)
+    def relayout(self, screen, parent=None):
+        super().relayout(screen, parent)
         new_rect = self.resize(self.screen_size)
         if new_rect is None:
             self.bace_rect(self.rect)
@@ -816,8 +812,8 @@ class InputBox(UIElement, HasLabelBase, BoxStyleBase, ResizableMixin):
         self.create_label()
 
     # スクリーンサイズ変更によるアップデート
-    def update_item_position(self, screen, parent=None):
-        super().update_item_position(screen, parent)
+    def relayout(self, screen, parent=None):
+        super().relayout(screen, parent)
         self.rect = self.resize(self.screen_size)
         self.resize_font(self.screen_size)
 
@@ -1062,8 +1058,8 @@ class PullDown(UIElement, ResizableMixin):
         self._layout_dirty = True
 
     # スクリーンサイズ変更によるアップデート
-    def update_item_position(self, screen, parent=None):
-        super().update_item_position(screen, parent)
+    def relayout(self, screen, parent=None):
+        super().relayout(screen, parent)
         self.rect = self.resize(self.screen_size)
         self.resize_font(self.screen_size)
 

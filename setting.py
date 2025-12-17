@@ -131,12 +131,12 @@ class Settings(BaseScene):
                 self.setting_manager.set("str_resolution", self.select_size)
 
     # 画面サイズ変更時にポジションを更新する
-    def update_item_position(self, screen):
-        super().update_item_position(screen)
+    def relayout(self, screen):
+        super().relayout(screen)
         self.create_surface()
         self.create_window()
         for item in self.item_list:
-            item.update_item_position(screen)
+            item.relayout(screen)
 
     def draw(self):
         # ウィンドウを描画

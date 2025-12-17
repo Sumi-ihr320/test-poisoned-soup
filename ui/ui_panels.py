@@ -1,7 +1,9 @@
 import pygame
 
 from utils import *
-from ui.ui_elements import *
+from manager.sound_manager import sound_manager
+from ui.ui_elements import Button, TextFrameLabel, Label
+from ui.ui_container import UIContainer
 
 # メニュー用のボタン
 class MenuButton(Button):
@@ -62,18 +64,14 @@ class MenuButton(Button):
         pygame.draw.rect(self.parent_surface, self.out_color, self.rect, 2)
 
 # メニューボタンを並べたバー
-class MenuBar(UIElement):
+class MenuBar(UIContainer):
     """
     MenuBarはテキストフレームの上部に並ぶ複数のMenuButtonを管理する。
     sceneからはcreateボタン、set_enabled(index, bool)、register_all(focus_manager)などで操作する。
     """
     PADDING = 0
-    def __init__(self, screen, font_data, callback, enabled_flag={"セーブ":True, "ロード":True, "ログ":True}, parent=None, sound_type="click", row=0, col=0, focusable=False, **kwargs):
-        """
-        labels_with_callbacks: [(label_text, callback, enabled_bool, col_opt), ...]
-        parent: 通常 TextFramePanel か screen。 親のsurface座標を基準に配置する。
-        """
-        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, **kwargs)
+    def __init__(self, screen, font_data, callback, enabled_flag={"セーブ":True, "ロード":True, "ログ":True}, parent=None):
+        super().__init__(screen, parent)
 
         self.font_data = font_data
         self.callback = callback
@@ -87,7 +85,6 @@ class MenuBar(UIElement):
             ("終了", self.on_exit, True, 4)
         ]
 
-        self.buttons = []
         self._build(self.menu_items)
 
     # メニューボタンを作成する
@@ -103,7 +100,7 @@ class MenuBar(UIElement):
             btns.append(btn)
             cur_x += w + self.PADDING
 
-        self.buttons = btns
+        self.children = btns
 
         """
         font = pygame.font.Font(self.font_data[0], self.font_data[1])
@@ -162,47 +159,17 @@ class MenuBar(UIElement):
     def on_exit(self):
         Close(self.root)
 
-    def draw(self):
-        for btn in self.buttons:
-            btn.draw()
-
-    def update_item_position(self, screen, parent=None):
-        super().update_item_position(screen, parent)
-        for btn in self.buttons:
-            btn.update_item_position(screen, parent)
-
     # enabled/disable 個別操作
     def set_enabled(self, idx, enabled: bool):
-        if 0 < idx < len(self.buttons):
-            self.buttons[idx].set_enabled(enabled)
+        if 0 < idx < len(self.children):
+            self.children[idx].set_enabled(enabled)
 
-    # FocusManagerとの一括登録
-    def register_all(self, focus_manager):
-        for btn in self.buttons:
-            if btn.is_focusable():
-                focus_manager.register(btn)
-
-    # FocusManagerとの一括解除
-    def unregister_all(self, focus_manager):
-        for btn in self.buttons:
-            if btn in focus_manager.elements:
-                focus_manager.elements.remove(btn)
-
-    def handle_mouse_hover(self, pos):
-        for btn in self.buttons:
-            btn.handle_mouse_hover(pos)
-
-    def handle_click(self, pos):
-        for btn in self.buttons:
-            if btn.handle_click(pos):
-                return True
-        return False
-
-
-class TextFramePanel(UIElement):
+# テキストフレーム本体
+class TextFramePanel(UIContainer):
     PADDING = 10
-    def __init__(self, screen, parent=None, font_data=(FONT_PATH, FONT_SIZ), frame_size=FRAME_SIZE, next_callback=None, enabled_flag={"セーブ":True, "ロード":True, "ログ":True}, sound_type="click", row=0, col=0, focusable=False, **kwargs):
-        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, **kwargs)
+    def __init__(self, screen, parent=None, font_data=(FONT_PATH, FONT_SIZ), frame_size=FRAME_SIZE, next_callback=None, enabled_flag={"セーブ":True, "ロード":True, "ログ":True}):
+        super().__init__(screen, parent)
+
         self.frame_size = frame_size
         self.margin_bottom = 30
 
@@ -242,11 +209,6 @@ class TextFramePanel(UIElement):
         self.menu_bar.register_all(focus_manager)
         focus_manager.regster(self.next_label)
 
-    #def add_child(self, element):
-    #    self.children.append(element)
-    #    if element.focusable:
-    #        self.focusables.append(element)
-
     def set_text(self, text):
         self.text_label.set_text(text)
 
@@ -254,11 +216,11 @@ class TextFramePanel(UIElement):
         log_view.append(text)
         pass
 
-    def update_item_position(self, screen, parent=None):
-        super().update_item_position(screen, parent)
-        self.menu_bar.update_item_position(screen, self)
-        self.text_label.update_item_position(screen, self.rect, self)
-        self.next_label.update_item_position(screen, self)
+    def relayout(self, screen, parent=None):
+        super().relayout(screen, parent)
+        self.menu_bar.relayout(screen, self)
+        self.text_label.relayout(screen, self.rect, self)
+        self.next_label.relayout(screen, self)
 
     def draw(self):
         # テキストフレームの描画

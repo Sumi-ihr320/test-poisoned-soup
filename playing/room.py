@@ -47,11 +47,11 @@ class Room:
             for item in self.items_draw_list:
                 item.draw()
 
-    def update_item_position(self, screen):
+    def relayout(self, screen):
         self.screen = screen
         self.screen_size = screen.get_size()
         self.create_surface()
-        self.room_img.update_item_position(screen, self.surface)
+        self.room_img.relayout(screen, self.surface)
 
     def handle_mouse_hover(self, pos):
         if self.items_select_list:
@@ -259,10 +259,10 @@ class RoomItem:
 
         self.img = Image(self.screen, self.path, image_cache, scale=shrink_percent, x=x, y=y, anchor=anchor, parent=self.parent)       # 画像
 
-    def update_item_position(self, screen, parent=None):
+    def relayout(self, screen, parent=None):
         self.screen = screen
         self.parent = parent
-        self.img.update_item_position(screen, parent)
+        self.img.relayout(screen, parent)
 
     def draw(self):
         self.img.draw()

@@ -92,7 +92,7 @@ class SceneManager:
             if event_name in ["title", "setting", "charasheet"]:
                 # スクリーンサイズに変更があった場合は更新
                 if self.event_map[event_name].screen_size != self.screen.get_size():
-                    self.event_map[event_name].update_item_position(self.screen)
+                    self.event_map[event_name].relayout(self.screen)
             
             # 前のイベント
             if event_name in ["setting", "save", "load"]:

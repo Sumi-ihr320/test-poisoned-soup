@@ -83,13 +83,13 @@ class Profession:
                 sx = sk_x
                 sy += label.rect.h + 10
 
-    def update_item_position(self, screen, parent):
+    def relayout(self, screen, parent):
         self.screen = screen
         self.parent = parent
-        self.small_img.update_item_position(screen, parent)
-        self.big_img.update_item_position(screen, parent)
+        self.small_img.relayout(screen, parent)
+        self.big_img.relayout(screen, parent)
         for label in self.labels:
-            label.update_item_position(screen, parent)
+            label.relayout(screen, parent)
 
     # 表示
     def draw(self, is_selected=False):
@@ -201,12 +201,12 @@ class ProfessionSelecter:
             item = Profession(self.screen, self.parent, self.font_datas, prof_key, name, skill, Rect(x, y, 50, 50), Rect(view_x, view_y, 100, 100))
             self.prof_items.append(item)
     
-    def update_item_position(self, screen, parent, sheet_rect):
+    def relayout(self, screen, parent, sheet_rect):
         self.screen = screen
         self.parent = parent
         self.sheet_rect = sheet_rect
         for item in self.prof_items:
-            item.update_item_position(screen, parent)
+            item.relayout(screen, parent)
 
     def draw(self):
         for item in self.prof_items:
@@ -249,11 +249,11 @@ class HobbySelecter:
         self.pull = PullDown(self.screen, small_font_data, Rect(440,self.label.rect.y-8,150,25), list(self.hobby_list), list_item, 180, parent=self.parent)
         self.pull.update_position(x=self.label.rect.x-10, anchor=("right", "top"))
 
-    def update_item_position(self, screen, parent):
+    def relayout(self, screen, parent):
         self.screen = screen
         self.parent = parent
-        self.label.update_item_position(screen, parent)
-        self.pull.update_item_position(screen, parent)
+        self.label.relayout(screen, parent)
+        self.pull.relayout(screen, parent)
 
     def draw(self, is_dropped):
         self.label.draw()

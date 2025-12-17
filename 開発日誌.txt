@@ -669,3 +669,9 @@
 2025/12/13
 	CommandMenuクラスを分離しui_command.pyを作成。commandsをdataclassに変更
 	render_managerの作成続き
+
+2025/12/17
+	※inputフォルダーが消えている…とりあえずPCに入っていたデータをコピペしたがだいぶ前のデータだこれ
+	update_item_position を relayoutに変更
+	ui_container.pyを作成。MenuBerやTextFramePanel、CommandMenu等をUIContainerを基礎のモデルに変更
+	帰宅後inputフォルダ発見した。戻しました。

@@ -112,15 +112,15 @@ class ConfirmPage(BacePage):
             self.label_dict[name].set_text(text)
         self.create_box()
 
-    def update_item_position(self, screen):
-        super().update_item_position(screen)
+    def relayout(self, screen):
+        super().relayout(screen)
         for label in self.label_dict.values():
-            label.update_item_position(screen, self)
+            label.relayout(screen, self)
         self.create_box()
         for sex_img in self.sex_img_dict.values():
-            sex_img.update_item_position(screen, self)
+            sex_img.relayout(screen, self)
         for prof_img in self.prof_img_dict.values():
-            prof_img.update_item_position(screen, self)
+            prof_img.relayout(screen, self)
 
     def draw(self):
         self.update_label()

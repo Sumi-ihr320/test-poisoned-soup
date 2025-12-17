@@ -12,9 +12,13 @@ class BaseScene:
         self.state = State.NONE
 
     # 画面サイズ変更時に呼び出す
-    def update_item_position(self, screen):
+    def relayout(self, screen):
         self.screen = screen
         self.screen_size = self.screen.get_size()
+
+    # メニューボタン用のコールバック関数
+    def set_state(self, state=State.NONE):
+        self.state = state
 
     def draw(self):
         pass

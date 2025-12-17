@@ -55,15 +55,15 @@ class Status:
         rect.x = rect.x + rect.w + 5
         self.button = Button(self.screen, self.font_data, self.dice_text, rect, self.dice_process, parent=self.parent)
 
-    def update_item_position(self, screen, parent):
+    def relayout(self, screen, parent):
         self.screen = screen
         self.parent = parent
         if self.status_label:
-            self.status_label.update_item_position(screen, parent)
+            self.status_label.relayout(screen, parent)
         if self.input:
-            self.input.update_item_position(screen, parent)
+            self.input.relayout(screen, parent)
         if self.button:
-            self.button.update_item_position(screen, parent)
+            self.button.relayout(screen, parent)
 
     def draw(self):
         self.status_label.draw()
@@ -217,13 +217,13 @@ class SexChange:
     def update_sex(self, flag):
         self.flag = flag
 
-    def update_item_position(self, screen, parent):
+    def relayout(self, screen, parent):
         self.screen = screen
         self.parent = parent
         for label in self.label_list:
-            label.update_item_position(screen, parent)
+            label.relayout(screen, parent)
         for image in self.image_list:
-            image.update_item_position(screen, parent)
+            image.relayout(screen, parent)
 
     # 描画するよ
     def draw(self):
