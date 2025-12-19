@@ -11,6 +11,7 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from manager.sound_manager import sound_manager
+from manager.dice import DiceEngine
 
 # 各エレメントの基礎となるもの(基礎クラス)
 class UIElement:
@@ -1068,36 +1069,14 @@ class DiceRoll:
     def __init__(self, dice_text):
         self.text = dice_text
 
-        # 個数、何面、プラスαのアイテム
-        self.pieces, self.dice, self.plus_item = dice_confirmation(self.text)
+        # ダイスエンジン
+        self.engine = DiceEngine()
         
         # 計算結果
-        self.result = self.dice_roll()
+        self.result = self.engine.roll(self.text)
 
         # ダイス音を鳴らす
         self.sound()
-
-    # ダイスロールの計算
-    def dice_roll(self):
-        val = 0
-        # ランダムで数字を出して個数分＋する
-        for _ in range(self.pieces):
-            val += random.randint(1, self.dice)
-        
-        # プラスα文字列があった場合は計算する
-        if self.plus_item:
-            index = self.plus_item.end()
-            item_num = int(self.text[index])
-            val = val + item_num if self.plus_item.group() == "+" else val - item_num
-        return val
-    
-    # 成否判定
-    def check(self, threshold):
-        """
-        threshold: 判定の基準値
-        return: 成否 (bool)
-        """
-        return self.result <= threshold
     
     def sound(self):
         sound_name = "ダイスを振る"

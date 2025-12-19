@@ -675,3 +675,8 @@
 	update_item_position を relayoutに変更
 	ui_container.pyを作成。MenuBerやTextFramePanel、CommandMenu等をUIContainerを基礎のモデルに変更
 	帰宅後inputフォルダ発見した。戻しました。
+
+2025/12/19
+	dice.pyを作成
+	ui_elementsのDiceRollを変更
+	

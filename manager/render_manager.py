@@ -2,18 +2,20 @@ import pygame
 from pygame import Rect
 from typing import Optional, Sequence, Tuple
 
-from ui.ui_elements import *
+from constans import FONT_PATH, SMALL_SIZ
+from utils import get_scales, setting_font, get_room_rect
+from ui.ui_elements import Image, ImageCache
 from ui.ui_command import CommandMenu, Command
 from ui.ui_panels import TextFramePanel
 from ui.log_view import LogView
 
 class RenderManager:
-    def __init__(self, screen, image_cache=None, room_manager=None, text_frame_panel=None, log_view=None):
+    def __init__(self, screen, image_cache=None, room_rect=None, text_frame_panel=None, log_view=None):
         self.screen = screen
         self.screen_size = screen.get_size()
 
         # 外部からのセット
-        self.room_manager = room_manager
+        self.room_rect = room_rect
 
         # テキスト表示関連
         self.text_frame_panel = text_frame_panel if text_frame_panel else TextFramePanel(self.screen)
@@ -71,11 +73,6 @@ class RenderManager:
             self.command_menu_rect = None
             return
         
-        if target == "item":
-            target_rect = self.item_image.rect
-        elif target == "girl":
-            target_rect = self.girl_image.rect
-
         font = setting_font(FONT_PATH, SMALL_SIZ)
         max_width = 120
         for cmd in commands:
@@ -87,51 +84,58 @@ class RenderManager:
         menu_h = btn_h * len(commands)
 
         frame_rect = self.text_frame_panel.rect if self.text_frame_panel else Rect(0, 0, 0, 0)
-        menu_rect = self.text_frame_panel.menu_bar.rect
-        pos = self._choose_menu_position(target_rect, menu_w, menu_h, frame_rect, menu_rect)
-        start_position = self.get_position()
-        self.command_menu = CommandMenu(self.screen, commands, start_position)
+        menu_bar_rect = self.text_frame_panel.menu_bar.rect
+
+        if target:
+            rect = self.resolve_target_rect(target)
+            pos = self.calc_command_menu_position(rect, menu_w, menu_h, frame_rect, menu_bar_rect)
+        else:
+            pos = self.get_default_command_menu_position(menu_h)
+
+        #start_position = self.get_position()
+        self.command_menu = CommandMenu(self.screen, commands, start_position=pos)
+
+    # target文字列から対象rectを取得
+    def resolve_target_rect(self, target: str):
+        if target == "item" and self.item_image:
+            return self.item_image.rect
+        elif target == "girl" and self.girl_image:
+            return self.girl_image.rect
+        return None
 
     # コマンドメニューの表示位置を取得
-    def _choose_menu_position(self, target_rect, menu_w: int, menu_h: int, frame_rect, menu_rect):
+    def calc_command_menu_position(self, target_rect, menu_w: int, menu_h: int, frame_rect, menu_bar_rect):
         """
         menu_wとmenu_hをtargetの周りに配置(右・左・下・上)して、screen内かつframe_rectと被らない位置を返す
         """
         screen_rect = self.screen.get_rect()
         margin = 8
 
-        # right
-        x = target_rect.right + margin
-        y = target_rect.centery - menu_h // 2
-        rect = Rect(x, y, menu_w, menu_h)
-        if self._is_rect_valid_for_menu(rect, screen_rect, frame_rect, menu_rect):
-            return (max(screen_rect.left+margin, x), max(screen_rect.top+margin, y))
-        
-        # left
-        x = target_rect.left - menu_w - margin
-        y = target_rect.centery - menu_h // 2
-        rect = Rect(x, y, menu_w, menu_h)
-        if self._is_rect_valid_for_menu(rect, screen_rect, frame_rect, menu_rect):
-            return (max(screen_rect.left+margin, x), max(screen_rect.top+margin, y))
-        
-        # below
-        x = target_rect.centerx - menu_w // 2
-        y = target_rect.bottom + margin
-        rect = Rect(x, y, menu_w, menu_h)
-        if self._is_rect_valid_for_menu(rect, screen_rect, frame_rect, menu_rect):
-            return (max(screen_rect.left+margin, x), max(screen_rect.top+margin, y))
-        
-        # above
-        x = target_rect.centerx - menu_w // 2
-        y = target_rect.top - menu_h - margin
-        rect = Rect(x, y, menu_w, menu_h)
-        if self._is_rect_valid_for_menu(rect, screen_rect, frame_rect, menu_rect):
-            return (max(screen_rect.left+margin, x), max(screen_rect.top+margin, y))
+        calc_list = [{"x":target_rect.right + margin,            "y":target_rect.centery - menu_h // 2},    # right
+                     {"x":target_rect.left - menu_w - margin,    "y":target_rect.centery - menu_h // 2},    # left
+                     {"x":target_rect.centerx - menu_w // 2,     "y":target_rect.bottom + margin},          # below
+                     {"x":target_rect.centerx - menu_w // 2,     "y":target_rect.top - menu_h - margin}]    # above
+
+        for calc in calc_list:
+            x = calc["x"]
+            y = calc["y"]
+            rect = Rect(x, y, menu_w, menu_h)
+            if self._is_rect_valid_for_menu(rect, screen_rect, frame_rect, menu_bar_rect):
+                return (max(screen_rect.left+margin, x), max(screen_rect.top+margin, y))
         
         # 最終手段：画面右下の安全領域（そんなとこあったっけ？？？）
         safe_x = min(screen_rect.right - menu_w - margin, frame_rect.right - menu_w - margin if frame_rect else screen_rect.right - menu_w - margin)
         safe_y = max(margin, frame_rect.top - menu_h - margin if frame_rect else screen_rect.bottom - menu_h - margin)
         return (max(margin, safe_x), max(margin, safe_y))
+
+
+    # targetが指定されていない場合のコマンドメニューのデフォルト位置
+    def get_default_command_menu_position(self, menu_h: int) -> Tuple[int, int]:
+        room = self.room_rect
+        x = room.centerx + 120  # 少し右寄せ
+        y = room.centery - menu_h // 2
+
+        return (x, y)
 
     # 画面内に収まっていてテキストフレームに重ならないか判定
     def _is_rect_valid_for_menu(self, rect, screen_rect, frame_rect, menu_rect) -> bool:
@@ -210,6 +214,20 @@ class RenderManager:
             if self.girl_image.collidepoint(pos):
                 pass
         pass
+
+    # コマンドメニューのマウスオーバー
+    def handle_mouse_hover(self, pos):
+        if self.command_menu:
+            self.command_menu.handle_mouse_hover(pos)
+
+    # コマンドメニューがクリックされた際に実行
+    def handle_command_click(self, pos):
+        if self.command_menu:
+            next_scenario = self.command_menu.handle_click(pos)
+            if next_scenario:
+                self.to_callback_next_scenario(next_scenario)
+            
+            self.command_menu = None    # コマンドメニューを閉じる
 
     # 表示する
     def draw(self, step):

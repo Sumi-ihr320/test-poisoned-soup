@@ -157,11 +157,11 @@ def sound_check(sound_manager):
 # "〇D〇" のテキストから何個のダイスか、何面ダイスか、+〇、-〇が付いてるかを抽出する
 def dice_confirmation(text):
     # テキストに+か-が入っているか確認
-    plus_item = re.search(r"\+|\-", text)
-    cut_index = plus_item.start() if plus_item else 0
+    modifier = re.search(r"\+|\-", text)
+    cut_index = modifier.start() if modifier else 0
     pieces = text[0]
-    dice = text[2:] if cut_index == 0 else text[2:cut_index]
-    return int(pieces), int(dice), plus_item
+    dice_faces = text[2:] if cut_index == 0 else text[2:cut_index]
+    return int(pieces), int(dice_faces), modifier
 
 # 対抗ロールの成功値計算(return パーセンテージ)
 def opposition_percent(active, passive):

@@ -622,19 +622,6 @@ class EventManager:
         """戦闘イベントを開始"""
         print(f"Starting fight with {enemy}")
 
-    # コマンドメニューのマウスオーバー
-    def handle_mouse_hover(self, pos):
-        if self.command_menu:
-            self.command_menu.handle_mouse_hover(pos)
-
-    # コマンドメニューがクリックされた際に実行
-    def handle_command_click(self, pos):
-        if self.command_menu:
-            next_scenario = self.command_menu.handle_click(pos)
-            if next_scenario:
-                self.to_callback_next_scenario(next_scenario)
-            
-            self.command_menu = None    # コマンドメニューを閉じる
 
     # 表示する
     def draw(self, step):

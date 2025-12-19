@@ -10,6 +10,7 @@ from characters import *
 
 from base_scene import BaseScene
 from ui.menu import MenuController
+from ui.ui_panels import TextFramePanel
 from ui.navigation import MainNavigation
 from ui.log_view import LogView
 from playing.room_manager import RoomManager
@@ -36,7 +37,8 @@ class MainPlay(BaseScene):
         self.log_view_flag = False
 
         # メニューコントローラー
-        self.menu_controller = MenuController(self.screen, self.root, self.set_state)
+        #self.menu_controller = MenuController(self.screen, self.root, self.set_state)
+        self.text_frame_panel = TextFramePanel(self.screen, next_callback=self.set_state)
 
         # 管理用
         self.event_manager = EventManager(self.screen, self.player_status, self.girl_status, self.game_state, self.flags, self.log_view,
