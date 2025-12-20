@@ -3,8 +3,9 @@ from pygame.locals import *
 
 from constans import *
 from utils import *
-from game_state import *
-from ui.menu import MenuController
+from core.game_state import *
+#from ui.menu import MenuController
+from ui.ui_panels import TextFramePanel
 from manager.event_manager import EventManager
 from manager.scenario_manager import ScenarioManager
 
@@ -25,12 +26,14 @@ class Ending:
         self.scenario_manager = ScenarioManager(self.screen, event_manager, "ending")
         
         # メニューボタン
-        self.menu_controller = MenuController(self.screen, self.root, self.set_state)
+        #self.menu_controller = MenuController(self.screen, self.root, self.set_state)
+        self.text_frame_panel = TextFramePanel(self.screen, next_callback=self.set_state())
     
     # 表示
     def draw(self):
-        create_frame(self.screen)
-        self.menu_controller.draw()
+        #create_frame(self.screen)
+        #self.menu_controller.draw()
+        self.text_frame_panel.draw()
         self.scenario_manager.draw()
     
     def handle_mouse_hover(self):

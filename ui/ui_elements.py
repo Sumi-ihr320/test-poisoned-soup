@@ -1,6 +1,3 @@
-
-import random
-
 import tkinter as tk
 from tkinter import ttk
 from tkinter import simpledialog
@@ -11,7 +8,6 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from manager.sound_manager import sound_manager
-from manager.dice import DiceEngine
 
 # 各エレメントの基礎となるもの(基礎クラス)
 class UIElement:
@@ -1063,27 +1059,6 @@ class PullDown(UIElement, ResizableMixin):
         super().relayout(screen, parent)
         self.rect = self.resize(self.screen_size)
         self.resize_font(self.screen_size)
-
-# ダイスロールをクラス化するよ（画像表示はやめとこうかなって悩んでるよ）
-class DiceRoll:
-    def __init__(self, dice_text):
-        self.text = dice_text
-
-        # ダイスエンジン
-        self.engine = DiceEngine()
-        
-        # 計算結果
-        self.result = self.engine.roll(self.text)
-
-        # ダイス音を鳴らす
-        self.sound()
-    
-    def sound(self):
-        sound_name = "ダイスを振る"
-        if not sound_manager.sounds or sound_name not in sound_manager.sounds:
-            sound_manager.load_sound(sound_name, "W-DISE.mp3")
-        sound_manager.play(sound_name)
-
 
 # 主人公の名前・HP・MPを左上、現在地を右上に表示する
 class PlayerDataView:

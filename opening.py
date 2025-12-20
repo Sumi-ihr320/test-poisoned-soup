@@ -5,7 +5,7 @@ from constans import *
 from utils import *
 from input.virtual_cursor import *
 from input.focus_manager import FocusManager
-from ui.menu import MenuController
+#from ui.menu import MenuController
 from ui.ui_panels import TextFramePanel
 from ui.log_view import LogView
 from input.focus_manager import *
@@ -29,8 +29,8 @@ class Opening(BaseScene):
         self.log_view_flag = False
 
         # テキストフレームパネル
-        enabled_flag = {"セーブ":False, "ロード":True, "ログ":True}
-        self.text_frame_panel = TextFramePanel(self.screen, next_callback=self.set_state, enabled_flag=enabled_flag)
+        enabled_flags = {"セーブ":False, "ロード":True, "ログ":True}
+        self.text_frame_panel = TextFramePanel(self.screen, next_callback=self.set_state, enabled_flags=enabled_flags)
 
         # マネージャーを初期化
         event_manager = EventManager(self.screen, log_view=self.log_view)
@@ -38,14 +38,14 @@ class Opening(BaseScene):
 
         # メニューボタン
         #self.menu_controller = MenuController(self.screen, self.root, self.set_state, enableds=(False, True, True))
-
+    
         # キーボード操作用カーソル
         #self.cursor = VirtualCursor(self.screen)
         #self.use_virtual_cursor = False
 
     def relayout(self, screen):
         super().relayout(screen)
-        self.menu_controller.relayout(screen)
+        #self.menu_controller.relayout(screen)
 
     # 表示
     def draw(self):

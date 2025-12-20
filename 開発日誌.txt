@@ -679,4 +679,11 @@
 2025/12/19
 	dice.pyを作成
 	ui_elementsのDiceRollを変更
-	
+
+2025/12/20
+	modelsフォルダを作成、そこにcharacters.pyとcharacter_item.pyを移動
+	coreフォルダを作成、そこにgame_state.pyを移動
+	systemsフォルダを作成、そこにbattle_manager.pyを移動
+	managerフォルダにdice_service.pyを作成
+	ui_elementsからDiceRollを削除
+	managerフォルダにevent_processorsフォルダを作成

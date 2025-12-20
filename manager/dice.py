@@ -23,7 +23,7 @@ class DiceEngine:
 
         return total
 
-    # 成否判定が必要なロール
+    # ロール結果の成否判定を行い、成否の bool とロール結果の int を返す
     def check_threshold(self, dice_text: str, threshold: int, op: str = "<=") -> Tuple[bool, int]:
         """
         threshold: 判定の基準値

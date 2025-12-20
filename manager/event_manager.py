@@ -1,13 +1,15 @@
 import re
 
 from constans import *
-from ui.ui_elements import CommandMenu, DiceRoll, Image, TextFrameLabel, ImageCache
+from ui.ui_elements import Image, TextFrameLabel, ImageCache
 from ui.ui_panels import TextFramePanel
 from ui.ui_command import Command
 from ui.log_view import LogView
 from utils import *
 from .render_manager import RenderManager
+from .dice_service import DiceService
 from .sound_manager import sound_manager
+from .event_processors.dice_processor import DiceProcessor
 
 class EventManager:
     def __init__(self, screen, player=None, girl=None, game_state=None, flags=None, text_frame_panel=None, log_view=None,
@@ -27,14 +29,19 @@ class EventManager:
         self.set_state_call_back = set_state
 
         # テキスト表示関連
-        self.text_frame_label = TextFrameLabel(self.screen)
-        self.log_view = log_view if log_view else LogView(self.screen)
+        #self.text_frame_label = TextFrameLabel(self.screen)
+        #self.log_view = log_view if log_view else LogView(self.screen)
 
         # 画像表示用cache
         self.image_cache = ImageCache()
 
         # 表示関連
         self.render_manager = RenderManager(self.screen)
+
+        # ダイスサービス
+        self.dice_service = DiceService()
+        # ダイス処理
+        self.dice_processor = DiceProcessor(self.dice_service, self.skill_list, self.flags)
 
         self.player_roll_result = None     # ダイスロールの結果
         self.girl_roll_result = None
@@ -211,10 +218,17 @@ class EventManager:
         player_flag, girl_flag = self.target_check(step)
 
         if player_flag:
-            check_status, player_check_result, result_text = self.handle_dice_roll(step, self.player)
+            res = self.dice_processor.process_dice_roll(step, self.player)
+            check_status = res["status"]
+            player_check_result = res["ok"]
+            result_text = res["text"]
 
         if girl_flag:
-            check_status, girl_check_result, text= self.handle_dice_roll(step, self.girl)
+            res = self.dice_processor.process_dice_roll(step, self.girl)
+            check_status = res["status"]
+            girl_check_result = res["ok"]
+            text = res["text"]
+
             if result_text:
                 result_text += f"\n{text}"
             else:
@@ -247,59 +261,7 @@ class EventManager:
                 self.dice_check_result = False
                 self.result_text = f"《{status_text}》 ⇒ 失敗！\n" + result_text
             self.last_dice_step = step
-            #self.to_callback_next_scenario("result_text")
-        
-
-    # ダイスロールを処理
-    def handle_dice_roll(self, step, character):
-        dice_text = step.get("dice", "1d100")
-        check_type = step["check_type"]
-        half = step.get("half", False)      # 半分の値でチェックする
-        status = step.get("status", step.get("skill", None))
-
-        if check_type == "VS_active":
-            active = getattr(character, status)
-            passive = step["enemy_status"]
-            threshold = opposition_percent(active, passive)
-
-        elif check_type == "VS_passive":
-            active = step["enemy_status"]
-            passive = getattr(character, status)
-            threshold = opposition_percent(active, passive)
-
-        elif check_type == "毒対抗ロール":
-            active = step["POT"]
-            status = "CON"
-            passive = getattr(character, status)
-            threshold = opposition_percent(active, passive)
-
-        elif check_type == "shock_roll":
-            status = "CON"
-            threshold = getattr(character, status) * 5
-
-        elif check_type == "SANチェック":
-            status = "SAN"
-            threshold = getattr(character, status)
-
-
-        elif check_type == "skill":
-            #skill = step["skill"]
-            threshold = character.skill.get(status, self.skill_list[status])
-
-        elif check_type == "status":
-            check_list = {"回避":"Dodge",
-                          "幸運":"Luck"}
-            status = check_list.get(status, status)
-            threshold = getattr(character, status)
-        
-        if half:
-            threshold = threshold // 2
-
-        dice = DiceRoll(dice_text)
-        check_result = dice.check(threshold)
-
-        result_text = f"{character.name}：成功！ <color=blue>{dice.result}<color/>/{threshold}" if check_result == True else f"{character.name}：失敗！ <color=red>{dice.result}<color/>/{threshold}"
-        return status, check_result, result_text
+            #self.to_callback_next_scenario("result_text")  
 
     # ダメージ計算をして表示するテキストを作成する
     def handle_damage(self, step):
@@ -411,9 +373,9 @@ class EventManager:
 
                 # 気絶した時間 - 気絶する時間 = 気絶から目覚める時間
                 faint_time = self.game_state.time
-                dice_roll = DiceRoll("1d10")
-                wait_duration = dice_roll * 100
-                recovery_time = faint_time - dice_roll.result
+                dice_result = self.dice_service.roll("1d10")
+                wait_duration = dice_result * 100
+                recovery_time = faint_time - dice_result
 
                 if character == self.player:
                     # 主人公が気絶したらブラックアウトする
@@ -478,11 +440,11 @@ class EventManager:
         self.handle_scenario_event(next_step)
 
     # テキスト描画領域にテキストをセットする
-    def set_text(self, text):
-        if "{" in text:
-            text = self.process_text_template(text)
-        self.text_frame_label.set_text(text)
-        self.log_manager.append(text)
+    #def set_text(self, text):
+    #    if "{" in text:
+    #        text = self.process_text_template(text)
+    #    self.text_frame_label.set_text(text)
+    #    self.log_manager.append(text)
 
     # テンプレートにダイス結果等を表示
     def process_text_template(self, text_tamplate):
@@ -578,8 +540,8 @@ class EventManager:
 
     # ダメージ計算
     def damage_calculator(self, dice_text):
-        dice = DiceRoll(dice_text)
-        return dice.result
+        result = self.dice_service.roll(dice_text)
+        return result
 
     # ダメージを受けるイベント
     def take_damage(self, character, status, damage):

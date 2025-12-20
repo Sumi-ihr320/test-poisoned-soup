@@ -1,9 +1,9 @@
-from character_item import *
-# from skill import *
+from typing import Optional
+from models.character_item import *
 
 # キャラクタークラス
 class Character:
-    def __init__(self, name="", image="", STR=0, CON=0, SIZ=0, DEX=0, INT=0, POW=0, DB="", HP=0, MP=0, Dodge=0, skill={}):
+    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: dict={}):
         # 基本情報
         self.name = name
         self.image = image
@@ -29,7 +29,7 @@ class Character:
         return 0
 
     # ダメージを受けた時の処理
-    def take_damage(self, event, damage):
+    def take_damage(self, event: str, damage: int) -> Optional[str]:
         state = None    # 状態
         # バトル中のダメージの場合は装甲がダメージを防ぐ
         if event == "battle":
@@ -95,7 +95,7 @@ class Character:
 
 # 敵クラス
 class Enemy(Character):
-    def __init__(self, name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill, armor):
+    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: dict={}, armor: int=0):
         super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
         self.armor = armor
 
@@ -109,8 +109,8 @@ class Enemy(Character):
 
 # 人間クラス
 class Human(Character):
-    def __init__(self, name="", image="", STR=0, CON=0, SIZ=0, DEX=0, INT=0, POW=0, DB="", HP=0, MP=0, Dodge=0, skill={}, age=0, sex="man",
-                 APP=0, EDU=0, Luck=0, Idea=0, Know=0, SAN=0, max_SAN=0, Profession="", inventory=[]):
+    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: dict={}, age: int=0, sex: str="man",
+                 APP: int=0, EDU: int=0, Luck: int=0, Idea: int=0, Know: int=0, SAN: int=0, max_SAN: int=0, Profession: str="", inventory: list=[]):
         super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
         
         # 基本情報
@@ -185,8 +185,8 @@ class Human(Character):
 
 # 主人公クラス
 class Player(Human):
-    def __init__(self, name="", image="silhouette_man.png", age=0, sex="man", STR=0, CON=0, SIZ=0, DEX=0, APP=0, EDU=0, INT=0, POW=0, Luck=0, Idea=0, Know=0, 
-                 DB="", HP=0, MP=0, Dodge=0, SAN=0, max_SAN=0, profession="", skill={}, inventory=[], hobby="", girl_like_ability=0):
+    def __init__(self, name: str="", image: str="silhouette_man.png", age: int=0, sex: str="man", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, APP: int=0, EDU: int=0, INT: int=0, POW: int=0, Luck: int=0, Idea: int=0, Know: int=0, 
+                 DB: str="", HP: int=0, MP: int=0, Dodge: int=0, SAN: int=0, max_SAN: int=0, profession: str="", skill: dict={}, inventory: list=[], hobby: str="", girl_like_ability: int=0):
         super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill,
                          age, sex, APP, EDU, Luck, Idea, Know, SAN, max_SAN, profession, inventory)
         self.Hobby = hobby

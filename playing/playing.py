@@ -5,11 +5,10 @@ from constans import *
 from utils import *
 from ui.ui_elements import *
 from input.virtual_cursor import *
-from game_state import *
-from characters import *
+from core.game_state import *
+from models.characters import *
 
 from base_scene import BaseScene
-from ui.menu import MenuController
 from ui.ui_panels import TextFramePanel
 from ui.navigation import MainNavigation
 from ui.log_view import LogView
@@ -36,8 +35,7 @@ class MainPlay(BaseScene):
         self.log_view = LogView(self.screen, callback=self.log_view_end)
         self.log_view_flag = False
 
-        # メニューコントローラー
-        #self.menu_controller = MenuController(self.screen, self.root, self.set_state)
+        # テキストフレーム
         self.text_frame_panel = TextFramePanel(self.screen, next_callback=self.set_state)
 
         # 管理用
@@ -247,9 +245,8 @@ class MainPlay(BaseScene):
                     
     # 表示
     def draw(self):
-        create_frame(self.screen)       # テキストフレームの表示
-
-        self.menu_controller.draw()     # メニューの表示
+        #create_frame(self.screen)       # テキストフレームの表示
+        self.text_frame_panel.draw()
 
         self.room_manager.draw()        # 部屋の表示
 

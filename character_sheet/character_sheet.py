@@ -5,9 +5,10 @@ from constans import *
 from utils import *
 from ui.ui_elements import *
 from input.virtual_cursor import *
-from characters import *
+from models.characters import *
 
-from ui.menu import MenuController
+#from ui.menu import MenuController
+from ui.ui_panels import TextFramePanel
 from ui.navigation import CharasheetNavigation
 from character_sheet.status_calculator import *
 from character_sheet.status_page import StatusPage
@@ -21,10 +22,9 @@ class CharacterSheet(BaseScene):
     def __init__(self, screen, root):
         super().__init__(screen, root)
 
-        # メニューボタン
-        self.menu_controller = MenuController(self.screen, self.root, self.set_state, enableds=(False, True, False))
-        # テキストフレーム用ラベル
-        self.text_frame_label = TextFrameLabel(self.screen)
+        # テキストフレーム
+        enabled_flags = {"セーブ": False, "ロード": True, "ログ": False}
+        self.text_frame_panel = TextFramePanel(self.screen, enabled_flags=enabled_flags)
 
         self.selected_profession = None     # 選択中の職業
         self.is_pulldown_open = False       # プルダウン用のフラグ

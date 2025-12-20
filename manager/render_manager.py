@@ -32,6 +32,7 @@ class RenderManager:
         self.command_menu = None
         self.command_menu_rect = None
 
+        self.is_blackout_active = False
         self.blackout_images = []
         self.blackout_index = 6         # ブラックアウト画像のインデックス
         self.blackout_phase = None      # ブラックアウトのフェーズ

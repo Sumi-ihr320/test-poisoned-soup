@@ -1,7 +1,7 @@
 
 from constans import PROF_DATA_PATH
 from ui.ui_elements import *
-from characters import *
+#from models.characters import *
 
 from character_sheet.base_page import BacePage
 

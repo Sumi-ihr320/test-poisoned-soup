@@ -97,11 +97,11 @@ class ScenarioManager:
 
     # 現在のステップの描画をイベントマネージャーに依頼
     def draw(self):
-        if self.event_manager.girl_image:
-            self.event_manager.girl_image.draw()
+        #if self.event_manager.girl_image:
+        #    self.event_manager.girl_image.draw()
             
-        if self.event_manager.item_image:
-            self.event_manager.item_image.draw()
+        #if self.event_manager.item_image:
+        #    self.event_manager.item_image.draw()
 
         if self.is_active and self.current_index < len(self.current_scenario):
             step = self.current_scenario[self.current_index]

@@ -1,7 +1,7 @@
 import os
 from enum import Enum
 from pygame.locals import Rect
-from character_item import *
+from models.character_item import *
 
 
 #DISPLAY_SIZE = (800, 600)

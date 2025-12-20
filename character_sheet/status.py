@@ -3,6 +3,7 @@ from pygame.locals import *
 from constans import *
 from utils import *
 from ui.ui_elements import *
+from manager.dice_service import DiceService
 
 # ステータス作るよ
 class Status:
@@ -35,6 +36,8 @@ class Status:
         self.button = None  # 初期化
         if button_flag: # ダイスボタンを作るかのフラグ
             self.create_dice_button()
+
+        self.dice_service = DiceService()
 
     # ラベル作成
     def create_label(self, x, y):
@@ -110,8 +113,8 @@ class Status:
 
     # ダイス処理まとめるよ
     def dice_process(self):
-        dice = DiceRoll(self.dice_text)
-        self.input.update_label(f"{dice.result}")
+        result = self.dice_service.roll(self.dice_text)
+        self.input.update_label(f"{result}")
 
     def handle_mouse_hover(self, pos):
         if self.status_label.collidepoint(pos):

@@ -1,8 +1,8 @@
 import pygame
 
 from constans import InputMode
-from input_mode_manager import input_mode_manager
-from virtual_cursor import VirtualCursor
+from input.input_mode_manager import input_mode_manager
+from input.virtual_cursor import VirtualCursor
 
 # キーボードによる選択アイテム移動システム
 class FocusManager:

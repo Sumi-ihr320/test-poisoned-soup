@@ -70,18 +70,20 @@ class MenuBar(UIContainer):
     sceneからはcreateボタン、set_enabled(index, bool)、register_all(focus_manager)などで操作する。
     """
     PADDING = 0
-    def __init__(self, screen, font_data, callback, enabled_flag={"セーブ":True, "ロード":True, "ログ":True}, parent=None):
+    def __init__(self, screen, frame_rect, font_data, callback, enabled_flags={"セーブ":True, "ロード":True, "ログ":True}, parent=None):
         super().__init__(screen, parent)
+
+        self.frame_rect = frame_rect
 
         self.font_data = font_data
         self.callback = callback
 
-        self.enabled_flag = enabled_flag
+        self.enabled_flags = enabled_flags
         self.menu_items = [
-            ("セーブ", self.on_save, enabled_flag["セーブ"], 0),
-            ("ロード", self.on_load, enabled_flag["ロード"], 1),
+            ("セーブ", self.on_save, enabled_flags["セーブ"], 0),
+            ("ロード", self.on_load, enabled_flags["ロード"], 1),
             ("設定", self.on_setting, True, 2),
-            ("ログ", self.on_log, enabled_flag["ログ"], 3),
+            ("ログ", self.on_log, enabled_flags["ログ"], 3),
             ("終了", self.on_exit, True, 4)
         ]
 
@@ -131,10 +133,9 @@ class MenuBar(UIContainer):
         total_w = sum(widths) + (len(widths)-1) * self.PADDING if widths else 0
         h = max(heights) if heights else 0
 
-        # parent のフレームを基準に右寄せで配置
-        frame_rect = self.parent.get_rect()
-        x0 = frame_rect.right - total_w - self.PADDING
-        y0 = frame_rect.y - h
+        # テキストフレームを基準に右寄せで配置
+        x0 = self.frame_rect.right - total_w - self.PADDING
+        y0 = self.frame_rect.y - h
 
         self.rect = Rect(x0, y0, total_w, h)
 
@@ -167,7 +168,7 @@ class MenuBar(UIContainer):
 # テキストフレーム本体
 class TextFramePanel(UIContainer):
     PADDING = 10
-    def __init__(self, screen, parent=None, font_data=(FONT_PATH, FONT_SIZ), frame_size=FRAME_SIZE, next_callback=None, enabled_flag={"セーブ":True, "ロード":True, "ログ":True}):
+    def __init__(self, screen, parent=None, font_data=(FONT_PATH, FONT_SIZ), frame_size=FRAME_SIZE, next_callback=None, enabled_flags={"セーブ":True, "ロード":True, "ログ":True}):
         super().__init__(screen, parent)
 
         self.frame_size = frame_size
@@ -179,10 +180,10 @@ class TextFramePanel(UIContainer):
         self.font_data = font_data
 
         # メニューバー
-        self.menu_bar = MenuBar(screen=self.screen, font_data=self.font_data, callback=next_callback, enabled_flag=enabled_flag, parent=self)
+        self.menu_bar = MenuBar(screen=self.screen, frame_rect=self.rect, font_data=self.font_data, callback=next_callback, enabled_flags=enabled_flags)
 
         # 内部ラベル
-        self.text_label = TextFrameLabel(screen=self.screen, frame_rect=self.rect, parent=self.parent, font_data=self.font_data)
+        self.text_label = TextFrameLabel(screen=self.screen, frame_rect=self.rect, font_data=self.font_data)
 
         # Nextボタン
         #btn_w, btn_h = (40, 28)
@@ -191,7 +192,7 @@ class TextFramePanel(UIContainer):
         next_x = self.rect.right - self.PADDING
         next_y = self.rect.bottom - self.PADDING
         # next_rect = Rect(self.rect.right - btn_w - self.PADDING, self.rect.bottom - btn_h - self.PADDING, btn_w, btn_h)
-        self.next_label = Label(screen=self.screen, font_data=self.font_data, text="▶", x=next_x, y=next_y, anchor=("right", "bottom"), text_color=WHITE, parent=self, row=100, focusable=True)
+        self.next_label = Label(screen=self.screen, font_data=self.font_data, text="▶", x=next_x, y=next_y, anchor=("right", "bottom"), text_color=WHITE, row=100, focusable=True)
 
         #self.children = []
         #self.focusables = []    # focur_managerに渡す用
