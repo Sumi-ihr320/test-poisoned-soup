@@ -9,7 +9,7 @@ from ui.ui_elements import Image
 class Room:
     # 部屋画像の縮小パーセンテージ
     SIZE = 0.2
-    def __init__(self, screen, room, direction="", room_change_flag=None, image_cache=None):
+    def __init__(self, screen, frame_rect, room, direction="", room_change_flag=None, image_cache=None):
         self.screen = screen
         self.screen_size = screen.get_size()
 
@@ -20,6 +20,8 @@ class Room:
 
         # イメージ用cache
         self.image_cache = image_cache
+
+        self.frame_rect = frame_rect
 
         # 部屋画像表示用surface
         self.create_surface()
@@ -65,8 +67,7 @@ class Room:
         self.room_size = get_new_size(self.screen_size, SHEET_SIZE, True)
         self.surface = pygame.Surface(self.room_size)
         screen_rect = self.screen.get_rect()
-        frame_rect = get_frame_rect(self.screen)
-        self.surface_rect = self.surface.get_rect(centerx=screen_rect.centerx, bottom=frame_rect.top - 20)
+        self.surface_rect = self.surface.get_rect(centerx=screen_rect.centerx, bottom=self.frame_rect.top - 20)
 
         self.surface.fill(SHEET_COLOR)
 

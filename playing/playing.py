@@ -39,13 +39,14 @@ class MainPlay(BaseScene):
         self.text_frame_panel = TextFramePanel(self.screen, next_callback=self.set_state)
 
         # 管理用
-        self.event_manager = EventManager(self.screen, self.player_status, self.girl_status, self.game_state, self.flags, self.log_view,
+        self.event_manager = EventManager(self.screen, self.player_status, self.girl_status, self.game_state, self.flags,
+                                          self.text_frame_panel, self.log_view,
                                           self.handle_next_scenario, self.handle_move_room, self.handle_room_view, self.set_state)
         room_id = f"{self.game_state.room}-room"
         self.scenario_manager = ScenarioManager(self.screen, self.event_manager, room_id)
  
         # 部屋の管理
-        self.room_manager = RoomManager(self.screen, self.event_manager, self.flags, self.game_state)
+        self.room_manager = RoomManager(self.screen, self.text_frame_panel.rect, self.event_manager, self.flags, self.game_state)
 
         # ステータス表示
         self.status_label = PlayerDataView(self.screen, self.room_manager.room.surface_rect, self.player_status, self.girl_status, self.game_state, self.flags)
@@ -120,11 +121,11 @@ class MainPlay(BaseScene):
 
     # 少女の表示中に少女をクリックで起こるイベント
     def handle_girl_click_event(self, pos):
-        self.event_manager.handle_girl_click(pos)
+        self.event_manager.render_manager.handle_girl_click(pos)
 
     # コマンドメニューイベント
     def handle_command_menu_event(self, pos):
-        self.event_manager.handle_command_click(pos)
+        self.event_manager.render_manager.handle_command_click(pos)
 
     # ナビゲーションバーをクリックした場合のイベント
     def handle_navigation(self, clicked_position):
@@ -155,7 +156,7 @@ class MainPlay(BaseScene):
         # シナリオ進行中は反応しない
         if not self.scenario_manager.is_active:
             # コマンドメニュー表示中は反応しない
-            if not self.event_manager.command_menu:
+            if not self.event_manager.render_manager.command_menu:
                 pass
 
     # クリックイベント
@@ -171,12 +172,12 @@ class MainPlay(BaseScene):
             if not self.scenario_manager.is_active:
 
                 # コマンドメニュー表示中はそれを優先
-                if self.event_manager.command_menu:
+                if self.event_manager.render_manager.command_menu:
                     self.handle_command_menu_event(pos)
                 
                 # メニューボタン
-                elif self.menu_controller.handle_click(pos):
-                    return
+                #elif self.menu_controller.handle_click(pos):
+                #    return
 
                 # ナビゲーションバーによる移動
                 elif self.handle_navigation(self.navigation.handle_click(pos)):
@@ -194,12 +195,12 @@ class MainPlay(BaseScene):
 
     # マウスオーバー
     def handle_mouse_hover(self):
-        if self.use_virtual_cursor:
-            key = self.cursor.get_pos()
-        else:
-            key = pygame.mouse.get_pos()
-        self.menu_controller.handle_mouse_hover(key)
-        self.event_manager.handle_mouse_hover(key)
+        #if self.use_virtual_cursor:
+        #    key = self.cursor.get_pos()
+        #else:
+        key = pygame.mouse.get_pos()
+        #self.menu_controller.handle_mouse_hover(key)
+        self.event_manager.render_manager.handle_mouse_hover(key)
         self.room_manager.handle_mouse_hover(key)
 
     # キーダウンイベント
@@ -209,8 +210,8 @@ class MainPlay(BaseScene):
             Close(self.root)
 
         # エンターキーでクリックイベント
-        elif key == K_RETURN or key == K_KP_ENTER:
-            self.handle_click(self.cursor.get_pos())
+        #elif key == K_RETURN or key == K_KP_ENTER:
+            #self.handle_click(self.cursor.get_pos())
 
     # イベントハンドラ
     def handle_events(self):
@@ -221,17 +222,17 @@ class MainPlay(BaseScene):
 
             # キーボード押下時
             if event.type == KEYDOWN:
-                if not self.use_virtual_cursor:
+                #if not self.use_virtual_cursor:
                     # ボタンを押すことでキーボードモードに変更
-                    self.use_virtual_cursor = on_keybord(self.cursor)
+                    #self.use_virtual_cursor = on_keybord(self.cursor)
                     
                 self.handle_keydown(event.key)
 
             # マウス移動時
-            if event.type == MOUSEMOTION:
-                if self.use_virtual_cursor:
+            #if event.type == MOUSEMOTION:
+                #if self.use_virtual_cursor:
                     # マウスを動かしたらキーボードモード終了
-                    self.use_virtual_cursor = off_keybord(self.cursor)
+                #    self.use_virtual_cursor = off_keybord(self.cursor)
 
             # マウスクリック時
             if event.type == MOUSEBUTTONDOWN:
@@ -255,10 +256,9 @@ class MainPlay(BaseScene):
         # ステータスの表示
         self.status_label.update(self.player_status, self.girl_status, self.game_state, self.flags)
 
-        # コマンドメニューの表示
-        #if self.event_manager.command_menu:
-        #    self.event_manager.draw()
-            
+        # イベントマネージャーの表示
+        #self.event_manager.draw()
+        
         # シナリオマネージャーの表示
         self.scenario_manager.draw()
 
@@ -272,8 +272,8 @@ class MainPlay(BaseScene):
             
     # 更新
     def update(self):
-        if self.use_virtual_cursor:
-            handle_cursor_move(self.use_virtual_cursor, self.cursor)
+        #if self.use_virtual_cursor:
+            #handle_cursor_move(self.use_virtual_cursor, self.cursor)
 
         if self.scenario_manager.is_active:
             self.scenario_manager.update()
@@ -289,10 +289,6 @@ class MainPlay(BaseScene):
         if flag:
             self.log_view_flag = False
 
-    # メニューボタン用のコールバック関数
-    def set_state(self, state=State.NONE):
-        self.create_save_data()
-        self.state = state
 
     def next_state(self):
         if self.state == State.SAVE:

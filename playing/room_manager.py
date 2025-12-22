@@ -2,8 +2,10 @@ from playing.room import Room
 from ui.ui_elements import ImageCache
 
 class RoomManager:
-    def __init__(self, screen, event_manager, flags, game_state):
+    def __init__(self, screen, frame_rect, event_manager, flags, game_state):
         self.screen = screen
+
+        self.frame_rect = frame_rect
 
         self.flags = flags
         self.game_state = game_state
@@ -18,7 +20,7 @@ class RoomManager:
     # 部屋の作成
     def create_room(self):
         room_change_flag = self.room_change_flag_check()
-        self.room = Room(self.screen, self.game_state.room, self.game_state.direction, room_change_flag, self.image_cache)
+        self.room = Room(self.screen, self.frame_rect, self.game_state.room, self.game_state.direction, room_change_flag, self.image_cache)
 
     # フラグによって変化する部屋の表示チェック
     def room_change_flag_check(self):

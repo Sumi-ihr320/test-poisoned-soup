@@ -1067,6 +1067,7 @@ class PlayerDataView:
         self.screen_size = screen.get_size()
         self.room_surface_rect = room_surface_rect
 
+        self.font_data = (FONT_PATH, SMALL_SIZ)
         self.font = setting_font(FONT_PATH, SMALL_SIZ, self.screen_size)
 
         self.player = player
@@ -1094,7 +1095,7 @@ class PlayerDataView:
         height = 150
         self.size = (width, height)
 
-        self.size = get_new_size(self.window_size, self.size)
+        self.size = get_new_size(self.screen_size, self.size)
         self.bg_surface = pygame.Surface(self.size)
         self.rect = self.bg_surface.get_rect()
 
@@ -1103,27 +1104,27 @@ class PlayerDataView:
 
     # imageを作成する
     def create_image(self):
-        h_percent = RATIO[self.window_size][1]
-        size = 0.4 * h_percent
+        _, _, aspect_scale = get_scales(self.screen_size)
+        size = 0.4 * aspect_scale
 
-        self.player_img = Image(self.screen, self.player.image, size, self.rect.x+10, self.rect.y+10, line_flag=True, bg_flag=True)
+        self.player_img = Image(screen=self.screen, path=self.player.image, scale=size, x=self.rect.x+10, y=self.rect.y+10, line_flag=True, bg_flag=True)
         self.player_img.cat_image(pygame.Rect(100, 50, 200, 300))
 
         if not self.girl_alive:
             girl_img = "Girl_pale_downcast_eyes_dark.png"
         else:
             girl_img = self.girl.image
-        self.girl_img = Image(self.screen, girl_img, size, 0, 0, line_flag=True, bg_flag=True)
+        self.girl_img = Image(screen=self.screen, path=girl_img, scale=size, x=0, y=0, line_flag=True, bg_flag=True)
         self.girl_img.cat_image(pygame.Rect(50, 0, 200, 300))
 
-        self.girl_img.set_rect(x=self.player_img.rect.x+self.player_img.rect.w+100, y=self.player_img.rect.y, centerx=None, centery=None)
+        #self.girl_img.set_rect(x=self.player_img.rect.x+self.player_img.rect.w+100, y=self.player_img.rect.y, centerx=None, centery=None)
 
     def setting_labels(self):
         player_labels = self.create_label(self.player, self.player_img)
         girl_labels = self.create_label(self.girl, self.girl_img)
 
-        current_room_label = Label(self.screen, self.font, ROOM_NAME[self.room_flag], self.room_surface_rect.right, self.room_surface_rect.y - 30, position="right", color=WHITE)
-        current_time_label = Label(self.screen, self.font, self.time, current_room_label.rect.x - 10, current_room_label.rect.y, position="right", color=WHITE)   # デバッグ用
+        current_room_label = Label(self.screen, font_data=self.font_data, text=ROOM_NAME[self.room_flag], x=self.room_surface_rect.right, y=self.room_surface_rect.y - 30, anchor=("right", "top"), text_color=WHITE)
+        current_time_label = Label(self.screen, font_data=self.font_data, text=self.time, x=current_room_label.rect.x - 10, y=current_room_label.rect.y, anchor=("right", "top"), text_color=WHITE)   # デバッグ用
 
         self.status_labels = player_labels
         if self.girl_fellow or not self.girl_alive:
@@ -1132,9 +1133,9 @@ class PlayerDataView:
 
     def create_label(self, character, character_img):
         margin = 5
-        name_label = Label(self.screen, self.font, character.name, character_img.rect.x + character_img.rect.w + 10, character_img.rect.y + margin, color=WHITE)
-        hp_label = Label(self.screen, self.font, f"HP/{character.HP}", name_label.rect.x, name_label.rect.y + name_label.rect.h + margin, color=WHITE)
-        mp_label = Label(self.screen, self.font, f"MP/{character.MP}", name_label.rect.x, hp_label.rect.y + hp_label.rect.h + margin, color=WHITE)
+        name_label = Label(self.screen, font_data=self.font_data, text=character.name, x=character_img.rect.x + character_img.rect.w + 10, y=character_img.rect.y + margin, text_color=WHITE)
+        hp_label = Label(self.screen, font_data=self.font_data, text=f"HP/{character.HP}", x=name_label.rect.x, y=name_label.rect.y + name_label.rect.h + margin, text_color=WHITE)
+        mp_label = Label(self.screen, font_data=self.font_data, text=f"MP/{character.MP}", x=name_label.rect.x, y=hp_label.rect.y + hp_label.rect.h + margin, text_color=WHITE)
         return [name_label, hp_label, mp_label]
 
     def draw(self):

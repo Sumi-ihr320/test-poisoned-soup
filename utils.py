@@ -38,12 +38,12 @@ def create_size_tkinter(root):
 
 # 部屋画像のrectを算出する
 def get_room_rect(screen, frame_rect):
-    window_size = screen.get_size()
-    room_size = get_new_size(window_size, SHEET_SIZE, True)
+    screen_size = screen.get_size()
+    room_size = get_new_size(screen_size, SHEET_SIZE, True)
     surface = pygame.Surface(room_size)
 
-    window_rect = screen.get_rect()
-    surface_rect = surface.get_rect(centerx=window_rect.centerx, bottom=frame_rect.top - 20)
+    screen_rect = screen.get_rect()
+    surface_rect = surface.get_rect(centerx=screen_rect.centerx, bottom=frame_rect.top - 20)
     return surface_rect
 
 # 比率を取得する

@@ -74,8 +74,8 @@ class Settings(BaseScene):
 
         self.other_label = Label(self.screen, font_data=self.contents_font_data, text="・他",x=self.window_rect.x+50, y=self.window_rect.top+370, text_color=BLACK)
         
-        self.set = Label(self.screen, font_data=self.contents_font_data, text="決定", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx - 50, text_color=BLACK)
-        self.close = Label(self.screen, font_data=self.contents_font_data, text="戻る", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx + 50, text_color=BLACK)
+        self.set = Label(self.screen, font_data=self.contents_font_data, text="決定", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx - 50, text_color=BLACK, sound_type="select")
+        self.close = Label(self.screen, font_data=self.contents_font_data, text="戻る", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx + 50, text_color=BLACK, sound_type="select")
 
         self.label_list = [title, size_label, volume_label, main_volume_label, self.music_volume_label, se_volume_label, self.other_label]
         self.label_list += volume_int_labels
@@ -176,7 +176,7 @@ class Settings(BaseScene):
             # 左マウスクリック時
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 # プルダウンのクリック処理
-                if self.size_pulldown.box.rect.collidepoint(event.pos):
+                if self.size_pulldown.collidepoint(event.pos):
                     sound_manager.play("クリック")
                     self.is_pulldown_open = not self.is_pulldown_open
                 
@@ -188,9 +188,9 @@ class Settings(BaseScene):
                         self.size_pulldown.update_label(self.select_size)
                         self.is_pulldown_open = False
 
-                if self.close.handle_click(event.pos, "select"):
+                if self.close.handle_click(event.pos):
                     return self.before_event, self.setting_manager
-                elif self.set.handle_click(event.pos, "select"):
+                elif self.set.handle_click(event.pos):
                     self.set_data()
                     return self.before_event, self.setting_manager
 

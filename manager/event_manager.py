@@ -28,19 +28,14 @@ class EventManager:
         self.room_new_view_call_back = room_new_view
         self.set_state_call_back = set_state
 
-        # テキスト表示関連
-        #self.text_frame_label = TextFrameLabel(self.screen)
-        #self.log_view = log_view if log_view else LogView(self.screen)
-
-        # 画像表示用cache
-        self.image_cache = ImageCache()
-
         # 表示関連
-        self.render_manager = RenderManager(self.screen)
+        self.image_cache = ImageCache()
+        self.log_view = log_view if log_view else LogView(self.screen)
+        self.text_frame_panel = text_frame_panel if text_frame_panel else TextFramePanel(self.screen)
+        self.render_manager = RenderManager(self.screen, self.image_cache, self.text_frame_panel, self.log_view)
 
-        # ダイスサービス
+        # ダイス関連
         self.dice_service = DiceService()
-        # ダイス処理
         self.dice_processor = DiceProcessor(self.dice_service, self.skill_list, self.flags)
 
         self.player_roll_result = None     # ダイスロールの結果
@@ -97,7 +92,7 @@ class EventManager:
         elif step["type"] == "interaction":
             commands = []
             for cmd in step["interactions"]:
-                commands.append(Command(cmd["text"], cmd["next_scenario"]))
+                commands.append(Command(cmd["text"], cmd["next"]))
             target = step.get("target", None)
             self.render_manager.set_command_menu(commands, target)
 

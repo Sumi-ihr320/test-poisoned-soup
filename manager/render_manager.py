@@ -10,19 +10,19 @@ from ui.ui_panels import TextFramePanel
 from ui.log_view import LogView
 
 class RenderManager:
-    def __init__(self, screen, image_cache=None, room_rect=None, text_frame_panel=None, log_view=None):
+    def __init__(self, screen, image_cache=None, text_frame_panel=None, log_view=None):
         self.screen = screen
         self.screen_size = screen.get_size()
 
-        # 外部からのセット
-        self.room_rect = room_rect
+        # 画像表示用cache
+        self.image_cache = image_cache if image_cache else ImageCache()
 
         # テキスト表示関連
         self.text_frame_panel = text_frame_panel if text_frame_panel else TextFramePanel(self.screen)
         self.log_view = log_view if log_view else LogView(self.screen)
 
-        # 画像表示用cache
-        self.image_cache = image_cache if image_cache else ImageCache()
+        # 部屋画像のrect
+        self.room_rect = get_room_rect(self.screen, self.text_frame_panel.rect)
 
         # 画像要素
         self.girl_image = None
@@ -74,7 +74,7 @@ class RenderManager:
             self.command_menu_rect = None
             return
         
-        font = setting_font(FONT_PATH, SMALL_SIZ)
+        font = setting_font(FONT_PATH, SMALL_SIZ, self.screen_size)
         max_width = 120
         for cmd in commands:
             w = font.size(cmd.text)[0] + 10

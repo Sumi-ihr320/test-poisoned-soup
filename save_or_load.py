@@ -91,9 +91,9 @@ class Save_or_Load(BaseScene):
             enter_text = "ロード"
 
         self.top = Label(self.screen, self.contents_font_data, top_text, y=self.window_rect.top+30, centerx=self.window_rect.centerx)
-        self.enter = Label(self.screen, self.contents_font_data, enter_text, y=self.window_rect.bottom-50, centerx=self.window_rect.centerx-150)
-        self.delete = Label(self.screen, self.contents_font_data, "削除", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx)
-        self.close = Label(self.screen, self.contents_font_data, "閉じる", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx+150)
+        self.enter = Label(self.screen, self.contents_font_data, enter_text, y=self.window_rect.bottom-50, centerx=self.window_rect.centerx-150, sound_type="select")
+        self.delete = Label(self.screen, self.contents_font_data, "削除", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx, sound_type="select")
+        self.close = Label(self.screen, self.contents_font_data, "閉じる", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx+150, sound_type="select")
         self.button_list = [self.enter, self.delete, self.close]
         self.label_list = [self.top] + self.button_list
 
@@ -107,7 +107,8 @@ class Save_or_Load(BaseScene):
         self.save_data_list = os.listdir(self.forder_name)
 
         # 設定データはリストに含まない
-        self.save_data_list.remove("setting.json")
+        if "setting.json" in self.save_data_list:
+            self.save_data_list.remove("setting.json")
 
     # セーブデータ一覧ラベルを作成する
     def create_save_data_list(self):
@@ -323,7 +324,7 @@ class Save_or_Load(BaseScene):
         if self.data_label_list:
             for data in self.data_label_list:
                 if data["file"] == self.select_file_name:
-                    data["label"].draw(forcused=True)
+                    data["label"].draw(back_color=BLUE)
                 else:
                     data["label"].draw()
 
@@ -342,54 +343,54 @@ class Save_or_Load(BaseScene):
 
             # キーボード押下時
             elif event.type == KEYDOWN:
-                if input_mode_manager.get_mode() == InputMode.MOUSE:
-                    self.focus = swich_to_keybord(self.mouse_focus, self.focus, self.focus_grid_list)
+                #if input_mode_manager.get_mode() == InputMode.MOUSE:
+                    #self.focus = swich_to_keybord(self.mouse_focus, self.focus, self.focus_grid_list)
 
                 if event.key == K_ESCAPE:
                     Close(self.root)
 
-                elif event.key == K_UP:
-                    self.focus.move_up()
+                #elif event.key == K_UP:
+                #    self.focus.move_up()
 
-                elif event.key in (K_DOWN, K_TAB):
-                    self.focus.move_down()
+                #elif event.key in (K_DOWN, K_TAB):
+                #    self.focus.move_down()
 
-                elif event.key == K_LEFT:
-                    self.focus.move_left()
+                #elif event.key == K_LEFT:
+                #    self.focus.move_left()
 
-                elif event.key == K_RIGHT:
-                    self.focus.move_right()
+                #elif event.key == K_RIGHT:
+                #    self.focus.move_right()
 
-                elif event.key in (K_RETURN, K_KP_ENTER):
-                    pos = self.focus.get_selected().get_center()
-                    self.handle_ckick(pos)
+                #elif event.key in (K_RETURN, K_KP_ENTER):
+                #    pos = self.focus.get_selected().get_center()
+                #    self.handle_ckick(pos)
 
             # マウス移動時
-            if event.type == MOUSEMOTION:
-                if input_mode_manager.get_mode() == InputMode.KEYBOARD:
-                    self.mouse_focus = swich_to_mouse(self.mouse_focus, self.focus)
+            #if event.type == MOUSEMOTION:
+                #if input_mode_manager.get_mode() == InputMode.KEYBOARD:
+                    #self.mouse_focus = swich_to_mouse(self.mouse_focus, self.focus)
 
             # マウスクリック時
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
-                if input_mode_manager.get_mode() == InputMode.KEYBOARD:
-                    self.mouse_focus = swich_to_mouse(self.mouse_focus, self.focus)
+                #if input_mode_manager.get_mode() == InputMode.KEYBOARD:
+                #    self.mouse_focus = swich_to_mouse(self.mouse_focus, self.focus)
 
                 self.handle_ckick(event.pos)
 
     def handle_ckick(self, pos):
         # 閉じるボタン
-        if self.close.handle_click(pos, "select"):
+        if self.close.handle_click(pos):
             self.state = State.CLOSE
 
         # 決定ボタン
-        elif self.enter.handle_click(pos, "select"):
+        elif self.enter.handle_click(pos):
             if self.save_load_flag == "save":
                 self.save()                
             else:
                 self.load()
 
         # 削除ボタン
-        elif self.delete.handle_click(pos, "select"):
+        elif self.delete.handle_click(pos):
             self.data_delete()
 
         # データ一覧の選択

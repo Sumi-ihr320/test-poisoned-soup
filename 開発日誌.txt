@@ -687,3 +687,6 @@
 	managerフォルダにdice_service.pyを作成
 	ui_elementsからDiceRollを削除
 	managerフォルダにevent_processorsフォルダを作成
+
+2025/12/22
+	とりあえずロードが可能になるように必要個所の修正

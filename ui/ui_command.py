@@ -50,7 +50,7 @@ class CommandMenu(UIContainer):
 
     def handle_mouse_hover(self, pos):
         for btn, _ in self.children:
-            btn.update(pos)
+            btn.handle_mouse_hover(pos)
 
     def handle_click(self, pos):
         # クリックされたイベントを判定
