@@ -10,6 +10,7 @@ from .render_manager import RenderManager
 from .dice_service import DiceService
 from .sound_manager import sound_manager
 from .event_processors.dice_processor import DiceProcessor
+from .event_processors.damage_processor import DamageProcessor
 
 class EventManager:
     def __init__(self, screen, player=None, girl=None, game_state=None, flags=None, text_frame_panel=None, log_view=None,
@@ -34,9 +35,10 @@ class EventManager:
         self.text_frame_panel = text_frame_panel if text_frame_panel else TextFramePanel(self.screen)
         self.render_manager = RenderManager(self.screen, self.image_cache, self.text_frame_panel, self.log_view)
 
-        # ダイス関連
+        # プロセッサー
         self.dice_service = DiceService()
         self.dice_processor = DiceProcessor(self.dice_service, self.skill_list, self.flags)
+        self.damage_processor = DamageProcessor(self.dice_service, self.take_damage)    
 
         self.player_roll_result = None     # ダイスロールの結果
         self.girl_roll_result = None
@@ -260,9 +262,7 @@ class EventManager:
 
     # ダメージ計算をして表示するテキストを作成する
     def handle_damage(self, step):
-        self.result_text = ""
-        self.state_record = {}
-
+        
         # 誰がダメージを受けるのか
         characters = {}
         player_flag, girl_flag = self.target_check(step)
@@ -271,6 +271,13 @@ class EventManager:
         if girl_flag:
             characters[self.girl] = self.girl_roll_result
 
+        res = self.damage_processor.process_damage(step, characters)
+
+        self.result_text = "\n".join(res["texts"])
+        self.state_record = res["state_record"]
+        self.damage_points = res["damage_points"]
+
+    """
         value = step.get("value", None)
         status = step.get("status", None)
         failure_text = step.get("text", "")
@@ -327,7 +334,7 @@ class EventManager:
 
         if failure_text:
             self.result_text = f"{failure_text}\n{self.result_text}"
-
+    """
 
     # 時間を経過させる
     def handle_time_passage(self, step):

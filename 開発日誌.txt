@@ -689,4 +689,9 @@
 	managerフォルダにevent_processorsフォルダを作成
 
 2025/12/22
+	event_processorsフォルダにdice_processor.pyを作成
 	とりあえずロードが可能になるように必要個所の修正
+
+2025/12/23
+	event_processorsフォルダにdamage_processer.pyを作成
+	
