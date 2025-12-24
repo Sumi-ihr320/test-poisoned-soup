@@ -1,5 +1,5 @@
-from constans import SCENARIO_FILES, SCENARIO
-from utils import load_json
+from constans import SCENARIO_FILES
+from utils import load_and_normalize_json
 
 class ScenarioManager:
     def __init__(self, screen, event_manager, scenario_id):
@@ -8,40 +8,42 @@ class ScenarioManager:
         self.event_manager = event_manager
 
         # シナリオをロード
-        self.scenario_data = {}
-        self.load_scenario_file()
+        self.scenarios_by_id = {}
+        self.load_all_scenarios()
   
-        self.current_scenario = None
-        self.current_index = 0          # 現在の表示位置
+        self.current_scenario_id = ""       # 現在再生中のシナリオID
+        self.current_steps = None  # 現在進行中のsteps
+        self.current_index = 0              # 現在のstepの表示index
 
         self.is_active = False
 
-        self.wait_for_click = False     # クリック待ちフラグ
+        self.wait_for_click = False         # クリック待ちフラグ
 
         self.start_scenario(scenario_id)
 
     # シナリオを各ファイルからロードして統合する
-    def load_scenario_file(self):
+    def load_all_scenarios(self):
         for file_path in SCENARIO_FILES:
-            scenario_data = load_json(SCENARIO, file_path)
-            self.scenario_data.update(scenario_data)
+            scenarios_by_id = load_and_normalize_json(file_path)
+            self.scenarios_by_id.update(scenarios_by_id)
 
     # 指定したシナリオを開始
     def start_scenario(self, scenario_id):
-        self.current_scenario = self.scenario_data.get(scenario_id, [])
+        self.current_scenario_id = scenario_id
+        self.current_steps = self.scenarios_by_id.get(scenario_id, [])
         self.current_index = 0
         self.wait_for_click = False
         print(f"シナリオ開始：{scenario_id}")   # デバッグ用
         self.is_active = True
 
-        if self.current_scenario:
+        if self.current_steps:
             step = self.scenario_progress()
             if step:
                 self.event_manager.draw(step)
 
     # シナリオ進行
     def scenario_progress(self):
-        step = self.current_scenario[self.current_index]
+        step = self.current_steps[self.current_index]
 
         # 進行タイプに応じて処理を分岐
         progression = step.get("progression", "auto")       # デフォルトは自動進行
@@ -56,9 +58,10 @@ class ScenarioManager:
 
     # 次のシナリオステップを進める
     def update(self):
-        if not self.current_scenario or self.current_index >= len(self.current_scenario):
+        if not self.current_steps or self.current_index >= len(self.current_steps):
             print("シナリオ終了")               # デバッグ用
-            self.current_scenario = None
+            self.current_scenario_id = ""
+            self.current_steps = None
             self.is_active = False
             return
 
@@ -103,6 +106,6 @@ class ScenarioManager:
         #if self.event_manager.item_image:
         #    self.event_manager.item_image.draw()
 
-        if self.is_active and self.current_index < len(self.current_scenario):
-            step = self.current_scenario[self.current_index]
+        if self.is_active and self.current_index < len(self.current_steps):
+            step = self.current_steps[self.current_index]
             self.event_manager.draw(step)

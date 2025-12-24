@@ -86,3 +86,4 @@ def normalize_step(step: Dict[str, Any]) -> Dict[str, Any]:
         out = nomalize_dice_check(step)
     # 必要なら他の type の正規化ルールをここに追加
     return out
+

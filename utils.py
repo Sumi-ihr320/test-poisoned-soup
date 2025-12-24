@@ -1,9 +1,11 @@
 import sys, re, json
 import ctypes, platform, subprocess
+from typing import Any, Dict, List, Tuple
 from tkinter import messagebox
 
 import pygame
 from pygame.locals import *
+from pygame.font import Font
 
 from constans import *
 
@@ -46,8 +48,11 @@ def get_room_rect(screen, frame_rect):
     surface_rect = surface.get_rect(centerx=screen_rect.centerx, bottom=frame_rect.top - 20)
     return surface_rect
 
-# 比率を取得する
 def get_scales(screen_size):
+    """
+    screen_size を元に BASE_SIZE との比率を割り出す
+    scale_x, scale_y, aspect_scale を返す
+    """
     base_w, base_h = BASE_SIZE
     cur_w, cur_h = screen_size
     scale_x = cur_w / base_w
@@ -56,7 +61,11 @@ def get_scales(screen_size):
     return scale_x, scale_y, aspect_scale
 
 # 現在のサイズから新しいサイズを割り出す
-def get_new_size(screen_size, item_size, not_change_ratio=False):
+def get_new_size(screen_size:Tuple[int, int], item_size:Tuple[int, int], not_change_ratio:bool=False) -> Tuple[int, int]:
+    """
+    現在のサイズから比率に応じた新しいサイズを割り出す。
+    not_change_ratio: 現在のアスペクト比を保ったままにするか
+    """
     scale_x, scale_y, aspect_scale = get_scales(screen_size)
     if not_change_ratio:
         new_size = (int(item_size[0] * aspect_scale), int(item_size[1] * aspect_scale))
@@ -64,14 +73,19 @@ def get_new_size(screen_size, item_size, not_change_ratio=False):
         new_size = (int(item_size[0] * scale_x), int(item_size[1] * scale_y))
     return new_size
 
-# フォントサイズを計算して設定する
-def setting_font(font_path, font_size, screen_size):
+# font_pathとfont_sizeから現在のscreen_sizeに合わせてサイズを設定したフォントを返す
+def setting_font(font_path: str, font_size: int, screen_size: Tuple[int, int]) -> Font:
     _, scale_y, _ = get_scales(screen_size)
     new_size = int(font_size * scale_y)
     return pygame.font.Font(font_path, new_size)
 
 # タグで色を解析してsegmentを返す
-def parse_color_tags(text, default_color=WHITE):
+def parse_color_tags(text: str, default_color: Tuple[int, int, int]=WHITE) -> List[Tuple[str, Tuple[int, int, int]]]:
+    """
+    text 内の <color="red"></color> などのタグを解析して
+    segment: [(text, color), (...)] の形式にして返す
+    default_color: タグ指定部分以外の色
+    """
     pattern = re.compile(r"(.*?)<color=([\w]+)>(.*?)<color/>(.*)")
     segments = []
 
@@ -135,6 +149,31 @@ def load_json(forder, file):
     else:
         print(f"{file_path} が見つかりません")
 
+def load_and_normalize_json(file: str):
+    """
+    ファイルを読み、トップレベルが map (id -> steps) でも
+    list of {scenario_id, steps} でも受け取り、
+    { scenario_id: steps_list } を返す
+    """
+    data = load_json(SCENARIO, file)
+    scenarios: Dict[str, List[Any]] = {}
+
+    # 既存のトップレベルマップ形式の場合
+    if isinstance(data, dict) and all(isinstance(v, list) for v in data.values()):
+        scenarios = dict(data)
+
+    # [{'scenario_id':name, 'steps':[...]}] の形式の場合
+    elif isinstance(data, list):
+        for item in data:
+            sid = item.get("scenario_id", item.get("name", ""))
+            steps = item.get("steps", [])
+            if sid:
+                scenarios[sid] = steps
+    else:
+        scenarios["unnamed"] = data if isinstance(data, list) else [data]
+
+    return scenarios
+
 # 基本のサウンドファイルが入っているかのチェック
 def sound_check(sound_manager):
     sounds_to_load = {
@@ -154,8 +193,13 @@ def sound_check(sound_manager):
             if name not in sound_manager.sounds:
                 sound_manager.load_sound(name, file)
 
-# "〇D〇" のテキストから何個のダイスか、何面ダイスか、+〇、-〇が付いてるかを抽出する
 def dice_confirmation(text):
+    """
+    "1D6" などのテキストを分析して pieces, dice_faces, modifier の形にして返す
+    pieces: 何個のダイスか
+    dice_faces: 何面ダイスか
+    modifier: +や-で付属が付いているか
+    """
     # テキストに+か-が入っているか確認
     modifier = re.search(r"\+|\-", text)
     cut_index = modifier.start() if modifier else 0
@@ -247,7 +291,14 @@ def ime_off(event):
             pass
 
 # 画像のファイル名を作って返す
-def create_file_path(item, room, direction, flag=None):
+def create_file_path(item: str, room: str, direction: str, flag: Optional[Dict[str, bool]]=None) -> str:
+    """
+    :item: アイテム名 
+    :room: 部屋の名前 (center, north, south, east, west)
+    :direction: centerの部屋にいる際に向いている方角 (north, south, east, west)
+    :flag: {flag_name: bool} 部屋の状態を表すフラグ
+    :return: img_path: 画像ファイルのパス名を返す
+    """
     if flag is None:
         flag = {}
     

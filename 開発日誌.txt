@@ -694,4 +694,9 @@
 
 2025/12/23
 	event_processorsフォルダにdamage_processer.pyを作成
+
+2025/12/24
+	utils.pyにload_and_normalize_jsonといくつかの関数の説明を追加
+	
+	
 	
