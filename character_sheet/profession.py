@@ -135,7 +135,7 @@ class ProfessionSelecter:
 
     # データのロードとセットアップ
     def load_and_setup_data(self):
-        self.prof_data = load_json(JSON_FOLDER, PROF_DATA_PATH)
+        self.prof_data = load_json(PROF_DATA_PATH, JSON_FOLDER)
         if self.prof_data:      # データがロードできていれば作成する
             self.create_profession()
 
@@ -228,7 +228,7 @@ class HobbySelecter:
         self.profession_rect = profession_rect
 
         # 趣味データをロード
-        self.hobby_list = load_json(JSON_FOLDER, HOBBY_DATA_PATH)
+        self.hobby_list = load_json(HOBBY_DATA_PATH, JSON_FOLDER)
 
         self.label = None
         self.pull = None

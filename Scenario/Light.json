@@ -1,105 +1,354 @@
-{
-    "Light":[
-        {"type":"conditional", "conditions":[
-            {"flags":[{"category":"items", "flag":"light_remove", "value":false}], "next":"Light_illuminating"},
-            {"flags":[{"category":"items", "flag":"light_remove", "value":true}], "next":"Light_nothing"}
-        ]}
-    ],
-    "Light_illuminationg":[
-        {"type":"image_display", "image":"center-room_Light.png"},
-        {"type":"conditional", "conditions":[
-            {"flags":[{"category":"items", "flag":"light_objective", "value":false}], "next":"Light_not_objective"},
-            {"flags":[{"category":"items", "flag":"light_objective", "value":true}], "next":"Light_spotted"}
-        ]}
-    ],
-    "Light_not_objective":[
-        {"type":"text", "text":"薄暗い豆電球が部屋を照らしている。", "progression":"click"},
-        {"type":"interaction",
-         "interactions":[
-            {"text":"目星", "next":"Light_objective"},
-            {"text":"外す", "next":"Light_remove"},
-            {"text":"壊す", "next":"Light_break"}
-         ]}
-    ],
-    "Light_objective":[
-        {"type":"time_passage", "value":2},
-        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
-         "success":"Light_objective_success",
-         "failure":"Light_objective_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "Light_objective_success":[
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"light_objective", "value":true},
-        {"type":"text", "text":"電球をよく見ると、中に何か入っているように見えた。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "Light_objective_failure":[
-        {"type":"text", "text":"何もわからなかった。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "Light_spotted":[
-        {"type":"text", "text":"薄暗い豆電球が部屋を照らしている。", "progression":"click"},
-        {"type":"text", "text":"薄暗いのは、中に何か入っているからのようだ。", "progression":"click"},
-        {"type":"interaction",
-         "interactions":[
-            {"text":"外す", "next":"Light_remove"},
-            {"text":"壊す", "next":"Light_break"}
-         ]}
-    ],
-    "Light_remove":[
-        {"type":"text", "text":"テーブルに乗り電球を外した。", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"light_remove", "value":true},
-        {"type":"text", "text":"部屋が暗くなった。", "progression":"click"},
-        {"type":"image_display", "image":"Light_bulb.png"},
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"light_get", "value":true},
-        {"type":"action", "action":"get_item", "item":"light_bulb"},
-        {"type":"result_text", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "Light_break":[
-        {"type":"text", "text":"どうやって壊そうか？", "progression":"click"},
-        {"type":"interaction",
-         "interactions":[
-            {"text":"攻撃する", "next":""},
-            {"text":"外して慎重に割る", "next":""},
-            {"text":"やっぱりやめる", "next":"Light_not_break"}
-         ]}
-    ],
-    "Light_not_break":[
-        {"type":"text", "text":"電球を壊すのはやめた。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "Light_nothing":[
-        {"type":"image_display", "image":"center-room_Light_remove.png"},
-        {"type":"text", "text":"電球が付いていない照明だ。", "progression":"click"},
-        {"type":"conditional", "conditions":[
-            {"flags":[{"category":"items", "flag":"light_get", "value":true}], "next":"Light_have"},
-            {"flags":[{"category":"items", "flag":"light_break", "value":true}], "next":"Light_broken"}
-        ]}
-    ],
-    "Light_have":[
-        {"type":"interaction",
-         "interactions":[
-            {"text":"電球を戻す", "next":"Light_set"},
-            {"text":"戻さない", "next":"Light_none"}
-         ]}
-    ],
-    "Light_set":[
-        {"type":"time_passage", "value":5},
-        {"type":"text", "text":"電球を元に戻した。", "progression":"click"},
-        {"type":"image_display", "image":"center-room_Light.png"},
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"light_get", "value":false},
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"light_remove", "value":false},
-        {"type":"action", "action":"lost_item", "item":"light_bulb"},
-        {"type":"result_text", "progression":"click"},        
-        {"type":"image_hidden"}
-    ],
-    "Light_none":[
-        {"type":"text", "text":"そのままにしておくことにした。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "Light_broken":[
-        {"type":"text", "text":"電球は壊してしまったので何もできない。", "progression":"click"},
-        {"type":"image_hidden"}
-    ]
+﻿{
+  "Light": [
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "light_remove",
+              "value": false
+            }
+          ],
+          "next": "Light_illuminating"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "light_remove",
+              "value": true
+            }
+          ],
+          "next": "Light_nothing"
+        }
+      ]
+    }
+  ],
+  "Light_illuminationg": [
+    {
+      "type": "image_display",
+      "image": "center-room_Light.png"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "light_objective",
+              "value": false
+            }
+          ],
+          "next": "Light_not_objective"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "light_objective",
+              "value": true
+            }
+          ],
+          "next": "Light_spotted"
+        }
+      ]
+    }
+  ],
+  "Light_not_objective": [
+    {
+      "type": "text",
+      "text": "薄暗い豆電球が部屋を照らしている。",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "Light_objective"
+        },
+        {
+          "text": "外す",
+          "next": "Light_remove"
+        },
+        {
+          "text": "壊す",
+          "next": "Light_break"
+        }
+      ]
+    }
+  ],
+  "Light_objective": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "目星",
+      "dice": "1d100",
+      "success": "Light_objective_success",
+      "failure": "Light_objective_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "Light_objective_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "Light_objective_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "Light_objective_success": [
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "light_objective",
+      "value": true
+    },
+    {
+      "type": "text",
+      "text": "電球をよく見ると、中に何か入っているように見えた。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Light_objective_failure": [
+    {
+      "type": "text",
+      "text": "何もわからなかった。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Light_spotted": [
+    {
+      "type": "text",
+      "text": "薄暗い豆電球が部屋を照らしている。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "薄暗いのは、中に何か入っているからのようだ。",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "外す",
+          "next": "Light_remove"
+        },
+        {
+          "text": "壊す",
+          "next": "Light_break"
+        }
+      ]
+    }
+  ],
+  "Light_remove": [
+    {
+      "type": "text",
+      "text": "テーブルに乗り電球を外した。",
+      "progression": "click"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "light_remove",
+      "value": true
+    },
+    {
+      "type": "text",
+      "text": "部屋が暗くなった。",
+      "progression": "click"
+    },
+    {
+      "type": "image_display",
+      "image": "Light_bulb.png"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "light_get",
+      "value": true
+    },
+    {
+      "type": "action",
+      "action": "get_item",
+      "item": "light_bulb"
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Light_break": [
+    {
+      "type": "text",
+      "text": "どうやって壊そうか？",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "攻撃する",
+          "next": ""
+        },
+        {
+          "text": "外して慎重に割る",
+          "next": ""
+        },
+        {
+          "text": "やっぱりやめる",
+          "next": "Light_not_break"
+        }
+      ]
+    }
+  ],
+  "Light_not_break": [
+    {
+      "type": "text",
+      "text": "電球を壊すのはやめた。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Light_nothing": [
+    {
+      "type": "image_display",
+      "image": "center-room_Light_remove.png"
+    },
+    {
+      "type": "text",
+      "text": "電球が付いていない照明だ。",
+      "progression": "click"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "light_get",
+              "value": true
+            }
+          ],
+          "next": "Light_have"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "light_break",
+              "value": true
+            }
+          ],
+          "next": "Light_broken"
+        }
+      ]
+    }
+  ],
+  "Light_have": [
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "電球を戻す",
+          "next": "Light_set"
+        },
+        {
+          "text": "戻さない",
+          "next": "Light_none"
+        }
+      ]
+    }
+  ],
+  "Light_set": [
+    {
+      "type": "time_passage",
+      "value": 5
+    },
+    {
+      "type": "text",
+      "text": "電球を元に戻した。",
+      "progression": "click"
+    },
+    {
+      "type": "image_display",
+      "image": "center-room_Light.png"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "light_get",
+      "value": false
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "light_remove",
+      "value": false
+    },
+    {
+      "type": "action",
+      "action": "lost_item",
+      "item": "light_bulb"
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Light_none": [
+    {
+      "type": "text",
+      "text": "そのままにしておくことにした。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Light_broken": [
+    {
+      "type": "text",
+      "text": "電球は壊してしまったので何もできない。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ]
 }

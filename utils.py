@@ -1,4 +1,4 @@
-import sys, re, json
+import os, sys, re, json
 import ctypes, platform, subprocess
 from typing import Any, Dict, List, Tuple
 from tkinter import messagebox
@@ -141,21 +141,25 @@ def create_filepath(folder, file):
     return os.path.join(f"{PATH}{folder}", file)
 
 # jsonファイルのロード
-def load_json(forder, file):
-    file_path = os.path.join(f"{PATH}{forder}", file)
+def load_json(file_name: str, forder: str=None):
+    file_path = os.path.join(f"{PATH}{forder}", file_name) if forder else file_name
     if os.path.isfile(file_path):
         with open(file_path, "r", encoding="utf-8_sig") as f:
             return json.load(f)
     else:
         print(f"{file_path} が見つかりません")
 
-def load_and_normalize_json(file: str):
+def load_and_normalize_json(file_name: str, full_path: bool=True):
     """
     ファイルを読み、トップレベルが map (id -> steps) でも
     list of {scenario_id, steps} でも受け取り、
     { scenario_id: steps_list } を返す
     """
-    data = load_json(SCENARIO, file)
+    if full_path:
+        data = load_json(file_name)
+    else:
+        data = load_json(file_name, SCENARIO)
+    
     scenarios: Dict[str, List[Any]] = {}
 
     # 既存のトップレベルマップ形式の場合
@@ -173,6 +177,12 @@ def load_and_normalize_json(file: str):
         scenarios["unnamed"] = data if isinstance(data, list) else [data]
 
     return scenarios
+
+# jsonファイルの書き込み
+def save_json(file_name: str, data: Dict, forder: str=None):
+    file_path = os.path.join(f"{PATH}{forder}", file_name) if forder else file_name
+    with open(file_path, "w", encoding="utf-8_sig") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
 # 基本のサウンドファイルが入っているかのチェック
 def sound_check(sound_manager):

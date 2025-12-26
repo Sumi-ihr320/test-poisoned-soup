@@ -35,12 +35,12 @@ class CharacterSheet(BaseScene):
         self.player.add_item(ITEM_LIST["white_robe"])
 
         # セーブデータ
-        self.save_data = load_json(JSON_FOLDER, "SaveData.json")
+        self.save_data = load_json("SaveData.json", JSON_FOLDER)
 
         # ページ管理
         self.pages = []
         
-        self.status_page = StatusPage(self.screen, self.root, self.player, load_json(JSON_FOLDER, STATUS_DATA_PATH))
+        self.status_page = StatusPage(self.screen, self.root, self.player, load_json(STATUS_DATA_PATH, JSON_FOLDER))
         self.status_page.load_status_items()
         self.profession_page = ProfessionPage(self.screen, self.root, self.player)
         self.profession_page.load_selecter(self.selected_hobby)
@@ -73,7 +73,7 @@ class CharacterSheet(BaseScene):
     
     # ページを表示する
     def draw_page(self):
-        self.menu_controller.draw()
+        #self.menu_controller.draw()
         current, current_rect = self.page_check(self.current_page)
         current_x = current_rect.x - self.slide_offset
         self.screen.blit(current, (current_x, current_rect.y))
@@ -84,7 +84,7 @@ class CharacterSheet(BaseScene):
             self.screen.blit(target, (target_x, target_rect.y))
 
         self.navigation.draw(self.current_page)
-        self.text_frame_label.draw()
+        self.text_frame_panel.draw()
 
     # どのページかを確認して必要な引数を入力する
     def page_check(self, page):
@@ -114,7 +114,8 @@ class CharacterSheet(BaseScene):
             key = pygame.mouse.get_pos()
         horver_text = None
 
-        self.menu_controller.handle_mouse_hover(key)
+        #self.menu_controller.handle_mouse_hover(key)
+        self.text_frame_panel.handle_mouse_hover(key)
         
         # ページによって変わる
         if self.current_page == 0:
@@ -123,9 +124,9 @@ class CharacterSheet(BaseScene):
             horver_text = self.profession_page.handle_mouse_hover(key, self.is_pulldown_open)
 
         if horver_text:
-            self.text_frame_label.set_text(horver_text)
+            self.text_frame_panel.set_text(horver_text)
         else:
-            self.text_frame_label.set_text("")
+            self.text_frame_panel.set_text("")
             #TextDraw(self.screen, horver_text)
 
     # イベントハンドラ
@@ -140,7 +141,8 @@ class CharacterSheet(BaseScene):
 
     # マウスクリック時
     def handle_mouse_click(self, pos):
-        if self.menu_controller.handle_click(pos):
+        #if self.menu_controller.handle_click(pos):
+        if self.text_frame_panel.handle_click(pos):
             return
         
         # ページ移動
@@ -256,8 +258,7 @@ class CharacterSheet(BaseScene):
     # 画面サイズ更新時にポジションを変更する
     def relayout(self, screen):
         super().relayout(screen)
-        create_frame(screen)
-        self.menu_controller.relayout(screen)
+        self.text_frame_panel.relayout(screen)
         # ステータスページをupdate
         self.status_page.relayout(screen)
         # 職業ページをupdate
@@ -268,7 +269,7 @@ class CharacterSheet(BaseScene):
         self.navigation.relayout(screen, self.status_page.rect)
 
     def update(self):
-        create_frame(self.screen)
+        #create_frame(self.screen)
         # スライドアニメーションの進行
         if self.is_sliding:
             direction = 1 if self.target_page > self.current_page else -1

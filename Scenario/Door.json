@@ -1,145 +1,449 @@
-{
-    "northDoor":[
-        {"type":"image_display", "image":"northDoor.png"},
-        {"type":"text", "text":"真っ白でドアノブがない、板のような押し扉だ。", "progression":"click"},
-        {"type":"interaction", "target":"item", "progression":"click",
-         "interactions":[
-            {"text":"目星", "next":"northDoor_objective"},
-            {"text":"聞き耳", "next":"northDoor_listen"},
-            {"text":"叩く", "next":"northDoor_knock"},
-            {"text":"開ける", "next":"northDoor_open"}
-         ]}
-    ],
-    "northDoor_objective":[
-        {"type":"time_passage", "value":2},
-        {"type":"text", "text":"特に分かることはなかった。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "northDoor_listen":[
-        {"type":"time_passage", "value":2},
-        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "northDoor_knock":[
-        {"type":"time_passage", "value":1},
-        {"type":"sound", "name":"木の扉をノック"},
-        {"type":"text", "text":"何の反応もない。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "northDoor_open":[
-        {"type":"action", "action":"move_to_room", "room_id":"north-room", "progression":"click"}
-    ],
-    "eastDoor":[
-        {"type":"image_display", "image":"eastDoor.png"},
-        {"type":"text", "text":"扉は錆びた鉄で出来ている。", "progression":"click"},
-        {"type":"interaction", "target":"item",
-         "interactions":[
-            {"text":"目星", "next":"eastDoor_objective"},
-            {"text":"聞き耳", "next":"eastDoor_listen"},
-            {"text":"叩く", "next":"eastDoor_knock"},
-            {"text":"開ける", "next":"eastDoor_open"}
-         ]}
-    ],
-    "eastDoor_objective":[
-        {"type":"time_passage", "value":2},
-        {"type":"text", "text":"特に分かることはなかった", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "eastDoor_listen":[
-        {"type":"time_passage", "value":2},
-        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "eastDoor_knock":[
-        {"type":"time_passage", "value":1},
-        {"type":"sound", "name":"鉄の扉をノック"},
-        {"type":"text", "text":"何の反応もない。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "eastDoor_open":[
-        {"type": "conditional",
-         "conditions":[
-            {"flags":[{"category":"rooms", "flag":"east_room_open", "value":false}], "next":"eastDoor_locked"},
-            {"flags":[{"category":"rooms", "flag":"east_room_open", "value":true}], "next":"eastDoor_unlocked"}
-         ]
+﻿{
+  "northDoor": [
+    {
+      "type": "image_display",
+      "image": "northDoor.png"
+    },
+    {
+      "type": "text",
+      "text": "真っ白でドアノブがない、板のような押し扉だ。",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "target": "item",
+      "progression": "click",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "northDoor_objective"
+        },
+        {
+          "text": "聞き耳",
+          "next": "northDoor_listen"
+        },
+        {
+          "text": "叩く",
+          "next": "northDoor_knock"
+        },
+        {
+          "text": "開ける",
+          "next": "northDoor_open"
         }
-    ],
-    "eastDoor_locked":[
-        {"type":"text", "text":"どうやら鍵がかかっているようだ。\nしかし少し力を入れれば開きそうに思える。", "progression":"click"},
-        {"type":"interaction", "target":"item",
-         "interactions":[
-            {"text":"力づくで開ける", "next":"eastDoor_vs_str"},
-            {"text":"鍵開けを試みる", "next":"eastDoor_locksmith"}
-         ]}
-    ],
-    "eastDoor_vs_str":[
-        {"type":"time_passage", "value":5},
-        {"type":"dice_check", "check_type":"VS_active", "status":"STR", "enemy_status":5, "dice":"1d100",
-         "success":"eastDoor_vs_str_success",
-         "failure":"eastDoor_vs_str_failure"},
-        {"type":"result_text", "progression":"click"}    
-    ],
-    "eastDoor_vs_str_success":[
-        {"type":"text", "text":"鍵を壊すことができた。", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"rooms" ,"flag":"east_room_open", "value":true},
-        {"type":"sound", "name":"古いドアを開ける"},
-        {"type":"action", "action":"move_to_room", "room_id":"east-room"}
-    ],
-    "eastDoor_vs_str_failure":[
-        {"type":"text", "text":"鍵を壊すことはできなかった。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "eastDoor_unlocked":[
-        {"type":"sound", "name":"古いドアを開ける"},
-        {"type":"action", "action":"move_to_room", "room_id":"east-room"}
-    ],
-    "eastDoor_locksmith":[
-        {"type":"time_passage", "value":5},
-        {"type":"dice_check", "check_type":"skill", "skill":"鍵開け", "dice":"1d100",
-         "success":"eastDoor_locksmith_success",
-         "failure":"eastDoor_locksmith_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "eastDoor_locksmith_success":[
-        {"type":"sound", "name":"鍵を開ける"},
-        {"type":"text", "text":"鍵が開いた。", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"rooms" ,"flag":"east_room_open", "value":true},
-        {"type":"sound", "name":"古いドアを開ける"},
-        {"type":"action", "action":"move_to_room", "room_id":"east-room"}
-    ],
-    "eastDoor_locksmith_failure":[
-        {"type":"text", "text":"鍵を開けることはできなかった。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "westDoor":[
-        {"type":"image_display", "image":"westDoor.png"},
-        {"type":"text", "text":"綺麗な木製の扉だ。", "progression":"click"},
-        {"type":"interaction", "target":"item",
-        "interactions":[
-           {"text":"目星", "next":"westDoor_objective"},
-           {"text":"聞き耳", "next":"westDoor_listen"},
-           {"text":"叩く", "next":"westDoor_knock"},
-           {"text":"開ける", "next":"westDoor_open"}
-        ]}
-    ],
-    "westDoor_objective":[
-        {"type":"time_passage", "value":2},
-        {"type":"text", "text":"特に分かることはなかった。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "westDoor_listen":[
-        {"type":"time_passage", "value":2},
-        {"type":"text", "text":"何も聞こえなかった。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "westDoor_knock":[
-        {"type":"time_passage", "value":1},
-        {"type":"sound", "name":"木の扉をノック"},
-        {"type":"text", "text":"何の反応もない。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "westDoor_open":[
-        {"type":"sound", "name":"木のドアを開ける"},
-        {"type":"action", "action":"move_to_room", "room_id":"west-room"}
-    ]
+      ]
+    }
+  ],
+  "northDoor_objective": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "text",
+      "text": "特に分かることはなかった。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "northDoor_listen": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "text",
+      "text": "何も聞こえなかった。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "northDoor_knock": [
+    {
+      "type": "time_passage",
+      "value": 1
+    },
+    {
+      "type": "sound",
+      "name": "木の扉をノック"
+    },
+    {
+      "type": "text",
+      "text": "何の反応もない。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "northDoor_open": [
+    {
+      "type": "action",
+      "action": "move_to_room",
+      "room_id": "north-room",
+      "progression": "click"
+    }
+  ],
+  "eastDoor": [
+    {
+      "type": "image_display",
+      "image": "eastDoor.png"
+    },
+    {
+      "type": "text",
+      "text": "扉は錆びた鉄で出来ている。",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "target": "item",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "eastDoor_objective"
+        },
+        {
+          "text": "聞き耳",
+          "next": "eastDoor_listen"
+        },
+        {
+          "text": "叩く",
+          "next": "eastDoor_knock"
+        },
+        {
+          "text": "開ける",
+          "next": "eastDoor_open"
+        }
+      ]
+    }
+  ],
+  "eastDoor_objective": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "text",
+      "text": "特に分かることはなかった",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "eastDoor_listen": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "text",
+      "text": "何も聞こえなかった。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "eastDoor_knock": [
+    {
+      "type": "time_passage",
+      "value": 1
+    },
+    {
+      "type": "sound",
+      "name": "鉄の扉をノック"
+    },
+    {
+      "type": "text",
+      "text": "何の反応もない。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "eastDoor_open": [
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "rooms",
+              "flag": "east_room_open",
+              "value": false
+            }
+          ],
+          "next": "eastDoor_locked"
+        },
+        {
+          "flags": [
+            {
+              "category": "rooms",
+              "flag": "east_room_open",
+              "value": true
+            }
+          ],
+          "next": "eastDoor_unlocked"
+        }
+      ]
+    }
+  ],
+  "eastDoor_locked": [
+    {
+      "type": "text",
+      "text": "どうやら鍵がかかっているようだ。\nしかし少し力を入れれば開きそうに思える。",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "target": "item",
+      "interactions": [
+        {
+          "text": "力づくで開ける",
+          "next": "eastDoor_vs_str"
+        },
+        {
+          "text": "鍵開けを試みる",
+          "next": "eastDoor_locksmith"
+        }
+      ]
+    }
+  ],
+  "eastDoor_vs_str": [
+    {
+      "type": "time_passage",
+      "value": 5
+    },
+    {
+      "type": "dice_check",
+      "check_type": "VS_active",
+      "status": "STR",
+      "enemy_status": 5,
+      "dice": "1d100",
+      "success": "eastDoor_vs_str_success",
+      "failure": "eastDoor_vs_str_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "eastDoor_vs_str_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "eastDoor_vs_str_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "eastDoor_vs_str_success": [
+    {
+      "type": "text",
+      "text": "鍵を壊すことができた。",
+      "progression": "click"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "rooms",
+      "flag": "east_room_open",
+      "value": true
+    },
+    {
+      "type": "sound",
+      "name": "古いドアを開ける"
+    },
+    {
+      "type": "action",
+      "action": "move_to_room",
+      "room_id": "east-room"
+    }
+  ],
+  "eastDoor_vs_str_failure": [
+    {
+      "type": "text",
+      "text": "鍵を壊すことはできなかった。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "eastDoor_unlocked": [
+    {
+      "type": "sound",
+      "name": "古いドアを開ける"
+    },
+    {
+      "type": "action",
+      "action": "move_to_room",
+      "room_id": "east-room"
+    }
+  ],
+  "eastDoor_locksmith": [
+    {
+      "type": "time_passage",
+      "value": 5
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "鍵開け",
+      "dice": "1d100",
+      "success": "eastDoor_locksmith_success",
+      "failure": "eastDoor_locksmith_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "eastDoor_locksmith_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "eastDoor_locksmith_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "eastDoor_locksmith_success": [
+    {
+      "type": "sound",
+      "name": "鍵を開ける"
+    },
+    {
+      "type": "text",
+      "text": "鍵が開いた。",
+      "progression": "click"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "rooms",
+      "flag": "east_room_open",
+      "value": true
+    },
+    {
+      "type": "sound",
+      "name": "古いドアを開ける"
+    },
+    {
+      "type": "action",
+      "action": "move_to_room",
+      "room_id": "east-room"
+    }
+  ],
+  "eastDoor_locksmith_failure": [
+    {
+      "type": "text",
+      "text": "鍵を開けることはできなかった。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "westDoor": [
+    {
+      "type": "image_display",
+      "image": "westDoor.png"
+    },
+    {
+      "type": "text",
+      "text": "綺麗な木製の扉だ。",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "target": "item",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "westDoor_objective"
+        },
+        {
+          "text": "聞き耳",
+          "next": "westDoor_listen"
+        },
+        {
+          "text": "叩く",
+          "next": "westDoor_knock"
+        },
+        {
+          "text": "開ける",
+          "next": "westDoor_open"
+        }
+      ]
+    }
+  ],
+  "westDoor_objective": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "text",
+      "text": "特に分かることはなかった。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "westDoor_listen": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "text",
+      "text": "何も聞こえなかった。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "westDoor_knock": [
+    {
+      "type": "time_passage",
+      "value": 1
+    },
+    {
+      "type": "sound",
+      "name": "木の扉をノック"
+    },
+    {
+      "type": "text",
+      "text": "何の反応もない。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "westDoor_open": [
+    {
+      "type": "sound",
+      "name": "木のドアを開ける"
+    },
+    {
+      "type": "action",
+      "action": "move_to_room",
+      "room_id": "west-room"
+    }
+  ]
 }

@@ -205,8 +205,7 @@ class Save_or_Load(BaseScene):
 
         # データを書き込む
         try:
-            with open(new_file_name, "w", encoding="utf-8_sig") as f:
-                json.dump(self.save_data, f, indent=2, ensure_ascii=False)
+            save_json(new_file_name, self.save_data)
             with TopmostManager(self.root):
                 messagebox.showinfo("セーブ", "セーブが完了しました")
             self.state = State.SAVE
@@ -228,7 +227,7 @@ class Save_or_Load(BaseScene):
         else:
             file_name = f"{self.forder_name}{self.select_file_name}"
             try:
-                self.load_data = load_json(SAVE_FOLDER, self.select_file_name)
+                self.load_data = load_json(self.select_file_name, SAVE_FOLDER)
                 with TopmostManager(self.root):
                     messagebox.showinfo("ロード", "ロードに成功しました")
                 self.state = State.LOAD

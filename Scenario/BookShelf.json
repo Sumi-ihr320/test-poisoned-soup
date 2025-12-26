@@ -1,104 +1,369 @@
-{
-    "BookShelf":[
-        {"type":"text", "text":"大きな本棚がある。", "progression":"click"},
-        {"type":"conditional",
-        "conditions":[
-            {"flags":[{"category":"items", "flag":"bookshelf_objective", "value":true}],"next":"BookShelf_flag_objective"},
-            {"flags":[{"category":"items", "flag":"book_found", "value":true}],"next":"BookShelf_book_found"},
-            {"flags":[
-                {"category":"items", "flag":"book_found", "value":false},
-                {"category":"items", "flag":"bookshelf_objective", "value":false}
-                ], "next":"BookShelf_book_no_flag"}
-        ]}
-    ],
-    "BookShelf_no_candle":[
-        {"type":"next_step", "next":"BookShelf"}
-    ],
-    "BookShelf_flag_objective":[
-        {"type":"text", "text":"本棚にはいろんな本が丁寧に収められていて、\nどれもジャンルがバラバラのようだ。", "progression":"click"},
-        {"type":"conditional",
-        "conditions":[
-            {"flags":[{"category":"items", "flag":"book_found", "value":false}], "next":"BookShelf_book_not_found"}
-           ]}
-    ],
-    "BookShelf_book_not_found":[
-        {"type":"interaction",
-         "interactions":[
-            {"text":"図書館", "next":"BookShelf_library"}
-        ]}
-    ],
-    "BookShelf_book_found":[
-        {"type":"interaction",
-         "interactions":[
-           {"text":"目星", "next":"BookShelf_objective"}
-        ]}
-    ],
-    "BookShelf_book_no_flag":[
-        {"type":"interaction",
-          "interactions":[
-             {"text":"目星", "next":"BookShelf_objective"},
-             {"text":"図書館", "next":"BookShelf_library"}
-          ]}
-    ],
-    "BookShelf_objective":[
-        {"type":"conditional",
-         "conditions":[
-            {"flags":[{"category":"items", "flag":"candle_out", "value":true}], "next":"BookShelf_objective_dark"},
-            {"flags":[{"category":"items", "flag":"candle_goes_out", "value":0, "not":true}], "next":"BookShelf_objective_dark"},
-            {"flags":[{"category":"items", "flag":"candle_goes_out", "value":0}], "next":"BookShelf_objective_clear"}
-        ]}
-    ],
-    "BookShelf_objective_dark":[
-        {"type":"time_passage", "value":2},
-        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100", "half":true, "progression":"click",
-         "success":"BookShelf_objective_success",
-         "failure":"BookShelf_objective_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "BookShelf_objective_clear":[
-        {"type":"time_passage", "value":2},
-        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100", "progression":"click",
-         "success":"BookShelf_objective_success",
-         "failure":"BookShelf_objective_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "BookShelf_objective_success":[
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"bookshelf_objective", "value":true},
-        {"type":"text", "text":"本棚にはいろんな本が丁寧に収められている。\nどれもジャンルがバラバラのものばかりのようだ。", "progression":"click"}
-    ],
-    "BookShelf_objective_failure":[
-        {"type":"text", "text":"本がたくさん詰まっている。", "progression":"click"}
-    ],
-    "BookShelf_library":[
-        {"type":"conditional",
-         "conditions":[
-            {"flags":[{"category":"items", "flag":"candle_out", "value":true}], "next":"BookShelf_library_dark"},
-            {"flags":[{"category":"items", "flag":"candle_goes_out", "value":0, "not":true}], "next":"BookShelf_library_dark"},
-            {"flags":[{"category":"items", "flag":"candle_goes_out", "value":0}], "next":"BookShelf_library_clear"}
-        ]}
-    ],
-    "BookShelf_library_dark":[
-        {"type":"time_passage", "value":10},
-        {"type":"dice_check", "check_type":"skill", "skill":"図書館", "dice":"1d100", "half":true, "progression":"click",
-         "success":"BookShelf_library_success",
-         "failure":"BookShelf_library_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "BookShelf_library_clear":[
-        {"type":"time_passage", "value":10},
-        {"type":"dice_check", "check_type":"skill", "skill":"図書館",
-         "success":"BookShelf_library_success",
-         "failure":"BookShelf_library_failure"},
-        {"type":"result_text", "progression":"click"}
-        ],
-    "BookShelf_library_success":[
-        {"type":"image_display", "image":"Book.png"},
-        {"type":"text", "text":"『スープの夢について』と書かれた\n真っ黒な本を見つけた。", "progression":"click"},
-        {"type":"text", "text":"本はべったりと湿っていて、\n本を手に取ると黒い液体が\n付着した。", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"book_found", "value":true},
-        {"type":"next_step", "next":"Black_liquid"}
-    ],
-    "BookShelf_library_failure":[
-        {"type":"text", "text":"何も見つけられなかった。", "progression":"click"}
-    ]    
+﻿{
+  "BookShelf": [
+    {
+      "type": "text",
+      "text": "大きな本棚がある。",
+      "progression": "click"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "bookshelf_objective",
+              "value": true
+            }
+          ],
+          "next": "BookShelf_flag_objective"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "book_found",
+              "value": true
+            }
+          ],
+          "next": "BookShelf_book_found"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "book_found",
+              "value": false
+            },
+            {
+              "category": "items",
+              "flag": "bookshelf_objective",
+              "value": false
+            }
+          ],
+          "next": "BookShelf_book_no_flag"
+        }
+      ]
+    }
+  ],
+  "BookShelf_no_candle": [
+    {
+      "type": "next_step",
+      "next": "BookShelf"
+    }
+  ],
+  "BookShelf_flag_objective": [
+    {
+      "type": "text",
+      "text": "本棚にはいろんな本が丁寧に収められていて、\nどれもジャンルがバラバラのようだ。",
+      "progression": "click"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "book_found",
+              "value": false
+            }
+          ],
+          "next": "BookShelf_book_not_found"
+        }
+      ]
+    }
+  ],
+  "BookShelf_book_not_found": [
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "図書館",
+          "next": "BookShelf_library"
+        }
+      ]
+    }
+  ],
+  "BookShelf_book_found": [
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "BookShelf_objective"
+        }
+      ]
+    }
+  ],
+  "BookShelf_book_no_flag": [
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "BookShelf_objective"
+        },
+        {
+          "text": "図書館",
+          "next": "BookShelf_library"
+        }
+      ]
+    }
+  ],
+  "BookShelf_objective": [
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "candle_out",
+              "value": true
+            }
+          ],
+          "next": "BookShelf_objective_dark"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "candle_goes_out",
+              "value": 0,
+              "not": true
+            }
+          ],
+          "next": "BookShelf_objective_dark"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "candle_goes_out",
+              "value": 0
+            }
+          ],
+          "next": "BookShelf_objective_clear"
+        }
+      ]
+    }
+  ],
+  "BookShelf_objective_dark": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "目星",
+      "dice": "1d100",
+      "half": true,
+      "progression": "click",
+      "success": "BookShelf_objective_success",
+      "failure": "BookShelf_objective_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "BookShelf_objective_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "BookShelf_objective_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "BookShelf_objective_clear": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "目星",
+      "dice": "1d100",
+      "progression": "click",
+      "success": "BookShelf_objective_success",
+      "failure": "BookShelf_objective_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "BookShelf_objective_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "BookShelf_objective_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "BookShelf_objective_success": [
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "bookshelf_objective",
+      "value": true
+    },
+    {
+      "type": "text",
+      "text": "本棚にはいろんな本が丁寧に収められている。\nどれもジャンルがバラバラのものばかりのようだ。",
+      "progression": "click"
+    }
+  ],
+  "BookShelf_objective_failure": [
+    {
+      "type": "text",
+      "text": "本がたくさん詰まっている。",
+      "progression": "click"
+    }
+  ],
+  "BookShelf_library": [
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "candle_out",
+              "value": true
+            }
+          ],
+          "next": "BookShelf_library_dark"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "candle_goes_out",
+              "value": 0,
+              "not": true
+            }
+          ],
+          "next": "BookShelf_library_dark"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "candle_goes_out",
+              "value": 0
+            }
+          ],
+          "next": "BookShelf_library_clear"
+        }
+      ]
+    }
+  ],
+  "BookShelf_library_dark": [
+    {
+      "type": "time_passage",
+      "value": 10
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "図書館",
+      "dice": "1d100",
+      "half": true,
+      "progression": "click",
+      "success": "BookShelf_library_success",
+      "failure": "BookShelf_library_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "BookShelf_library_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "BookShelf_library_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "BookShelf_library_clear": [
+    {
+      "type": "time_passage",
+      "value": 10
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "図書館",
+      "success": "BookShelf_library_success",
+      "failure": "BookShelf_library_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "BookShelf_library_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "BookShelf_library_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "BookShelf_library_success": [
+    {
+      "type": "image_display",
+      "image": "Book.png"
+    },
+    {
+      "type": "text",
+      "text": "『スープの夢について』と書かれた\n真っ黒な本を見つけた。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "本はべったりと湿っていて、\n本を手に取ると黒い液体が\n付着した。",
+      "progression": "click"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "book_found",
+      "value": true
+    },
+    {
+      "type": "next_step",
+      "next": "Black_liquid"
+    }
+  ],
+  "BookShelf_library_failure": [
+    {
+      "type": "text",
+      "text": "何も見つけられなかった。",
+      "progression": "click"
+    }
+  ]
 }

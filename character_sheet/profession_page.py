@@ -1,3 +1,5 @@
+import random
+
 from constans import *
 from ui.ui_elements import *
 
@@ -80,8 +82,8 @@ class ProfessionPage(BacePage):
         # 回避もスキル一覧にあるので回避もリセット
         self.player.Dodge = self.player.DEX * 2
 
-        profession_list = load_json(JSON_FOLDER, PROF_DATA_PATH)
-        skill_list = load_json(JSON_FOLDER, SKILL_DATA_PATH)
+        profession_list = load_json(PROF_DATA_PATH, JSON_FOLDER)
+        skill_list = load_json(SKILL_DATA_PATH, JSON_FOLDER)
 
         # 職業から設定されている技能一覧を取得
         current_profession = self.player.Profession
@@ -149,10 +151,10 @@ class ProfessionPage(BacePage):
         my_skills = self.player.skill
 
         # 趣味リストの技能データ
-        hobby_list = load_json(JSON_FOLDER, HOBBY_DATA_PATH)
+        hobby_list = load_json(HOBBY_DATA_PATH, JSON_FOLDER)
         hobby_skills = hobby_list[selected_hobby]
         # 技能リスト
-        skill_list = load_json(JSON_FOLDER, SKILL_DATA_PATH)
+        skill_list = load_json(SKILL_DATA_PATH, JSON_FOLDER)
 
         # 最大振り分けポイント
         max_points = self.player.INT * 10

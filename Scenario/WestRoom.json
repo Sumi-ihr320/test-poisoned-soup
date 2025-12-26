@@ -1,17 +1,59 @@
-{
-    "west-room":[
-        {"type":"text", "text":"四方が大きな本棚に囲まれた部屋だ。", "progression":"click"},
-        {"type":"conditional",
-         "conditions":[
-            {"flags":[{"category":"items", "flag":"candle_out", "value":true}], "next":"west-room_light_off"},
-            {"flags":[{"category":"items", "flag":"candle_goes_out", "value":0, "not":true}], "next":"west-room_light_off"},
-            {"flags":[{"category":"items", "flag":"candle_goes_out", "value":0}], "next":"west-room_light_on"}
-        ]}
-    ],
-    "west-room_light_on":[
-        {"type":"text", "text":"中央には古い机があり、\nその上にあるキャンドル皿に乗せられたろうそくが\nうっすらと部屋を照らしている。", "progression":"click"}
-    ],
-    "west-room_light_off":[
-        {"type":"text", "text":"明かりがないのでよく見えない。\n探し物は難しそうだ。", "progression":"click"}
-    ]
+﻿{
+  "west-room": [
+    {
+      "type": "text",
+      "text": "四方が大きな本棚に囲まれた部屋だ。",
+      "progression": "click"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "candle_out",
+              "value": true
+            }
+          ],
+          "next": "west-room_light_off"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "candle_goes_out",
+              "value": 0,
+              "not": true
+            }
+          ],
+          "next": "west-room_light_off"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "candle_goes_out",
+              "value": 0
+            }
+          ],
+          "next": "west-room_light_on"
+        }
+      ]
+    }
+  ],
+  "west-room_light_on": [
+    {
+      "type": "text",
+      "text": "中央には古い机があり、\nその上にあるキャンドル皿に乗せられたろうそくが\nうっすらと部屋を照らしている。",
+      "progression": "click"
+    }
+  ],
+  "west-room_light_off": [
+    {
+      "type": "text",
+      "text": "明かりがないのでよく見えない。\n探し物は難しそうだ。",
+      "progression": "click"
+    }
+  ]
 }

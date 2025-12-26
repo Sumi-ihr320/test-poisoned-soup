@@ -1,156 +1,532 @@
-{
-    "east-room":[
-        {"type":"text", "text":"中は真っ暗で、\n中央の部屋の明かりも奥までは届かないようだ。", "progression":"click"},
-        {"type":"conditional", "conditions":[
-            {"flags":[
-                {"category":"rooms", "flag":"east_room_visible", "value":false},
-                {"category":"rooms", "flag":"east_room_listen", "value":false},
-                {"category":"girl", "flag":"meet", "value":false}], "next":"east-room_first"},
-            {"flags":[
-                {"category":"rooms", "flag":"east_room_visible", "value":false},
-                {"category":"girl", "flag":"meet", "value":true}], "next":"east-room_girl_meet_after"},
-            {"flags":[
-                {"category":"rooms", "flag":"east_room_visible", "value":true},
-                {"category":"rooms", "flag":"east_room_listen", "value":false},
-                {"category":"girl", "flag":"meet", "value":false}], "next":"east-room_visible_not_meet"},
-            {"flags":[
-                {"category":"rooms", "flag":"east_room_visible", "value":true},
-                {"category":"rooms", "flag":"east_room_listen", "value":true},
-                {"category":"girl", "flag":"meet", "value":false}], "next":"east-room_visible_listen_not_meet"},
-            {"flags":[
-                {"category":"girl", "flag":"meet", "value":true},
-                {"category":"girl", "flag":"fellow", "value":false},
-                {"category":"girl", "flag":"room", "value":"east"}], "next":"Girl_room_wait"}
-        ]}
-    ],
-    "east-room_first":[
-        {"type":"interaction",
-         "interactions":[
-            {"text":"聞き耳", "next":"east-room_listen"},
-            {"text":"目星", "next":"east-room_objective"}
-         ]}
-    ],
-    "east-room_girl_meet_after":[
-        {"type":"interaction",
-         "interactions":[
-            {"text":"目星", "next":"east-room_objective"}
-         ]}
-    ],
-    "east-room_visible_not_meet":[
-        {"type":"interaction",
-         "interactions":[
-            {"text":"聞き耳", "next":"east-room_listen"}
-         ]}
-    ],
-    "east-room_visible_listen_not_meet":[
-        {"type":"text", "text":"誰かの足音が近づいてくる。", "progression":"click"},
-        {"type":"next_step", "next":"east-room_girl_no_meet_interaction"}
-    ],
-    "east-room_objective":[
-        {"type":"time_passage", "value":2},
-        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100", "half":true, "progression":"click",
-         "success":"east-room_objective_success",
-         "failure":"east-room_objective_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "east-room_objective_failure":[
-        {"type":"text", "text":"何も見えない", "progression":"click"}
-    ],
-    "east-room_objective_success": [
-        {"type":"text", "text":"よく目を凝らすと中がうっすらと見えるようになった", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_visible", "value":true},
-        {"type":"conditional", "conditions":[
-            {"flags":[{"category":"girl", "flag":"meet", "value":false}], "next":"east-room_girl_no_meet"}
-        ]}
-    ],
-    "east-room_girl_no_meet":[
-        {"type":"text", "text":"誰かが近づいてきているようだ。", "progression":"click"},
-        {"type":"next_step", "next":"east-room_girl_no_meet_interaction"}
-    ],
-    "east-room_girl_no_meet_interaction":[
-        {"type":"interaction",
-         "interactions":[
-            {"text":"そのまま待つ", "next":"east-room_girl_no_meet_to_meet"},
-            {"text":"近づく", "next":"east-room_girl_no_meet_to_meet"},
-            {"text":"逃げる", "next":"east-room_girl_no_meet_escape"}
-         ]}
-    ],
-    "east-room_girl_no_meet_to_meet":[
-        {"type":"sound", "name":"足音1"},
-        {"type":"time_passage", "value":2},
-        {"type":"girl_display", "state":"gun_dark", "position":"center"},
-        {"type":"text", "text":"周囲が暗くて相手のことがよく見えない。", "progression":"click"},
-        {"type":"interaction",
-         "interactions":[
-            {"text":"目星", "next":"east-room_girl_objective"}
-         ]}
-    ],
-    "east-room_girl_no_meet_escape":[
-        {"type":"action", "action":"move_to_room", "room_id":"center-room"},
-        {"type":"text", "text":"東の部屋から逃げ出した。"}
-    ],
-    "east-room_listen":[
-        {"type":"time_passage", "value":2},
-        {"type":"dice_check", "check_type":"skill", "skill":"聞き耳", "dice":"1d100", "progression":"click",
-         "success":"east-room_listen_success",
-         "failure":"east-room_listen_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "east-room_listen_failure":[
-        {"type":"text", "text":"何も聞き取れなかった。", "progression":"click"}
-    ],
-    "east-room_listen_success": [
-        {"type":"action", "action":"set_flag", "category":"rooms", "flag":"east_room_listen", "value":true},
-        {"type":"sound", "name":"足音1"},
-        {"type":"text", "text":"誰かの足音が聞こえる。\nその足音はこちらに近づいて来ているようだ。", "progression":"click"},
-        {"type":"interaction",
-         "interactions":[
-            {"text":"目星", "next":"east-room_girl_objective"}
-         ]}
-    ],
-    "east-room_girl_objective":[
-        {"type":"time_passage", "value":2},
-        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100", "half":true, "progression":"click",
-         "success":"east-room_listen_objective_success",
-         "failure":"east-room_listen_objective_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "east-room_girl_objective_success":[
-        {"type":"girl_display", "state":"gun", "position":"center"},
-        {"type":"text", "text":"近づいてきたその人物は、\n十代後半くらいのやつれた女の子に見える。", "progression":"click"},
-        {"type":"next_step", "next":"Girl_meet"}
-    ],
-    "east-room_girl_objective_failure":[
-        {"type":"girl_display", "state":"gun_dark", "position":"center"},
-        {"type":"text", "text":"目を凝らしてみても\n周囲の暗さで相手のことはよく見えなかった。", "progression":"click"},
-        {"type":"next_step", "next":"east-room_girl_invisible"}
-    ],
-    "east-room_girl_invisible":[
-        {"type":"interaction",
-         "interactions":[
-            {"text":"中央の部屋まで連れていく", "next":"east-room_girl_go_center_room"},
-            {"text":"このまま話してみる", "next":"east-room_girl_invisible_talk"}
-         ]}
-    ],
-    "Corpse":[
-        {"type":"text", "text":"頭のない男性の遺体がある。", "progression":"click"},
-        {"type":"conditional", "conditions":[
-            {"flags":[{"category":"items", "flag":"corpse_look", "value":false}], "next":"Corpse_first"}
-        ]}
-    ],
-    "Corpse_first":[
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"corpse_look", "value":true},
-        {"type":"text", "text":"見るも無残な死体を直視してしまったあなたは\n1/1d4+1のSANチェックだ。", "progression":"click"},
-        {"type":"dice_check", "check_type":"SANチェック", "target":"player"},
-        {"type":"result_text", "progression":"click"},
-        {"type":"damage", "status":"SAN", "target":"player", "value":"1/1d4+1", "text":"無残な死体を目撃してしまった", "progression":"click"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "eastMemo":[
-        {"type":"text", "text":"紙切れが落ちていた。", "progression":"click"},
-        {"type":"image_display", "image":"eastMemo.png"},
-        {"type":"text", "text":"～それは  名前もない  貴方の  下僕です。\n  言われたことは  嫌でも  絶対に  従います。", "progression":"click"},
-        {"type":"text", "text":"  無口だけど  人懐っこい  良い子なので\n  可愛がって  あげてください～", "progression":"click"},
-        {"type":"image_hidden"}
-    ]
+﻿{
+  "east-room": [
+    {
+      "type": "text",
+      "text": "中は真っ暗で、\n中央の部屋の明かりも奥までは届かないようだ。",
+      "progression": "click"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "rooms",
+              "flag": "east_room_visible",
+              "value": false
+            },
+            {
+              "category": "rooms",
+              "flag": "east_room_listen",
+              "value": false
+            },
+            {
+              "category": "girl",
+              "flag": "meet",
+              "value": false
+            }
+          ],
+          "next": "east-room_first"
+        },
+        {
+          "flags": [
+            {
+              "category": "rooms",
+              "flag": "east_room_visible",
+              "value": false
+            },
+            {
+              "category": "girl",
+              "flag": "meet",
+              "value": true
+            }
+          ],
+          "next": "east-room_girl_meet_after"
+        },
+        {
+          "flags": [
+            {
+              "category": "rooms",
+              "flag": "east_room_visible",
+              "value": true
+            },
+            {
+              "category": "rooms",
+              "flag": "east_room_listen",
+              "value": false
+            },
+            {
+              "category": "girl",
+              "flag": "meet",
+              "value": false
+            }
+          ],
+          "next": "east-room_visible_not_meet"
+        },
+        {
+          "flags": [
+            {
+              "category": "rooms",
+              "flag": "east_room_visible",
+              "value": true
+            },
+            {
+              "category": "rooms",
+              "flag": "east_room_listen",
+              "value": true
+            },
+            {
+              "category": "girl",
+              "flag": "meet",
+              "value": false
+            }
+          ],
+          "next": "east-room_visible_listen_not_meet"
+        },
+        {
+          "flags": [
+            {
+              "category": "girl",
+              "flag": "meet",
+              "value": true
+            },
+            {
+              "category": "girl",
+              "flag": "fellow",
+              "value": false
+            },
+            {
+              "category": "girl",
+              "flag": "room",
+              "value": "east"
+            }
+          ],
+          "next": "Girl_room_wait"
+        }
+      ]
+    }
+  ],
+  "east-room_first": [
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "聞き耳",
+          "next": "east-room_listen"
+        },
+        {
+          "text": "目星",
+          "next": "east-room_objective"
+        }
+      ]
+    }
+  ],
+  "east-room_girl_meet_after": [
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "east-room_objective"
+        }
+      ]
+    }
+  ],
+  "east-room_visible_not_meet": [
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "聞き耳",
+          "next": "east-room_listen"
+        }
+      ]
+    }
+  ],
+  "east-room_visible_listen_not_meet": [
+    {
+      "type": "text",
+      "text": "誰かの足音が近づいてくる。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "east-room_girl_no_meet_interaction"
+    }
+  ],
+  "east-room_objective": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "目星",
+      "dice": "1d100",
+      "half": true,
+      "progression": "click",
+      "success": "east-room_objective_success",
+      "failure": "east-room_objective_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "east-room_objective_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "east-room_objective_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "east-room_objective_failure": [
+    {
+      "type": "text",
+      "text": "何も見えない",
+      "progression": "click"
+    }
+  ],
+  "east-room_objective_success": [
+    {
+      "type": "text",
+      "text": "よく目を凝らすと中がうっすらと見えるようになった",
+      "progression": "click"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "rooms",
+      "flag": "east_room_visible",
+      "value": true
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "girl",
+              "flag": "meet",
+              "value": false
+            }
+          ],
+          "next": "east-room_girl_no_meet"
+        }
+      ]
+    }
+  ],
+  "east-room_girl_no_meet": [
+    {
+      "type": "text",
+      "text": "誰かが近づいてきているようだ。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "east-room_girl_no_meet_interaction"
+    }
+  ],
+  "east-room_girl_no_meet_interaction": [
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "そのまま待つ",
+          "next": "east-room_girl_no_meet_to_meet"
+        },
+        {
+          "text": "近づく",
+          "next": "east-room_girl_no_meet_to_meet"
+        },
+        {
+          "text": "逃げる",
+          "next": "east-room_girl_no_meet_escape"
+        }
+      ]
+    }
+  ],
+  "east-room_girl_no_meet_to_meet": [
+    {
+      "type": "sound",
+      "name": "足音1"
+    },
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "girl_display",
+      "state": "gun_dark",
+      "position": "center"
+    },
+    {
+      "type": "text",
+      "text": "周囲が暗くて相手のことがよく見えない。",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "east-room_girl_objective"
+        }
+      ]
+    }
+  ],
+  "east-room_girl_no_meet_escape": [
+    {
+      "type": "action",
+      "action": "move_to_room",
+      "room_id": "center-room"
+    },
+    {
+      "type": "text",
+      "text": "東の部屋から逃げ出した。"
+    }
+  ],
+  "east-room_listen": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "聞き耳",
+      "dice": "1d100",
+      "progression": "click",
+      "success": "east-room_listen_success",
+      "failure": "east-room_listen_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "east-room_listen_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "east-room_listen_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "east-room_listen_failure": [
+    {
+      "type": "text",
+      "text": "何も聞き取れなかった。",
+      "progression": "click"
+    }
+  ],
+  "east-room_listen_success": [
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "rooms",
+      "flag": "east_room_listen",
+      "value": true
+    },
+    {
+      "type": "sound",
+      "name": "足音1"
+    },
+    {
+      "type": "text",
+      "text": "誰かの足音が聞こえる。\nその足音はこちらに近づいて来ているようだ。",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "east-room_girl_objective"
+        }
+      ]
+    }
+  ],
+  "east-room_girl_objective": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "目星",
+      "dice": "1d100",
+      "half": true,
+      "progression": "click",
+      "success": "east-room_listen_objective_success",
+      "failure": "east-room_listen_objective_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "east-room_listen_objective_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "east-room_listen_objective_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "east-room_girl_objective_success": [
+    {
+      "type": "girl_display",
+      "state": "gun",
+      "position": "center"
+    },
+    {
+      "type": "text",
+      "text": "近づいてきたその人物は、\n十代後半くらいのやつれた女の子に見える。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Girl_meet"
+    }
+  ],
+  "east-room_girl_objective_failure": [
+    {
+      "type": "girl_display",
+      "state": "gun_dark",
+      "position": "center"
+    },
+    {
+      "type": "text",
+      "text": "目を凝らしてみても\n周囲の暗さで相手のことはよく見えなかった。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "east-room_girl_invisible"
+    }
+  ],
+  "east-room_girl_invisible": [
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "中央の部屋まで連れていく",
+          "next": "east-room_girl_go_center_room"
+        },
+        {
+          "text": "このまま話してみる",
+          "next": "east-room_girl_invisible_talk"
+        }
+      ]
+    }
+  ],
+  "Corpse": [
+    {
+      "type": "text",
+      "text": "頭のない男性の遺体がある。",
+      "progression": "click"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "corpse_look",
+              "value": false
+            }
+          ],
+          "next": "Corpse_first"
+        }
+      ]
+    }
+  ],
+  "Corpse_first": [
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "corpse_look",
+      "value": true
+    },
+    {
+      "type": "text",
+      "text": "見るも無残な死体を直視してしまったあなたは\n1/1d4+1のSANチェックだ。",
+      "progression": "click"
+    },
+    {
+      "type": "dice_check",
+      "check_type": "SANチェック",
+      "target": "player"
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    },
+    {
+      "type": "damage",
+      "status": "SAN",
+      "target": "player",
+      "value": "1/1d4+1",
+      "text": "無残な死体を目撃してしまった",
+      "progression": "click",
+      "damage": {
+        "type": "branch",
+        "target": "SAN",
+        "success": {
+          "type": "fixed",
+          "value": 1
+        },
+        "failure": {
+          "type": "dice",
+          "spec": "1d4+1"
+        }
+      }
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "eastMemo": [
+    {
+      "type": "text",
+      "text": "紙切れが落ちていた。",
+      "progression": "click"
+    },
+    {
+      "type": "image_display",
+      "image": "eastMemo.png"
+    },
+    {
+      "type": "text",
+      "text": "～それは  名前もない  貴方の  下僕です。\n  言われたことは  嫌でも  絶対に  従います。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "  無口だけど  人懐っこい  良い子なので\n  可愛がって  あげてください～",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ]
 }

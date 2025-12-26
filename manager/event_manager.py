@@ -21,7 +21,7 @@ class EventManager:
         self.girl = girl
         self.game_state = game_state
         self.flags = flags
-        self.skill_list = load_json(JSON_FOLDER, SKILL_DATA_PATH)
+        self.skill_list = load_json(SKILL_DATA_PATH, JSON_FOLDER)
 
         # コールバック関数
         self.next_scenario_call_back = next_scenario_call_back
@@ -262,7 +262,7 @@ class EventManager:
 
     # ダメージ計算をして表示するテキストを作成する
     def handle_damage(self, step):
-        
+
         # 誰がダメージを受けるのか
         characters = {}
         player_flag, girl_flag = self.target_check(step)

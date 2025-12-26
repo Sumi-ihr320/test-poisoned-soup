@@ -1,60 +1,228 @@
-{
-    "centerMemo":[
-        {"type":"image_display", "image":"centerMemo1.png", "progression":"click"},
-        {"type":"text", "text":"1枚目のメモには絵が描かれている。\nおそらくこの部屋の地図だろう。", "progression":"click"},
-        {"type":"image_display", "image":"centerMemo2.png", "progression":"click"},
-        {"type":"text", "text":"もう一枚のメモを手に取ると、\nそこにはこう書かれていた。", "progression":"click"},
-        {"type":"text", "text":"～帰りたいなら 一時間以内に 毒入りスープを飲め。\n  飲むまでは 君じゃあここから 出られない。\n  一時間以内に 飲めなかったら お迎えが来るぞ～", "progression":"click"},
-        {"type":"conditional", 
-         "conditions":[
-            {"flags":[{"category":"items", "flag":"center_memo_objective", "value":true}],"next":"centerMemo_obj_true"},
-            {"flags":[{"category":"items", "flag":"center_memo_objective", "value":false}],"next":"centerMemo_obj_false"}]
+﻿{
+  "centerMemo": [
+    {
+      "type": "image_display",
+      "image": "centerMemo1.png",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "1枚目のメモには絵が描かれている。\nおそらくこの部屋の地図だろう。",
+      "progression": "click"
+    },
+    {
+      "type": "image_display",
+      "image": "centerMemo2.png",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "もう一枚のメモを手に取ると、\nそこにはこう書かれていた。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "～帰りたいなら 一時間以内に 毒入りスープを飲め。\n  飲むまでは 君じゃあここから 出られない。\n  一時間以内に 飲めなかったら お迎えが来るぞ～",
+      "progression": "click"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "center_memo_objective",
+              "value": true
+            }
+          ],
+          "next": "centerMemo_obj_true"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "center_memo_objective",
+              "value": false
+            }
+          ],
+          "next": "centerMemo_obj_false"
         }
-    ],
-    "centerMemo_obj_true":[
-        {"type":"image_display", "image":"centerMemo_objctive.png"},
-        {"type":"text", "text":"裏には\n～暖かい 人間の 血の スープ\n 冷めない 内に 召し上がれ～\nと書かれている。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "centerMemo_obj_false":[
-        {"type":"interaction", "progression":"click",
-         "interactions":[
-            {"text":"目星", "next":"centerMemo_objective"}]
+      ]
+    }
+  ],
+  "centerMemo_obj_true": [
+    {
+      "type": "image_display",
+      "image": "centerMemo_objctive.png"
+    },
+    {
+      "type": "text",
+      "text": "裏には\n～暖かい 人間の 血の スープ\n 冷めない 内に 召し上がれ～\nと書かれている。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "centerMemo_obj_false": [
+    {
+      "type": "interaction",
+      "progression": "click",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "centerMemo_objective"
         }
-    ],
-    "centerMemo_objective":[
-        {"type":"time_passage", "value":2},
-        {"type":"dice_check", "check_type":"skill", "skill":"目星", "dice":"1d100",
-         "success":"centerMemo_objective_success",
-         "failure":"centerMemo_objective_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "centerMemo_objective_success":[
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"center_memo_objective", "value":true},
-        {"type":"text", "text":"あなたは、\n紙の裏にも文字が書かれていることに気付いた。", "progression":"click"},
-        {"type":"image_display", "image":"centerMemo_objctive.png"},
-        {"type":"text", "text":"～暖かい 人間の 血の スープ\n  冷めない 内に 召し上がれ～\n《アイデア》⇒", "progression":"click"},
-        {"type":"dice_check", "check_type":"status", "status":"Idea",
-         "success":"centerMemo_objective_idea_success",
-         "failure":"centerMemo_objective_idea_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "centerMemo_objective_idea_success":[
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_know", "value":true},
-        {"type":"text", "text":"このスープはどうやら本当に人間の血のようだ。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。", "progression":"click"},
-        {"type":"text", "text":"このおぞましい事実に気付いてしまったあなたは\n0/1d4のSANチェックだ。", "progression":"click"},
-        {"type":"dice_check", "check_type":"SANチェック"},
-        {"type":"result_text", "progression":"click"},
-        {"type":"damage", "status":"SAN", "value":"0/1d4", "text":"おぞましい事実に気づいてしまった"},
-        {"type":"result_text", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "centerMemo_objective_idea_failure":[
-        {"type":"text", "text":"どういう意味だろうか……", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "centerMemo_objective_failure":[
-        {"type":"text", "text":"何もわからなかった。", "progression":"click"},
-        {"type":"image_hidden"}
-    ]
+      ]
+    }
+  ],
+  "centerMemo_objective": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "目星",
+      "dice": "1d100",
+      "success": "centerMemo_objective_success",
+      "failure": "centerMemo_objective_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "centerMemo_objective_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "centerMemo_objective_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "centerMemo_objective_success": [
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "center_memo_objective",
+      "value": true
+    },
+    {
+      "type": "text",
+      "text": "あなたは、\n紙の裏にも文字が書かれていることに気付いた。",
+      "progression": "click"
+    },
+    {
+      "type": "image_display",
+      "image": "centerMemo_objctive.png"
+    },
+    {
+      "type": "text",
+      "text": "～暖かい 人間の 血の スープ\n  冷めない 内に 召し上がれ～\n《アイデア》⇒",
+      "progression": "click"
+    },
+    {
+      "type": "dice_check",
+      "check_type": "status",
+      "status": "Idea",
+      "success": "centerMemo_objective_idea_success",
+      "failure": "centerMemo_objective_idea_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "centerMemo_objective_idea_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "centerMemo_objective_idea_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "centerMemo_objective_idea_success": [
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "soup_know",
+      "value": true
+    },
+    {
+      "type": "text",
+      "text": "このスープはどうやら本当に人間の血のようだ。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "このおぞましい事実に気付いてしまったあなたは\n0/1d4のSANチェックだ。",
+      "progression": "click"
+    },
+    {
+      "type": "dice_check",
+      "check_type": "SANチェック"
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    },
+    {
+      "type": "damage",
+      "status": "SAN",
+      "value": "0/1d4",
+      "text": "おぞましい事実に気づいてしまった",
+      "damage": {
+        "type": "branch",
+        "target": "SAN",
+        "success": {
+          "type": "fixed",
+          "value": 0
+        },
+        "failure": {
+          "type": "dice",
+          "spec": "1d4"
+        }
+      }
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "centerMemo_objective_idea_failure": [
+    {
+      "type": "text",
+      "text": "どういう意味だろうか……",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "centerMemo_objective_failure": [
+    {
+      "type": "text",
+      "text": "何もわからなかった。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ]
 }

@@ -24,7 +24,7 @@ class ScenarioManager:
     # シナリオを各ファイルからロードして統合する
     def load_all_scenarios(self):
         for file_path in SCENARIO_FILES:
-            scenarios_by_id = load_and_normalize_json(file_path)
+            scenarios_by_id = load_and_normalize_json(file_path, full_path=False)
             self.scenarios_by_id.update(scenarios_by_id)
 
     # 指定したシナリオを開始

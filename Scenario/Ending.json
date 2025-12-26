@@ -1,14 +1,42 @@
-{
-    "ending":[
-        {"conditions": [
-            {"flags":[{"category":"ending", "flag":1, "value":true}], "next":"Ending_1"},
-            {"flags":[{"category":"ending", "flag":2, "value":true}], "next":"Ending_2"}
-        ]}
-    ],
-    "Ending_1":[
-        {"type":"text", "text":"あなたは死んでしまいました。", "progression":"click"}
-    ],
-    "Ending_2":[
-        {"type":"text", "text":"あなたは死んでしまいました。", "progression":"click"}
-    ]
+﻿{
+  "ending": [
+    {
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "ending",
+              "flag": 1,
+              "value": true
+            }
+          ],
+          "next": "Ending_1"
+        },
+        {
+          "flags": [
+            {
+              "category": "ending",
+              "flag": 2,
+              "value": true
+            }
+          ],
+          "next": "Ending_2"
+        }
+      ]
+    }
+  ],
+  "Ending_1": [
+    {
+      "type": "text",
+      "text": "あなたは死んでしまいました。",
+      "progression": "click"
+    }
+  ],
+  "Ending_2": [
+    {
+      "type": "text",
+      "text": "あなたは死んでしまいました。",
+      "progression": "click"
+    }
+  ]
 }

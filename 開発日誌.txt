@@ -697,6 +697,9 @@
 
 2025/12/24
 	utils.pyにload_and_normalize_jsonといくつかの関数の説明を追加
-	
-	
+
+2025/12/26
+	utils.pyにsave_jsonを作成
+	toolsフォルダを作成、convert.pyファイルを作成
+	convert.pyの実行、各シナリオファイルの形式を変更
 	

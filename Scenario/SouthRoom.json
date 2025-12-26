@@ -1,13 +1,42 @@
-{
-    "south-room": [
-        {"type": "conditional",
-         "conditions":[
-            {"flags":[{"category":"enemys", "flag":"hunting_horrors_there", "value":true}], "next":"south-room_enemy_there"},
-            {"flags":[{"category":"enemys", "flag":"hunting_horrors_offered_sacrifice", "value":true}], "next":"south-room_blood"},
-            {"flags":[{"category":"enemys", "flag":"hunting_horrors_there", "value":false}], "next":"south-room_none"}
-         ]}
-    ],
-    "south-room_enemy_there":[],
-    "south-room_blood":[],
-    "south-room_none":[]
+﻿{
+  "south-room": [
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "enemys",
+              "flag": "hunting_horrors_there",
+              "value": true
+            }
+          ],
+          "next": "south-room_enemy_there"
+        },
+        {
+          "flags": [
+            {
+              "category": "enemys",
+              "flag": "hunting_horrors_offered_sacrifice",
+              "value": true
+            }
+          ],
+          "next": "south-room_blood"
+        },
+        {
+          "flags": [
+            {
+              "category": "enemys",
+              "flag": "hunting_horrors_there",
+              "value": false
+            }
+          ],
+          "next": "south-room_none"
+        }
+      ]
+    }
+  ],
+  "south-room_enemy_there": [],
+  "south-room_blood": [],
+  "south-room_none": []
 }

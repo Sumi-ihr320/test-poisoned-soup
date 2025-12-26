@@ -1,250 +1,826 @@
-{
-    "Soup":[
-        {"type":"conditional",
-         "conditions":[
-            {"flags":[{"category":"items", "flag":"soup_drink", "value":true}], "next":"Soup_drink"},
-            {"flags":[{"category":"items", "flag":"soup_destruction", "value":true}], "next":"Soup_destruction_after"},
-            {"flags":[{"category":"items", "flag":"soup_in_poison", "value":true}], "next":"Soup_poison"},
-            {"flags":[{"category":"game_state", "flag":"time", "value":45}],"next":"Soup_time1"},
-            {"flags":[{"category":"game_state", "flag":"time", "value":30}],"next":"Soup_time2"},
-            {"flags":[{"category":"game_state", "flag":"time", "value":15}],"next":"Soup_time3"},
-            {"flags":[{"category":"game_state", "flag":"time", "value":0}],"next":"Soup_time4"}
-        ]}
-    ],
-    "Soup_none":[
-        {"type":"image_display", "image":"Soup_none.png"},
-        {"type":"conditional",
-         "conditions":[
-            {"flags":[{"category":"items", "flag":"soup_drink", "value":true}], "next":"Soup_drink"},
-            {"flags":[{"category":"items", "flag":"soup_destruction", "value":true}], "next":"Soup_destruction_after"}
-        ]}
-    ],
-    "Soup_drink":[
-        {"type":"text", "text":"飲み干してしまったスープの器。中身は空だ。", "progression":"click"},
-        {"type":"next_step", "next":"Soup_bowl_interaction"}
-    ],
-    "Soup_destruction_after":[
-        {"type":"text", "text":"スープの器。捨ててしまったので中身は空だ。", "progression":"click"},
-        {"type":"next_step", "next":"Soup_bowl_interaction"}
-    ],
-    "Soup_bowl_interaction":[
-        {"type":"interaction", "item":"Soup",
-         "interactions":[
-            {"text":"持って行く", "next":"Soup_bowl_get"},
-            {"text":"何もしない", "next":"Soup_bowl_none"}
-         ]}
-    ],
-    "Soup_bowl_get":[
-        {"type":"time_passage", "value":1},
-        {"type":"text", "text":"スープの器を持って行くことにした。", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"Soup_bowl_get", "value":true},
-        {"type":"action", "action":"get_item", "item":"soup_bowl"},
-        {"type":"result_text", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "Soup_bowl_none":[
-        {"type":"image_hidden"}
-    ],
-    "Soup_poison":[
-        {"type":"image_display", "image":"Soup_poison.png"},
-        {"type":"text", "text":"毒の入ったスープ。黒い。", "progression":"click"},
-        {"type":"interaction", "item":"Soup",
-         "interactions":[
-            {"text":"目星", "next":"Soup_in_poison_objctive"},
-            {"text":"触る", "next":"Soup_in_poison_touch"},
-            {"text":"飲む", "next":"Soup_in_poison_drink"},
-            {"text":"捨てる", "next":"Soup_destruction"}
-         ]}
-    ],
-    "Soup_in_poison_objctive":[
-        {"type":"time_passage", "value":5}
-    ],
-    "Soup_in_poison_touch":[
-
-    ],
-    "Soup_in_poison_drink":[
-        {"type":"girl_check", "true":"poison_soup_drink_with_girl", "false":"poison_soup_drink_only"}
-    ],
-    "Soup_time1":[
-        {"type":"image_display", "image":"Soup.png"},
-        {"type":"conditional",
-         "conditions":[
-            {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time1"},
-            {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time1"}
-        ]}
-    ],
-    "Soup_time2":[
-        {"type":"image_display", "image":"Soup.png"},
-        {"type":"conditional",
-         "conditions":[
-            {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time2"},
-            {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time2"}
-        ]}
-    ],
-    "Soup_time3":[
-        {"type":"image_display", "image":"Soup.png"},
-        {"type":"conditional",
-         "conditions":[
-            {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time3"},
-            {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time3"}
-        ]}
-    ],
-    "Soup_time4":[
-        {"type":"image_display", "image":"Soup.png"},
-        {"type":"conditional",
-         "conditions":[
-            {"flags":[{"category":"items", "flag":"soup_know", "value":true}], "next":"Soup_know_time4"},
-            {"flags":[{"category":"items", "flag":"soup_know", "value":false}], "next":"Soup_unknown_time4"}
-        ]}
-    ],
-    "Soup_unknown_time1":[
-        {"type":"text", "text":"赤い無臭のスープ。温かく湯気が立っている。", "progression":"click"},
-        {"type":"next_step", "next":"Soup_interaction"}
-    ],
-    "Soup_unknown_time2":[
-        {"type":"text", "text":"赤い無臭のスープ。ほのかに温かい。", "progression":"click"},
-        {"type":"next_step", "next":"Soup_interaction"}
-    ],
-    "Soup_unknown_time3":[
-        {"type":"text", "text":"赤い無臭のスープ。冷めてきているようだ。", "progression":"click"},
-        {"type":"next_step", "next":"Soup_interaction"}
-    ],
-    "Soup_unknown_time4":[
-        {"type":"text", "text":"赤い無臭のスープ。すっかり冷たくなっている。", "progression":"click"},
-        {"type":"next_step", "next":"Soup_interaction"}
-    ],
-    "Soup_know_time1":[
-        {"type":"text", "text":"人間の血のスープ。温かく湯気が立っている。\n鉄錆に似た悪臭がスープから漂ってくる…", "progression":"click"},
-        {"type":"next_step", "next":"Soup_interaction"}
-    ],
-    "Soup_know_time2":[
-        {"type":"text", "text":"人間の血のスープ。ほのかに温かい。\n鉄錆に似た悪臭がスープから漂ってくる…", "progression":"click"},
-        {"type":"next_step", "next":"Soup_interaction"}
-    ],
-    "Soup_know_time3":[
-        {"type":"text", "text":"人間の血のスープ。冷めてきているようだ。\n鉄錆に似た悪臭がスープから漂ってくる…", "progression":"click"},
-        {"type":"next_step", "next":"Soup_interaction"}
-    ],
-    "Soup_know_time4":[
-        {"type":"text", "text":"人間の血のスープ。すっかり冷たくなっている。\n鉄錆に似た悪臭がスープから漂ってくる…", "progression":"click"},
-        {"type":"next_step", "next":"Soup_interaction"}
-    ],
-    "Soup_interaction":[
-        {"type":"conditional",
-         "conditions":[
-            {"flags":[
-                {"category":"items", "flag":"soup_know", "value":true},
-                {"category":"items", "flag":"poison_get", "value":true}
-            ], "next":"Soup_interaction_know_for_get"},
-            {"flags":[
-                {"category":"items", "flag":"soup_know", "value":true},
-                {"category":"items", "flag":"poison_get", "value":false}
-            ], "next":"Soup_interaction_know_not_have"},
-            {"flags":[
-                {"category":"items", "flag":"soup_know", "value":false},
-                {"category":"items", "flag":"poison_get", "value":true}
-            ], "next":"Soup_interaction_unknown_for_get"},
-            {"flags":[
-                {"category":"items", "flag":"soup_know", "value":false},
-                {"category":"items", "flag":"poison_get", "value":false}
-            ], "next":"Soup_interaction_unknown_not_have"}
-        ]}
-    ],
-    "Soup_interaction_know_for_get":[
-        {"type":"interaction", "item":"Soup",
-            "interactions":[
-                {"text":"目星", "next":"Soup_objctive"},
-                {"text":"触る", "next":""},
-                {"text":"毒を入れる","next":""},
-                {"text":"飲む", "next":""},
-                {"text":"捨てる", "next":"Soup_destruction"}
-            ]}
-    ],
-    "Soup_interaction_know_not_have":[
-        {"type":"interaction", "item":"Soup",
-            "interactions":[
-                {"text":"目星", "next":"Soup_objctive"},
-                {"text":"触る", "next":""},
-                {"text":"飲む", "next":""},
-                {"text":"捨てる", "next":"Soup_destruction"}
-            ]}    
-    ],
-    "Soup_interaction_unknown_for_get":[
-        {"type":"interaction", "item":"Soup",
-            "interactions":[
-                {"text":"目星", "next":"Soup_objctive"},
-                {"text":"医学", "next":"Soup_medicine"},
-                {"text":"触る", "next":""},
-                {"text":"毒を入れる","next":""},
-                {"text":"飲む", "next":""},
-                {"text":"捨てる", "next":"Soup_destruction"}
-            ]}
-    ],
-    "Soup_interaction_unknown_not_have":[
-        {"type":"interaction", "item":"Soup",
-            "interactions":[
-                {"text":"目星", "next":"Soup_objctive"},
-                {"text":"医学", "next":"Soup_medicine"},
-                {"text":"触る", "next":""},
-                {"text":"飲む", "next":""},
-                {"text":"捨てる", "next":"Soup_destruction"}
-            ]}    
-    ],
-    "Soup_objctive":[
-        {"type":"time_passage", "value":2},
-        {"type":"dice_check", "check_type":"skill", "skill":"目星", "progression":"click",
-         "success":"Soup_objctive_success",
-         "failure":"Soup_objctive_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "Soup_objctive_success":[
-    ],
-    "Soup_objctive_failure":[
-    ],
-    "Soup_medicine":[
-        {"type":"time_passage", "value":2},
-        {"type":"dice_check", "check_type":"skill", "skill":"医学", "progression":"click",
-         "success":"Soup_medicine_success",
-         "failure":"Soup_medicine_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "Soup_medicine_success":[
-        {"type":"action", "action":"set_flag", "category":"items", "item":"soup", "flag":"know", "value":true},
-        {"type":"text", "text":"あなたは医学の知識によって、\nこのスープが確かに人間の血液であることを確信するだろう。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。", "progression":"click"},
-        {"type":"text", "text":"そのことを知ってしまったあなたは\n0/1d4のSANチェックだ。", "progression":"click"},
-        {"type":"dice_check", "check_type":"SANチェック"},
-        {"type":"result_text", "progression":"click"},
-        {"type":"damage", "status":"SAN", "value":"0/1d4","text":"おぞましい事実に気づいてしまった"},
-        {"type":"result_text", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "Soup_medicine_failure":[
-        {"type":"text", "text":"何もわからなかった。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "Soup_destruction":[
-        {"type":"time_passage", "value":1},
-        {"type":"text", "text":"あなたはスープを捨てることにした。", "progression":"click"},
-        {"type":"girl_check", "true":"Soup_destruction_with_girl", "false":"Soup_destruction_only_me"}
-    ],
-    "Soup_destruction_only_me":[
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_destruction", "value":true},
-        {"type":"action", "action":"set_flag", "category":"items", "flag":"soup_in_poison", "value":false},
-        {"type":"text", "text":"あなたはスープを捨てた。", "progression":"click"},
-        {"type":"image_hidden"}
-    ],
-    "Soup_destruction_with_girl":[
-        {"type":"time_passage", "value":2},
-        {"type":"text", "text":"少女がじっとあなたを見ている。", "progression":"click"},
-        {"type":"text", "text":"本当に捨てていいのか？と問うているようだ。", "progression":"click"},
-        {"type":"interaction", "item":"Soup",
-        "interactions":[
-                {"text":"捨てる", "next":"Soup_destruction_only_me"},
-                {"text":"捨てない", "next":"Soup_not_destruction"}
-        ]}
-    ],
-    "Soup_not_destruction":[
-        {"type":"text", "text":"やはり捨てるのはやめよう。", "progression":"click"},
-        {"type":"image_hidden"}
-    ]
+﻿{
+  "Soup": [
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_drink",
+              "value": true
+            }
+          ],
+          "next": "Soup_drink"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_destruction",
+              "value": true
+            }
+          ],
+          "next": "Soup_destruction_after"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_in_poison",
+              "value": true
+            }
+          ],
+          "next": "Soup_poison"
+        },
+        {
+          "flags": [
+            {
+              "category": "game_state",
+              "flag": "time",
+              "value": 45
+            }
+          ],
+          "next": "Soup_time1"
+        },
+        {
+          "flags": [
+            {
+              "category": "game_state",
+              "flag": "time",
+              "value": 30
+            }
+          ],
+          "next": "Soup_time2"
+        },
+        {
+          "flags": [
+            {
+              "category": "game_state",
+              "flag": "time",
+              "value": 15
+            }
+          ],
+          "next": "Soup_time3"
+        },
+        {
+          "flags": [
+            {
+              "category": "game_state",
+              "flag": "time",
+              "value": 0
+            }
+          ],
+          "next": "Soup_time4"
+        }
+      ]
+    }
+  ],
+  "Soup_none": [
+    {
+      "type": "image_display",
+      "image": "Soup_none.png"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_drink",
+              "value": true
+            }
+          ],
+          "next": "Soup_drink"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_destruction",
+              "value": true
+            }
+          ],
+          "next": "Soup_destruction_after"
+        }
+      ]
+    }
+  ],
+  "Soup_drink": [
+    {
+      "type": "text",
+      "text": "飲み干してしまったスープの器。中身は空だ。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Soup_bowl_interaction"
+    }
+  ],
+  "Soup_destruction_after": [
+    {
+      "type": "text",
+      "text": "スープの器。捨ててしまったので中身は空だ。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Soup_bowl_interaction"
+    }
+  ],
+  "Soup_bowl_interaction": [
+    {
+      "type": "interaction",
+      "item": "Soup",
+      "interactions": [
+        {
+          "text": "持って行く",
+          "next": "Soup_bowl_get"
+        },
+        {
+          "text": "何もしない",
+          "next": "Soup_bowl_none"
+        }
+      ]
+    }
+  ],
+  "Soup_bowl_get": [
+    {
+      "type": "time_passage",
+      "value": 1
+    },
+    {
+      "type": "text",
+      "text": "スープの器を持って行くことにした。",
+      "progression": "click"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "Soup_bowl_get",
+      "value": true
+    },
+    {
+      "type": "action",
+      "action": "get_item",
+      "item": "soup_bowl"
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Soup_bowl_none": [
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Soup_poison": [
+    {
+      "type": "image_display",
+      "image": "Soup_poison.png"
+    },
+    {
+      "type": "text",
+      "text": "毒の入ったスープ。黒い。",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "item": "Soup",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "Soup_in_poison_objctive"
+        },
+        {
+          "text": "触る",
+          "next": "Soup_in_poison_touch"
+        },
+        {
+          "text": "飲む",
+          "next": "Soup_in_poison_drink"
+        },
+        {
+          "text": "捨てる",
+          "next": "Soup_destruction"
+        }
+      ]
+    }
+  ],
+  "Soup_in_poison_objctive": [
+    {
+      "type": "time_passage",
+      "value": 5
+    }
+  ],
+  "Soup_in_poison_touch": [],
+  "Soup_in_poison_drink": [
+    {
+      "type": "girl_check",
+      "true": "poison_soup_drink_with_girl",
+      "false": "poison_soup_drink_only"
+    }
+  ],
+  "Soup_time1": [
+    {
+      "type": "image_display",
+      "image": "Soup.png"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": true
+            }
+          ],
+          "next": "Soup_know_time1"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": false
+            }
+          ],
+          "next": "Soup_unknown_time1"
+        }
+      ]
+    }
+  ],
+  "Soup_time2": [
+    {
+      "type": "image_display",
+      "image": "Soup.png"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": true
+            }
+          ],
+          "next": "Soup_know_time2"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": false
+            }
+          ],
+          "next": "Soup_unknown_time2"
+        }
+      ]
+    }
+  ],
+  "Soup_time3": [
+    {
+      "type": "image_display",
+      "image": "Soup.png"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": true
+            }
+          ],
+          "next": "Soup_know_time3"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": false
+            }
+          ],
+          "next": "Soup_unknown_time3"
+        }
+      ]
+    }
+  ],
+  "Soup_time4": [
+    {
+      "type": "image_display",
+      "image": "Soup.png"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": true
+            }
+          ],
+          "next": "Soup_know_time4"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": false
+            }
+          ],
+          "next": "Soup_unknown_time4"
+        }
+      ]
+    }
+  ],
+  "Soup_unknown_time1": [
+    {
+      "type": "text",
+      "text": "赤い無臭のスープ。温かく湯気が立っている。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Soup_interaction"
+    }
+  ],
+  "Soup_unknown_time2": [
+    {
+      "type": "text",
+      "text": "赤い無臭のスープ。ほのかに温かい。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Soup_interaction"
+    }
+  ],
+  "Soup_unknown_time3": [
+    {
+      "type": "text",
+      "text": "赤い無臭のスープ。冷めてきているようだ。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Soup_interaction"
+    }
+  ],
+  "Soup_unknown_time4": [
+    {
+      "type": "text",
+      "text": "赤い無臭のスープ。すっかり冷たくなっている。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Soup_interaction"
+    }
+  ],
+  "Soup_know_time1": [
+    {
+      "type": "text",
+      "text": "人間の血のスープ。温かく湯気が立っている。\n鉄錆に似た悪臭がスープから漂ってくる…",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Soup_interaction"
+    }
+  ],
+  "Soup_know_time2": [
+    {
+      "type": "text",
+      "text": "人間の血のスープ。ほのかに温かい。\n鉄錆に似た悪臭がスープから漂ってくる…",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Soup_interaction"
+    }
+  ],
+  "Soup_know_time3": [
+    {
+      "type": "text",
+      "text": "人間の血のスープ。冷めてきているようだ。\n鉄錆に似た悪臭がスープから漂ってくる…",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Soup_interaction"
+    }
+  ],
+  "Soup_know_time4": [
+    {
+      "type": "text",
+      "text": "人間の血のスープ。すっかり冷たくなっている。\n鉄錆に似た悪臭がスープから漂ってくる…",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Soup_interaction"
+    }
+  ],
+  "Soup_interaction": [
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": true
+            },
+            {
+              "category": "items",
+              "flag": "poison_get",
+              "value": true
+            }
+          ],
+          "next": "Soup_interaction_know_for_get"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": true
+            },
+            {
+              "category": "items",
+              "flag": "poison_get",
+              "value": false
+            }
+          ],
+          "next": "Soup_interaction_know_not_have"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": false
+            },
+            {
+              "category": "items",
+              "flag": "poison_get",
+              "value": true
+            }
+          ],
+          "next": "Soup_interaction_unknown_for_get"
+        },
+        {
+          "flags": [
+            {
+              "category": "items",
+              "flag": "soup_know",
+              "value": false
+            },
+            {
+              "category": "items",
+              "flag": "poison_get",
+              "value": false
+            }
+          ],
+          "next": "Soup_interaction_unknown_not_have"
+        }
+      ]
+    }
+  ],
+  "Soup_interaction_know_for_get": [
+    {
+      "type": "interaction",
+      "item": "Soup",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "Soup_objctive"
+        },
+        {
+          "text": "触る",
+          "next": ""
+        },
+        {
+          "text": "毒を入れる",
+          "next": ""
+        },
+        {
+          "text": "飲む",
+          "next": ""
+        },
+        {
+          "text": "捨てる",
+          "next": "Soup_destruction"
+        }
+      ]
+    }
+  ],
+  "Soup_interaction_know_not_have": [
+    {
+      "type": "interaction",
+      "item": "Soup",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "Soup_objctive"
+        },
+        {
+          "text": "触る",
+          "next": ""
+        },
+        {
+          "text": "飲む",
+          "next": ""
+        },
+        {
+          "text": "捨てる",
+          "next": "Soup_destruction"
+        }
+      ]
+    }
+  ],
+  "Soup_interaction_unknown_for_get": [
+    {
+      "type": "interaction",
+      "item": "Soup",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "Soup_objctive"
+        },
+        {
+          "text": "医学",
+          "next": "Soup_medicine"
+        },
+        {
+          "text": "触る",
+          "next": ""
+        },
+        {
+          "text": "毒を入れる",
+          "next": ""
+        },
+        {
+          "text": "飲む",
+          "next": ""
+        },
+        {
+          "text": "捨てる",
+          "next": "Soup_destruction"
+        }
+      ]
+    }
+  ],
+  "Soup_interaction_unknown_not_have": [
+    {
+      "type": "interaction",
+      "item": "Soup",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "Soup_objctive"
+        },
+        {
+          "text": "医学",
+          "next": "Soup_medicine"
+        },
+        {
+          "text": "触る",
+          "next": ""
+        },
+        {
+          "text": "飲む",
+          "next": ""
+        },
+        {
+          "text": "捨てる",
+          "next": "Soup_destruction"
+        }
+      ]
+    }
+  ],
+  "Soup_objctive": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "目星",
+      "progression": "click",
+      "success": "Soup_objctive_success",
+      "failure": "Soup_objctive_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "Soup_objctive_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "Soup_objctive_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "Soup_objctive_success": [],
+  "Soup_objctive_failure": [],
+  "Soup_medicine": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "医学",
+      "progression": "click",
+      "success": "Soup_medicine_success",
+      "failure": "Soup_medicine_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "Soup_medicine_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "Soup_medicine_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "Soup_medicine_success": [
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "item": "soup",
+      "flag": "know",
+      "value": true
+    },
+    {
+      "type": "text",
+      "text": "あなたは医学の知識によって、\nこのスープが確かに人間の血液であることを確信するだろう。\nそう気付いた途端、スープから鉄錆に似た悪臭が漂ってくる。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "そのことを知ってしまったあなたは\n0/1d4のSANチェックだ。",
+      "progression": "click"
+    },
+    {
+      "type": "dice_check",
+      "check_type": "SANチェック"
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    },
+    {
+      "type": "damage",
+      "status": "SAN",
+      "value": "0/1d4",
+      "text": "おぞましい事実に気づいてしまった",
+      "damage": {
+        "type": "branch",
+        "target": "SAN",
+        "success": {
+          "type": "fixed",
+          "value": 0
+        },
+        "failure": {
+          "type": "dice",
+          "spec": "1d4"
+        }
+      }
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Soup_medicine_failure": [
+    {
+      "type": "text",
+      "text": "何もわからなかった。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Soup_destruction": [
+    {
+      "type": "time_passage",
+      "value": 1
+    },
+    {
+      "type": "text",
+      "text": "あなたはスープを捨てることにした。",
+      "progression": "click"
+    },
+    {
+      "type": "girl_check",
+      "true": "Soup_destruction_with_girl",
+      "false": "Soup_destruction_only_me"
+    }
+  ],
+  "Soup_destruction_only_me": [
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "soup_destruction",
+      "value": true
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "items",
+      "flag": "soup_in_poison",
+      "value": false
+    },
+    {
+      "type": "text",
+      "text": "あなたはスープを捨てた。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Soup_destruction_with_girl": [
+    {
+      "type": "time_passage",
+      "value": 2
+    },
+    {
+      "type": "text",
+      "text": "少女がじっとあなたを見ている。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "本当に捨てていいのか？と問うているようだ。",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "item": "Soup",
+      "interactions": [
+        {
+          "text": "捨てる",
+          "next": "Soup_destruction_only_me"
+        },
+        {
+          "text": "捨てない",
+          "next": "Soup_not_destruction"
+        }
+      ]
+    }
+  ],
+  "Soup_not_destruction": [
+    {
+      "type": "text",
+      "text": "やはり捨てるのはやめよう。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ]
 }

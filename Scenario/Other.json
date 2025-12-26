@@ -1,87 +1,275 @@
-{
-    "result_text":[
-        {"type":"result_text", "progression":"click"}
-    ],
-    "Girl_meet":[
-        {"type":"girl_display", "state":"gun", "position":"center"},
-        {"type":"action", "action":"set_flag", "category":"girl", "flag":"meet", "value":true}
-    ],
-    "Girl_room_wait":[
-        {"type":"sound", "name":"足音1"},
-        {"type":"conditional", "conditions":[
-            {"flags":[{"category":"girl", "flag":"gun", "value":true}], "next":"Girl_room_wait_have_gun"},
-            {"flags":[{"category":"girl", "flag":"gun", "value":false}], "next":"Girl_room_wait_not_have_gun"}
-        ]}
-    ],
-    "Girl_room_wait_have_gun":[
-        {"type":"girl_display", "state":"gun", "position":"center"},
-        {"type":"next_step", "next":"east-room_wait_girl_text"}
-    ],
-    "Girl_room_wait_not_have_gun":[
-        {"type":"girl_display", "position":"center"},
-        {"type":"next_step", "next":"east-room_wait_girl_text"}
-    ],
-    "Girl_room_wait_text":[
-        {"type":"text", "text":"あなたが部屋に入ると、\n少女が近づいてきた。", "progression":"click"}
-    ],
-    "Poison_ingestion_for_lick":[
-        {"type":"image_hidden"},
-        {"type":"poison_start"},
-        {"type":"time_passage", "value":10},
-        {"type":"text", "text":"突然呼吸と脈拍が早くなり、\n幻覚が見えだした。", "progression":"click"},
-        {"type":"text", "text":"猛毒を摂取したあなたは\n毒対抗ロールに成功しなければ死んでしまう。", "progression":"click"},
-        {"type":"dice_check", "check_type":"毒対抗ロール", "POT":25, "target":"player", "progression":"click",
-         "success":"Poison_ingestion_for_lick_success",
-         "failure":"Poison_ingestion_for_lick_failure"},
-        {"type":"result_text", "progression":"click"}
-    ],
-    "Poison_ingestion_for_lick_success":[
-        {"type":"text", "text":"あなたはHPとCONの1/2を無くしながらも\n命からがら生き残ることができた。", "progression":"click"},
-        {"type":"dice_check", "check_type":"SANチェック"},
-        {"type":"result_text", "progression":"click"},
-        {"type":"damage", "status":"SAN", "value":"0/1", "text":"しかし猛毒の引き起こす幻覚から"},
-        {"type":"result_text", "progression":"click"},
-        {"type":"poison_end"}
-    ],
-    "Poison_ingestion_for_lick_failure":[
-        {"type":"text", "text":"幻覚があなたを襲い、\nどんどん呼吸と鼓動が激しくなっていく。", "progression":"click"},
-        {"type":"text", "text":"やがて鼓動は疲れ果て、あなたは死んでしまった。", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"ending", "flag":1, "value":true},
-        {"type":"ending", "next":"ending1"}
-    ],
-    "Status_effect":[
-        {"type":"status_effect"}
-    ],
-    "Shock":[
-        {"type":"scock_roll_check", "text":"ショックロール判定", "progression":"click"}
-    ],
-    "Faint":[],
-    "Faint_ver_girl":[
-        {"type":"text", "text":"気絶した少女を連れていきますか？", "progression":"click"},
-        {"type":"interaction", "item":"Soup",
-            "interactions":[
-                {"text":"連れていく", "next":"Faint_ver_girl_fellow"},
-                {"text":"置いていく", "next":"Faint_var_girl_leave"}
-            ]}
-    ],
-    "Faint_ver_girl_fellow":[
-        {"type":"text", "text":"少女を担いで連れていくことにした。", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"girl", "flag":"carry", "value":true}
-    ],
-    "Faint_ver_girl_leave":[
-        {"type":"text", "text":"少女を置いていくことにした。", "progression":"click"},
-        {"type":"action", "action":"set_flag", "category":"girl", "flag":"fellow", "value":false}
-    ],
-    "Wake_up":[
-        {"type":"text", "text":"目が覚めた。しばらく気絶していたようだ。", "progression":"click"}
-    ],
-    "Dying":[
-        {"type":"text", "text":"{name}は瀕死状態に陥ってしまった。", "progression":"click"}
-    ],
-    "Temporary_madness":[
-        {"type":"text", "text":"一時的狂気", "progression":"click"}
-    ],
-    "Indeterminate_madness":[
-        {"type":"text", "text":"不定の狂気", "progression":"click"}
-    ]
+﻿{
+  "result_text": [
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "Girl_meet": [
+    {
+      "type": "girl_display",
+      "state": "gun",
+      "position": "center"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "girl",
+      "flag": "meet",
+      "value": true
+    }
+  ],
+  "Girl_room_wait": [
+    {
+      "type": "sound",
+      "name": "足音1"
+    },
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "flags": [
+            {
+              "category": "girl",
+              "flag": "gun",
+              "value": true
+            }
+          ],
+          "next": "Girl_room_wait_have_gun"
+        },
+        {
+          "flags": [
+            {
+              "category": "girl",
+              "flag": "gun",
+              "value": false
+            }
+          ],
+          "next": "Girl_room_wait_not_have_gun"
+        }
+      ]
+    }
+  ],
+  "Girl_room_wait_have_gun": [
+    {
+      "type": "girl_display",
+      "state": "gun",
+      "position": "center"
+    },
+    {
+      "type": "next_step",
+      "next": "east-room_wait_girl_text"
+    }
+  ],
+  "Girl_room_wait_not_have_gun": [
+    {
+      "type": "girl_display",
+      "position": "center"
+    },
+    {
+      "type": "next_step",
+      "next": "east-room_wait_girl_text"
+    }
+  ],
+  "Girl_room_wait_text": [
+    {
+      "type": "text",
+      "text": "あなたが部屋に入ると、\n少女が近づいてきた。",
+      "progression": "click"
+    }
+  ],
+  "Poison_ingestion_for_lick": [
+    {
+      "type": "image_hidden"
+    },
+    {
+      "type": "poison_start"
+    },
+    {
+      "type": "time_passage",
+      "value": 10
+    },
+    {
+      "type": "text",
+      "text": "突然呼吸と脈拍が早くなり、\n幻覚が見えだした。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "猛毒を摂取したあなたは\n毒対抗ロールに成功しなければ死んでしまう。",
+      "progression": "click"
+    },
+    {
+      "type": "dice_check",
+      "check_type": "毒対抗ロール",
+      "POT": 25,
+      "target": "player",
+      "progression": "click",
+      "success": "Poison_ingestion_for_lick_success",
+      "failure": "Poison_ingestion_for_lick_failure",
+      "on_success": [
+        {
+          "type": "next_step",
+          "next": "Poison_ingestion_for_lick_success"
+        }
+      ],
+      "on_failure": [
+        {
+          "type": "next_step",
+          "next": "Poison_ingestion_for_lick_failure"
+        }
+      ]
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    }
+  ],
+  "Poison_ingestion_for_lick_success": [
+    {
+      "type": "text",
+      "text": "あなたはHPとCONの1/2を無くしながらも\n命からがら生き残ることができた。",
+      "progression": "click"
+    },
+    {
+      "type": "dice_check",
+      "check_type": "SANチェック"
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    },
+    {
+      "type": "damage",
+      "status": "SAN",
+      "value": "0/1",
+      "text": "しかし猛毒の引き起こす幻覚から",
+      "damage": {
+        "type": "fraction",
+        "source": "SAN",
+        "num": 0,
+        "den": 1
+      }
+    },
+    {
+      "type": "result_text",
+      "progression": "click"
+    },
+    {
+      "type": "poison_end"
+    }
+  ],
+  "Poison_ingestion_for_lick_failure": [
+    {
+      "type": "text",
+      "text": "幻覚があなたを襲い、\nどんどん呼吸と鼓動が激しくなっていく。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "やがて鼓動は疲れ果て、あなたは死んでしまった。",
+      "progression": "click"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "ending",
+      "flag": 1,
+      "value": true
+    },
+    {
+      "type": "ending",
+      "next": "ending1"
+    }
+  ],
+  "Status_effect": [
+    {
+      "type": "status_effect"
+    }
+  ],
+  "Shock": [
+    {
+      "type": "scock_roll_check",
+      "text": "ショックロール判定",
+      "progression": "click"
+    }
+  ],
+  "Faint": [],
+  "Faint_ver_girl": [
+    {
+      "type": "text",
+      "text": "気絶した少女を連れていきますか？",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "item": "Soup",
+      "interactions": [
+        {
+          "text": "連れていく",
+          "next": "Faint_ver_girl_fellow"
+        },
+        {
+          "text": "置いていく",
+          "next": "Faint_var_girl_leave"
+        }
+      ]
+    }
+  ],
+  "Faint_ver_girl_fellow": [
+    {
+      "type": "text",
+      "text": "少女を担いで連れていくことにした。",
+      "progression": "click"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "girl",
+      "flag": "carry",
+      "value": true
+    }
+  ],
+  "Faint_ver_girl_leave": [
+    {
+      "type": "text",
+      "text": "少女を置いていくことにした。",
+      "progression": "click"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "category": "girl",
+      "flag": "fellow",
+      "value": false
+    }
+  ],
+  "Wake_up": [
+    {
+      "type": "text",
+      "text": "目が覚めた。しばらく気絶していたようだ。",
+      "progression": "click"
+    }
+  ],
+  "Dying": [
+    {
+      "type": "text",
+      "text": "{name}は瀕死状態に陥ってしまった。",
+      "progression": "click"
+    }
+  ],
+  "Temporary_madness": [
+    {
+      "type": "text",
+      "text": "一時的狂気",
+      "progression": "click"
+    }
+  ],
+  "Indeterminate_madness": [
+    {
+      "type": "text",
+      "text": "不定の狂気",
+      "progression": "click"
+    }
+  ]
 }
