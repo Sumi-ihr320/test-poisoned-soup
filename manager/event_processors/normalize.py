@@ -12,11 +12,14 @@ def _to_piece(val) -> Dict[str, Any]:
     if re.fullmatch(r'-?\d+', s):
         return {"type": "fixed", "value": int(s)}
     
+    # fraction 文字列 (例： 1/2) は fraction として扱うがsouceは不明なのでえっ、どうすべき？
+    if "/" in s:
+        raise ValueError(f"pieceに/が含まれています: {s}")
+
     # ダイス表記ならdice
     if re.search(r'[dD]\d+', s):
         return {"type": "dice", "spec": s}
     
-    # fraction 文字列 (例： 1/2) は fraction として扱うべきだがここでは固定扱いにフォールバック（なんで？）
     return {"type": "fixed", "value": 0}
 
 def _wrap_next_step(name: str) -> Dict[str, Any]:
