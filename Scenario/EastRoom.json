@@ -9,7 +9,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "rooms",
               "flag": "east_room_visible",
@@ -29,7 +29,7 @@
           "next": "east-room_first"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "rooms",
               "flag": "east_room_visible",
@@ -44,7 +44,7 @@
           "next": "east-room_girl_meet_after"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "rooms",
               "flag": "east_room_visible",
@@ -64,7 +64,7 @@
           "next": "east-room_visible_not_meet"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "rooms",
               "flag": "east_room_visible",
@@ -84,7 +84,7 @@
           "next": "east-room_visible_listen_not_meet"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "girl",
               "flag": "meet",
@@ -210,7 +210,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "girl",
               "flag": "meet",
@@ -446,7 +446,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "corpse_look",

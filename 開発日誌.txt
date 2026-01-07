@@ -706,4 +706,10 @@
 2025/12/27
 	damage_processorの修正
 	conditional_processerの作成（途中）
+
+2025/1/7
+	conditional_processerにprocess_conditionalを作成。
+	シナリオのconditionalのflagsという項目名をrequirementsに変更
+	playing、render_managerとevent_managerとscenario_manager周りの色々を修正変更
+
 	

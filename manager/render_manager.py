@@ -1,6 +1,6 @@
 import pygame
 from pygame import Rect
-from typing import Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple, Callable
 
 from constans import FONT_PATH, SMALL_SIZ
 from utils import get_scales, setting_font, get_room_rect
@@ -10,7 +10,7 @@ from ui.ui_panels import TextFramePanel
 from ui.log_view import LogView
 
 class RenderManager:
-    def __init__(self, screen, image_cache=None, text_frame_panel=None, log_view=None):
+    def __init__(self, screen, image_cache:ImageCache=None, text_frame_panel:TextFramePanel=None, log_view:LogView=None, next_scenario_cb:Callable=None):
         self.screen = screen
         self.screen_size = screen.get_size()
 
@@ -20,6 +20,9 @@ class RenderManager:
         # テキスト表示関連
         self.text_frame_panel = text_frame_panel if text_frame_panel else TextFramePanel(self.screen)
         self.log_view = log_view if log_view else LogView(self.screen)
+
+        # 次のシナリオへ移行するコールバック
+        self.next_scenario_cb = next_scenario_cb
 
         # 部屋画像のrect
         self.room_rect = get_room_rect(self.screen, self.text_frame_panel.rect)
@@ -39,7 +42,6 @@ class RenderManager:
         self.blackout_timer = None      # ブラックアウトのタイマー
         self.blackout_wait = None       # ブラックアウトの待ち時間
         self.blackout_done = False      # ブラックアウトの完了フラグ
-        self.next_after_black_out = {}    # ブラックアウトの後のステップ
 
     # 少女の立ち絵を表示する
     def show_girl_image(self, state=None, position="right"):
@@ -171,8 +173,6 @@ class RenderManager:
 
     # テキスト描画領域にテキストをセットする
     def set_text(self, text):
-        if "{" in text:
-            text = self.process_text_template(text)
         self.text_frame_panel.set_text(text)
         self.log_view.append(text)
 
@@ -206,9 +206,6 @@ class RenderManager:
         # UI表示のための状態フラグ
         self.is_blackout_active = True
 
-        # 次ステップ遷移を予約しておく
-        return {"type":"text", "text":f"しばらく経ったあとあなたは目を覚ました。", "progression":"click"}
-
     # 少女がクリックされた際に実行
     def handle_girl_click(self, pos):
         if self.girl_image:
@@ -226,12 +223,25 @@ class RenderManager:
         if self.command_menu:
             next_scenario = self.command_menu.handle_click(pos)
             if next_scenario:
-                self.to_callback_next_scenario(next_scenario)
+                if self.next_scenario_cb:
+                    self.next_scenario_cb(next_scenario)
             
             self.command_menu = None    # コマンドメニューを閉じる
 
+    def handle_click(self, pos):
+        if self.text_frame_panel.handle_click(pos):
+            return
+
+    # テキストを表示する
+    def draw_text(self, text):
+        self.text_frame_panel.set_text(text)
+        self.log_view.append(text)
+        
     # 表示する
-    def draw(self, step):
+    def draw(self):
+        # テキストを表示する
+        self.text_frame_panel.draw()
+
         # ブラックアウトの処理
         if self.is_blackout_active:
             now = pygame.time.get_ticks()
@@ -261,26 +271,24 @@ class RenderManager:
                     if self.blackout_index >= len(self.blackout_images):
                         self.is_blackout_active = False
                         # ブラックアウトが終了したら目覚めのシナリオへ
-                        self.to_callback_next_scenario("Wake_up")
+                        if self.next_scenario_cb:
+                            self.next_scenario_cb("Wake_up")
                         return
                 self.blackout_images[self.blackout_index].draw()
             return
 
-        if step["type"] == "text":
-            self.text_frame_panel.set_text(step["text"])
-            self.log_view.append(step["text"])
+        #if step["type"] == "text":
+        #    self.text_frame_panel.set_text(step["text"])
+        #    self.log_view.append(step["text"])
 
         # 結果を表示する
-        elif step["type"] == "result_text" and self.result_text:
-            self.text_frame_panel.set_text(self.result_text)
-            self.log_view.append(self.result_text)
-    
-        # コマンドメニューを表示する
-        if step["type"] == "interaction" and self.command_menu:
-            self.command_menu.draw()
+        #elif step["type"] == "result_text" and result_text:
+        #    self.text_frame_panel.set_text(result_text)
+        #    self.log_view.append(result_text)
 
-        # テキストを表示する
-        self.text_frame_panel.draw()
+        # コマンドメニューを表示する
+        if self.command_menu:
+            self.command_menu.draw()
 
         # アイテムイメージを表示する
         if self.item_image:

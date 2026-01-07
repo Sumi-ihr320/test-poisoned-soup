@@ -29,7 +29,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "center_memo_objective",
@@ -39,7 +39,7 @@
           "next": "centerMemo_obj_true"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "center_memo_objective",

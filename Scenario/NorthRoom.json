@@ -75,7 +75,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "pot_looked",
@@ -90,7 +90,7 @@
           "next": "Pot_open_no_look_with_girl"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "pot_looked",
@@ -105,7 +105,7 @@
           "next": "Pot_open_no_look"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "pot_looked",
@@ -120,7 +120,7 @@
           "next": "Pot_open_no_look_girl"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "pot_looked",
@@ -160,7 +160,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "pot_looked",
@@ -170,7 +170,7 @@
           "next": "Pot_open_no_look"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "pot_looked",
@@ -340,7 +340,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_bowl_get",
@@ -360,7 +360,7 @@
           "next": "Pot_open_get_bowl_no_soup"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "pot_in_nothing",
@@ -370,7 +370,7 @@
           "next": "Pot_in_nothing"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_bowl_in_soup",
@@ -380,7 +380,7 @@
           "next": "Pot_open_no_bowl"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_bowl_get",
@@ -488,7 +488,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "north_memo_discovery",
@@ -498,7 +498,7 @@
           "next": "UnderSinkStorage_no_objctive"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "north_memo_discovery",

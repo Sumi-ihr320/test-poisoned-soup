@@ -171,7 +171,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "rooms",
               "flag": "east_room_open",
@@ -181,7 +181,7 @@
           "next": "eastDoor_locked"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "rooms",
               "flag": "east_room_open",

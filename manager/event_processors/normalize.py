@@ -88,5 +88,7 @@ def normalize_step(step: Dict[str, Any]) -> Dict[str, Any]:
     if t == "dice_check":
         out = nomalize_dice_check(step)
     # 必要なら他の type の正規化ルールをここに追加
+    if t == "conditional":
+        pass
     return out
 

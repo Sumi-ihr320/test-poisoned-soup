@@ -1,16 +1,17 @@
 import re
 
 from constans import *
-from ui.ui_elements import Image, TextFrameLabel, ImageCache
+from utils import *
+from ui.ui_elements import ImageCache
 from ui.ui_panels import TextFramePanel
 from ui.ui_command import Command
 from ui.log_view import LogView
-from utils import *
 from .render_manager import RenderManager
 from .dice_service import DiceService
 from .sound_manager import sound_manager
 from .event_processors.dice_processor import DiceProcessor
 from .event_processors.damage_processor import DamageProcessor
+from .event_processors.conditional_processor import ConditionalProcessor
 
 class EventManager:
     def __init__(self, screen, player=None, girl=None, game_state=None, flags=None, text_frame_panel=None, log_view=None,
@@ -33,12 +34,18 @@ class EventManager:
         self.image_cache = ImageCache()
         self.log_view = log_view if log_view else LogView(self.screen)
         self.text_frame_panel = text_frame_panel if text_frame_panel else TextFramePanel(self.screen)
-        self.render_manager = RenderManager(self.screen, self.image_cache, self.text_frame_panel, self.log_view)
+        self.render_manager = RenderManager(
+            self.screen, 
+            self.image_cache, 
+            self.text_frame_panel, 
+            self.log_view,
+            next_scenario_cb=self.to_callback_next_scenario)
 
         # プロセッサー
         self.dice_service = DiceService()
         self.dice_processor = DiceProcessor(self.dice_service, self.skill_list, self.flags)
-        self.damage_processor = DamageProcessor(self.dice_service, self.take_damage)    
+        self.damage_processor = DamageProcessor(self.dice_service, self.take_damage)
+        self.conditional_processor = ConditionalProcessor(self.flags, self.game_state, self.to_callback_next_scenario)
 
         self.player_roll_result = None     # ダイスロールの結果
         self.girl_roll_result = None
@@ -47,27 +54,39 @@ class EventManager:
         self.damage_point = None    # ダメージポイント
         self.state_record = {}      # キャラクターの特殊状態の記録
 
-        self.is_blackout_active = False  # ブラックアウトの状態フラグ
-        self.next_after_black_out = {}    # ブラックアウトの後のステップ
+        self.current_display_text = None    # 描画用の処理済みデータ
 
     # シナリオから受け取ったイベントを進行する
     def handle_scenario_event(self, step):
         # テキストを表示する or 結果を表示する
-        if step["type"] == "text" or step["type"] == "result_text":
-            self.draw(step)
+        if step["type"] == "text":
+            text = step["text"]
+            if "{" in text:
+                text = self.process_text_template(text)
+            self.current_display_text = text
+                    
+        if step["type"] == "result_text":
+            text = self.result_text
+            if "{" in text:
+                text = self.process_text_template(text)
+            self.current_display_text = text
 
         # 次のシナリオに進む
         elif step["type"] == "next_step":
+            self.current_display_text = None
             self.to_callback_next_scenario(step["next"])
         
         # アクションを起こす
         elif step["type"] == "action":
             action = step["action"]
             self.handle_action(action, step)
+            # アクション実行時はテキストをクリア
+            self.current_display_text = None
 
         # 時間経過を行う
         elif step["type"] == "time_passage":
             self.handle_time_passage(step)
+            self.current_display_text = None
 
         # ダイスチェックを行う
         elif step["type"] == "dice_check":
@@ -80,15 +99,18 @@ class EventManager:
         # 状態変化を行う
         elif step["type"] == "status_effect":
             self.handle_status_effect()
+            self.current_display_text = None
 
         # 少女が一緒にいるかのチェック
         elif step["type"] == "girl_check":
             result = "true" if self.girl_fellow_check() else "false"
+            self.current_display_text = None
             self.to_callback_next_scenario(step[result])
 
         # フラグによる分岐をおこなう
         elif step["type"] == "conditional":
-            self.handle_conditional(step["conditions"])
+            self.conditional_processor.process_conditional(step["conditions"])
+            self.current_display_text = None
 
         # コマンドを表示する
         elif step["type"] == "interaction":
@@ -105,6 +127,7 @@ class EventManager:
         # 画像を非表示にする
         elif step["type"] == "image_hidden":
             self.render_manager.hidden_item_image()
+            self.current_display_text = None
 
         # 少女の立ち絵を表示する
         elif step["type"] == "girl_display":
@@ -115,6 +138,7 @@ class EventManager:
         # 少女の立ち絵を非表示にする
         elif step["type"] == "girl_hidden":
             self.render_manager.hidden_girl_image()
+            self.current_display_text = None
 
         # サウンドを鳴らす
         elif step["type"] == "sound":
@@ -130,6 +154,7 @@ class EventManager:
         
         # エンディングに移行する
         elif step["type"] == "ending":
+            self.current_display_text = None
             self.set_ending()
 
     # 少女が一緒にいるかどうかのフラグチェック
@@ -254,10 +279,14 @@ class EventManager:
             if player_check_result or girl_check_result:
                 self.dice_check_result = True
                 self.result_text = f"《{status_text}》 ⇒ 成功！\n" + result_text
+                next_step = step["on_success"]
             else:
                 self.dice_check_result = False
                 self.result_text = f"《{status_text}》 ⇒ 失敗！\n" + result_text
-            self.last_dice_step = step
+                next_step = step["on_failure"]
+
+            self.handle_scenario_event(next_step)
+            #self.last_dice_step = step
             #self.to_callback_next_scenario("result_text")  
 
     # ダメージ計算をして表示するテキストを作成する
@@ -381,7 +410,7 @@ class EventManager:
 
                 if character == self.player:
                     # 主人公が気絶したらブラックアウトする
-                    self.next_after_black_out = self.render_manager.handle_black_out(wait_duration)
+                    self.render_manager.handle_black_out(wait_duration)
                     self.game_state.time = recovery_time
                     #self.handle_black_out(wait_duration, recovery_time)
                 else:
@@ -462,38 +491,19 @@ class EventManager:
 
         return text_tamplate.format(**format_kwargs) if format_kwargs else text_tamplate
 
-    # フラグをチェックする
-    def flag_check(self, flags):
-        if flags["category"] == "game_state":
-            value = getattr(self.game_state, flags["flag"])
-            if flags["flag"] == "time":
-                if value > flags["value"]:
-                    return True
-            else:
-                if value == flags["value"]:
-                    return True
-        else:
-            if flags.get("not", False):
-                if self.flags.get_flag(flags["category"], flags["flag"]) != flags["value"]:
-                    return True
-            else:
-                if self.flags.get_flag(flags["category"], flags["flag"]) == flags["value"]:
-                    return True
-        return False
-
     # コールバック関数に次のシナリオ名を渡す
     def to_callback_next_scenario(self, next_scenario):
         self.next_scenario_call_back(next_scenario)
 
     # 部屋移動イベント
     def move_to_room(self, room_id):
-        self.item_image = None
-        self.girl_image = None
+        self.render_manager.hidden_item_image()
+        self.render_manager.hidden_girl_image()
         self.move_to_room_call_back(room_id)
 
     # 部屋の状態変化による再描画
     def room_new_view(self, room_id):
-        self.item_image = None
+        self.render_manager.hidden_item_image()
         self.room_new_view_call_back(room_id)
         
     # エンディングに移行するためにコールバック関数にステータスを渡す
@@ -588,5 +598,10 @@ class EventManager:
 
 
     # 表示する
-    def draw(self, step):
-        self.render_manager.draw(step)
+    def draw(self, step=None):
+        if self.current_display_text:
+            self.render_manager.draw_text(self.current_display_text)
+        else:
+            self.text_frame_panel.set_text("")
+
+        self.render_manager.draw()

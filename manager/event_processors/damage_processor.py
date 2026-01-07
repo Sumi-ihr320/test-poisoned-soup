@@ -1,5 +1,5 @@
 from typing import Optional, Tuple, Dict, Any
-from normalize import normalize_step
+from .normalize import normalize_step
 
 class DamageProcessor:
     def __init__(self, dice_service, damage_applier):

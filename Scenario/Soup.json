@@ -4,7 +4,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_drink",
@@ -14,7 +14,7 @@
           "next": "Soup_drink"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_destruction",
@@ -24,7 +24,7 @@
           "next": "Soup_destruction_after"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_in_poison",
@@ -34,41 +34,45 @@
           "next": "Soup_poison"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "game_state",
               "flag": "time",
-              "value": 45
+              "value": 45,
+              "operator": "greater_than"
             }
           ],
           "next": "Soup_time1"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "game_state",
               "flag": "time",
-              "value": 30
+              "value": 30,
+              "operator":"greater_than"
             }
           ],
           "next": "Soup_time2"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "game_state",
               "flag": "time",
-              "value": 15
+              "value": 15,
+              "operator":"greater_than"
             }
           ],
           "next": "Soup_time3"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "game_state",
               "flag": "time",
-              "value": 0
+              "value": 0,
+              "operator":"greater_than"
             }
           ],
           "next": "Soup_time4"
@@ -85,7 +89,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_drink",
@@ -95,7 +99,7 @@
           "next": "Soup_drink"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_destruction",
@@ -236,7 +240,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",
@@ -246,7 +250,7 @@
           "next": "Soup_know_time1"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",
@@ -267,7 +271,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",
@@ -277,7 +281,7 @@
           "next": "Soup_know_time2"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",
@@ -298,7 +302,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",
@@ -308,7 +312,7 @@
           "next": "Soup_know_time3"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",
@@ -329,7 +333,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",
@@ -339,7 +343,7 @@
           "next": "Soup_know_time4"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",
@@ -444,7 +448,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",
@@ -459,7 +463,7 @@
           "next": "Soup_interaction_know_for_get"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",
@@ -474,7 +478,7 @@
           "next": "Soup_interaction_know_not_have"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",
@@ -489,7 +493,7 @@
           "next": "Soup_interaction_unknown_for_get"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "soup_know",

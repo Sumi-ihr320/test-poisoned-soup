@@ -43,7 +43,8 @@ class MainPlay(BaseScene):
                                           self.text_frame_panel, self.log_view,
                                           self.handle_next_scenario, self.handle_move_room, self.handle_room_view, self.set_state)
         room_id = f"{self.game_state.room}-room"
-        self.scenario_manager = ScenarioManager(self.screen, self.event_manager, room_id)
+        self.scenario_manager = ScenarioManager(self.screen, self.event_manager, room_id, auto_start=False)
+        self.scenario_manager.start_scenario(room_id)
  
         # 部屋の管理
         self.room_manager = RoomManager(self.screen, self.text_frame_panel.rect, self.event_manager, self.flags, self.game_state)
@@ -165,6 +166,12 @@ class MainPlay(BaseScene):
         if self.log_view_flag:
             self.log_view.handle_click(pos)
         else:
+            # render_managerのクリックイベント処理
+            if self.event_manager.render_manager.handle_click(pos):
+                return
+            #if self.text_frame_panel.handle_click(pos):
+            #    return
+
             # シナリオ進行
             self.scenario_manager.on_click()
 
@@ -175,10 +182,6 @@ class MainPlay(BaseScene):
                 if self.event_manager.render_manager.command_menu:
                     self.handle_command_menu_event(pos)
                 
-                # メニューボタン
-                #elif self.menu_controller.handle_click(pos):
-                #    return
-
                 # ナビゲーションバーによる移動
                 elif self.handle_navigation(self.navigation.handle_click(pos)):
                     return
@@ -247,7 +250,7 @@ class MainPlay(BaseScene):
     # 表示
     def draw(self):
         #create_frame(self.screen)       # テキストフレームの表示
-        self.text_frame_panel.draw()
+        #self.text_frame_panel.draw()
 
         self.room_manager.draw()        # 部屋の表示
 

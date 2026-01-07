@@ -4,7 +4,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "light_remove",
@@ -14,7 +14,7 @@
           "next": "Light_illuminating"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "light_remove",
@@ -35,7 +35,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "light_objective",
@@ -45,7 +45,7 @@
           "next": "Light_not_objective"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "light_objective",
@@ -253,7 +253,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "light_get",
@@ -263,7 +263,7 @@
           "next": "Light_have"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "light_break",

@@ -13,7 +13,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "enemys",
               "flag": "hunting_horrors_there",
@@ -23,7 +23,7 @@
           "next": "southDoor_enemy_there"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "enemys",
               "flag": "hunting_horrors_there",
@@ -192,7 +192,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "enemys",
               "flag": "hunting_horrors_look",
@@ -202,7 +202,7 @@
           "next": "southDoor_look_window_only_first"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "enemys",
               "flag": "hunting_horrors_look",
@@ -287,7 +287,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "girl",
               "flag": "hunting_horrors_look",
@@ -297,7 +297,7 @@
           "next": "southDoor_look_window_only_girl_first"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "girl",
               "flag": "hunting_horrors_look",
@@ -381,7 +381,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "enemys",
               "flag": "hunting_horrors_look",
@@ -396,7 +396,7 @@
           "next": "southDoor_look_window_with_girl_first"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "enemys",
               "flag": "hunting_horrors_look",
@@ -411,7 +411,7 @@
           "next": "southDoor_look_window_with_girl_player_first"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "enemys",
               "flag": "hunting_horrors_look",
@@ -426,7 +426,7 @@
           "next": "southDoor_look_window_with_girl_girl_first"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "enemys",
               "flag": "hunting_horrors_look",

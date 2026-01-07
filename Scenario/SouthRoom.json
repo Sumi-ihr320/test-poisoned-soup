@@ -4,7 +4,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "enemys",
               "flag": "hunting_horrors_there",
@@ -14,7 +14,7 @@
           "next": "south-room_enemy_there"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "enemys",
               "flag": "hunting_horrors_offered_sacrifice",
@@ -24,7 +24,7 @@
           "next": "south-room_blood"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "enemys",
               "flag": "hunting_horrors_there",

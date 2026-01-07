@@ -2,7 +2,7 @@ from constans import SCENARIO_FILES
 from utils import load_and_normalize_json
 
 class ScenarioManager:
-    def __init__(self, screen, event_manager, scenario_id):
+    def __init__(self, screen, event_manager, scenario_id, auto_start=True):
         self.screen = screen
 
         self.event_manager = event_manager
@@ -14,12 +14,14 @@ class ScenarioManager:
         self.current_scenario_id = ""       # 現在再生中のシナリオID
         self.current_steps = None  # 現在進行中のsteps
         self.current_index = 0              # 現在のstepの表示index
+        self.display_index = 0            # 表示用のindex 
 
         self.is_active = False
 
         self.wait_for_click = False         # クリック待ちフラグ
 
-        self.start_scenario(scenario_id)
+        if auto_start and scenario_id:
+            self.start_scenario(scenario_id)
 
     # シナリオを各ファイルからロードして統合する
     def load_all_scenarios(self):
@@ -32,6 +34,7 @@ class ScenarioManager:
         self.current_scenario_id = scenario_id
         self.current_steps = self.scenarios_by_id.get(scenario_id, [])
         self.current_index = 0
+        self.display_index = 0
         self.wait_for_click = False
         print(f"シナリオ開始：{scenario_id}")   # デバッグ用
         self.is_active = True
@@ -39,7 +42,8 @@ class ScenarioManager:
         if self.current_steps:
             step = self.scenario_progress()
             if step:
-                self.event_manager.draw(step)
+                self.display_index = self.current_index
+                self.event_manager.handle_scenario_event(step)
 
     # シナリオ進行
     def scenario_progress(self):
@@ -71,6 +75,7 @@ class ScenarioManager:
 
         # 次のステップに進む
         self.current_index += 1
+        self.display_index = self.current_index
 
         # イベント処理をevent_managerに委譲
         self.event_manager.handle_scenario_event(step)
@@ -82,6 +87,7 @@ class ScenarioManager:
             self. wait_for_click = False
 
             # ダイスチェックなら分岐ジャンプする
+            """
             if hasattr(self.event_manager, "last_dice_step"):
                 step = self.event_manager.last_dice_step
                 result = self.event_manager.dice_check_result
@@ -89,9 +95,10 @@ class ScenarioManager:
                 del self.event_manager.last_dice_step
                 self.start_scenario(next_id)
                 return
+            """
 
             # ダメージによって状態異常が起こった場合
-            elif self.event_manager.state_record:
+            if self.event_manager.state_record:
                 next_id = "Status_effect"
                 self.start_scenario(next_id)
                 return
@@ -100,12 +107,8 @@ class ScenarioManager:
 
     # 現在のステップの描画をイベントマネージャーに依頼
     def draw(self):
-        #if self.event_manager.girl_image:
-        #    self.event_manager.girl_image.draw()
-            
-        #if self.event_manager.item_image:
-        #    self.event_manager.item_image.draw()
-
         if self.is_active and self.current_index < len(self.current_steps):
-            step = self.current_steps[self.current_index]
+            step = self.current_steps[self.display_index]
             self.event_manager.draw(step)
+        else:
+            self.event_manager.draw()

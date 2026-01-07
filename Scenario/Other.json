@@ -28,7 +28,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "girl",
               "flag": "gun",
@@ -38,7 +38,7 @@
           "next": "Girl_room_wait_have_gun"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "girl",
               "flag": "gun",

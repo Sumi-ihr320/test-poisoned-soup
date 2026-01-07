@@ -9,7 +9,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "bookshelf_objective",
@@ -19,7 +19,7 @@
           "next": "BookShelf_flag_objective"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "book_found",
@@ -29,7 +29,7 @@
           "next": "BookShelf_book_found"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "book_found",
@@ -62,7 +62,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "book_found",
@@ -116,7 +116,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "candle_out",
@@ -126,18 +126,18 @@
           "next": "BookShelf_objective_dark"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "candle_goes_out",
               "value": 0,
-              "not": true
+              "operator": "not_equal"
             }
           ],
           "next": "BookShelf_objective_dark"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "candle_goes_out",
@@ -238,7 +238,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "candle_out",
@@ -248,7 +248,7 @@
           "next": "BookShelf_library_dark"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "candle_goes_out",
@@ -259,7 +259,7 @@
           "next": "BookShelf_library_dark"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "candle_goes_out",

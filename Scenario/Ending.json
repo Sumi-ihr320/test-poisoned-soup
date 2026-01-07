@@ -3,7 +3,7 @@
     {
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "ending",
               "flag": 1,
@@ -13,7 +13,7 @@
           "next": "Ending_1"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "ending",
               "flag": 2,

@@ -4,7 +4,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "candle_goes_out",
@@ -14,7 +14,7 @@
           "next": "Candle_goes_out_time1"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "candle_goes_out",
@@ -24,31 +24,34 @@
           "next": "Candle_goes_out_time2"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "game_state",
               "flag": "time",
-              "value": 45
+              "value": 45,
+              "operator": "greater_than"
             }
           ],
           "next": "Candle_time1"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "game_state",
               "flag": "time",
-              "value": 15
+              "value": 15,
+              "operator":"greater_than"
             }
           ],
           "next": "Candle_time2"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "game_state",
               "flag": "time",
-              "value": 0
+              "value": 0,
+              "operator": "greater_than"
             }
           ],
           "next": "Candle_time3"

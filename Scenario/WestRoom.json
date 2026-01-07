@@ -9,7 +9,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "candle_out",
@@ -19,18 +19,18 @@
           "next": "west-room_light_off"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "candle_goes_out",
               "value": 0,
-              "not": true
+              "operator": "not_equal"
             }
           ],
           "next": "west-room_light_off"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "items",
               "flag": "candle_goes_out",

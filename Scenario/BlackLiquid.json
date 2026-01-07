@@ -238,7 +238,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "flags": [
+          "requirements": [
             {
               "category": "girl",
               "flag": "fellow",
@@ -248,7 +248,7 @@
           "next": "Black_liquid_lick_question_with_girl"
         },
         {
-          "flags": [
+          "requirements": [
             {
               "category": "girl",
               "flag": "fellow",
