@@ -49,6 +49,11 @@ class ScenarioManager:
     def scenario_progress(self):
         step = self.current_steps[self.current_index]
 
+        # 結果表示中は強制的にクリック待ち
+        if self.event_manager.pending_result_display:
+            self.wait_for_click = True
+            return step
+
         # 進行タイプに応じて処理を分岐
         progression = step.get("progression", "auto")       # デフォルトは自動進行
 
@@ -85,6 +90,18 @@ class ScenarioManager:
         if self.wait_for_click:
             # クリック待ちを解除して次のステップへ
             self. wait_for_click = False
+
+            # 結果表示中か確認
+            if self.event_manager.pending_result_display:
+                self.event_manager.clear_result_display()
+
+                # 分岐情報があるか確認
+                branch_info = self.event_manager.get_and_clear_pending_branch()
+                if branch_info:
+                    # 分岐処理
+                    next_step = branch_info["on_success"] if branch_info["success"] else branch_info["on_failure"]
+                    self.start_scenario(next_step)
+                    return
 
             # ダイスチェックなら分岐ジャンプする
             """

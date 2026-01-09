@@ -712,4 +712,6 @@
 	シナリオのconditionalのflagsという項目名をrequirementsに変更
 	playing、render_managerとevent_managerとscenario_manager周りの色々を修正変更
 
-	
+2025/1/9
+	event_managerにpending_result_displayとpending_dice_checkのフラグを追加
+	scenario_managerをそれに合わせて修正

@@ -47,6 +47,10 @@ class EventManager:
         self.damage_processor = DamageProcessor(self.dice_service, self.take_damage)
         self.conditional_processor = ConditionalProcessor(self.flags, self.game_state, self.to_callback_next_scenario)
 
+        self.pending_result_display = False # 結果表示待ちフラグ
+        self.pending_dice_check = None      # 分岐情報
+        self.current_display_text = None    # 描画用の処理済みデータ
+        
         self.player_roll_result = None     # ダイスロールの結果
         self.girl_roll_result = None
         self.result_text = None             # 結果の表示テキスト
@@ -54,7 +58,6 @@ class EventManager:
         self.damage_point = None    # ダメージポイント
         self.state_record = {}      # キャラクターの特殊状態の記録
 
-        self.current_display_text = None    # 描画用の処理済みデータ
 
     # シナリオから受け取ったイベントを進行する
     def handle_scenario_event(self, step):
@@ -270,12 +273,20 @@ class EventManager:
             status_text += " ÷ 2"
 
         # SANチェックと毒対抗ロールとショックロールは各キャラクター毎に結果が異なるので成功、失敗の結果分岐をしない
-        if step["check_type"] == "SANチェック" or step["check_type"] == "毒対抗ロール" or step["check_type"] == "shock_roll":
+        if step["check_type"] == "SANチェック" or step["check_type"] == "毒対抗ロール" or step["check_type"] == "shock_roll":        
             self.player_roll_result = player_check_result
             self.girl_roll_result = girl_check_result
             self.result_text = result_text
+            self.pending_dice_check = None  # 分岐情報なし
+            # 結果表示フラグを立てる
+            self.pending_result_display = True
+            self.current_display_text = result_text
         else:
             # どちらかのダイス結果が成功していれば成功の結果表示、どちらも失敗していれば失敗の結果表示をする
+            success = player_check_result or girl_check_result
+            self.result_text = f"《{status_text}》 ⇒ {'成功' if success else '失敗'}！\n{result_text}"
+
+            """
             if player_check_result or girl_check_result:
                 self.dice_check_result = True
                 self.result_text = f"《{status_text}》 ⇒ 成功！\n" + result_text
@@ -284,8 +295,19 @@ class EventManager:
                 self.dice_check_result = False
                 self.result_text = f"《{status_text}》 ⇒ 失敗！\n" + result_text
                 next_step = step["on_failure"]
+            """
 
-            self.handle_scenario_event(next_step)
+            # 分岐情報を保存
+            self.panding_dice_check = {
+                "success": success,
+                "on_success": step["on_success"],
+                "on_failure": step["on_failure"]
+            }
+
+            # 結果表示フラグをON
+            self.panding_result_display = True
+            self.current_display_text = self.result_text
+            #self.handle_scenario_event(next_step)
             #self.last_dice_step = step
             #self.to_callback_next_scenario("result_text")  
 
@@ -302,9 +324,14 @@ class EventManager:
 
         res = self.damage_processor.process_damage(step, characters)
 
-        self.result_text = "\n".join(res["texts"])
+        result_text = "\n".join(res["texts"])
+        #self.result_text = "\n".join(res["texts"])
         self.state_record = res["state_record"]
         self.damage_points = res["damage_points"]
+
+        # 結果表示フラグを立てる
+        self.pending_result_display =True
+        self.current_display_text = result_text
 
     """
         value = step.get("value", None)
