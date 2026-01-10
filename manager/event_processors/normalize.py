@@ -73,10 +73,10 @@ def nomalize_dice_check(step: Dict[str, Any]) -> Dict[str, Any]:
     if "success" in step and "on_success" not in step:
         # success が次のシナリオ名なら next_step にする
         if isinstance(step["success"], str):
-            out["on_success"] = [_wrap_next_step(step["success"])]
+            out["on_success"] = _wrap_next_step(step["success"])
     if "failure" in step and "on_failure" not in step:
         if isinstance(step["failure"], str):
-            out["on_failure"] = [_wrap_next_step(step["failure"])]
+            out["on_failure"] = _wrap_next_step(step["failure"])
     return out
 
 def normalize_step(step: Dict[str, Any]) -> Dict[str, Any]:

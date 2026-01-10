@@ -201,14 +201,8 @@
       "target": "player"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
-      "status": "SAN",
       "target": "player",
-      "value": "1/1d6",
       "text": "無残な死体を目撃してしまった",
       "progression": "click",
       "damage": {
@@ -223,10 +217,6 @@
           "spec": "1d6"
         }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "next_step",
@@ -252,14 +242,8 @@
       "target": "girl"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
-      "status": "SAN",
       "target": "girl",
-      "value": "1/1d6",
       "text": "無残な死体を目撃してしまった",
       "progression": "click",
       "damage": {
@@ -274,10 +258,6 @@
           "spec": "1d6"
         }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "next_step",
@@ -303,14 +283,8 @@
       "target": "all"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
-      "status": "SAN",
       "target": "all",
-      "value": "1/1d6",
       "text": "無残な死体を目撃してしまった",
       "progression": "click",
       "damage": {
@@ -325,10 +299,6 @@
           "spec": "1d6"
         }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "next_step",
@@ -550,24 +520,14 @@
       "check_type": "skill",
       "skill": "目星",
       "progression": "click",
-      "success": "UnderSinkStorage_objective_success",
-      "failure": "UnderSinkStorage_objective_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "UnderSinkStorage_objective_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "UnderSinkStorage_objective_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "UnderSinkStorage_objctive_success": [
@@ -661,10 +621,6 @@
       "item": "kitchen_knife"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "next_step",
       "next": "UnderSinkStorage_get_item"
     }
@@ -680,10 +636,6 @@
       "action": "get_item",
       "target": "player",
       "item": "ladle"
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "next_step",
@@ -703,10 +655,6 @@
       "item": "saucepan"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "next_step",
       "next": "UnderSinkStorage_get_item"
     }
@@ -724,10 +672,6 @@
       "item": "frying_pan"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "next_step",
       "next": "UnderSinkStorage_get_item"
     }
@@ -743,10 +687,6 @@
       "action": "get_item",
       "target": "player",
       "item": "lid"
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "next_step",

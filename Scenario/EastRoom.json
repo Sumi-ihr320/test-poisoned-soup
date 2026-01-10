@@ -166,24 +166,14 @@
       "dice": "1d100",
       "half": true,
       "progression": "click",
-      "success": "east-room_objective_success",
-      "failure": "east-room_objective_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "east-room_objective_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "east-room_objective_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "east-room_objective_failure": [
@@ -303,24 +293,14 @@
       "skill": "聞き耳",
       "dice": "1d100",
       "progression": "click",
-      "success": "east-room_listen_success",
-      "failure": "east-room_listen_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "east-room_listen_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "east-room_listen_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "east-room_listen_failure": [
@@ -369,24 +349,14 @@
       "dice": "1d100",
       "half": true,
       "progression": "click",
-      "success": "east-room_listen_objective_success",
-      "failure": "east-room_listen_objective_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "east-room_listen_objective_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "east-room_listen_objective_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "east-room_girl_objective_success": [
@@ -477,14 +447,8 @@
       "target": "player"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
-      "status": "SAN",
       "target": "player",
-      "value": "1/1d4+1",
       "text": "無残な死体を目撃してしまった",
       "progression": "click",
       "damage": {
@@ -499,10 +463,6 @@
           "spec": "1d4+1"
         }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     }
   ],
   "eastMemo": [

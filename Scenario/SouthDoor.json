@@ -226,10 +226,6 @@
       "target": "player"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
       "status": "SAN",
       "value": "0/1d10",
@@ -247,10 +243,6 @@
           "spec": "1d10"
         }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "action",
@@ -321,10 +313,6 @@
       "target": "girl"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
       "status": "SAN",
       "value": "0/1d10",
@@ -342,10 +330,6 @@
           "spec": "1d10"
         }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "action",
@@ -455,13 +439,7 @@
       "target": "all"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
-      "status": "SAN",
-      "value": "0/1d10",
       "target": "all",
       "text": "おぞましい怪物を目撃してしまった",
       "damage": {
@@ -476,10 +454,6 @@
           "spec": "1d10"
         }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "action",
@@ -511,13 +485,7 @@
       "target": "player"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
-      "status": "SAN",
-      "value": "0/1d10",
       "target": "player",
       "text": "おぞましい怪物を目撃してしまった",
       "damage": {
@@ -532,10 +500,6 @@
           "spec": "1d10"
         }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "action",
@@ -560,13 +524,7 @@
       "target": "girl"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
-      "status": "SAN",
-      "value": "0/1d10",
       "target": "girl",
       "text": "おぞましい怪物を目撃してしまった",
       "damage": {
@@ -581,10 +539,6 @@
           "spec": "1d10"
         }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "action",
@@ -608,24 +562,14 @@
       "skill": "聞き耳",
       "dice": "1d100",
       "progression": "click",
-      "success": "southDoor_listen_success",
-      "failure": "southDoor_listen_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "southDoor_listen_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "southDoor_listen_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "southDoor_listen_success": [

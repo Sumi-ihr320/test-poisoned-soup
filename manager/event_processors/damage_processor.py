@@ -14,11 +14,10 @@ class DamageProcessor:
         """
         step: シナリオのステップ {"status": str, "value": int or str, "target": str, "text": str}
         characters: {character_obj: roll_result=bool}
-        戻り値: {"texts":[...], "state_record":{char:state}, "damage_points":{char:int}}
+        戻り値: {"texts":[...], "state_record":{char:state}}
         """
         texts = []
         state_record = {}
-        damage_points = {}
 
         new_step = normalize_step(step)
 
@@ -52,13 +51,12 @@ class DamageProcessor:
                 if state:
                     state_record[character] = state
 
-            damage_points[character] = damage_point
             texts.append(text)
 
         if failure_text:
             texts.insert(0, failure_text)
 
-        return {"texts": texts, "state_record": state_record, "damage_points":damage_points}
+        return {"texts": texts, "state_record": state_record}
 
     def resolve_damage(self, value: Optional[int], status: Optional[str], damage_info: Optional[Dict], character, roll_result: bool) -> Tuple[Optional[str], int]:
         """

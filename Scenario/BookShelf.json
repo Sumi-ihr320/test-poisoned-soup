@@ -161,24 +161,14 @@
       "dice": "1d100",
       "half": true,
       "progression": "click",
-      "success": "BookShelf_objective_success",
-      "failure": "BookShelf_objective_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "BookShelf_objective_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "BookShelf_objective_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "BookShelf_objective_clear": [
@@ -192,24 +182,14 @@
       "skill": "目星",
       "dice": "1d100",
       "progression": "click",
-      "success": "BookShelf_objective_success",
-      "failure": "BookShelf_objective_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "BookShelf_objective_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "BookShelf_objective_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "BookShelf_objective_success": [
@@ -283,24 +263,14 @@
       "dice": "1d100",
       "half": true,
       "progression": "click",
-      "success": "BookShelf_library_success",
-      "failure": "BookShelf_library_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "BookShelf_library_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "BookShelf_library_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "BookShelf_library_clear": [
@@ -312,24 +282,14 @@
       "type": "dice_check",
       "check_type": "skill",
       "skill": "図書館",
-      "success": "BookShelf_library_success",
-      "failure": "BookShelf_library_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "BookShelf_library_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "BookShelf_library_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "BookShelf_library_success": [

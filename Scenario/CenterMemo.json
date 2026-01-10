@@ -87,24 +87,14 @@
       "check_type": "skill",
       "skill": "目星",
       "dice": "1d100",
-      "success": "centerMemo_objective_success",
-      "failure": "centerMemo_objective_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "centerMemo_objective_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "centerMemo_objective_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "centerMemo_objective_success": [
@@ -133,24 +123,14 @@
       "type": "dice_check",
       "check_type": "status",
       "status": "Idea",
-      "success": "centerMemo_objective_idea_success",
-      "failure": "centerMemo_objective_idea_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "centerMemo_objective_idea_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "centerMemo_objective_idea_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "centerMemo_objective_idea_success": [
@@ -176,13 +156,7 @@
       "check_type": "SANチェック"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
-      "status": "SAN",
-      "value": "0/1d4",
       "text": "おぞましい事実に気づいてしまった",
       "damage": {
         "type": "branch",
@@ -196,10 +170,6 @@
           "spec": "1d4"
         }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "image_hidden"

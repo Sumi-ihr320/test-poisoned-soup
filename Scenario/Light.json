@@ -91,24 +91,14 @@
       "check_type": "skill",
       "skill": "目星",
       "dice": "1d100",
-      "success": "Light_objective_success",
-      "failure": "Light_objective_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "Light_objective_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "Light_objective_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "Light_objective_success": [
@@ -196,10 +186,6 @@
       "type": "action",
       "action": "get_item",
       "item": "light_bulb"
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "image_hidden"
@@ -322,10 +308,6 @@
       "type": "action",
       "action": "lost_item",
       "item": "light_bulb"
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "image_hidden"

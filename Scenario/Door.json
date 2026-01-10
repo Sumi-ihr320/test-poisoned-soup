@@ -225,24 +225,14 @@
       "status": "STR",
       "enemy_status": 5,
       "dice": "1d100",
-      "success": "eastDoor_vs_str_success",
-      "failure": "eastDoor_vs_str_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "eastDoor_vs_str_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "eastDoor_vs_str_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "eastDoor_vs_str_success": [
@@ -299,24 +289,14 @@
       "check_type": "skill",
       "skill": "鍵開け",
       "dice": "1d100",
-      "success": "eastDoor_locksmith_success",
-      "failure": "eastDoor_locksmith_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "eastDoor_locksmith_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "eastDoor_locksmith_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "eastDoor_locksmith_success": [

@@ -51,28 +51,31 @@ class EventManager:
         self.pending_dice_check = None      # 分岐情報
         self.current_display_text = None    # 描画用の処理済みデータ
         
+        # handle_damageで使用
         self.player_roll_result = None     # ダイスロールの結果
         self.girl_roll_result = None
-        self.result_text = None             # 結果の表示テキスト
-        self.dice_check_result = None       # ダイスロールの総合結果
-        self.damage_point = None    # ダメージポイント
-        self.state_record = {}      # キャラクターの特殊状態の記録
 
+        #self.result_text = None             # 結果の表示テキスト
+        #self.dice_check_result = None       # ダイスロールの総合結果
+        #self.damage_point = None    # ダメージポイント
+
+        self.state_record = {}      # キャラクターの特殊状態の記録
 
     # シナリオから受け取ったイベントを進行する
     def handle_scenario_event(self, step):
         # テキストを表示する or 結果を表示する
         if step["type"] == "text":
-            text = step["text"]
-            if "{" in text:
-                text = self.process_text_template(text)
-            self.current_display_text = text
+            self.current_display_text = step["text"]
+
+            # 結果表示中でない場合のみ通常テキストを使用
+            if self.pending_result_display:
+                return
                     
-        if step["type"] == "result_text":
-            text = self.result_text
-            if "{" in text:
-                text = self.process_text_template(text)
-            self.current_display_text = text
+        #if step["type"] == "result_text":
+        #    text = self.result_text
+        #    if "{" in text:
+        #        text = self.process_text_template(text)
+        #    self.current_display_text = text
 
         # 次のシナリオに進む
         elif step["type"] == "next_step":
@@ -95,7 +98,7 @@ class EventManager:
         elif step["type"] == "dice_check":
             self.handle_dice_check(step)
 
-        # ダメージを計算する
+        # ダメージを計算したり適用する
         elif step["type"] == "damage":
             self.handle_damage(step)
 
@@ -206,21 +209,16 @@ class EventManager:
             if room_id:
                 self.room_new_view(room_id)
 
-        # ダメージを受ける
-        elif action == "damage":
-            status = step.get("status", None)
-            damage = step.get("damage", None)
-            if damage == "damage_point" and self.damage_point:
-                damage = self.damage_point
-            self.take_damage(status, damage)
-
         # アイテムを取得する
         elif action == "get_item":
             target = step.get("target", None)
             item = ITEM_LIST[step["item"]]
             character = self.girl if target == "girl" else self.player
             character.add_item(item)
-            self.result_text = f"{character.name}は{item.name}を手に入れた。"
+            #self.result_text = f"{character.name}は{item.name}を手に入れた。"
+            text = f"{character.name}は{item.name}を手に入れた。"
+            self.pending_result_display = True
+            self.current_display_text = text
             #self.to_callback_next_scenario("result_text")
 
         # アイテムを手放す
@@ -229,7 +227,10 @@ class EventManager:
             item = ITEM_LIST[step["item"]]
             character = self.girl if target == "girl" else self.player
             character.remove_item(item)
-            self.result_text = f"{character.name}は{item.name}を失った。"
+            #self.result_text = f"{character.name}は{item.name}を失った。"
+            text = f"{character.name}は{item.name}を失った。"
+            self.pending_result_display = True
+            self.current_display_text = text
             #self.to_callback_next_scenario("result_text")
 
     # ダイスチェックをする
@@ -240,7 +241,8 @@ class EventManager:
         status_text = ""
 
         # ダイスチェックのターゲット指定がもしあればそのキャラクターだけ行う
-        player_flag, girl_flag = self.target_check(step)
+        target = step.get("target", None)
+        player_flag, girl_flag = self.target_check(target)
 
         if player_flag:
             res = self.dice_processor.process_dice_roll(step, self.player)
@@ -276,7 +278,6 @@ class EventManager:
         if step["check_type"] == "SANチェック" or step["check_type"] == "毒対抗ロール" or step["check_type"] == "shock_roll":        
             self.player_roll_result = player_check_result
             self.girl_roll_result = girl_check_result
-            self.result_text = result_text
             self.pending_dice_check = None  # 分岐情報なし
             # 結果表示フラグを立てる
             self.pending_result_display = True
@@ -284,39 +285,30 @@ class EventManager:
         else:
             # どちらかのダイス結果が成功していれば成功の結果表示、どちらも失敗していれば失敗の結果表示をする
             success = player_check_result or girl_check_result
-            self.result_text = f"《{status_text}》 ⇒ {'成功' if success else '失敗'}！\n{result_text}"
-
-            """
-            if player_check_result or girl_check_result:
-                self.dice_check_result = True
-                self.result_text = f"《{status_text}》 ⇒ 成功！\n" + result_text
-                next_step = step["on_success"]
-            else:
-                self.dice_check_result = False
-                self.result_text = f"《{status_text}》 ⇒ 失敗！\n" + result_text
-                next_step = step["on_failure"]
-            """
+            result_text = f"《{status_text}》 ⇒ {'成功' if success else '失敗'}！\n{result_text}"
 
             # 分岐情報を保存
-            self.panding_dice_check = {
+            self.pending_dice_check = {
                 "success": success,
                 "on_success": step["on_success"],
                 "on_failure": step["on_failure"]
             }
 
             # 結果表示フラグをON
-            self.panding_result_display = True
-            self.current_display_text = self.result_text
-            #self.handle_scenario_event(next_step)
-            #self.last_dice_step = step
-            #self.to_callback_next_scenario("result_text")  
+            self.pending_result_display = True
+            self.current_display_text = result_text
+
+        print(f"[DEBUG] ダイスチェック完了")
+        print(f" 結果: {result_text}")
+        print(f" 分岐あり: {self.pending_dice_check is not None}")
+        print(f" 表示フラグ: {self.pending_result_display}")
 
     # ダメージ計算をして表示するテキストを作成する
     def handle_damage(self, step):
-
         # 誰がダメージを受けるのか
+        target = step.get("target", None)
         characters = {}
-        player_flag, girl_flag = self.target_check(step)
+        player_flag, girl_flag = self.target_check(target)
         if player_flag:
             characters[self.player] = self.player_roll_result
         if girl_flag:
@@ -325,72 +317,30 @@ class EventManager:
         res = self.damage_processor.process_damage(step, characters)
 
         result_text = "\n".join(res["texts"])
-        #self.result_text = "\n".join(res["texts"])
         self.state_record = res["state_record"]
-        self.damage_points = res["damage_points"]
 
         # 結果表示フラグを立てる
         self.pending_result_display =True
         self.current_display_text = result_text
 
-    """
-        value = step.get("value", None)
-        status = step.get("status", None)
-        failure_text = step.get("text", "")
+        print(f"[DEBUG] ダメージ処理完了")
+        print(f" player_roll_result: {self.player_roll_result}")
+        print(f" girl_roll_result: {self.girl_roll_result}")
+        print(f" state_record: {self.state_record}")
+        print(f" display_text: {self.current_display_text}")
+              
+    def get_and_clear_pending_branch(self):
+        """保留中の分岐情報を取得してクリアする"""
+        if self.pending_dice_check:
+            branch = self.pending_dice_check
+            self.pending_dice_check = None
+            return branch
+        return None
 
-        # ダメージを受ける人数分繰り返す
-        for character, roll_result in characters.items():
-
-            # 半分のダメージを受ける場合
-            if value == "1/2":
-                status_point = getattr(character, status)
-                damage_point = status_point // 2
-
-            # 成否によるダメージの値を取得する
-            elif "/" in value:
-                success, failure = value.split("/")
-                # dが入っていればダイスロールで値を出す
-                if "d" in failure:
-                    damage_point = self.damage_calculator(failure)
-                else:
-                    damage_point = int(failure)
-                success = int(success)
-
-            # 固定ダメージの場合はそのまま
-            else:
-                damage_point = value
-
-            # どのステータスが減るか
-            if status:
-                # SANチェック後の正気度ダメージの場合
-                if status == "SAN":
-                    if roll_result:
-                        if success == 0:
-                            text = f"{character.name}は正気度が減らずに済んだ"
-                        else:
-                            state = self.take_damage(character, status, success)
-                            text = f"{character.name}は{success}ポイントの正気度を失った"
-                    else:
-                        state = self.take_damage(character, status, damage_point)
-                        text = f"{character.name}は{damage_point}ポイントの正気度を失った"
-
-                else:
-                    state = self.take_damage(character, status, damage_point)
-                    text = f"{character.name}は{damage_point}ポイントのダメージを受けた"
-
-                # ダメージの量によって何らかの特殊状態になった場合(狂気、ショック、気絶、死亡)
-                if state:
-                    self.state_record[character] = state
-
-            # 表示するテキスト
-            if self.result_text:
-                self.result_text = f"{self.result_text}\n{text}"
-            else:
-                self.result_text = text
-
-        if failure_text:
-            self.result_text = f"{failure_text}\n{self.result_text}"
-    """
+    def clear_result_display(self):
+        """結果表示フラグをクリアする"""
+        self.pending_result_display = False
+        self.current_display_text = None
 
     # 時間を経過させる
     def handle_time_passage(self, step):
@@ -409,8 +359,8 @@ class EventManager:
 
             # 死んだ場合
             if state == "Dying":
-                self.result_text = f"{name}は死んでしまった。"
-                self.create_text_step(self.result_text)
+                text = f"{name}は死んでしまった。"
+                self.create_text_step(text)
                 if character == self.player:
                     # 主人公が死んだらエンディングへ
                     next_step = {"type":"ending", "next":"ending1"}
@@ -424,8 +374,8 @@ class EventManager:
 
             # 気絶した場合
             elif state == "Faint":
-                self.result_text = f"{name}は気絶してしまった。"
-                #self.create_text_step(self.result_text)
+                text = f"{name}は気絶してしまった。"
+                #self.create_text_step(text)
                 #next_step = {"type":"result_text", "progression":"click"}
                 #self.handle_scenario_event(next_step)
 
@@ -471,8 +421,9 @@ class EventManager:
                     self.to_callback_next_scenario("Status_effect")
                     return
                 
-                self.result_text = f"{name}はなんとか耐えた。"
-                self.to_callback_next_scenario("result_text")
+                text = f"{name}はなんとか耐えた。"
+                self.pending_result_display = True
+                self.current_display_text = text
                     
         self.state_record = {}
 
@@ -496,27 +447,6 @@ class EventManager:
     def create_text_step(self, text):
         next_step = {"type":"text", "text":text, "progression":"click"}
         self.handle_scenario_event(next_step)
-
-    # テキスト描画領域にテキストをセットする
-    #def set_text(self, text):
-    #    if "{" in text:
-    #        text = self.process_text_template(text)
-    #    self.text_frame_label.set_text(text)
-    #    self.log_manager.append(text)
-
-    # テンプレートにダイス結果等を表示
-    def process_text_template(self, text_tamplate):
-        format_kwargs = {}
-        if "{player_roll}" in text_tamplate and self.player_roll_result is not None:
-            format_kwargs["player_roll"] = self.player_roll_result
-            format_kwargs["player_threshold"] = self.player_threshold
-        if "{girl_roll}" in text_tamplate and self.girl_roll_result is not None:
-            format_kwargs["girl_roll_result"] = self.girl_roll_result
-            format_kwargs["girl_threshold"] = self.girl_threshold
-        if "{damage}" in text_tamplate and self.damage_point is not None:
-            format_kwargs["damage"] = self.damage_point
-
-        return text_tamplate.format(**format_kwargs) if format_kwargs else text_tamplate
 
     # コールバック関数に次のシナリオ名を渡す
     def to_callback_next_scenario(self, next_scenario):
@@ -552,8 +482,7 @@ class EventManager:
         self.flags.update_flag(category, flag, value)
 
     # ターゲットが誰かのチェック
-    def target_check(self, step):
-        target = step.get("target", None)
+    def target_check(self, target):
         player_flag, girl_flag = False, False
 
         # ターゲット指定が主人公のみの場合は主人公のみ

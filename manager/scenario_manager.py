@@ -87,32 +87,25 @@ class ScenarioManager:
 
     # クリックイベントを処理
     def on_click(self):
+        print(f"[DEBUG] クリック検出")
         if self.wait_for_click:
             # クリック待ちを解除して次のステップへ
             self. wait_for_click = False
 
+
             # 結果表示中か確認
+            print(f" 結果表示中: {self.event_manager.pending_result_display}")
             if self.event_manager.pending_result_display:
                 self.event_manager.clear_result_display()
 
                 # 分岐情報があるか確認
                 branch_info = self.event_manager.get_and_clear_pending_branch()
+                print(f" 分岐情報: {branch_info}")
                 if branch_info:
                     # 分岐処理
                     next_step = branch_info["on_success"] if branch_info["success"] else branch_info["on_failure"]
-                    self.start_scenario(next_step)
+                    self.event_manager.handle_scenario_event(next_step)
                     return
-
-            # ダイスチェックなら分岐ジャンプする
-            """
-            if hasattr(self.event_manager, "last_dice_step"):
-                step = self.event_manager.last_dice_step
-                result = self.event_manager.dice_check_result
-                next_id = step["success"] if result else step["failure"]
-                del self.event_manager.last_dice_step
-                self.start_scenario(next_id)
-                return
-            """
 
             # ダメージによって状態異常が起こった場合
             if self.event_manager.state_record:
@@ -120,7 +113,7 @@ class ScenarioManager:
                 self.start_scenario(next_id)
                 return
 
-            self.update()
+            self.update()        
 
     # 現在のステップの描画をイベントマネージャーに依頼
     def draw(self):

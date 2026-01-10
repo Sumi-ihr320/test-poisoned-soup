@@ -105,24 +105,14 @@
       "POT": 25,
       "target": "player",
       "progression": "click",
-      "success": "Poison_ingestion_for_lick_success",
-      "failure": "Poison_ingestion_for_lick_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "Poison_ingestion_for_lick_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "Poison_ingestion_for_lick_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "Poison_ingestion_for_lick_success": [
@@ -136,24 +126,22 @@
       "check_type": "SANチェック"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
       "status": "SAN",
       "value": "0/1",
       "text": "しかし猛毒の引き起こす幻覚から",
       "damage": {
-        "type": "fraction",
-        "source": "SAN",
-        "num": 0,
-        "den": 1
+        "type": "branch",
+        "target": "SAN",
+        "success": {
+          "type": "fixed", 
+          "value": 0
+        },
+        "failure": {
+          "type": "fixed", 
+          "value": 1
+        }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "poison_end"

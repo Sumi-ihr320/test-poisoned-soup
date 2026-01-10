@@ -10,24 +10,14 @@
       "skill": "博物学",
       "dice": "1d100",
       "progression": "click",
-      "success": "Black_liquid_success",
-      "failure": "Black_liquid_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "Black_liquid_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "Black_liquid_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "Black_liquid_success": [
@@ -141,24 +131,14 @@
       "half": true,
       "dice": "1d100",
       "progression": "click",
-      "success": "Black_liquid_check_success",
-      "failure": "Black_liquid_check_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "Black_liquid_check_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "Black_liquid_check_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "Black_liquid_check_pharmacology": [
@@ -172,24 +152,14 @@
       "skill": "薬学",
       "dice": "1d100",
       "progression": "click",
-      "success": "Black_liquid_check_success",
-      "failure": "Black_liquid_check_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "Black_liquid_check_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "Black_liquid_check_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "Black_liquid_check_success": [

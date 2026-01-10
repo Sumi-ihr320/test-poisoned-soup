@@ -172,10 +172,6 @@
       "item": "soup_bowl"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "image_hidden"
     }
   ],
@@ -632,24 +628,14 @@
       "check_type": "skill",
       "skill": "目星",
       "progression": "click",
-      "success": "Soup_objctive_success",
-      "failure": "Soup_objctive_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "Soup_objctive_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "Soup_objctive_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "Soup_objctive_success": [],
@@ -664,24 +650,14 @@
       "check_type": "skill",
       "skill": "医学",
       "progression": "click",
-      "success": "Soup_medicine_success",
-      "failure": "Soup_medicine_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "Soup_medicine_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "Soup_medicine_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
+      }
     }
   ],
   "Soup_medicine_success": [
@@ -708,13 +684,7 @@
       "check_type": "SANチェック"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "damage",
-      "status": "SAN",
-      "value": "0/1d4",
       "text": "おぞましい事実に気づいてしまった",
       "damage": {
         "type": "branch",
@@ -728,10 +698,6 @@
           "spec": "1d4"
         }
       }
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "image_hidden"

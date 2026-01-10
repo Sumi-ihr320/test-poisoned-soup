@@ -113,36 +113,30 @@
   ],
   "Candle_objective_time1": [
     {
+      "type": "time_passage",
+      "value": 3
+    },
+    {
       "type": "dice_check",
       "check_type": "skill",
       "skill": "目星",
       "dice": "1d100",
       "progression": "click",
-      "success": "Candle_objective_time1_success",
-      "failure": "Candle_objective_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "Candle_objective_time1_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "Candle_objective_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
-      "type": "time_passage",
-      "value": 3
+      }
     }
   ],
   "Candle_goes_out_objective_time1": [
+    {
+      "type": "time_passage",
+      "value": 3
+    },
     {
       "type": "dice_check",
       "check_type": "skill",
@@ -150,28 +144,14 @@
       "dice": "1d100",
       "half": true,
       "progression": "click",
-      "success": "Candle_objective_time1_success",
-      "failure": "Candle_objective_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "Candle_objective_time1_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "Candle_objective_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
-      "type": "time_passage",
-      "value": 3
+      }
     }
   ],
   "Candle_objective_time1_success": [
@@ -238,10 +218,6 @@
       "item": "candle1"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "image_hidden"
     }
   ],
@@ -262,10 +238,6 @@
       "type": "action",
       "action": "get_item",
       "item": "candle_goes_out1"
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "image_hidden"
@@ -325,36 +297,30 @@
   ],
   "Candle_objective_time2": [
     {
+      "type": "time_passage",
+      "value": 3
+    },
+    {
       "type": "dice_check",
       "check_type": "skill",
       "skill": "目星",
       "dice": "1d100",
       "progression": "click",
-      "success": "Candle_objective_time2_success",
-      "failure": "Candle_objective_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "Candle_objective_time2_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "Candle_objective_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
-      "type": "time_passage",
-      "value": 3
+      }
     }
   ],
   "Candle_goes_out_objective_time2": [
+    {
+      "type": "time_passage",
+      "value": 3
+    },
     {
       "type": "dice_check",
       "check_type": "skill",
@@ -362,28 +328,14 @@
       "dice": "1d100",
       "half": true,
       "progression": "click",
-      "success": "Candle_objective_time2_success",
-      "failure": "Candle_objective_failure",
-      "on_success": [
-        {
+      "on_success": {
           "type": "next_step",
           "next": "Candle_objective_time2_success"
-        }
-      ],
-      "on_failure": [
-        {
+      },
+      "on_failure": {
           "type": "next_step",
           "next": "Candle_objective_failure"
-        }
-      ]
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
-      "type": "time_passage",
-      "value": 3
+      }
     }
   ],
   "Candle_objective_time2_success": [
@@ -450,10 +402,6 @@
       "item": "candle2"
     },
     {
-      "type": "result_text",
-      "progression": "click"
-    },
-    {
       "type": "image_hidden"
     }
   ],
@@ -474,10 +422,6 @@
       "type": "action",
       "action": "get_item",
       "item": "candle_goes_out2"
-    },
-    {
-      "type": "result_text",
-      "progression": "click"
     },
     {
       "type": "image_hidden"
