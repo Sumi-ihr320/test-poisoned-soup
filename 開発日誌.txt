@@ -715,3 +715,10 @@
 2025/1/9
 	event_managerにpending_result_displayとpending_dice_checkのフラグを追加
 	scenario_managerをそれに合わせて修正
+
+2025/1/10
+	event_managerの修正続き
+	scenarioからtype:result_textを削除
+	self.result_textとself.dice_check_resultとself.damage_pointを削除
+	handle_actionのaction=="damage"を削除
+	pending_result_displayがtrueの際にwait_for_clickがtrueにならない問題の修正

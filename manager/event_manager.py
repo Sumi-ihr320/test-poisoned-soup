@@ -55,10 +55,6 @@ class EventManager:
         self.player_roll_result = None     # ダイスロールの結果
         self.girl_roll_result = None
 
-        #self.result_text = None             # 結果の表示テキスト
-        #self.dice_check_result = None       # ダイスロールの総合結果
-        #self.damage_point = None    # ダメージポイント
-
         self.state_record = {}      # キャラクターの特殊状態の記録
 
     # シナリオから受け取ったイベントを進行する
@@ -71,12 +67,6 @@ class EventManager:
             if self.pending_result_display:
                 return
                     
-        #if step["type"] == "result_text":
-        #    text = self.result_text
-        #    if "{" in text:
-        #        text = self.process_text_template(text)
-        #    self.current_display_text = text
-
         # 次のシナリオに進む
         elif step["type"] == "next_step":
             self.current_display_text = None

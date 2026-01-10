@@ -44,29 +44,42 @@ class ScenarioManager:
             if step:
                 self.display_index = self.current_index
                 self.event_manager.handle_scenario_event(step)
+                # 結果表示中なら即クリック待ち
+                if self.event_manager.pending_result_display:
+                    self.wait_for_click = True
 
     # シナリオ進行
     def scenario_progress(self):
         step = self.current_steps[self.current_index]
 
+        print(f"[DEBUG] シナリオ進行: {step}")
+
         # 結果表示中は強制的にクリック待ち
         if self.event_manager.pending_result_display:
             self.wait_for_click = True
-            return step
+            print(f" クリック待ち中: {self.wait_for_click}")
+            return None
 
         # 進行タイプに応じて処理を分岐
         progression = step.get("progression", "auto")       # デフォルトは自動進行
 
         # クリック待ちの場合は進行を停止
         if progression == "click" and self.wait_for_click:
+            print(f" クリック待ち中: {self.wait_for_click}")
             return None
 
         # 現在のステップがclickならクリック待ち状態を設定
         self.wait_for_click = progression == "click"
+        print(f" クリック待ち中: {self.wait_for_click}")
         return step
 
     # 次のシナリオステップを進める
     def update(self):
+        print(f"[DEBUG] シナリオ更新呼び出し")
+        if self.event_manager.pending_result_display:
+            self.wait_for_click = True
+            return
+
         if not self.current_steps or self.current_index >= len(self.current_steps):
             print("シナリオ終了")               # デバッグ用
             self.current_scenario_id = ""
@@ -87,20 +100,18 @@ class ScenarioManager:
 
     # クリックイベントを処理
     def on_click(self):
-        print(f"[DEBUG] クリック検出")
+        branch_info = None
         if self.wait_for_click:
             # クリック待ちを解除して次のステップへ
             self. wait_for_click = False
 
 
             # 結果表示中か確認
-            print(f" 結果表示中: {self.event_manager.pending_result_display}")
             if self.event_manager.pending_result_display:
                 self.event_manager.clear_result_display()
 
                 # 分岐情報があるか確認
                 branch_info = self.event_manager.get_and_clear_pending_branch()
-                print(f" 分岐情報: {branch_info}")
                 if branch_info:
                     # 分岐処理
                     next_step = branch_info["on_success"] if branch_info["success"] else branch_info["on_failure"]
@@ -114,6 +125,10 @@ class ScenarioManager:
                 return
 
             self.update()        
+        print(f"[DEBUG] クリック検出")
+        print(f" クリック待ち中: {self.wait_for_click}")
+        print(f" 結果表示中: {self.event_manager.pending_result_display}")
+        print(f" 分岐情報: {branch_info}")
 
     # 現在のステップの描画をイベントマネージャーに依頼
     def draw(self):

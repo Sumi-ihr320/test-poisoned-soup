@@ -256,6 +256,9 @@
     }
   ],
   "southDoor_look_window_done": [
+    { "type": "text", 
+      "text": "既に怪物の姿は確認している。", 
+      "progression":"click"},
     {
       "type": "image_hidden"
     }
