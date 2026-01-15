@@ -12,6 +12,7 @@ from .sound_manager import sound_manager
 from .event_processors.dice_processor import DiceProcessor
 from .event_processors.damage_processor import DamageProcessor
 from .event_processors.conditional_processor import ConditionalProcessor
+from .event_processors.status_effect_processor import StatusEffectProcessor
 
 class EventManager:
     def __init__(self, screen, player=None, girl=None, game_state=None, flags=None, text_frame_panel=None, log_view=None,
@@ -46,6 +47,14 @@ class EventManager:
         self.dice_processor = DiceProcessor(self.dice_service, self.skill_list, self.flags)
         self.damage_processor = DamageProcessor(self.dice_service, self.take_damage)
         self.conditional_processor = ConditionalProcessor(self.flags, self.game_state, self.to_callback_next_scenario)
+        self.status_effect_processor = StatusEffectProcessor(
+            self.dice_service,
+            self.take_damage,
+            {"set_flag": self.set_flag,
+             "next_scenario": self.to_callback_next_scenario,
+             "black_out": self.render_manager.handle_black_out,
+             "set_result_display": self.set_result_display}
+        )
 
         self.pending_result_display = False # 結果表示待ちフラグ
         self.pending_dice_check = None      # 分岐情報
@@ -331,6 +340,11 @@ class EventManager:
         """結果表示フラグをクリアする"""
         self.pending_result_display = False
         self.current_display_text = None
+
+    def set_result_display(self, text):
+        """結果表示フラグをセットする"""
+        self.pending_result_display = True
+        self.current_display_text = text
 
     # 時間を経過させる
     def handle_time_passage(self, step):

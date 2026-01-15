@@ -722,3 +722,6 @@
 	self.result_textとself.dice_check_resultとself.damage_pointを削除
 	handle_actionのaction=="damage"を削除
 	pending_result_displayがtrueの際にwait_for_clickがtrueにならない問題の修正
+
+2025/1/15
+	status_effect_processer.pyを作成
