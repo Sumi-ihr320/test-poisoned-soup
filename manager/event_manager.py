@@ -52,8 +52,9 @@ class EventManager:
             self.take_damage,
             {"set_flag": self.set_flag,
              "next_scenario": self.to_callback_next_scenario,
-             "black_out": self.render_manager.handle_black_out,
-             "set_result_display": self.set_result_display}
+             "black_out": self.set_black_out,     # callback経由で通知
+             "set_result_display": self.set_result_display,
+             "get_blackout_state": lambda: self.is_blackout_active} # 状態問い合わせ
         )
 
         self.pending_result_display = False # 結果表示待ちフラグ
@@ -61,10 +62,11 @@ class EventManager:
         self.current_display_text = None    # 描画用の処理済みデータ
         
         # handle_damageで使用
-        self.player_roll_result = None     # ダイスロールの結果
+        self.player_roll_result = None      # ダイスロールの結果
         self.girl_roll_result = None
 
-        self.state_record = {}      # キャラクターの特殊状態の記録
+        self.state_record = {}              # キャラクターの特殊状態の記録
+        self.is_blackout_active = False     # ブラックアウト状態かどうか
 
     # シナリオから受け取ったイベントを進行する
     def handle_scenario_event(self, step):
@@ -353,67 +355,21 @@ class EventManager:
 
     # 状態異常に対応
     def handle_status_effect(self):
-        state_map = {"Shock":"ショックロール",
-                     "Faint":"気絶",
-                     "Dying":"死んでしまった",
-                     "Temporary_madness":"一時的狂気",
-                     "Indeterminate_madness":"不定の狂気"}
-        for character, state in self.state_record.items():
-            name = "あなた" if character == self.player else character.name
+        characters = {"player": self.player,
+                      "girl": self.girl}
+        results = self.status_effect_processor.process_status_effects(self.state_record, characters, self.game_state)
 
-            # 死んだ場合
-            if state == "Dying":
-                text = f"{name}は死んでしまった。"
-                self.create_text_step(text)
-                if character == self.player:
-                    # 主人公が死んだらエンディングへ
-                    next_step = {"type":"ending", "next":"ending1"}
-                    self.handle_scenario_event(next_step)
-                    return
-                else:
-                    self.set_flag("girl", "alive", False)
-                    self.set_flag("girl", "fellow", False)
-                    self.set_flag("girl", "dice_check", False)
-                    self.set_flag("girl", "carry", False)
+        for result in results:
+            if result["action"] == "need_dice_check":
+                # ダイスチェック実行
+                step = {
+                    "type": "dice_check",
+                    "check_type": result["type"],
+                    "target": result["target"]
+                    }
+                self.handle_dice_check(step)
 
-            # 気絶した場合
-            elif state == "Faint":
-                text = f"{name}は気絶してしまった。"
-                #self.create_text_step(text)
-                #next_step = {"type":"result_text", "progression":"click"}
-                #self.handle_scenario_event(next_step)
-
-                # 気絶した時間 - 気絶する時間 = 気絶から目覚める時間
-                faint_time = self.game_state.time
-                dice_result = self.dice_service.roll("1d10")
-                wait_duration = dice_result * 100
-                recovery_time = faint_time - dice_result
-
-                if character == self.player:
-                    # 主人公が気絶したらブラックアウトする
-                    self.render_manager.handle_black_out(wait_duration)
-                    self.game_state.time = recovery_time
-                    #self.handle_black_out(wait_duration, recovery_time)
-                else:
-                    self.set_flag("girl", "faint", recovery_time)
-                    self.set_flag("girl", "dice_check", False)
-                    # 主人公が気絶していない場合
-                    if not self.is_blackout_active:
-                        # 次のシナリオへ移行する
-                        self.to_callback_next_scenario("Faint_ver_girl")
-
-            # ショックロール判定を行う
-            elif state == "Shock":
-                # 判定を行う
-                target = "player" if character == self.player else "girl"
-                next_step = {"type":"dice_check", "check_type":"shock_roll", "target":target}
-                self.handle_dice_check(next_step)
-
-                # 結果表示
-                #self.to_callback_next_scenario("result_text")
-                #next_step = {"type":"result_text", "progression":"click"}
-                #self.handle_scenario_event(next_step)
-                
+                character = result["character"]
                 # ショックロールを失敗した場合
                 if character == self.player and not self.player_roll_result:
                     self.state_record[self.player] = "Faint"
@@ -421,14 +377,15 @@ class EventManager:
                     self.state_record[self.girl] = "Faint"
 
                 # 失敗してレコードが書き換えられている場合はもう一度状態異常のシナリオへ
-                if self.state_record[character] != state:
+                if self.state_record[character] != "Shock":
                     self.to_callback_next_scenario("Status_effect")
                     return
                 
+                name = "あなた" if character == self.player else character.name
                 text = f"{name}はなんとか耐えた。"
                 self.pending_result_display = True
                 self.current_display_text = text
-                    
+
         self.state_record = {}
 
     # フラグチェックを処理

@@ -725,3 +725,6 @@
 
 2025/1/15
 	status_effect_processer.pyを作成
+
+2025/1/17
+	status_effect_processer.pyの続き
