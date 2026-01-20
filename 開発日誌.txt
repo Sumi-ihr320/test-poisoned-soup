@@ -728,3 +728,6 @@
 
 2025/1/17
 	status_effect_processer.pyの続き
+
+2025/1/20
+	status_effect_processer.pyの修正

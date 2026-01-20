@@ -44,25 +44,29 @@ class StatusEffectProcessor:
 
     def handle_dying(self, character, characters):
         """死亡した場合の処理"""
+        return_info = {}
         name = "あなた" if character == characters["player"] else character.name
-        text = f"{name}は死んでしまった。"
-        self.callbacks["set_result_display"](text)
+        return_info["text"] = f"{name}は死んでしまった。"
+
         if character == characters["player"]:
             # 主人公が死んだらエンディングへ
-            self.callbacks["next_scenario"]("Ending_1")
-            return {}
+            return_info["action"] = "next_scenario"
+            return_info["next"] = "Ending_1"
         else:
-            set_flag = self.callbacks["set_flag"]
-            set_flag("girl", "alive", False)
-            set_flag("girl", "fellow", False)
-            set_flag("girl", "dice_check", False)
-            set_flag("girl", "carry", False)
-
+            return_info["action"] = "set_flags"
+            return_info["flags"] = [
+                {"category": "girl", "flag": "alive", "value": False},
+                {"category": "girl", "flag": "fellow", "value": False},
+                {"category": "girl", "flag": "dice_check", "value": False},
+                {"category": "girl", "flag": "carry", "value": False}
+            ]
+        return return_info
+    
     def handle_faint(self, character, characters, game_state):
         """気絶した場合の処理"""
+        return_info = {}
         name = "あなた" if character == characters["player"] else character.name
-        text = f"{name}は気絶してしまった。"
-        self.callbacks["set_result_display"](text)
+        return_info["text"] = f"{name}は気絶してしまった。"
         
         # 気絶した時間 - 気絶する時間 = 気絶から目覚める時間
         faint_time = game_state.time
@@ -72,30 +76,35 @@ class StatusEffectProcessor:
 
         if character == characters["player"]:
             # 主人公が気絶したらブラックアウトする
-            self.callbacks["black_out"](wait_duration)
-            return {"recovery_time": recovery_time}
+            return_info["action"] = "black_out"
+            return_info["wait_duration"] = wait_duration
+            return_info["recovery_time"] = recovery_time
         else:
-            self.callbacks["set_flag"]("girl", "faint", recovery_time)
-            self.callbacks["set_flag"]("girl", "dice_check", False)
-            # 主人公が気絶していない場合
-            if not self.callbacks["get_blackout_state"]():
-            # 次のシナリオへ移行する
-                self.callbacks["next_scenario"]("Faint_ver_girl")
+            return_info["action"] = "set_flags"
+            return_info["flags"] = [
+                {"category": "girl", "flag": "faint", "value": recovery_time},
+                {"category": "girl", "flag": "dice_check", "value": False}
+            ]
+            return_info["if_question"] = "player_fainted"
+            return_info["next"] = "Faint_ver_girl"
+        return return_info
 
     def handle_shock(self, character, characters):
         """ショック状態の場合の処理"""
-
-        return {
+        return_info = {
             "action": "need_dice_check",
             "type": "shock_roll",
             "target": "player" if character == characters["player"] else "girl",
             "character": character
         }
-                            
+        return return_info
+    
     def handle_temporary_madness(self, character, characters):
         """一時的狂気の処理"""
+        return_info = {}
         pass
 
     def handle_indeterminate_madness(self, character, characters):
         """不定の狂気の処理"""
+        return_info = {}
         pass
