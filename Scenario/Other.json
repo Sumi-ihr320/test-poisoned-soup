@@ -175,10 +175,19 @@
       "type": "status_effect"
     }
   ],
-  "Shock": [
+  "Shock_success_player": [
     {
-      "type": "scock_roll_check",
-      "text": "ショックロール判定",
+      "type": "text",
+      "text": "あなたはなんとか耐えた。",
+      "character":"player",
+      "progression": "click"
+    }
+  ],
+  "Shock_success_girl": [
+    {
+      "type": "text",
+      "text": "少女はなんとか耐えた。",
+      "character":"girl",
       "progression": "click"
     }
   ],

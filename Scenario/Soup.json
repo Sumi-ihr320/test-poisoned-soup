@@ -172,6 +172,11 @@
       "item": "soup_bowl"
     },
     {
+      "type": "text",
+      "text": "スープの器を手に入れた。",
+      "progression": "click"
+    },
+    {
       "type": "image_hidden"
     }
   ],

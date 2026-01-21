@@ -188,6 +188,12 @@
       "item": "light_bulb"
     },
     {
+      "type": "text",
+      "text": "電球を手に入れた。",
+      "progression": "click"
+    },
+
+    {
       "type": "image_hidden"
     }
   ],
@@ -308,6 +314,11 @@
       "type": "action",
       "action": "lost_item",
       "item": "light_bulb"
+    },
+    {
+      "type": "text",
+      "text": "あなたは電球を失った。",
+      "progression": "click"
     },
     {
       "type": "image_hidden"

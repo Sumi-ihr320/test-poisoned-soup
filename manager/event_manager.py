@@ -47,15 +47,7 @@ class EventManager:
         self.dice_processor = DiceProcessor(self.dice_service, self.skill_list, self.flags)
         self.damage_processor = DamageProcessor(self.dice_service, self.take_damage)
         self.conditional_processor = ConditionalProcessor(self.flags, self.game_state, self.to_callback_next_scenario)
-        self.status_effect_processor = StatusEffectProcessor(
-            self.dice_service,
-            self.take_damage,
-            {"set_flag": self.set_flag,
-             "next_scenario": self.to_callback_next_scenario,
-             "black_out": self.set_black_out,     # callback経由で通知
-             "set_result_display": self.set_result_display,
-             "get_blackout_state": lambda: self.is_blackout_active} # 状態問い合わせ
-        )
+        self.status_effect_processor = StatusEffectProcessor(self.dice_service, self.take_damage)
 
         self.pending_result_display = False # 結果表示待ちフラグ
         self.pending_dice_check = None      # 分岐情報
@@ -72,7 +64,8 @@ class EventManager:
     def handle_scenario_event(self, step):
         # テキストを表示する or 結果を表示する
         if step["type"] == "text":
-            self.current_display_text = step["text"]
+            text = self.insert_name_to_text(step["text"], step.get("character", None))
+            self.current_display_text = text
 
             # 結果表示中でない場合のみ通常テキストを使用
             if self.pending_result_display:
@@ -216,11 +209,6 @@ class EventManager:
             item = ITEM_LIST[step["item"]]
             character = self.girl if target == "girl" else self.player
             character.add_item(item)
-            #self.result_text = f"{character.name}は{item.name}を手に入れた。"
-            text = f"{character.name}は{item.name}を手に入れた。"
-            self.pending_result_display = True
-            self.current_display_text = text
-            #self.to_callback_next_scenario("result_text")
 
         # アイテムを手放す
         elif action == "lost_item":
@@ -228,11 +216,6 @@ class EventManager:
             item = ITEM_LIST[step["item"]]
             character = self.girl if target == "girl" else self.player
             character.remove_item(item)
-            #self.result_text = f"{character.name}は{item.name}を失った。"
-            text = f"{character.name}は{item.name}を失った。"
-            self.pending_result_display = True
-            self.current_display_text = text
-            #self.to_callback_next_scenario("result_text")
 
     # ダイスチェックをする
     def handle_dice_check(self, step):
@@ -329,22 +312,22 @@ class EventManager:
         print(f" girl_roll_result: {self.girl_roll_result}")
         print(f" state_record: {self.state_record}")
         print(f" display_text: {self.current_display_text}")
-              
+
+    # 保留中の分岐情報を取得してクリアする      
     def get_and_clear_pending_branch(self):
-        """保留中の分岐情報を取得してクリアする"""
         if self.pending_dice_check:
             branch = self.pending_dice_check
             self.pending_dice_check = None
             return branch
         return None
 
+    # 結果表示フラグをクリアする
     def clear_result_display(self):
-        """結果表示フラグをクリアする"""
         self.pending_result_display = False
         self.current_display_text = None
 
+    # 結果表示フラグをセットする
     def set_result_display(self, text):
-        """結果表示フラグをセットする"""
         self.pending_result_display = True
         self.current_display_text = text
 
@@ -360,7 +343,16 @@ class EventManager:
         results = self.status_effect_processor.process_status_effects(self.state_record, characters, self.game_state)
 
         for result in results:
-            if result["action"] == "need_dice_check":
+            text = result.get("text", None)
+            if text:
+                self.pending_result_display = True
+                self.current_display_text = text
+            
+            if result["action"] == "black_out":
+                self.render_manager.handle_black_out(result["wait_duration"])
+                self.game_state.time = result["recovery_time"]                
+
+            elif result["action"] == "need_dice_check":
                 # ダイスチェック実行
                 step = {
                     "type": "dice_check",
@@ -380,12 +372,22 @@ class EventManager:
                 if self.state_record[character] != "Shock":
                     self.to_callback_next_scenario("Status_effect")
                     return
-                
-                name = "あなた" if character == self.player else character.name
-                text = f"{name}はなんとか耐えた。"
-                self.pending_result_display = True
-                self.current_display_text = text
+                else:
+                    # 成功した場合は成功シナリオに移動
+                    if character == self.player:
+                        self.to_callback_next_scenario("Shock_success_player")
+                    else:
+                        self.to_callback_next_scenario("Shock_success_girl")
 
+            elif result["action"] == "set_flags":
+                for flag in result["flags"]:
+                    self.set_flag(flag["category"], flag["flag"], flag["value"])
+                question = result.get("if_question", None)
+                if question and question == "player_fainted":
+                    if not self.render_manager.is_player_blackout_active():
+                        self.to_callback_next_scenario(result["next"])
+            elif result["action"] == "next_scenario":
+                self.to_callback_next_scenario(result["next"])
         self.state_record = {}
 
     # フラグチェックを処理
@@ -395,14 +397,6 @@ class EventManager:
             if all(self.flag_check(flag) for flag in condition["flags"]):
                 self.to_callback_next_scenario(condition["next"])
                 break
-
-    # サウンド処理
-    def handle_sound(self, step):
-        sound_name = step["name"]
-        if sound_name in sound_manager.sounds:
-            sound_manager.play(sound_name)
-        else:
-            print(f"その名前のサウンドは登録されていません。{sound_name}")  # デバッグ用
 
     # テキストを表示するステップを作成して表示する
     def create_text_step(self, text):
@@ -483,7 +477,7 @@ class EventManager:
         #if state:
         #    self.to_callback_next_scenario(state)
 
-    # イベントを処理
+    # イベントを処理（未完成※使用するか不明）
     def handle_event(self, event_name, event_data):
         if event_name == "item_click":
             #item_name = event_data.get("item_name")
@@ -500,7 +494,7 @@ class EventManager:
         else:
             print(f"No handler for event: {event_name}")
 
-    # 部屋から本を持ちだそうとした際に起こるイベント
+    # 部屋から本を持ちだそうとした際に起こるイベント（未完成）
     def handle_book_exit(self):
         """本を持ち出したときのイベント"""
         print("You tried to leave the room with the book!")
@@ -512,7 +506,6 @@ class EventManager:
     def start_fight(self, enemy):
         """戦闘イベントを開始"""
         print(f"Starting fight with {enemy}")
-
 
     # 表示する
     def draw(self, step=None):

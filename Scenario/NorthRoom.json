@@ -621,6 +621,11 @@
       "item": "kitchen_knife"
     },
     {
+      "type": "text",
+      "text": "包丁を手に入れた。",
+      "progression": "click"
+    },
+    {
       "type": "next_step",
       "next": "UnderSinkStorage_get_item"
     }
@@ -636,6 +641,11 @@
       "action": "get_item",
       "target": "player",
       "item": "ladle"
+    },
+    {
+      "type": "text",
+      "text": "おたまを手に入れた。",
+      "progression": "click"
     },
     {
       "type": "next_step",
@@ -655,6 +665,11 @@
       "item": "saucepan"
     },
     {
+      "type": "text",
+      "text": "片手鍋を手に入れた。",
+      "progression": "click"
+    },
+    {
       "type": "next_step",
       "next": "UnderSinkStorage_get_item"
     }
@@ -672,6 +687,11 @@
       "item": "frying_pan"
     },
     {
+      "type": "text",
+      "text": "フライパンを手に入れた。",
+      "progression": "click"
+    },
+    {
       "type": "next_step",
       "next": "UnderSinkStorage_get_item"
     }
@@ -687,6 +707,11 @@
       "action": "get_item",
       "target": "player",
       "item": "lid"
+    },
+    {
+      "type": "text",
+      "text": "鍋の蓋を手に入れた。",
+      "progression": "click"
     },
     {
       "type": "next_step",

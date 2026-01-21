@@ -91,13 +91,12 @@ class StatusEffectProcessor:
 
     def handle_shock(self, character, characters):
         """ショック状態の場合の処理"""
-        return_info = {
+        return {
             "action": "need_dice_check",
             "type": "shock_roll",
             "target": "player" if character == characters["player"] else "girl",
             "character": character
         }
-        return return_info
     
     def handle_temporary_madness(self, character, characters):
         """一時的狂気の処理"""

@@ -201,46 +201,24 @@
   ],
   "Candle_take_it_time1": [
     {
-      "type": "text",
-      "text": "ろうそくを持って行くことにした。",
-      "progression": "click"
-    },
-    {
-      "type": "action",
-      "action": "set_flag",
-      "category": "items",
-      "flag": "candle_get",
-      "value": true
-    },
-    {
       "type": "action",
       "action": "get_item",
       "item": "candle1"
     },
     {
-      "type": "image_hidden"
+      "type": "next_step",
+      "next": "Candle_get"
     }
   ],
   "Candle_goes_out_take_it_time1": [
-    {
-      "type": "text",
-      "text": "ろうそくを持って行くことにした。",
-      "progression": "click"
-    },
-    {
-      "type": "action",
-      "action": "set_flag",
-      "category": "items",
-      "flag": "candle_get",
-      "value": true
-    },
     {
       "type": "action",
       "action": "get_item",
       "item": "candle_goes_out1"
     },
     {
-      "type": "image_hidden"
+      "type": "next_step",
+      "next": "Candle_get"
     }
   ],
   "Candle_time2": [
@@ -385,27 +363,27 @@
   ],
   "Candle_take_it_time2": [
     {
-      "type": "text",
-      "text": "ろうそくを持って行くことにした。",
-      "progression": "click"
-    },
-    {
-      "type": "action",
-      "action": "set_flag",
-      "category": "items",
-      "flag": "candle_get",
-      "value": true
-    },
-    {
       "type": "action",
       "action": "get_item",
       "item": "candle2"
     },
     {
-      "type": "image_hidden"
+      "type": "next_step",
+      "next": "Candle_get"
     }
   ],
   "Candle_goes_out_take_it_time2": [
+    {
+      "type": "action",
+      "action": "get_item",
+      "item": "candle_goes_out2"
+    },
+    {
+      "type": "next_step",
+      "next": "Candle_get"
+    }
+  ],
+  "Candle_get": [
     {
       "type": "text",
       "text": "ろうそくを持って行くことにした。",
@@ -419,9 +397,9 @@
       "value": true
     },
     {
-      "type": "action",
-      "action": "get_item",
-      "item": "candle_goes_out2"
+      "type": "text",
+      "text": "ろうそくを手に入れた。",
+      "progression": "click"
     },
     {
       "type": "image_hidden"
