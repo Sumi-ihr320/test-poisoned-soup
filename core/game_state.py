@@ -2,7 +2,7 @@
 class GameStatus:
     def __init__(self):
         # 現在の状況
-        self.time = 60
+        self.time = 600
         self.room = "center"
         self.direction = "north"
 

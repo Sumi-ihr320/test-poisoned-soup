@@ -1,5 +1,6 @@
 from typing import Dict
 from ..sound_manager import sound_manager
+from ..render_manager import RenderManager
 
 class DisplayProcessor:
     """
@@ -16,7 +17,7 @@ class DisplayProcessor:
     入力：step (dict)
     出力：None (直接実行型なので返り値なし)
     """
-    def __init__(self, render_manager):
+    def __init__(self, render_manager: RenderManager):
         """
         :render_manager: 画面描画を担当するマネージャー
         """
@@ -25,44 +26,67 @@ class DisplayProcessor:
     def process_display(self, step: Dict):
         """
         ステップタイプに応じて表示処理を実行する
-
         step (Dict): シナリオのステップ
+        テキストの場合のみ text を返す（EventManager が状態管理に使用）
         """
         step_type = step.get("type")
+        result = None
 
         if step_type == "text":
-            self.handle_text(step["text"])
+            # テキストの場合のみ返り値を使用（EventManager が状態管理に使用）
+            result = self.handle_text(step)
+
         elif step_type == "sound":
-            self.handle_sound(step["name"])
+            # 直接実行型：返り値なし
+            self.handle_sound(step)
+
         elif step_type == "image_display":
-            self.handle_image_display(step["item"])
+            # 直接実行型：返り値なし
+            self.handle_image_display(step)
+
         elif step_type == "image_hidden":
+            # 直接実行型：返り値なし
             self.handle_image_hidden()
+
         elif step_type == "girl_display":
+            # 直接実行型：返り値なし
             self.handle_girl_display(step)
+
         elif step_type == "girl_hidden":
+            # 直接実行型：返り値なし
             self.handle_girl_hidden()
 
+        return result
+
     # テキスト処理
-    def handle_text(self, text: str):
-        self.current_display_text = text
-            # 結果表示中でない場合のみ通常テキストを使用
-            #if self.pending_result_display:
-            #    return
-        pass
+    def handle_text(self, step: Dict):
+        text = step.get("text", None)
+        return text
 
     # サウンド処理
-    def handle_sound(self, sound_name: str):
+    def handle_sound(self, step: Dict):
+        sound_name = step.get("name", None)
         if sound_name in sound_manager.sounds:
             sound_manager.play(sound_name)
         else:
             print(f"その名前のサウンドは登録されていません。{sound_name}")  # デバッグ用
 
     # アイテム画像の表示
-    def handle_image_display(self, item_name: str):
-        self.render_manager.show_item_image(item_name)
+    def handle_image_display(self, step: Dict):
+        image_path = step.get("image", None)
+        if image_path:
+            self.render_manager.show_item_image(image_path)
 
     # アイテム画像の非表示
     def handle_image_hidden(self):
         self.render_manager.hidden_item_image()
-        #self.current_display_text = None
+
+    # 少女立ち絵の表示
+    def handle_girl_display(self, step: Dict):
+        state = step.get("state", None)
+        position = step.get("position", "right")
+        self.render_manager.show_girl_image(state, position)
+    
+    # 少女立ち絵の非表示
+    def handle_girl_hidden(self):
+        self.render_manager.hidden_girl_image()

@@ -8,11 +8,12 @@ from ui.ui_command import Command
 from ui.log_view import LogView
 from .render_manager import RenderManager
 from .dice_service import DiceService
-from .sound_manager import sound_manager
+#from .sound_manager import sound_manager
 from .event_processors.dice_processor import DiceProcessor
 from .event_processors.damage_processor import DamageProcessor
 from .event_processors.conditional_processor import ConditionalProcessor
 from .event_processors.status_effect_processor import StatusEffectProcessor
+from .event_processors.display_processor import DisplayProcessor
 
 class EventManager:
     def __init__(self, screen, player=None, girl=None, game_state=None, flags=None, text_frame_panel=None, log_view=None,
@@ -48,6 +49,7 @@ class EventManager:
         self.damage_processor = DamageProcessor(self.dice_service, self.take_damage)
         self.conditional_processor = ConditionalProcessor(self.flags, self.game_state, self.to_callback_next_scenario)
         self.status_effect_processor = StatusEffectProcessor(self.dice_service, self.take_damage)
+        self.display_processor = DisplayProcessor(self.render_manager)
 
         self.pending_result_display = False # 結果表示待ちフラグ
         self.pending_dice_check = None      # 分岐情報
@@ -62,15 +64,27 @@ class EventManager:
 
     # シナリオから受け取ったイベントを進行する
     def handle_scenario_event(self, step):
-        # テキストを表示する or 結果を表示する
+        # 表示関連のステップ処理
         if step["type"] == "text":
-            text = self.insert_name_to_text(step["text"], step.get("character", None))
-            self.current_display_text = text
+            # display_processor で処理
+            text = self.display_processor.process_display(step)
 
-            # 結果表示中でない場合のみ通常テキストを使用
-            if self.pending_result_display:
-                return
-                    
+            # テキストが返ってきた場合のみ特殊処理
+            if text is not None:
+                self.current_display_text = text
+
+                # 結果表示中でない場合のみ通常テキストを使用
+                if self.pending_result_display:
+                    return
+
+        elif step["type"] in ["sound", "image_display", "image_hidden", "girl_display", "girl_hidden"]:
+            # display_processor で処理
+            self.display_processor.process_display(step)
+
+            # 画像非表示のタイミングでテキストもクリア
+            if step["type"] in ["image_hidden", "girl_hidden"]:
+                self.current_display_text = None
+
         # 次のシナリオに進む
         elif step["type"] == "next_step":
             self.current_display_text = None
@@ -119,30 +133,6 @@ class EventManager:
                 commands.append(Command(cmd["text"], cmd["next"]))
             target = step.get("target", None)
             self.render_manager.set_command_menu(commands, target)
-
-        # 画像を表示する
-        elif step["type"] == "image_display":
-            self.render_manager.show_item_image(step["image"])
-
-        # 画像を非表示にする
-        elif step["type"] == "image_hidden":
-            self.render_manager.hidden_item_image()
-            self.current_display_text = None
-
-        # 少女の立ち絵を表示する
-        elif step["type"] == "girl_display":
-            state = step.get("state", None)
-            position = step.get("position", "right")
-            self.render_manager.show_girl_image(state, position)
-
-        # 少女の立ち絵を非表示にする
-        elif step["type"] == "girl_hidden":
-            self.render_manager.hidden_girl_image()
-            self.current_display_text = None
-
-        # サウンドを鳴らす
-        elif step["type"] == "sound":
-            self.handle_sound(step)
 
         # 毒摂取の画面効果を表示する
         elif step["type"] == "poison_start":

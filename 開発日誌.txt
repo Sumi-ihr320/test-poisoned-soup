@@ -735,3 +735,6 @@
 2025/1/21
 	event_managerの修正
 	dispray_processorの作成
+
+2025/1/23
+	

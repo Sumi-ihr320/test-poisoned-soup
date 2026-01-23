@@ -7,7 +7,7 @@ class StatusEffectProcessor:
                  "Dying":"死んでしまった",
                  "Temporary_madness":"一時的狂気",
                  "Indeterminate_madness":"不定の狂気"}
-    def __init__(self, dice_service, take_damage, callbacks: Dict[str, Callable]):
+    def __init__(self, dice_service, take_damage):
         """
         役割：状態異常による結果（テキスト、フラグ変更、次のシナリオ）を決定する
 
@@ -21,7 +21,6 @@ class StatusEffectProcessor:
         """
         self.dice_service = dice_service
         self.take_damage = take_damage
-        self.callbacks = callbacks
 
     def process_status_effects(self, state_record: Dict[Any, str], characters, game_state: GameStatus):
         results = []
