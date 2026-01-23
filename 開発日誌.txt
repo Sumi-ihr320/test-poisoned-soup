@@ -734,7 +734,7 @@
 
 2025/1/21
 	event_managerの修正
-	dispray_processorの作成
+	display_processorの作成
 
 2025/1/23
-	
+	display_processorの続き

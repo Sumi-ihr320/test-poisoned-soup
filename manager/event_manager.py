@@ -8,7 +8,6 @@ from ui.ui_command import Command
 from ui.log_view import LogView
 from .render_manager import RenderManager
 from .dice_service import DiceService
-#from .sound_manager import sound_manager
 from .event_processors.dice_processor import DiceProcessor
 from .event_processors.damage_processor import DamageProcessor
 from .event_processors.conditional_processor import ConditionalProcessor
@@ -376,6 +375,7 @@ class EventManager:
                 if question and question == "player_fainted":
                     if not self.render_manager.is_player_blackout_active():
                         self.to_callback_next_scenario(result["next"])
+
             elif result["action"] == "next_scenario":
                 self.to_callback_next_scenario(result["next"])
         self.state_record = {}
