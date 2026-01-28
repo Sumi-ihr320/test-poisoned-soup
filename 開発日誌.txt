@@ -738,3 +738,7 @@
 
 2025/1/23
 	display_processorの続き
+
+2025/1/28
+	設計図作成学習中
+	save_load.pyを修正

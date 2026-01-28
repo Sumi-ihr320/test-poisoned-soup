@@ -169,7 +169,7 @@ class Save_or_Load(BaseScene):
             print(f"データエラー: {e}")
 
         # 新しいファイル名に変更する
-        file_no = self.get_file_no(self.select_file_name)
+        file_no = self.extract_file_number(self.select_file_name)
         new_file_name = f"{self.forder_name}{file_no}.json"
         os.rename(file_name, new_file_name)
         with TopmostManager(self.root):
@@ -180,27 +180,29 @@ class Save_or_Load(BaseScene):
         self.draw()
 
     # 設定データのセーブ
-    def setting_save(self):
-        self.setting_manager.set("input_mode", input_mode_manager.get_mode())
+    def save_settings(self):
+        input_mode = input_mode_manager.get_mode()
+        self.setting_manager.set("input_mode", input_mode)
 
     # データセーブ
     def save(self):
-        # 設定データをセーブしておく
-        self.setting_save()
-
-        # セーブする場所が選択されているかチェック
-        if not self.check_select_file():
+        # 1. セーブする場所が選択されているかチェック
+        result = self.validate_selection()
+        if not result["success"]:
+            self.show_error(result["error"])
             return
         
-        # すでにデータがあった場合は上書き確認
-        if self.check_save_data():
-            with TopmostManager(self.root):
-                if not messagebox.askokcancel("セーブ", f"{self.select_file_name}\nセーブデータを上書きしますか？"):
-                    return
+        # 2. すでにデータがあった場合は上書き確認
+        if self.check_existing_file():
+            if not self.ask_confirmation(f"{self.select_file_name}\nセーブデータを上書きしますか？"):
+                return
 
-        # 新しいファイル名に変更する
+        # 3. 設定データをセーブしておく
+        self.save_settings()
+
+        # 4. 新しいファイル名に変更する
         old_file_name = f"{self.forder_name}{self.select_file_name}"
-        new_file_name = self.create_file_name()
+        new_file_name = self.create_filename()
         os.rename(old_file_name, new_file_name)
 
         # データを書き込む
@@ -243,21 +245,31 @@ class Save_or_Load(BaseScene):
                     messagebox.showerror("ロードエラー", f"ロードに失敗しました: {str(e)}")
 
     # 選択された箇所にデータがあるかないかを確認する
-    def check_save_data(self):
+    def check_existing_file(self):
         if len(self.select_file_name.replace(".json", "")) == 2:
             return False
         return True
 
     # データが選択されているかのチェックとエラーメッセージ
-    def check_select_file(self):
+    def validate_selection(self):
         if self.select_file_name is None:
-            with TopmostManager(self.root):
-                messagebox.showerror("エラー", "データが選択されていません")
-            return False
+            return {"success": False, "error": "データが選択されていません"}
+        return {"success": True}
+
+    # エラーメッセージを表示する
+    def show_error(self, message: str, mode: str=""):
+        with TopmostManager(self.root):
+            messagebox.showerror(f"{mode}エラー", message)
+
+    # ユーザーにok / cancelの確認をする
+    def ask_confirmation(self, message: str, mode: str="セーブ"):
+        with TopmostManager(self.root):
+            if not messagebox.askokcancel(mode, message):
+                return False
         return True
 
     # ファイルNoを取得する
-    def get_file_no(self, file_name):
+    def extract_file_number(self, file_name):
         file_name = file_name.replace(".json", "")
         return file_name.split(" ")[0]
 
@@ -285,7 +297,7 @@ class Save_or_Load(BaseScene):
             label.relayout(screen)
     
     # ファイル名を作る
-    def create_file_name(self):
+    def create_filename(self):
         # 今日の日付と時間を取得
         now = dt.datetime.now()
         str_now = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -294,9 +306,9 @@ class Save_or_Load(BaseScene):
         # セーブデータのインデックスを切り出す
         if self.select_file_name:
             try:
-                data_no = self.get_file_no(self.select_file_name)
+                data_no = self.extract_file_number(self.select_file_name)
             except IndexError:
-                data_no = "00"
+                data_no = "01"
         else:
             # 新規セーブの場合
             data_no = str(len(self.save_data_list)).zfill(2)
@@ -374,9 +386,9 @@ class Save_or_Load(BaseScene):
                 #if input_mode_manager.get_mode() == InputMode.KEYBOARD:
                 #    self.mouse_focus = swich_to_mouse(self.mouse_focus, self.focus)
 
-                self.handle_ckick(event.pos)
+                self.handle_click(event.pos)
 
-    def handle_ckick(self, pos):
+    def handle_click(self, pos):
         # 閉じるボタン
         if self.close.handle_click(pos):
             self.state = State.CLOSE
