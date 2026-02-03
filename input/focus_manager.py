@@ -1,5 +1,7 @@
 import pygame
 
+from typing import Any, Optional
+
 from constans import InputMode
 from input.input_mode_manager import input_mode_manager
 from input.virtual_cursor import VirtualCursor
@@ -16,7 +18,7 @@ class FocusManager:
         self.virtual_cursor = VirtualCursor(screen)
 
     # 要素登録
-    def register(self, element):
+    def register(self, element: Any):
         # フォーカス対象の要素を登録
         if element.is_focusable():
             self.elements.append(element)
@@ -69,7 +71,7 @@ class FocusManager:
             self._handle_keyboard(event)
 
     # マウス操作処理
-    def _handle_mouse(self, event):
+    def _handle_mouse(self, event) -> Optional[str]:
         if event.type == pygame.MOUSEMOTION:
             pos = event.pos
             for el in self.elements:
@@ -81,7 +83,7 @@ class FocusManager:
                 if el.collidepoint(pos):
                     self._set_focus(el)
                     el.handle_click(pos)
-                    return "dicide"
+                    return "decide"
 
         return None
 
@@ -121,14 +123,14 @@ class FocusManager:
                 focused.handle_click(pos)
 
     # フォーカス関連
-    def _move_focus_linear(self, delta):
+    def _move_focus_linear(self, delta: int):
         if not self.elements:
             return
         
         self.focus_idx = (self.focus_idx + delta) % len(self.elements)
         self._apply_focus()
 
-    def _move_focus_grid(self, direction):
+    def _move_focus_grid(self, direction: str):
         if not self.elements:
             return
         
@@ -179,7 +181,7 @@ class FocusManager:
         self._apply_focus()
         
     # elementからfocusをセットする
-    def _set_focus(self, element):
+    def _set_focus(self, element: Any):
         # element が elements の中に無ければindex0にフォーカス
         if element in self.elements:
             self.focus_idx = self.elements.index(element)
@@ -220,7 +222,7 @@ class FocusManager:
             el.set_focus(is_focus)
 
     # 現在focus中のアイテムをゲットする
-    def get_focused(self):
+    def get_focused(self) -> Any:
         if not self.elements:
             return None
         return self.elements[self.focus_idx]
@@ -231,7 +233,7 @@ class FocusManager:
         return pygame.mouse.get_pos()
 
     # 他モードからマウスモードへ切り替え
-    def switch_to_mouse(self, pos):
+    def switch_to_mouse(self, pos: tuple[int, int]|pygame.Vector2):
         input_mode_manager.set_mode(InputMode.MOUSE)
         pygame.mouse.set_pos(pos)
         pygame.mouse.set_visible(True)
@@ -243,7 +245,7 @@ class FocusManager:
         return pos
 
     # 他モードから仮想カーソルモードへ切り替え
-    def switch_to_cursor(self, pos):
+    def switch_to_cursor(self, pos: tuple[int, int]|pygame.Vector2):
         input_mode_manager.set_mode(InputMode.CURSOR)
         self.virtual_cursor.set_pos(pos)
         self.virtual_cursor.visible = True
@@ -258,7 +260,7 @@ class FocusManager:
         return pos
 
     # キーボードモードに切り替え
-    def switch_to_keyboard(self, pos):
+    def switch_to_keyboard(self, pos: tuple[int, int]|pygame.Vector2):
         input_mode_manager.set_mode(InputMode.KEYBOARD)
         found = False
         for el in self.elements:
@@ -271,7 +273,7 @@ class FocusManager:
                 self._set_focus(self.elements[0])
 
     # input_mode_managerの値からモードを設定する
-    def setting_mode(self, mode):
+    def setting_mode(self, mode: InputMode):
         if mode == InputMode.MOUSE:
             pygame.mouse.set_visible(True)
         elif mode == InputMode.KEYBOARD:

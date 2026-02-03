@@ -741,4 +741,8 @@
 
 2025/1/28
 	設計図作成学習中
-	save_load.pyを修正
+	save_or_load.pyを修正
+
+2025/2/3
+	設計図作成学習中
+	save_or_load.pyを修正

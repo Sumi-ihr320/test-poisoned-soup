@@ -1,7 +1,7 @@
 import pygame
 
 from title import Title
-from save_or_load import Save_or_Load
+from save_data.save_data_scene import SaveDataScene
 from setting import Settings
 from opening import Opening
 from character_sheet.character_sheet import CharacterSheet
@@ -70,9 +70,9 @@ class SceneManager:
             elif event_name == "setting":
                 self.event_map["setting"] = Settings(self.screen, self.root, self.setting_manager, self.provious_event)
             elif event_name == "save":
-                self.event_map["save"] = Save_or_Load(self.screen, self.root, "save", self.provious_event, self.save_data)
+                self.event_map["save"] = SaveDataScene(self.screen, self.root, "save", self.provious_event, self.save_data)
             elif event_name == "load":
-                self.event_map["load"] = Save_or_Load(self.screen, self.root, "load", self.provious_event, self.save_data)
+                self.event_map["load"] = SaveDataScene(self.screen, self.root, "load", self.provious_event, self.save_data)
             elif event_name == "play":
                 self.event_map["play"] = MainPlay(self.screen, self.root, self.save_data)
             elif event_name == "ending":

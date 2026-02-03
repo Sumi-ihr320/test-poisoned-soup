@@ -1,7 +1,8 @@
 import os, json
+from tkinter import messagebox
 
-from constans import PATH, SAVE_FOLDER
-from utils import *
+from constans import PATH, SAVE_FOLDER, InputMode
+from utils import TopmostManager
 
 class SettingManager:
     FILE_PATH = f"{PATH}{SAVE_FOLDER}setting.json"
@@ -26,7 +27,7 @@ class SettingManager:
             except FileNotFoundError:
                 with TopmostManager(self.root):
                     messagebox.showerror("ロードエラー", "設定ファイルが見つかりません")
-            except json.JSONDecodeError(self.root):
+            except json.JSONDecodeError:
                 with TopmostManager(self.root):
                     messagebox.showerror("ロードエラー", "設定データのファイル形式が正しくありません")
             except Exception as e:
