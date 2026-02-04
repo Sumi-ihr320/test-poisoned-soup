@@ -86,6 +86,7 @@ SCENARIO_FILES = [
     "Light.json",
     "Soup.json",
     "CenterMemo.json",
+    "NorthRoom.json",
     "EastRoom.json",
     "SouthRoom.json",
     "WestRoom.json",

@@ -5,13 +5,12 @@ import pygame
 from pygame.locals import *
 from tkinter import messagebox
 
-from ..constans import *
-from ..utils import get_new_size, Close, TopmostManager
-from ..ui.ui_elements import Label
-from ..input.focus_manager import FocusManager
-from ..input.input_mode_manager import input_mode_manager
-from ..base_scene import BaseScene
-from .save_data_manager import SaveDataManager
+from constans import *
+from utils import get_new_size, Close, TopmostManager
+from ui.ui_elements import Label
+from input.focus_manager import FocusManager
+from base_scene import BaseScene
+from save_data.save_data_manager import SaveDataManager
 
 # セーブロード
 class SaveDataScene(BaseScene):
@@ -35,18 +34,18 @@ class SaveDataScene(BaseScene):
         self.focus_manager = FocusManager(self.screen)
 
         # セーブロード用ウィンドウサイズ
+        self.window_size = (600, 500)
         self.setting_window_rect()
 
         # 選択したデータ
         self.select_file_name = None
 
         # セーブデータリスト
-        self.save_data_list = []    # フォルダから持ってきたセーブデータファイル一覧
-        self.save_data_list = self.save_data_manager.get_save_files()
+        self.extract_save_data_list()
 
-        self.data_label_list = []   # セーブデータファイルのラベルリスト
-        self.create_save_data_list()
-        self.set_save_data_rect()
+        # セーブデータのファイルとラベルのリスト
+        self.data_label_list = []   # セーブデータファイルとラベルのリスト
+        self.refresh_label_list()
 
         # 画面作成
         self.top = None     # セーブ or ロード
@@ -67,16 +66,10 @@ class SaveDataScene(BaseScene):
 
     # ウィンドウのrect設定
     def setting_window_rect(self):
-        self_size = (600, 500)
-        w, h = get_new_size(self.screen_size, self_size)
+        w, h = get_new_size(self.screen_size, self.window_size)
         x = (self.screen.get_width() // 2) - (w // 2)
         y = (self.screen.get_height() // 2) - (h // 2)
         self.window_rect = Rect(x,y,w,h)
-
-    # データ表示ボックスを表示
-    def draw_window(self):
-        pygame.draw.rect(self.screen, SHEET_COLOR, self.window_rect)
-        pygame.draw.rect(self.screen, GRAY, self.window_rect, 2)
 
    # ラベルの作成
     def create_labels(self):
@@ -87,27 +80,34 @@ class SaveDataScene(BaseScene):
 
         self.top = Label(screen=self.screen, font_data=self.contents_font_data, text=top_text, 
                          y=self.window_rect.top+30, centerx=self.window_rect.centerx)
-        self.enter = Label(screen=self.screen, font_data=self.contents_font_data, text=enter_text, 
-                           y=self.window_rect.bottom-50, centerx=self.window_rect.centerx-150, 
-                           sound_type="select", focusable=True, row=20, col=0)
-        self.delete = Label(screen=self.screen, font_data=self.contents_font_data, text="削除", 
-                            y=self.window_rect.bottom-50, centerx=self.window_rect.centerx, 
-                            sound_type="select", focusable=True, row=20, col=1)
-        self.close = Label(screen=self.screen, font_data=self.contents_font_data, text="閉じる", 
-                           y=self.window_rect.bottom-50, centerx=self.window_rect.centerx+150, 
-                           sound_type="select", focusable=True, row=20, col=2)
-        self.button_list = [self.enter, self.delete, self.close]
+        self.enter = self.create_button_label(enter_text, centerx=self.window_rect.centerx-150, col=0)
+        self.delete = self.create_button_label("削除", centerx=self.window_rect.centerx, col=1)
+        self.close = self.create_button_label("閉じる", centerx=self.window_rect.centerx+150, col=2)
         self.label_list = [self.top] + self.button_list
 
+    # ボタン用ラベルを作成しラベルを返す
+    def create_button_label(self, text: str, centerx: int, col: int) -> Label:
+        label = Label(screen=self.screen, font_data=self.contents_font_data, text=text, 
+                      y=self.window_rect.bottom-50, centerx=centerx,
+                      hover_type="line", hover_back_color=BLACK,
+                      sound_type="select", focusable=True, row=20, col=col)
+        self.button_list.append(label)
+        return label
+    
     # セーブデータ一覧ラベルを作成する
-    def create_save_data_list(self):
+    def create_save_data_label_list(self):
         if self.save_data_list:
+            label_list = []
             for i, data in enumerate(self.save_data_list):
+                data_number = self.save_data_manager.extract_file_number(data)
                 data_name = data.replace(".json", "")
                 label = Label(screen=self.screen, font_data=self.font_data, text=data_name,
+                              hover_back_color=BLUE,
                               focusable=True, row=i, col=0)
-                item = {"file":data, "label":label}
-                self.data_label_list.append(item)
+                item = {"number": data_number, "file":data, "label":label}
+                label_list.append(item)
+        label_list.sort(key=lambda x: x["number"])
+        self.data_label_list = label_list
 
     # セーブデータ一覧のrectを設定する
     def set_save_data_rect(self):
@@ -120,6 +120,7 @@ class SaveDataScene(BaseScene):
                 data["label"].x = x
                 data["label"].y = y
                 data["label"].rect.w = w
+                data["label"].click_rect = Rect(x, y, w, data["label"].max_height)
                 y += 30
 
     # データセーブ
@@ -176,7 +177,7 @@ class SaveDataScene(BaseScene):
             self.show_error(f"ロードに失敗しました:\n {result['error']}", "ロード")
 
     # データ削除
-    def data_delete(self):
+    def delete_data(self):
         # データが選択されているかをチェック
         result = self.validate_selection()
         if not result["success"]:
@@ -196,7 +197,8 @@ class SaveDataScene(BaseScene):
         result = self.save_data_manager.delete_file(self.select_file_name)
         if result["success"]:
             self.show_info("削除が完了しました", "削除")
-            self.reload()
+            self.extract_save_data_list()
+            self.refresh_label_list()
             self.draw()
         else:
             self.show_error(f"削除に失敗しました:\n {result['error']}", "削除")
@@ -228,36 +230,6 @@ class SaveDataScene(BaseScene):
             if not messagebox.askokcancel(mode, message):
                 return False
         return True
-
-    # フォーカス登録
-    def all_register_focusable(self):
-        for button in self.button_list:
-            self.focus_manager.register(button)
-        for data in self.data_label_list:
-            self.focus_manager.register(data["label"])
-
-    # リスト更新
-    def reload(self):
-        self.save_data_list = []
-        self.save_data_list = self.save_data_manager.get_save_files()
-        if not self.data_label_list:
-            self.create_save_data_list()
-        else:
-            for data, save_data in zip(self.data_label_list, self.save_data_list):
-                data["file"] = save_data
-                data_name = save_data.replace(".json", "")
-                data["label"].set_text(data_name)
-        self.set_save_data_rect()
-
-    # 画面サイズ変更時のアイテム表示位置の変更
-    def relayout(self, screen):
-        super().relayout(screen)
-        label_list = []
-        for data in self.data_label_list:
-            label_list.append(data["label"])
-        self.label_list += label_list
-        for label in self.label_list:
-            label.relayout(screen)
     
     # ファイル名を作る
     def create_filename(self):
@@ -269,12 +241,12 @@ class SaveDataScene(BaseScene):
         # セーブデータのインデックスを切り出す
         if self.select_file_name:
             try:
-                data_no = self.save_data_manager.extract_file_number(self.select_file_name)
+                file_number = self.save_data_manager.extract_file_number(self.select_file_name)
             except IndexError:
-                data_no = "01"
+                file_number = "01"
         else:
             # 新規セーブの場合
-            data_no = str(len(self.save_data_list)).zfill(2)
+            file_number = str(len(self.save_data_list)).zfill(2)
 
         # キャラクター名と場所
         name = self.save_data.get("player_status", {}).get("name", "Unknown")
@@ -285,7 +257,84 @@ class SaveDataScene(BaseScene):
             room_name = ""
 
         # キャラクター名、プレイ中なら現在地、日時でファイル名を作る
-        return f"{data_no} {name} {room_name} {str_now}.json"
+        return f"{file_number} {name} {room_name} {str_now}.json"
+
+    # フォーカス登録
+    def all_register_focusable(self):
+        for button in self.button_list:
+            self.focus_manager.register(button)
+        for data in self.data_label_list:
+            self.focus_manager.register(data["label"])
+
+    # セーブデータのリストを取得し重複チェックする
+    def fetch_and_validate_save_data_list(self):
+        self.save_data_list = []
+
+        # 一覧を取得
+        save_data_list = self.save_data_manager.get_save_files()
+
+        # 重複チェック
+        self.save_data_list = self.save_data_manager.clean_duplicate_files(save_data_list)
+
+    # セーブデータリストのラベルを更新する（なければ作る）
+    def refresh_label_list(self):
+        """セーブデータリストのラベルを更新する
+
+        注：セーブスロットは固定10個で、削除時はファイル内容を空にするだけなのでラベル数は変わらない。
+        """
+        if not self.save_data_list:
+            self.data_label_list = []
+            return
+        
+        if not self.data_label_list:
+            self.create_save_data_label_list()
+        else:
+            # 今のファイル一覧のファイル番号を把握
+            existing_numbers = {
+                self.save_data_manager.extract_file_number(f)
+                for f in self.save_data_list
+            }
+
+            # ラベルを更新
+            updated_labels = []
+            for data in self.data_label_list:
+                if data["number"] in existing_numbers:
+                    # ファイルが存在するラベルのみ保持
+                    for save_data in self.save_data_list:
+                        if self.save_data_manager.extract_file_number(save_data) == data["number"]:
+                            data["file"] = save_data
+                            data_name = save_data.replace(".json", "")
+                            data["label"].set_text(data_name)
+                updated_labels.append(data)
+
+            self.data_label_list = updated_labels
+
+            """# ファイル一覧の更新内容をラベルに反映
+            for save_data in self.save_data_list:
+                save_data_number = self.save_data_manager.extract_file_number(save_data)
+                for data in self.data_label_list:
+                    if data["number"] == save_data_number:
+                        data["file"] = save_data
+                        data_name = save_data.replace(".json", "")
+                        data["label"].set_text(data_name)
+            """
+
+        self.set_save_data_rect()
+
+    # 画面サイズ変更時のアイテム表示位置の変更
+    def relayout(self, screen):
+        super().relayout(screen)
+        self.setting_window_rect()
+        for label in self.label_list:
+            label.relayout(screen)
+        for data in self.data_label_list:
+            data["label"].relayout(screen)
+        self.set_save_data_rect()
+
+    # データ表示ボックスを表示
+    def draw_window(self):
+        pygame.draw.rect(self.screen, SHEET_COLOR, self.window_rect)
+        pygame.draw.rect(self.screen, GRAY, self.window_rect, 2)
 
     # 画面を描画
     def draw(self):
@@ -294,20 +343,10 @@ class SaveDataScene(BaseScene):
             self.top.draw()
         if self.button_list:
             for item in self.button_list:
-                item.draw(type="line", back_color=BLACK)
+                item.draw()
         if self.data_label_list:
             for data in self.data_label_list:
-                if data["file"] == self.select_file_name:
-                    data["label"].draw(back_color=BLUE)
-                else:
-                    data["label"].draw()
-
-    # マウスオーバーで枠を表示するよ
-    def handle_mouse_hover(self):
-        pos = pygame.mouse.get_pos()
-
-        for item in self.button_list:
-            item.handle_mouse_hover(pos)
+                data["label"].draw()
 
     def handle_event(self):
         for event in pygame.event.get():
@@ -334,7 +373,7 @@ class SaveDataScene(BaseScene):
 
         # 削除ボタン
         elif element is self.delete:
-            self.data_delete()
+            self.delete_data()
 
         # 閉じるボタン
         elif element is self.close:
@@ -346,28 +385,6 @@ class SaveDataScene(BaseScene):
                 if data["label"] == element:
                     self.select_file_name = data["file"]
                     print(self.select_file_name)
-
-    def handle_click(self, pos):
-        # 閉じるボタン
-        if self.close.handle_click(pos):
-            self.state = State.CLOSE
-
-        # 決定ボタン
-        elif self.enter.handle_click(pos):
-            if self.save_load_flag == "save":
-                self.save()                
-            else:
-                self.load()
-
-        # 削除ボタン
-        elif self.delete.handle_click(pos):
-            self.data_delete()
-
-        # データ一覧の選択
-        for data in self.data_label_list:
-            if data["label"].handle_click(pos):
-                self.select_file_name = data["file"]
-                print(self.select_file_name)
 
     def update(self):
         self.draw()

@@ -1,6 +1,6 @@
 import pygame
 
-from title import Title
+from title_scene import TitleScene
 from save_data.save_data_scene import SaveDataScene
 from setting import Settings
 from opening import Opening
@@ -62,7 +62,7 @@ class SceneManager:
         if not self.update_data(event_name):
             # データが無い場合のみインスタンスを作成
             if event_name == "title":
-                self.event_map["title"] = Title(self.screen, self.root, self.setting_manager)
+                self.event_map["title"] = TitleScene(self.screen, self.root, self.setting_manager)
             elif event_name == "opening":
                 self.event_map["opening"] = Opening(self.screen, self.root)
             elif event_name == "charasheet":

@@ -11,7 +11,7 @@ from manager.sound_manager import sound_manager
 
 # 各エレメントの基礎となるもの(基礎クラス)
 class UIElement:
-    def __init__(self, screen, parent=None, sound_type="click", row=0, col=0, focusable=False, **kwargs):
+    def __init__(self, screen, parent=None, sound_type="click", click_rect=None, row=0, col=0, focusable=False, **kwargs):
         self.screen = screen
         self.screen_size = screen.get_size()
 
@@ -20,6 +20,7 @@ class UIElement:
         self.parent_surface = parent.surface if parent is not None else screen
 
         self.rect = None
+        self.click_rect = click_rect
 
         self.sound_type = sound_type
 
@@ -70,7 +71,11 @@ class UIElement:
     # 衝突判定 ---------------------------------------------
     # 指定した点が描画内かをチェック
     def collidepoint(self, pos):
-        return self.rect.collidepoint(pos_to_local(pos, self.parent))
+        # もしクリック範囲の指定があれば
+        if self.click_rect:
+            return self.click_rect.collidepoint(pos_to_local(pos, self.parent))
+        else:
+            return self.rect.collidepoint(pos_to_local(pos, self.parent))
     
     # 中心点を取得
     def get_center(self):
@@ -248,8 +253,14 @@ class RectSettingBase(ResizableMixin):
 
 # ラベル
 class Label(UIElement, RectSettingBase, TextBase):
-    def __init__(self, screen, font_data, text, x=0, y=0, centerx=None, centery=None, anchor=("left", "top"), text_color=BLACK, background_color=None, sound_type="click", row=0, col=0, focusable=None, parent=None, **kwargs):
+    def __init__(self, screen, font_data, text, x=0, y=0, centerx=None, centery=None, anchor=("left", "top"), text_color=BLACK, background_color=None, 
+                 hover_type="box", hover_line_bold=1, hover_text_color=None, hover_back_color=WHITE,
+                 sound_type="click", row=0, col=0, focusable=None, parent=None, **kwargs):
         super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, font_data=font_data, text=text, x=x, y=y, centerx=centerx, centery=centery, anchor=anchor, text_color=text_color, background_color=background_color, **kwargs)
+        self.hover_type = hover_type
+        self.hover_line_bold = hover_line_bold
+        self.hover_text_color = hover_text_color
+        self.hover_back_color = hover_back_color
         self.update_text_surface()
 
     def update_text_surface(self, color=None):
@@ -259,17 +270,17 @@ class Label(UIElement, RectSettingBase, TextBase):
         self.set_bace_rect(self.rect)
 
     # ラベルを描画する
-    def draw(self, type="box", text_color=None, back_color=WHITE, line_bold=1, new_rect=None):
+    def draw(self):
         # マウスオーバー時背景に四角を描く
         if self.hovered or self.focused:
-            rect = new_rect if new_rect else self.rect
-            if type == "box":
-                pygame.draw.rect(self.parent_surface, back_color, rect)
-            elif type == "line":
-                pygame.draw.rect(self.parent_surface, back_color, rect, line_bold)
+            rect = self.click_rect if self.click_rect else self.rect
+            if self.hover_type == "box":
+                pygame.draw.rect(self.parent_surface, self.hover_back_color, rect)
+            elif self.hover_type == "line":
+                pygame.draw.rect(self.parent_surface, self.hover_back_color, rect, self.hover_line_bold)
 
         # マウスオーバー時文字色を変える(入力があれば)
-        color = self.text_color if not self.hovered else (text_color if text_color else self.text_color)
+        color = self.text_color if not self.hovered else (self.hover_text_color if self.hover_text_color else self.text_color)
         self.update_text_surface(color)
 
         # 必要に応じて再描画をできる

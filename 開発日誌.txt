@@ -745,4 +745,11 @@
 
 2025/2/3
 	設計図作成学習中
-	save_or_load.pyを修正
+	save_dataフォルダを作成
+	save_or_load.pyをsave_data_scene.pyに変更
+	save_data_manager.pyを作成
+
+2025/2/4
+	SaveDataManagerにvalidate_save_file_list、_resolve_duplicate_files、_get_file_timestampを作成
+	save_data_scene、save_data_managerを修正
+	title.pyをtitle_scene.pyに変更

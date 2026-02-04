@@ -10,7 +10,7 @@ from manager.sound_manager import sound_manager
 from base_scene import BaseScene
 
 # タイトル関数をクラス化
-class Title(BaseScene):
+class TitleScene(BaseScene):
     def __init__(self, screen, root, setting_manager):
         super().__init__(screen, root)
 
@@ -24,6 +24,7 @@ class Title(BaseScene):
         self.set_font_data()
 
         # 表示するアイテムの作成
+        self.contents_list = []
         self.create_item()
 
         # サウンド設定
@@ -52,17 +53,25 @@ class Title(BaseScene):
 
         # タイトル
         self.title = Label(self.screen, font_data=self.title_font_data, text=TITLE_TEXT, centerx=center_x, centery=center_y-130, anchor=("center","center"), text_color=RED, background_color=BLACK)
-        self.start = Label(self.screen, font_data=self.contents_font_data, text="はじめる", centerx=center_x,centery=center_y, anchor=("center","center"), text_color=WHITE, background_color=BLACK, sound_type="select", focusable=True)
-        self.focus_manager.register(self.start)
-        self.load = Label(self.screen, font_data=self.contents_font_data, text="つづきから", centerx=center_x, centery=center_y+70, anchor=("center","center"), text_color=WHITE, background_color=BLACK, sound_type="select", row=1, focusable=True)
-        self.focus_manager.register(self.load)
-        self.setting = Label(self.screen, font_data=self.contents_font_data, text="設定", centerx=center_x, centery=center_y+140, anchor=("center","center"), text_color=WHITE, background_color=BLACK, sound_type="select", row=2, focusable=True)
-        self.focus_manager.register(self.setting)
-        self.close = Label(self.screen, font_data=self.contents_font_data, text="おわる", centerx=center_x, centery=center_y+210, anchor=("center","center"), text_color=WHITE, background_color=BLACK, sound_type="select", row=3, focusable=True)
-        self.focus_manager.register(self.close)
+        
+        self.start = self.create_button_label(text="はじめる", centery=center_y)
+        self.load = self.create_button_label(text="つづきから", centery=center_y+70)
+        self.setting = self.create_button_label(text="設定", centery=center_y+140)
+        self.close = self.create_button_label(text="おわる", centery=center_y+210)
 
-        self.contents_list = [self.start, self.load, self.setting, self.close]
         self.label_items = [self.title, self.start, self.load, self.setting, self.close]
+
+    # ボタン用ラベルを作成する
+    def create_button_label(self, text: str, centery: int) -> Label:
+        center_x = self.screen.get_width() // 2
+        label = Label(self.screen, font_data=self.contents_font_data, text=text, 
+                      centerx=center_x, centery=centery, anchor=("center","center"), 
+                      text_color=WHITE, background_color=BLACK, 
+                      hover_type="line",
+                      sound_type="select", focusable=True)
+        self.focus_manager.register(label)
+        self.contents_list.append(label)
+        return label
 
     # 画面サイズ変更時に呼び出す
     def relayout(self, screen):
@@ -86,19 +95,19 @@ class Title(BaseScene):
         # タイトルとメニューを描画
         self.title.draw()
         for content in self.contents_list:
-            content.draw(type="line")
+            content.draw()
 
         self.focus_manager.draw()
 
     # マウスオーバーイベント
-    def handle_mouse_hover(self):
+    #def handle_mouse_hover(self):
         # マウスオーバーで枠を表示するよ
-        pos = pygame.mouse.get_pos()
+        #pos = pygame.mouse.get_pos()
 
-        self.mouse_focus = None
+    #    self.mouse_focus = None
 
-        for content in self.contents_list:
-            content.handle_mouse_hover(pos)
+    #    for content in self.contents_list:
+    #        content.handle_mouse_hover(pos)
 
 
     def on_focus_decide(self, element):
@@ -155,7 +164,7 @@ class Title(BaseScene):
 
             action = self.focus_manager.handle_event(event)
 
-            if action == "dicide":
+            if action == "decide":
                 focusad = self.focus_manager.get_focused()
                 if focusad:
                     self.on_focus_decide(focusad)
@@ -163,7 +172,7 @@ class Title(BaseScene):
     # 更新            
     def update(self):
         self.draw()
-        #self.handle_mouse_hover()
+        self.handle_mouse_hover()
         self.handle_events()
         return self.next_state()
 
