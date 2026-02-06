@@ -753,3 +753,10 @@
 	SaveDataManagerにvalidate_save_file_list、_resolve_duplicate_files、_get_file_timestampを作成
 	save_data_scene、save_data_managerを修正
 	title.pyをtitle_scene.pyに変更
+
+2025/2/6
+	setting.pyをsetting_scene.pyに変更。
+	character_sheet.pyをcharacter_sheet_scene.pyに変更。
+	base_pageのframe_rectをget_frame_rectで算出からtext_frame_rectを引数で取得する形に変更。
+	status_pageの引数だったstatus_dataを引数ではなくstatus_page自身でjsonファイルをloadする形に変更。
+	status.pyのSexChangeを修正

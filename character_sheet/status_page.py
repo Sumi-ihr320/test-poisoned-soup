@@ -1,12 +1,13 @@
-from constans import RATIO
+from constans import STATUS_DATA_PATH, JSON_FOLDER
+from utils import load_json
 from character_sheet.base_page import BacePage
 from character_sheet.status import Status, SexChange
 
 class StatusPage(BacePage):
-    def __init__(self, screen, root, player, status_data, ofset=...):
+    def __init__(self, screen, root, player, ofset=None):
         super().__init__(screen, root, player, ofset)
 
-        self.status_data = status_data
+        self.status_data = load_json(STATUS_DATA_PATH, JSON_FOLDER)
 
         self.sex_button = None  # 性別ボタン
 

@@ -8,7 +8,7 @@ from manager.sound_manager import sound_manager
 from base_scene import BaseScene
 
 # 設定ページ
-class Settings(BaseScene):
+class SettingScene(BaseScene):
     def __init__(self, screen, root, setting_manager, before_event):
         super().__init__(screen, root)
         self.setting_manager = setting_manager

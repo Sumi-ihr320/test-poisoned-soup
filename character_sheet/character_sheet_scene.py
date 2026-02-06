@@ -1,24 +1,25 @@
+from typing import Tuple, Optional
+from tkinter import messagebox
+
 import pygame
 from pygame.locals import *
 
-from constans import *
-from utils import *
-from ui.ui_elements import *
-from input.virtual_cursor import *
-from models.characters import *
+from constans import ITEM_LIST, JSON_FOLDER, State
+from utils import load_json, Close, TopmostManager
+from models.characters import Player, Human
+from input.focus_manager import FocusManager
 
-#from ui.menu import MenuController
 from ui.ui_panels import TextFramePanel
 from ui.navigation import CharasheetNavigation
 from character_sheet.status_calculator import *
+from character_sheet.status import Status
 from character_sheet.status_page import StatusPage
 from character_sheet.profession_page import ProfessionPage
 from character_sheet.confirm_page import ConfirmPage
 from base_scene import BaseScene
-from input.focus_manager import *
 
 # キャラクターシート作成画面をクラス化してみる
-class CharacterSheet(BaseScene):
+class CharacterSheetScene(BaseScene):
     def __init__(self, screen, root):
         super().__init__(screen, root)
 
@@ -40,11 +41,13 @@ class CharacterSheet(BaseScene):
         # ページ管理
         self.pages = []
         
-        self.status_page = StatusPage(self.screen, self.root, self.player, load_json(STATUS_DATA_PATH, JSON_FOLDER))
+        frame_rect = self.text_frame_panel.rect
+
+        self.status_page = StatusPage(self.screen, self.root, frame_rect, self.player)
         self.status_page.load_status_items()
-        self.profession_page = ProfessionPage(self.screen, self.root, self.player)
+        self.profession_page = ProfessionPage(self.screen, self.root, frame_rect, self.player)
         self.profession_page.load_selecter(self.selected_hobby)
-        self.confirm_page = ConfirmPage(self.screen, self.root, self.player, self.save_data, self.set_state)
+        self.confirm_page = ConfirmPage(self.screen, self.root, frame_rect, self.player, self.save_data, self.set_state)
 
         self.pages.append(self.status_page)
         self.pages.append(self.profession_page)
@@ -64,16 +67,14 @@ class CharacterSheet(BaseScene):
         surface_rect = self.status_page.rect
         self.navigation = CharasheetNavigation(self.screen, surface_rect)
 
-        # キーボード操作用カーソル
-        self.cursor = VirtualCursor(self.screen)
-        self.use_virtual_cursor = False
+        # フォーカスマネージャー
+        self.focus_manager = FocusManager(self.screen)
 
         # 状態フラグ
         self.state = State.NONE
     
     # ページを表示する
     def draw_page(self):
-        #self.menu_controller.draw()
         current, current_rect = self.page_check(self.current_page)
         current_x = current_rect.x - self.slide_offset
         self.screen.blit(current, (current_x, current_rect.y))
@@ -108,10 +109,7 @@ class CharacterSheet(BaseScene):
     # マウスオーバーイベント
     def handle_mouse_hover(self):
         # マウスオーバーでテキスト表示するよ
-        if self.use_virtual_cursor:
-            key = self.cursor.get_pos()
-        else:
-            key = pygame.mouse.get_pos()
+        key = pygame.mouse.get_pos()
         horver_text = None
 
         #self.menu_controller.handle_mouse_hover(key)
@@ -127,7 +125,6 @@ class CharacterSheet(BaseScene):
             self.text_frame_panel.set_text(horver_text)
         else:
             self.text_frame_panel.set_text("")
-            #TextDraw(self.screen, horver_text)
 
     # イベントハンドラ
     def handle_events(self):
@@ -140,8 +137,7 @@ class CharacterSheet(BaseScene):
                 self.handle_mouse_click(event.pos)
 
     # マウスクリック時
-    def handle_mouse_click(self, pos):
-        #if self.menu_controller.handle_click(pos):
+    def handle_mouse_click(self, pos: Tuple[int, int]):
         if self.text_frame_panel.handle_click(pos):
             return
         
@@ -153,7 +149,7 @@ class CharacterSheet(BaseScene):
             if result == "enter":
                 self.enter_button_event()
             else:
-                self.sliding = True
+                self.is_sliding = True
                 if result == "next":
                     self.next_page()
                 else:
@@ -169,12 +165,12 @@ class CharacterSheet(BaseScene):
             self.is_pulldown_open, self.selected_profession, self.selected_hobby = self.profession_page.handle_click(pos, self.is_pulldown_open, self.selected_profession, self.selected_hobby)
 
     # 更新されたデータをステータスに入力＋自動計算する
-    def insart_data(self, status):
+    def insart_data(self, status: Status):
         setattr(self.player, status.status_name, status.input.get_value())
         self.auto_calculation(status.status_name)
 
     # ステータスの自動計算
-    def auto_calculation(self, name):
+    def auto_calculation(self, name: str):
         # 各ステータスに対応する計算
         calculations = {"STR": [calculation_damege_bonus],
                         "SIZ": [calculation_damege_bonus, calculation_health_point],
@@ -209,7 +205,7 @@ class CharacterSheet(BaseScene):
                     self.update_status_label(status, getattr(self.player, status))
     
     # ステータスラベルの更新
-    def update_status_label(self, name, val):
+    def update_status_label(self, name: str, val: int|str):
         for item in self.status_page.elements:
             if item.status_name == name:
                 item.input.update_label(f"{val}")
@@ -269,7 +265,6 @@ class CharacterSheet(BaseScene):
         self.navigation.relayout(screen, self.status_page.rect)
 
     def update(self):
-        #create_frame(self.screen)
         # スライドアニメーションの進行
         if self.is_sliding:
             direction = 1 if self.target_page > self.current_page else -1
@@ -287,7 +282,7 @@ class CharacterSheet(BaseScene):
         return self.next_state()
 
     # メニューボタン用のコールバック関数
-    def set_state(self, state=State.NONE, save_data=None):
+    def set_state(self, state: State=State.NONE, save_data: Optional[dict]=None):
         self.state = state
         if save_data:
             self.save_data = save_data

@@ -2,9 +2,9 @@ import pygame
 
 from title_scene import TitleScene
 from save_data.save_data_scene import SaveDataScene
-from setting import Settings
+from setting_scene import SettingScene
 from opening import Opening
-from character_sheet.character_sheet import CharacterSheet
+from character_sheet.character_sheet_scene import CharacterSheetScene
 from playing.playing import MainPlay
 from ending import Ending
 
@@ -66,9 +66,9 @@ class SceneManager:
             elif event_name == "opening":
                 self.event_map["opening"] = Opening(self.screen, self.root)
             elif event_name == "charasheet":
-                self.event_map["charasheet"] = CharacterSheet(self.screen, self.root)
+                self.event_map["charasheet"] = CharacterSheetScene(self.screen, self.root)
             elif event_name == "setting":
-                self.event_map["setting"] = Settings(self.screen, self.root, self.setting_manager, self.provious_event)
+                self.event_map["setting"] = SettingScene(self.screen, self.root, self.setting_manager, self.provious_event)
             elif event_name == "save":
                 self.event_map["save"] = SaveDataScene(self.screen, self.root, "save", self.provious_event, self.save_data)
             elif event_name == "load":
@@ -81,9 +81,6 @@ class SceneManager:
     def update_data(self, event_name):
         # すでにデータがある場合はデータを更新
         if event_name in self.event_map:
-            # スクリーンサイズの更新
-            #self.event_map[event_name].screen = self.screen
-
             # 設定画面
             if event_name == "setting":
                 self.event_map[event_name].manager = self.setting_manager
