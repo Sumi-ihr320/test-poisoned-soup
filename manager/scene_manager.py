@@ -3,23 +3,21 @@ import pygame
 from title_scene import TitleScene
 from save_data.save_data_scene import SaveDataScene
 from setting_scene import SettingScene
-from opening import Opening
+from opening_scene import OpeningScene
 from character_sheet.character_sheet_scene import CharacterSheetScene
-from playing.playing import MainPlay
-from ending import Ending
+from playing.main_play_scene import MainPlayScene
+from ending_scene import EndingScene
 
 class SceneManager:
     def __init__(self, screen, root, setting_manager):
         self.screen = screen
         self.root = root
-        self.setting_manager =setting_manager
+        self.setting_manager = setting_manager
 
         self.save_data = None
         
         self.event_name = "title"
-        #self.event_name = "charasheet"
-        #self.event_name = "play"
-        self.provious_event = None
+        self.previous_event = None
 
         self.event_map = {}
         self.create_event("title")
@@ -42,7 +40,7 @@ class SceneManager:
 
         # イベントが変わる際に前のイベントを記録
         if next_name != self.event_name:
-            self.provious_event = self.event_name
+            self.previous_event = self.event_name
 
         # 次のイベントに更新
         self.event_name = next_name
@@ -58,27 +56,27 @@ class SceneManager:
         
         self.create_event(self.event_name)
 
-    def create_event(self, event_name):
+    def create_event(self, event_name: str):
         if not self.update_data(event_name):
             # データが無い場合のみインスタンスを作成
             if event_name == "title":
                 self.event_map["title"] = TitleScene(self.screen, self.root, self.setting_manager)
             elif event_name == "opening":
-                self.event_map["opening"] = Opening(self.screen, self.root)
+                self.event_map["opening"] = OpeningScene(self.screen, self.root)
             elif event_name == "charasheet":
                 self.event_map["charasheet"] = CharacterSheetScene(self.screen, self.root)
             elif event_name == "setting":
-                self.event_map["setting"] = SettingScene(self.screen, self.root, self.setting_manager, self.provious_event)
+                self.event_map["setting"] = SettingScene(self.screen, self.root, self.setting_manager, self.previous_event)
             elif event_name == "save":
-                self.event_map["save"] = SaveDataScene(self.screen, self.root, "save", self.provious_event, self.save_data)
+                self.event_map["save"] = SaveDataScene(self.screen, self.root, "save", self.previous_event, self.save_data)
             elif event_name == "load":
-                self.event_map["load"] = SaveDataScene(self.screen, self.root, "load", self.provious_event, self.save_data)
+                self.event_map["load"] = SaveDataScene(self.screen, self.root, "load", self.previous_event, self.save_data)
             elif event_name == "play":
-                self.event_map["play"] = MainPlay(self.screen, self.root, self.save_data)
+                self.event_map["play"] = MainPlayScene(self.screen, self.root, self.save_data)
             elif event_name == "ending":
-                self.event_map["ending"] = Ending(self.screen, self.root, self.save_data)
+                self.event_map["ending"] = EndingScene(self.screen, self.root, self.save_data)
             
-    def update_data(self, event_name):
+    def update_data(self, event_name: str) -> bool:
         # すでにデータがある場合はデータを更新
         if event_name in self.event_map:
             # 設定画面
@@ -93,13 +91,13 @@ class SceneManager:
             
             # 前のイベント
             if event_name in ["setting", "save", "load"]:
-                self.event_map[event_name].befor_event = self.provious_event
+                self.event_map[event_name].before_event = self.previous_event
 
             # セーブデータ
             if event_name in ["save", "load", "play"]:
                 self.event_map[event_name].save_data = self.save_data
 
             return True
-        False
+        return False
 
 

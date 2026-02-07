@@ -1,15 +1,18 @@
+from typing import Dict, List, Tuple, Any, Optional
 import pygame
 from pygame.locals import *
 
-from constans import *
-from utils import *
-from ui.ui_elements import Image
+from constans import BLACK, SHEET_COLOR, SHEET_SIZE
+from utils import get_new_size, get_scales, create_file_path
+from ui.ui_elements import Image, ImageCache
 
 # 部屋の型を作るよ
 class Room:
     # 部屋画像の縮小パーセンテージ
     SIZE = 0.2
-    def __init__(self, screen, frame_rect, room, direction="", room_change_flag=None, image_cache=None):
+    def __init__(self, screen, frame_rect: pygame.Rect, 
+                 room: str, direction: str="", room_change_flag: Optional[Dict[str, Any]]=None, 
+                 image_cache: Optional[ImageCache]=None):
         self.screen = screen
         self.screen_size = screen.get_size()
 
@@ -170,7 +173,7 @@ class Room:
                     self.items_select_list.append(item_dict[item_name])
 
     #　フラグによるアイテム名を取得する
-    def check_flag_item_name(self, item):
+    def check_flag_item_name(self, item: str) -> str:
         item_name = item
         if item == "Soup":
             if self.room_change_flag.get("soup_in_poison"):
@@ -186,7 +189,7 @@ class Room:
         return item_name
     
     # フラグによるアイテム順列を取得する
-    def check_flag_item_order(self, room):
+    def check_flag_item_order(self, room: str) -> Dict[str, Dict[str, List[str]]]:
         if room == "west":
             book_shelf_name = self.check_flag_item_name("BookShelf")
             book_found = self.room_change_flag.get("book_found")
@@ -221,8 +224,8 @@ class Room:
             return order
 
     # 現在の方角から左右の方角を求める
-    def get_abjacent_direction(self, ofset):
-        directions = ["north","east","south","west"]
+    def get_abjacent_direction(self, ofset: int) -> str:
+        directions = ["north", "east", "south", "west"]
         index = directions.index(self.direction)
         return directions[(index + ofset) % len(directions)]
     
@@ -250,7 +253,9 @@ class Room:
 class RoomItem:
     # アイテム画像の縮小パーセンテージ
     SIZE = 0.19
-    def __init__(self, screen, parent, room_change_flag, shrink_percent, name, room, direction, x, y, anchor=("left", "top"), image_cache=None):
+    def __init__(self, screen, parent, room_change_flag: Dict[str, Any], shrink_percent: float, 
+                 name: str, room: str, direction: Optional[str], 
+                 x: int, y: int, anchor: Tuple[str, str]=("left", "top"), image_cache: ImageCache=None):
         self.screen = screen
         self.parent = parent
         self.name = name    # アイテム名

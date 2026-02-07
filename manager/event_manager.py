@@ -1,7 +1,8 @@
 import re
+from typing import List, Dict, Tuple, Any, Optional, Callable
 
-from constans import *
-from utils import *
+from constans import SKILL_DATA_PATH, JSON_FOLDER, ITEM_LIST, State
+from utils import load_json
 from ui.ui_elements import ImageCache
 from ui.ui_panels import TextFramePanel
 from ui.ui_command import Command
@@ -15,8 +16,9 @@ from .event_processors.status_effect_processor import StatusEffectProcessor
 from .event_processors.display_processor import DisplayProcessor
 
 class EventManager:
-    def __init__(self, screen, player=None, girl=None, game_state=None, flags=None, text_frame_panel=None, log_view=None,
-                 next_scenario_call_back=None, move_to_room_call_back=None, room_new_view=None, set_state=None):
+    def __init__(self, screen, player=None, girl=None, game_state=None, flags=None, 
+                 text_frame_panel: Optional[TextFramePanel]=None, log_view: Optional[LogView]=None,
+                 next_scenario_call_back: Optional[Callable]=None, move_to_room_call_back: Optional[Callable]=None, room_new_view: Optional[Callable]=None, set_state: Optional[Callable]=None):
         self.screen = screen
         self.screen_size = self.screen.get_size()
         self.player = player
@@ -62,7 +64,7 @@ class EventManager:
         self.is_blackout_active = False     # ブラックアウト状態かどうか
 
     # シナリオから受け取ったイベントを進行する
-    def handle_scenario_event(self, step):
+    def handle_scenario_event(self, step: Dict[str, Any]):
         # 表示関連のステップ処理
         if step["type"] == "text":
             # display_processor で処理
@@ -155,7 +157,7 @@ class EventManager:
         return self.flags.get_flag("girl", "dice_check")
 
     # アクションを実行する
-    def handle_action(self, action, step):
+    def handle_action(self, action: str, step: Dict[str, Any]):
         # 部屋移動
         if action == "move_to_room":
             self.game_state.time -= 2
@@ -207,7 +209,7 @@ class EventManager:
             character.remove_item(item)
 
     # ダイスチェックをする
-    def handle_dice_check(self, step):
+    def handle_dice_check(self, step: Dict[str, Any]):
         check_status = None
         player_check_result, girl_check_result = None, None
         result_text = ""
@@ -277,7 +279,7 @@ class EventManager:
         print(f" 表示フラグ: {self.pending_result_display}")
 
     # ダメージ計算をして表示するテキストを作成する
-    def handle_damage(self, step):
+    def handle_damage(self, step: Dict[str, Any]):
         # 誰がダメージを受けるのか
         target = step.get("target", None)
         characters = {}
@@ -316,12 +318,12 @@ class EventManager:
         self.current_display_text = None
 
     # 結果表示フラグをセットする
-    def set_result_display(self, text):
+    def set_result_display(self, text: str):
         self.pending_result_display = True
         self.current_display_text = text
 
     # 時間を経過させる
-    def handle_time_passage(self, step):
+    def handle_time_passage(self, step: Dict[str, Any]):
         minutes = int(step["value"])
         self.game_state.time -= minutes
 
@@ -381,7 +383,7 @@ class EventManager:
         self.state_record = {}
 
     # フラグチェックを処理
-    def handle_conditional(self, conditions):
+    def handle_conditional(self, conditions: List[Dict[str, Any]]):
         for condition in conditions:
             # 全部のフラグがtrueだったら次のシナリオ
             if all(self.flag_check(flag) for flag in condition["flags"]):
@@ -389,22 +391,22 @@ class EventManager:
                 break
 
     # テキストを表示するステップを作成して表示する
-    def create_text_step(self, text):
+    def create_text_step(self, text: str):
         next_step = {"type":"text", "text":text, "progression":"click"}
         self.handle_scenario_event(next_step)
 
     # コールバック関数に次のシナリオ名を渡す
-    def to_callback_next_scenario(self, next_scenario):
+    def to_callback_next_scenario(self, next_scenario: str):
         self.next_scenario_call_back(next_scenario)
 
     # 部屋移動イベント
-    def move_to_room(self, room_id):
+    def move_to_room(self, room_id: str):
         self.render_manager.hidden_item_image()
         self.render_manager.hidden_girl_image()
         self.move_to_room_call_back(room_id)
 
     # 部屋の状態変化による再描画
-    def room_new_view(self, room_id):
+    def room_new_view(self, room_id: str):
         self.render_manager.hidden_item_image()
         self.room_new_view_call_back(room_id)
         
@@ -413,7 +415,7 @@ class EventManager:
         self.set_state_call_back(State.CLOSE)
 
     # フラグをセットするイベント
-    def set_flag(self, category, flag, value):
+    def set_flag(self, category: str, flag: str, value: Any):
         if type(value) == str:
             obj = re.match(r"\+|-", value)
             if obj:
@@ -427,7 +429,7 @@ class EventManager:
         self.flags.update_flag(category, flag, value)
 
     # ターゲットが誰かのチェック
-    def target_check(self, target):
+    def target_check(self, target: str) -> Tuple[bool, bool]:
         player_flag, girl_flag = False, False
 
         # ターゲット指定が主人公のみの場合は主人公のみ
@@ -452,12 +454,12 @@ class EventManager:
         return player_flag, girl_flag
 
     # ダメージ計算
-    def damage_calculator(self, dice_text):
+    def damage_calculator(self, dice_text: str) -> int:
         result = self.dice_service.roll(dice_text)
         return result
 
     # ダメージを受けるイベント
-    def take_damage(self, character, status, damage):
+    def take_damage(self, character, status: str, damage: int|str) -> Optional[str]:
         if status == "SAN":
             state = character.take_SAN_damage(int(damage))
         elif status == "HP":
@@ -468,7 +470,7 @@ class EventManager:
         #    self.to_callback_next_scenario(state)
 
     # イベントを処理（未完成※使用するか不明）
-    def handle_event(self, event_name, event_data):
+    def handle_event(self, event_name: str, event_data: Dict[str, Any]):
         if event_name == "item_click":
             #item_name = event_data.get("item_name")
             #self.scenario_manager.start_scenario(item_name)
@@ -493,12 +495,12 @@ class EventManager:
         self.handle_event("fight_start", enemy="Guardian")
 
     # 戦闘イベント
-    def start_fight(self, enemy):
+    def start_fight(self, enemy: str):
         """戦闘イベントを開始"""
         print(f"Starting fight with {enemy}")
 
     # 表示する
-    def draw(self, step=None):
+    def draw(self):
         if self.current_display_text:
             self.render_manager.draw_text(self.current_display_text)
         else:

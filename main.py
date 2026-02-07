@@ -1,10 +1,12 @@
+import sys
+
 import pygame
 from pygame.locals import *
 import tkinter as tk
+from tkinter import messagebox
 
-from constans import *
-from utils import *
-from input.virtual_cursor import *
+from constans import TITLE_TEXT, BLACK
+from utils import create_size_tkinter, TopmostManager
 
 from manager.setting_manager import SettingManager
 from manager.scene_manager import SceneManager

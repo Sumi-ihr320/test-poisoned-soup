@@ -1,24 +1,24 @@
 import pygame
 from pygame.locals import *
 
-from constans import *
-from utils import *
-from ui.ui_elements import *
-from input.virtual_cursor import *
-from core.game_state import *
-from models.characters import *
+from constans import State, Position
+from utils import Close
+from ui.ui_elements import PlayerDataView
+from core.game_state import GameStatus, Flags
+from models.characters import Player, Human
 
 from base_scene import BaseScene
 from ui.ui_panels import TextFramePanel
 from ui.navigation import MainNavigation
 from ui.log_view import LogView
+from input.focus_manager import FocusManager
 from playing.room_manager import RoomManager
 from manager.scenario_manager import ScenarioManager
 from manager.event_manager import EventManager
 from manager.sound_manager import sound_manager
 
 # プレイ画面
-class MainPlay(BaseScene):
+class MainPlayScene(BaseScene):
     def __init__(self, screen, root, save_data=None):
         super().__init__(screen, root)
 
@@ -27,9 +27,8 @@ class MainPlay(BaseScene):
         # セーブデータから各データをセットする
         self.set_data(save_data)
 
-        # キーボード操作用カーソル
-        #self.cursor = VirtualCursor(self.screen)
-        #self.use_virtual_cursor = False
+        # フォーカスマネージャー
+        self.focus_manager = FocusManager(self.screen)
 
         # ログ表示機能
         self.log_view = LogView(self.screen, callback=self.log_view_end)
@@ -89,17 +88,17 @@ class MainPlay(BaseScene):
             self.navigation.setup_navigation([Position.UNDER])
     
     # イベントマネージャーから次のシナリオを受け取るためのコールバック関数
-    def handle_next_scenario(self, next_scenario):
+    def handle_next_scenario(self, next_scenario: str):
         self.scenario_manager.start_scenario(next_scenario)
 
     # イベントマネージャーから次の部屋に移るためのコールバック関数
-    def handle_move_room(self, room_id):
+    def handle_move_room(self, room_id: str):
         next_room = room_id.split("-")[0]
         self.handle_room_view(next_room)
         self.scenario_manager.start_scenario(room_id)
         
     # 部屋の再作成をする（コールバック関数としても使う)
-    def handle_room_view(self, room_id):
+    def handle_room_view(self, room_id: str):
         next_room = room_id.split("-")[0] if "-room" in room_id else room_id
         self.room_manager.move_to_room(next_room=next_room)
         self.setup_navigetion()
@@ -129,7 +128,7 @@ class MainPlay(BaseScene):
         self.event_manager.render_manager.handle_command_click(pos)
 
     # ナビゲーションバーをクリックした場合のイベント
-    def handle_navigation(self, clicked_position):
+    def handle_navigation(self, clicked_position: Position):
         state = False
         if self.game_state.room == "center":
             if clicked_position == Position.RIGHT:

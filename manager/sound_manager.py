@@ -1,6 +1,6 @@
 import pygame
 
-from constans import *
+from constans import PATH, SOUND
 
 class SoundManager:
     def __init__(self):
