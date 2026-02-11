@@ -1,8 +1,8 @@
 import pygame
 from pygame.locals import *
 
-from constans import *
-from utils import *
+from constans import FONT_PATH, TITLE_FONT_PATH, CONTENTS_SIZ, TITLE_SIZ, TITLE_TEXT, SOUND_LIST, WHITE, BLACK, RED, State
+from utils import Close
 from ui.ui_elements import Label
 from input.focus_manager import FocusManager
 from input.input_mode_manager import input_mode_manager
@@ -52,7 +52,9 @@ class TitleScene(BaseScene):
         center_y = self.screen.get_height() // 2
 
         # タイトル
-        self.title = Label(self.screen, font_data=self.title_font_data, text=TITLE_TEXT, centerx=center_x, centery=center_y-130, anchor=("center","center"), text_color=RED, background_color=BLACK)
+        self.title = Label(self.screen, font_data=self.title_font_data, text=TITLE_TEXT, 
+                           centerx=center_x, centery=center_y-130, anchor=("center","center"), 
+                           text_color=RED, background_color=BLACK)
         
         self.start = self.create_button_label(text="はじめる", centery=center_y)
         self.load = self.create_button_label(text="つづきから", centery=center_y+70)

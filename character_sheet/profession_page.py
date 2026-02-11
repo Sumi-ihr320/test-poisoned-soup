@@ -4,42 +4,42 @@ from constans import *
 from ui.ui_elements import *
 
 from character_sheet.base_page import BacePage
-from character_sheet.profession import ProfessionSelecter, HobbySelecter
+from character_sheet.profession import ProfessionSelector, HobbySelector
 
 class ProfessionPage(BacePage):
     def __init__(self, screen, root, player, ofset=...):
         super().__init__(screen, root, player, ofset)
 
-        self.prof_selecter = None
-        self.hobby_selecter = None
+        self.prof_selector = None
+        self.hobby_selector = None
 
-    def load_selecter(self, selected_hobby):
+    def load_selector(self, selected_hobby):
         # 職業選択画面
-        self.prof_selecter = ProfessionSelecter(self.screen, self, self.rect, self.font_datas)
+        self.prof_selector = ProfessionSelector(self.screen, self, self.rect, self.font_datas)
 
         # 趣味選択画面
-        self.hobby_selecter = HobbySelecter(self.screen, self, selected_hobby, self.font_datas, self.prof_selecter.rect)
+        self.hobby_selector = HobbySelector(self.screen, self, selected_hobby, self.font_datas, self.prof_selector.rect)
 
     def relayout(self, screen):
         super().relayout(screen)
-        self.prof_selecter.relayout(screen, self, self.rect)
-        self.hobby_selecter.relayout(screen, self)
+        self.prof_selector.relayout(screen, self, self.rect)
+        self.hobby_selector.relayout(screen, self)
         
     def draw(self, selected_profession, is_pulldown_open):
         surface, rect = super().draw()
-        if self.prof_selecter:
-            self.prof_selecter.draw()
+        if self.prof_selector:
+            self.prof_selector.draw()
         if selected_profession:
             selected_profession.draw(is_selected=True)
-        self.hobby_selecter.draw(is_pulldown_open)
+        self.hobby_selector.draw(is_pulldown_open)
         return surface, rect
 
     def handle_mouse_hover(self, pos, is_pulldown_open):
         pos = self.pos_calculation(pos)
         if is_pulldown_open:
-            return self.hobby_selecter.handle_mouse_hover(pos, is_pulldown_open)
+            return self.hobby_selector.handle_mouse_hover(pos, is_pulldown_open)
         else:
-            for prof in self.prof_selecter.prof_items:
+            for prof in self.prof_selector.prof_items:
                 text = prof.handle_mouse_hover(pos)
                 if text:
                     return text
@@ -48,7 +48,7 @@ class ProfessionPage(BacePage):
     def handle_click(self, pos, is_pulldown_open, selected_profession, selected_hobby):
         #pos = self.pos_calculation(pos)
         # プルダウンのクリック処理
-        if self.hobby_selecter.pull.collidepoint(pos):
+        if self.hobby_selector.pull.collidepoint(pos):
             #self.sound_manager.play("クリック")
             is_pulldown_open = not is_pulldown_open
             print(f"is_pulldown_open:{is_pulldown_open}")
@@ -56,18 +56,18 @@ class ProfessionPage(BacePage):
         # プルダウンが開いているときは
         if is_pulldown_open:
             # 趣味欄のクリック処理
-            selected_item = self.hobby_selecter.pull.handle_click(pos, is_pulldown_open)
+            selected_item = self.hobby_selector.pull.handle_click(pos, is_pulldown_open)
             if selected_item:
                 self.sound_manager.play("クリック")
                 selected_hobby = selected_item
                 self.player.Hobby = selected_item
-                self.hobby_selecter.pull.update_label(f"{selected_item}")
+                self.hobby_selector.pull.update_label(f"{selected_item}")
                 self.hobby_data_set(selected_hobby)
                 is_pulldown_open = False
         else:
             # もしプルダウンが開いていなかったら
             # 職業のクリック処理
-            selected_item = self.prof_selecter.handle_click(pos)
+            selected_item = self.prof_selector.handle_click(pos)
             if selected_item:
                 selected_profession = selected_item
                 self.player.Profession = selected_item.name

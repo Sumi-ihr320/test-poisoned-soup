@@ -703,53 +703,53 @@
 	toolsフォルダを作成、convert.pyファイルを作成
 	convert.pyの実行、各シナリオファイルの形式を変更
 
-2025/12/27
+2026/12/27
 	damage_processorの修正
 	conditional_processerの作成（途中）
 
-2025/1/7
+2026/1/7
 	conditional_processerにprocess_conditionalを作成。
 	シナリオのconditionalのflagsという項目名をrequirementsに変更
 	playing、render_managerとevent_managerとscenario_manager周りの色々を修正変更
 
-2025/1/9
+2026/1/9
 	event_managerにpending_result_displayとpending_dice_checkのフラグを追加
 	scenario_managerをそれに合わせて修正
 
-2025/1/10
+2026/1/10
 	event_managerの修正続き
 	scenarioからtype:result_textを削除
 	self.result_textとself.dice_check_resultとself.damage_pointを削除
 	handle_actionのaction=="damage"を削除
 	pending_result_displayがtrueの際にwait_for_clickがtrueにならない問題の修正
 
-2025/1/15
+2026/1/15
 	status_effect_processer.pyを作成
 
-2025/1/17
+2026/1/17
 	status_effect_processer.pyの続き
 
-2025/1/20
+2026/1/20
 	status_effect_processer.pyの修正
 
-2025/1/21
+2026/1/21
 	event_managerの修正
 	display_processorの作成
 
-2025/1/23
+2026/1/23
 	display_processorの続き
 
-2025/1/28
+2026/1/28
 	設計図作成学習中
 	save_or_load.pyを修正
 
-2025/2/3
+2026/2/3
 	設計図作成学習中
 	save_dataフォルダを作成
 	save_or_load.pyをsave_data_scene.pyに変更
 	save_data_manager.pyを作成
 
-2025/2/4
+2026/2/4
 	SaveDataManagerにvalidate_save_file_list、_resolve_duplicate_files、_get_file_timestampを作成
 	save_data_scene、save_data_managerを修正
 	title.pyをtitle_scene.pyに変更
@@ -760,3 +760,7 @@
 	base_pageのframe_rectをget_frame_rectで算出からtext_frame_rectを引数で取得する形に変更。
 	status_pageの引数だったstatus_dataを引数ではなくstatus_page自身でjsonファイルをloadする形に変更。
 	status.pyのSexChangeを修正
+
+2026/2/11
+	noSkillブランチを削除しmainも削除しmaster一本に変更。
+	変数名の修正

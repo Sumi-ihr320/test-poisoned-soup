@@ -23,9 +23,6 @@ class CharacterSheetScene(BaseScene):
     def __init__(self, screen, root):
         super().__init__(screen, root)
 
-        # テキストフレーム
-        enabled_flags = {"セーブ": False, "ロード": True, "ログ": False}
-        self.text_frame_panel = TextFramePanel(self.screen, enabled_flags=enabled_flags)
 
         self.selected_profession = None     # 選択中の職業
         self.is_pulldown_open = False       # プルダウン用のフラグ
@@ -35,18 +32,21 @@ class CharacterSheetScene(BaseScene):
         self.player = Player()
         self.player.add_item(ITEM_LIST["white_robe"])
 
-        # セーブデータ
+        # 初期セーブデータ
         self.save_data = load_json("SaveData.json", JSON_FOLDER)
+        
+        # テキストフレーム
+        enabled_flags = {"セーブ": False, "ロード": True, "ログ": False}
+        self.text_frame_panel = TextFramePanel(self.screen, enabled_flags=enabled_flags, next_callback=self.set_state)
+        frame_rect = self.text_frame_panel.rect
 
         # ページ管理
         self.pages = []
-        
-        frame_rect = self.text_frame_panel.rect
 
         self.status_page = StatusPage(self.screen, self.root, frame_rect, self.player)
         self.status_page.load_status_items()
         self.profession_page = ProfessionPage(self.screen, self.root, frame_rect, self.player)
-        self.profession_page.load_selecter(self.selected_hobby)
+        self.profession_page.load_selector(self.selected_hobby)
         self.confirm_page = ConfirmPage(self.screen, self.root, frame_rect, self.player, self.save_data, self.set_state)
 
         self.pages.append(self.status_page)
@@ -75,20 +75,20 @@ class CharacterSheetScene(BaseScene):
     
     # ページを表示する
     def draw_page(self):
-        current, current_rect = self.page_check(self.current_page)
+        current, current_rect = self.draw_page_get_surface_and_rect(self.current_page)
         current_x = current_rect.x - self.slide_offset
         self.screen.blit(current, (current_x, current_rect.y))
 
         if self.is_sliding:
-            target, target_rect = self.page_check(self.target_page)
+            target, target_rect = self.draw_page_get_surface_and_rect(self.target_page)
             target_x = self.screen_size[0] - self.slide_offset if self.target_page > self.current_page else - self.screen_size[0] - self.slide_offset
             self.screen.blit(target, (target_x, target_rect.y))
 
         self.navigation.draw(self.current_page)
         self.text_frame_panel.draw()
 
-    # どのページかを確認して必要な引数を入力する
-    def page_check(self, page):
+    # ページを表示してSurfaceとRectを返す
+    def draw_page_get_surface_and_rect(self, page: int) -> Tuple[pygame.Surface, pygame.Rect]:
         if self.pages[page] == self.profession_page:
             return self.pages[page].draw(self.selected_profession, self.is_pulldown_open)
         else:
@@ -147,7 +147,7 @@ class CharacterSheetScene(BaseScene):
             if self.current_page == 1 and self.is_pulldown_open:
                 self.is_pulldown_open = False
             if result == "enter":
-                self.enter_button_event()
+                self.event_enter_button()
             else:
                 self.is_sliding = True
                 if result == "next":
@@ -211,7 +211,7 @@ class CharacterSheetScene(BaseScene):
                 item.input.update_label(f"{val}")
 
     # 完了ボタンを押した時のイベント
-    def enter_button_event(self):
+    def event_enter_button(self):
         manual_input_fields = { "name": "名前が入力されていません",
                                 "age": "年齢が入力されていません",
                                 "STR": "STRが入力されていません",
@@ -252,7 +252,7 @@ class CharacterSheetScene(BaseScene):
             self.state = State.SAVE
 
     # 画面サイズ更新時にポジションを変更する
-    def relayout(self, screen):
+    def relayout(self, screen: pygame.Surface):
         super().relayout(screen)
         self.text_frame_panel.relayout(screen)
         # ステータスページをupdate
@@ -280,12 +280,6 @@ class CharacterSheetScene(BaseScene):
         self.handle_mouse_hover()
         self.handle_events()
         return self.next_state()
-
-    # メニューボタン用のコールバック関数
-    def set_state(self, state: State=State.NONE, save_data: Optional[dict]=None):
-        self.state = state
-        if save_data:
-            self.save_data = save_data
 
     def next_state(self):
         if self.state == State.SAVE:

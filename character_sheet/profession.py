@@ -117,7 +117,7 @@ class Profession:
         return False
 
 # 職業選択画面作るよ
-class ProfessionSelecter:
+class ProfessionSelector:
     def __init__(self, screen, parent, sheet_rect, font_datas):
         self.screen = screen
         self.parent = parent
@@ -219,7 +219,7 @@ class ProfessionSelecter:
         return None
 
 # 趣味選択画面作るよ
-class HobbySelecter:
+class HobbySelector:
     def __init__(self, screen, parent, select_item, font_datas, profession_rect):
         self.screen = screen
         self.parent = parent
