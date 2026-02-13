@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Sequence, Tuple, Any, Optional
 
-from constans import *
+from constans import FONT_PATH, SMALL_SIZ, BLACK
 from utils import setting_font
 from ui.ui_elements import Button
 from ui.ui_container import UIContainer
@@ -13,7 +13,7 @@ class Command:
 
 # コマンドメニュー
 class CommandMenu(UIContainer):
-    def __init__(self, screen, commands: Sequence[Command], start_position, parent=None):
+    def __init__(self, screen, commands: Sequence[Command], start_position: Tuple[int, int], parent: Optional[Any]=None):
         super().__init__(screen, parent)
         
         self.commands = commands
@@ -29,7 +29,9 @@ class CommandMenu(UIContainer):
 
         if self.commands:
             for i, cmd in enumerate(self.commands):
-                btn = Button(screen=self.screen, font_data=(FONT_PATH, SMALL_SIZ), text=cmd.text, rect=(x,y,max_width,h), out_color=BLACK, row=i, focusable=True)
+                btn = Button(screen=self.screen, font_data=(FONT_PATH, SMALL_SIZ), text=cmd.text, rect=(x,y,max_width,h), 
+                             out_color=BLACK, 
+                             row=i, focusable=True)
                 self.add((btn, cmd))
                 y += h
 

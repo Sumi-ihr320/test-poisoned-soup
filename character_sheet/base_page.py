@@ -1,21 +1,24 @@
+from typing import Tuple, Any
 import pygame
 
 from constans import SHEET_SIZE, FONT_PATH, FONT_SIZ, SMALL_SIZ
 from utils import get_new_size
 from ui.ui_elements import Image
+from input.focus_manager import FocusManager
+from models.characters import Player
 
-class BacePage:
-    def __init__(self, screen, root, text_frame_rect, player, offset=None):
+class BasePage:
+    def __init__(self, screen, root, text_frame_rect: pygame.Rect, player: Player, offset: Tuple[int, int]=None):
         self.screen = screen
         self.screen_size = screen.get_size()
         self.root = root
 
         self.text_frame_rect = text_frame_rect
 
-        self.set_font_data()
+        self.setting_font_data()
 
         self.create_surface_and_rect()
-        self.bg_img = Image(self.screen, "old_paper.jpg", x="center", y="center", size_wh=self.rect.size, parent=self)
+        self.bg_img = Image(self.screen, "old_paper.jpg", x="center", y="center", size_wh=SHEET_SIZE, parent=self)
 
         self.offset = offset if offset else (self.rect.x, self.rect.y)
 
@@ -30,15 +33,23 @@ class BacePage:
         # テキストフレームの位置からシート位置を算出
         self.rect = self.surface.get_rect(centerx=(self.screen.get_width()//2), bottom=self.text_frame_rect.top - 32)
 
-    def set_font_data(self):
+    # フォントデータの設定
+    def setting_font_data(self):
         font_data = (FONT_PATH, FONT_SIZ)
         small_font_data = (FONT_PATH, SMALL_SIZ)
         self.font_datas = [font_data, small_font_data]
 
-    def add_elements(self, element):
+    # 要素を追加
+    def add_elements(self, element: Any):
         self.elements.append(element)
+
+    # すべての要素をフォーカスマネージャーに登録
+    def register_all(self, focus_manager: FocusManager):
+        for element in self.elements:
+            focus_manager.register(element)
     
-    def relayout(self, screen):
+    # 画面サイズ変更時の画面再配置
+    def relayout(self, screen: pygame.Surface):
         self.screen = screen
         self.screen_size = screen.get_size()
         self.create_surface_and_rect()
@@ -50,10 +61,11 @@ class BacePage:
     def get_rect(self):
         return self.rect
 
-    def pos_calculation(self, pos):
+    # 座標を計算してグローバル座標を返す
+    def pos_calculation(self, pos: Tuple[int, int]) -> Tuple[int, int]:
         return (pos[0]-self.offset[0], pos[1]-self.offset[1])
 
-    def draw(self):
+    def draw(self) -> Tuple[pygame.Surface, pygame.Rect]:
         self.bg_img.draw()
         for element in self.elements:
             element.draw()

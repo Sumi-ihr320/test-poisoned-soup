@@ -1,4 +1,4 @@
-from typing import Tuple, Optional
+from typing import Tuple
 from tkinter import messagebox
 
 import pygame
@@ -42,16 +42,7 @@ class CharacterSheetScene(BaseScene):
 
         # ページ管理
         self.pages = []
-
-        self.status_page = StatusPage(self.screen, self.root, frame_rect, self.player)
-        self.status_page.load_status_items()
-        self.profession_page = ProfessionPage(self.screen, self.root, frame_rect, self.player)
-        self.profession_page.load_selector(self.selected_hobby)
-        self.confirm_page = ConfirmPage(self.screen, self.root, frame_rect, self.player, self.save_data, self.set_state)
-
-        self.pages.append(self.status_page)
-        self.pages.append(self.profession_page)
-        self.pages.append(self.confirm_page)
+        self.create_pages(frame_rect)
 
         # 現在のページ
         self.current_page = 0
@@ -73,6 +64,113 @@ class CharacterSheetScene(BaseScene):
         # 状態フラグ
         self.state = State.NONE
     
+    # ページの作成
+    def create_pages(self, frame_rect: pygame.Rect):
+        self.status_page = StatusPage(self.screen, self.root, frame_rect, self.player)
+        self.status_page.load_status_items()
+        self.profession_page = ProfessionPage(self.screen, self.root, frame_rect, self.player)
+        self.profession_page.load_selector(self.selected_hobby)
+        self.confirm_page = ConfirmPage(self.screen, self.root, frame_rect, self.player, self.save_data, self.set_state)
+
+        self.pages.append(self.status_page)
+        self.pages.append(self.profession_page)
+        self.pages.append(self.confirm_page)
+
+    # すべての要素をフォーカスマネージャーに登録する
+    def register_all(self):
+        for page in self.pages:
+            page.register_all(self.focus_manager)
+        self.navigation.register_all(self.focus_manager)
+        self.text_frame_panel.register_all(self.focus_manager)
+
+    # 更新されたデータをステータスに入力＋自動計算する
+    def insert_data(self, status: Status):
+        setattr(self.player, status.status_name, status.input.get_value())
+        self.auto_calculation(status.status_name)
+
+    # ステータスの自動計算
+    def auto_calculation(self, name: str):
+        # 各ステータスに対応する計算
+        calculations = {"STR": [calculation_damage_bonus],
+                        "SIZ": [calculation_damage_bonus, calculation_health_point],
+                        "CON": [calculation_health_point],
+
+                        "POW": [calculation_power_related],
+                        "INT": [calculation_idea],
+                        "EDU": [calculation_educated_point],
+                        "DEX": [calculation_avoid_point]}
+
+        # 計算結果により変化するステータス
+        response_status = {calculation_damage_bonus: ["DB"],
+                          calculation_health_point: ["HP"],
+                          calculation_power_related: ["MP","Luck","SAN"],
+                          calculation_idea: ["Idea"],
+                          calculation_educated_point: ["Know"],
+                          calculation_avoid_point: ["Dodge"]}
+
+        if name in calculations:
+            for calculation in calculations[name]:
+                # 計算結果を取得する
+                val = calculation(self.player)
+                if name == "EDU":
+                    val = val if val < 99 else 99
+                # 計算結果をステータスに入力 & ラベルの更新
+                if name == "POW":
+                    for status, value in val.items():
+                        setattr(self.player, status, value)
+                for status in response_status[calculation]:
+                    if name != "POW":
+                        setattr(self.player, status, val)
+                    self.update_status_label(status, getattr(self.player, status))
+    
+    # ステータスラベルの更新
+    def update_status_label(self, name: str, val: int|str):
+        for item in self.status_page.elements:
+            if item.status_name == name:
+                item.input.update_label(f"{val}")
+
+    # 完了ボタンを押した時のイベント
+    def event_enter_button(self):
+        manual_input_fields = { "name": "名前が入力されていません",
+                                "age": "年齢が入力されていません",
+                                "STR": "STRが入力されていません",
+                                "CON": "CONが入力されていません",
+                                "SIZ": "SIZが入力されていません",
+                                "DEX": "DEXが入力されていません",
+                                "APP": "APPが入力されていません",
+                                "EDU": "EDUが入力されていません",
+                                "INT": "INTが入力されていません",
+                                "POW": "POWが入力されていません",
+                                "Profession":"職業が選択されていません",
+                                "Hobby":"趣味が選択されていません"
+                                }
+        texts = []
+
+        # 手動入力が必要なステータスのみエラーチェックする
+        for status, error_msg in manual_input_fields.items():
+            if getattr(self.player, status) == "" or getattr(self.player, status) == 0:
+                texts.append(error_msg)
+        if texts:
+            text = "\n".join(texts)
+            with TopmostManager(self.root):
+                messagebox.showerror("未入力", text)
+        else:
+            # セーブデータに主人公データを入れる
+            self.save_data["player_status"] = self.player.to_dict()
+
+            # セーブデータに少女のデータを入れる
+            girl = Human("下僕の少女", "Girl.png", 4, 6, 10, 5, 10, 10,"-1d4", 8, 10, 10,
+                         {"目星":55, "聞き耳":55, "忍び歩き":40,"隠れる":40,"応急手当":50, "中国語（母国語）":40, "追跡":50, "その他言語（主人公の母国語）":31,"クトゥルフ神話":15, "拳銃":20},
+                         17, "woman", 13, 6, 50, 50, 30, 0, 0, "放浪者")
+            girl.add_item(ITEM_LIST["bloody_robe"])
+            girl.add_item(ITEM_LIST["gun"])
+
+            self.save_data["girl_status"] = girl.to_dict()
+
+            #self.callback(State.SAVE, self.save_data)
+            self.state = State.SAVE
+
+
     # ページを表示する
     def draw_page(self):
         current, current_rect = self.draw_page_get_surface_and_rect(self.current_page)
@@ -159,97 +257,10 @@ class CharacterSheetScene(BaseScene):
         if self.current_page == 0:
             item = self.status_page.handle_click(pos)
             if item:
-                self.insart_data(item)
+                self.insert_data(item)
         elif self.current_page == 1:
         # 2ページ目だったら
             self.is_pulldown_open, self.selected_profession, self.selected_hobby = self.profession_page.handle_click(pos, self.is_pulldown_open, self.selected_profession, self.selected_hobby)
-
-    # 更新されたデータをステータスに入力＋自動計算する
-    def insart_data(self, status: Status):
-        setattr(self.player, status.status_name, status.input.get_value())
-        self.auto_calculation(status.status_name)
-
-    # ステータスの自動計算
-    def auto_calculation(self, name: str):
-        # 各ステータスに対応する計算
-        calculations = {"STR": [calculation_damege_bonus],
-                        "SIZ": [calculation_damege_bonus, calculation_health_point],
-                        "CON": [calculation_health_point],
-
-                        "POW": [calculation_power_related],
-                        "INT": [calculation_idea],
-                        "EDU": [calculation_educated_point],
-                        "DEX": [calculation_avoid_point]}
-
-        # 計算結果により変化するステータス
-        response_status = {calculation_damege_bonus: ["DB"],
-                          calculation_health_point: ["HP"],
-                          calculation_power_related: ["MP","Luck","SAN"],
-                          calculation_idea: ["Idea"],
-                          calculation_educated_point: ["Know"],
-                          calculation_avoid_point: ["Dodge"]}
-
-        if name in calculations:
-            for calculation in calculations[name]:
-                # 計算結果を取得する
-                val = calculation(self.player)
-                if name == "EDU":
-                    val = val if val < 99 else 99
-                # 計算結果をステータスに入力 & ラベルの更新
-                if name == "POW":
-                    for status, value in val.items():
-                        setattr(self.player, status, value)
-                for status in response_status[calculation]:
-                    if name != "POW":
-                        setattr(self.player, status, val)
-                    self.update_status_label(status, getattr(self.player, status))
-    
-    # ステータスラベルの更新
-    def update_status_label(self, name: str, val: int|str):
-        for item in self.status_page.elements:
-            if item.status_name == name:
-                item.input.update_label(f"{val}")
-
-    # 完了ボタンを押した時のイベント
-    def event_enter_button(self):
-        manual_input_fields = { "name": "名前が入力されていません",
-                                "age": "年齢が入力されていません",
-                                "STR": "STRが入力されていません",
-                                "CON": "CONが入力されていません",
-                                "SIZ": "SIZが入力されていません",
-                                "DEX": "DEXが入力されていません",
-                                "APP": "APPが入力されていません",
-                                "EDU": "EDUが入力されていません",
-                                "INT": "INTが入力されていません",
-                                "POW": "POWが入力されていません",
-                                "Profession":"職業が選択されていません",
-                                "Hobby":"趣味が選択されていません"
-                                }
-        texts = []
-
-        # 手動入力が必要なステータスのみエラーチェックする
-        for status, error_msg in manual_input_fields.items():
-            if getattr(self.player, status) == "" or getattr(self.player, status) == 0:
-                texts.append(error_msg)
-        if texts:
-            text = "\n".join(texts)
-            with TopmostManager(self.root):
-                messagebox.showerror("未入力", text)
-        else:
-            # セーブデータに主人公データを入れる
-            self.save_data["player_status"] = self.player.to_dict()
-
-            # セーブデータに少女のデータを入れる
-            girl = Human("下僕の少女", "Girl.png", 4, 6, 10, 5, 10, 10,"-1d4", 8, 10, 10,
-                         {"目星":55, "聞き耳":55, "忍び歩き":40,"隠れる":40,"応急手当":50, "中国語（母国語）":40, "追跡":50, "その他言語（主人公の母国語）":31,"クトゥルフ神話":15, "拳銃":20},
-                         17, "woman", 13, 6, 50, 50, 30, 0, 0, "放浪者")
-            girl.add_item(ITEM_LIST["bloody_robe"])
-            girl.add_item(ITEM_LIST["gun"])
-
-            self.save_data["girl_status"] = girl.to_dict()
-
-            #self.callback(State.SAVE, self.save_data)
-            self.state = State.SAVE
 
     # 画面サイズ更新時にポジションを変更する
     def relayout(self, screen: pygame.Surface):

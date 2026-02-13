@@ -6,6 +6,7 @@ from pygame.locals import *
 from constans import WHITE
 from utils import dice_confirmation, TopmostManager
 from ui.ui_elements import Label, Button, Image, InputBox, ImageCache, CustomDialog
+from input.focus_manager import FocusManager
 from manager.dice_service import DiceService
 
 # ステータス作るよ
@@ -13,7 +14,7 @@ class Status:
     MAX_STATUS_VALUE = 99
 
     def __init__(self, screen, parent, root, font_data: Tuple[str, int], name: str, status_name: str, label_name: str, status: str|int, 
-                 x: int, y: int, w: int, h: int, hover_text: str="",
+                 x: int, y: int, w: int, h: int, hover_text: str="", row: int=0,
                  button_flag: bool=True, input_flag: bool=True, box_flag: bool=True, dice_text: str=""):
         self.screen = screen
         self.parent = parent
@@ -25,6 +26,9 @@ class Status:
         self.status_name = status_name  # CharaStatusでの名前
         self.label_name = label_name if label_name != "" else self.name     # 実際に表示する名前（スペースなどで位置調整する場合があるため）
         self.hover_text = hover_text    # マウスオーバー時に表示される説明文
+
+        self.row = row              # フォーカスマネージャー用の行番号  
+
         self.dice_text = dice_text      # ダイスボタンに表示するテキスト
 
         self.create_label(x, y)
@@ -53,7 +57,8 @@ class Status:
         # ステータスラベルの隣
         input_x = x + self.status_label.rect.w + 5
         input_y = y - 4     # ラベルより大きいので少し上に
-        self.input = InputBox(self.screen, self.font_data, Rect(input_x, input_y, w, h), str(self.status), self.input_flag, parent=self.parent)
+        self.input = InputBox(self.screen, self.font_data, Rect(input_x, input_y, w, h), str(self.status), self.input_flag, parent=self.parent,
+                              focusable=self.input_flag, row=self.row, col=0)
 
     # ダイスボタンを作成
     def create_dice_button(self):
@@ -61,7 +66,14 @@ class Status:
         rect = self.input.rect.copy() if self.input else self.status_label.rect.copy()
         # その幅分隣
         rect.x = rect.x + rect.w + 5
-        self.button = Button(self.screen, self.font_data, self.dice_text, rect, self.dice_process, parent=self.parent)
+        self.button = Button(self.screen, self.font_data, self.dice_text, rect, self.dice_process, parent=self.parent,
+                             focusable=True, row=self.row, col=1)
+
+    def register_all(self, focus_manager: FocusManager):
+        if self.input:
+            focus_manager.register(self.input)
+        if self.button:
+            focus_manager.register(self.button)
 
     def relayout(self, screen, parent):
         self.screen = screen
@@ -121,7 +133,7 @@ class Status:
         result = self.dice_service.roll(self.dice_text)
         self.input.update_label(f"{result}")
 
-    def handle_mouse_hover(self, pos):
+    def handle_mouse_hover(self, pos) -> Optional[str]:
         if self.status_label.collidepoint(pos):
             return self.hover_text
         elif self.input and self.input.collidepoint(pos):
@@ -133,7 +145,7 @@ class Status:
 # 選んだ性別によって画像が変わるようにするよ
 class SexChange:
     def __init__(self, screen, parent, sheet_rect: pygame.Rect, font_data: Tuple[str, int], title_text: str, 
-                 x: int, y: int, flag: str):
+                 x: int, y: int, flag: str, row: int=0):
         self.screen = screen
         self.parent = parent
         self.sheet_rect = sheet_rect
@@ -142,6 +154,7 @@ class SexChange:
         self.title_text = title_text
         self.title_x, self.title_y = x, y
         self.flag = flag
+        self.row = row
 
         # 性別ボタン作成
         self.labels_dict = {}
@@ -202,7 +215,7 @@ class SexChange:
     def create_button_label(self, text: str, col: int) -> Label:
         push_color = (106,93,33)   # ボタンを押したときの色
         label = Label(self.screen, self.font_data, text, parent=self.parent, 
-                      focusable=True, col=col,
+                      focusable=True, row=self.row, col=col,
                       hover_text_color=WHITE, hover_back_color=push_color)
         return label
 
@@ -230,6 +243,10 @@ class SexChange:
     def update_sex(self, flag: str):
         self.flag = flag
         self.check_flag_and_set_focus(flag)
+
+    def register_all(self, focus_manager: FocusManager):
+        for label in self.labels_dict.values():
+            focus_manager.register(label)
 
     def relayout(self, screen: pygame.Surface, parent):
         self.screen = screen

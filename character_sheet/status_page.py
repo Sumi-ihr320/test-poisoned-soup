@@ -1,10 +1,15 @@
+from typing import Tuple, Optional
+from pygame import Surface, Rect
+
 from constans import STATUS_DATA_PATH, JSON_FOLDER
 from utils import load_json
-from character_sheet.base_page import BacePage
 from character_sheet.status import Status, SexChange
+from models.characters import Player
+from manager.sound_manager import sound_manager
+from character_sheet.base_page import BasePage
 
-class StatusPage(BacePage):
-    def __init__(self, screen, root, player, ofset=None):
+class StatusPage(BasePage):
+    def __init__(self, screen, root, player: Player, ofset: Optional[Tuple[int, int]]=None):
         super().__init__(screen, root, player, ofset)
 
         self.status_data = load_json(STATUS_DATA_PATH, JSON_FOLDER)
@@ -32,14 +37,13 @@ class StatusPage(BacePage):
             item.relayout(screen, self)
         self.sex_button.relayout(screen, self)
 
-    def draw(self):
+    def draw(self) -> Tuple[Surface, Rect]:
         surface, rect = super().draw()
         if self.sex_button:
             self.sex_button.draw()
         return surface, rect
     
-    def handle_mouse_hover(self, pos):
-        #pos = self.pos_calculation(pos)
+    def handle_mouse_hover(self, pos: Tuple[int, int]) -> Optional[str]:
         for item in self.elements:
             if item.button:
                 item.button.handle_mouse_hover(pos)
@@ -48,8 +52,7 @@ class StatusPage(BacePage):
                 return text
         return None
 
-    def handle_click(self, pos):
-        #pos = self.pos_calculation(pos)
+    def handle_click(self, pos: Tuple[int, int]) -> Optional[Status]:
         if self.handle_sex_button(pos):
             return None
         else:
@@ -64,7 +67,7 @@ class StatusPage(BacePage):
                     return item
 
     # 性別ボタンを押したとき
-    def handle_sex_button(self, pos):
+    def handle_sex_button(self, pos: Tuple[int, int]) -> bool:
         on_button = False
 
         # 男ボタン
@@ -84,7 +87,7 @@ class StatusPage(BacePage):
 
         if on_button:
             self.player.image = f"silhouette_{self.player.sex}.png"
-            self.sound_manager.play("クリック")
+            sound_manager.play("クリック")
             self.sex_button.update_sex(self.player.sex)
         
         return on_button

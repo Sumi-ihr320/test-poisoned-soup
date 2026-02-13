@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict, Any
 
 # アイテム
 class CharacterItem:
@@ -7,7 +7,7 @@ class CharacterItem:
         self.img_name = img_name
         self.category = category
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "name":self.name,
             "img_name": self.img_name,
@@ -15,7 +15,7 @@ class CharacterItem:
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: Dict[str, Any]) -> 'CharacterItem':
         if data["category"] == "armor":
             return Armor(data["name"], data["img_name"], data["category"], data["armor_point"])
         
@@ -31,7 +31,7 @@ class Armor(CharacterItem):
         super().__init__(name, category, img_name)
         self.armor_point = armor_point
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         data = super().to_dict()
         data["armor_point"] = self.armor_point
         return data
@@ -48,7 +48,7 @@ class Weapon(CharacterItem):
         self.bullets = bullets              # 装弾数
         self.durability = durability        # 耐久力
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         data = super().to_dict()
         data["skill"] = self.skill
         data["damage_dice"] = self.damage_dice

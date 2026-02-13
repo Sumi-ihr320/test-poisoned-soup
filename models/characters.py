@@ -1,9 +1,9 @@
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from models.character_item import *
 
 # キャラクタークラス
 class Character:
-    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: dict={}):
+    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: Dict[str, Any]={}):
         # 基本情報
         self.name = name
         self.image = image
@@ -56,7 +56,7 @@ class Character:
         return state
     
     # 辞書型に変換
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "type": self.__class__.__name__,
             "name":self.name,
@@ -69,7 +69,7 @@ class Character:
     
     # 辞書からクラスに変換
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: Dict[str, Any]) -> 'Character':
         if data["type"] == "Player":
             character = Player(data["name"], data["image"], data["age"], data["sex"], data["STR"], data["CON"], data["SIZ"],
                                data["DEX"], data["APP"], data["EDU"], data["INT"], data["POW"], data["Luck"],
@@ -95,7 +95,7 @@ class Character:
 
 # 敵クラス
 class Enemy(Character):
-    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: dict={}, armor: int=0):
+    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: Dict[str, Any]={}, armor: int=0):
         super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
         self.armor = armor
 
@@ -109,8 +109,8 @@ class Enemy(Character):
 
 # 人間クラス
 class Human(Character):
-    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: dict={}, age: int=0, sex: str="man",
-                 APP: int=0, EDU: int=0, Luck: int=0, Idea: int=0, Know: int=0, SAN: int=0, max_SAN: int=0, Profession: str="", inventory: list=[]):
+    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: Dict[str, Any]={}, age: int=0, sex: str="man",
+                 APP: int=0, EDU: int=0, Luck: int=0, Idea: int=0, Know: int=0, SAN: int=0, max_SAN: int=0, Profession: str="", inventory: List['CharacterItem']=[]):
         super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
         
         # 基本情報
@@ -133,19 +133,19 @@ class Human(Character):
         self.inventory = inventory
 
     # アイテムの追加
-    def add_item(self, item):
+    def add_item(self, item: 'CharacterItem'):
         self.inventory.append(item)
         print(f"アイテムを追加しました: {item.name}")    # デバッグ用
     
     # アイテムの削除
-    def remove_item(self, item):
+    def remove_item(self, item: 'CharacterItem'):
         if item in self.inventory:
             self.inventory.remove(item)
             print(f"アイテムを削除しました: {item.name}")               # デバッグ用
         else:
             print(f"アイテムを持っていません: {item.name}")             # デバッグ用
 
-    def check_armor(self):
+    def check_armor(self) -> int:
         if self.inventory:
             for item in self.inventory:
                 if item.category == "armor":
@@ -153,7 +153,7 @@ class Human(Character):
         return 0
                     
     # SAN値が減った時
-    def take_SAN_damage(self, damage):
+    def take_SAN_damage(self, damage: int) -> Optional[str]:
         state = None    # 状態
 
         # 一時的狂気の判定
@@ -168,7 +168,7 @@ class Human(Character):
 
         return state
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         data = super().to_dict()
         data["age"] = self.age
         data["sex"] = self.sex
@@ -186,13 +186,13 @@ class Human(Character):
 # 主人公クラス
 class Player(Human):
     def __init__(self, name: str="", image: str="silhouette_man.png", age: int=0, sex: str="man", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, APP: int=0, EDU: int=0, INT: int=0, POW: int=0, Luck: int=0, Idea: int=0, Know: int=0, 
-                 DB: str="", HP: int=0, MP: int=0, Dodge: int=0, SAN: int=0, max_SAN: int=0, profession: str="", skill: dict={}, inventory: list=[], hobby: str="", girl_like_ability: int=0):
+                 DB: str="", HP: int=0, MP: int=0, Dodge: int=0, SAN: int=0, max_SAN: int=0, profession: str="", skill: Dict[str, Any]={}, inventory: List['CharacterItem']=[], hobby: str="", girl_like_ability: int=0):
         super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill,
                          age, sex, APP, EDU, Luck, Idea, Know, SAN, max_SAN, profession, inventory)
         self.Hobby = hobby
         self.girl_like_ability = girl_like_ability
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         data = super().to_dict()
         data["Hobby"] = self.Hobby
         data["girl_like_ability"] = self.girl_like_ability

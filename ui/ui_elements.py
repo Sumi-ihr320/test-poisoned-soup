@@ -1,6 +1,9 @@
+import re
+from typing import Tuple, Any, Optional, Callable, Union
+
 import tkinter as tk
 from tkinter import ttk
-from tkinter import simpledialog
+from tkinter import simpledialog, messagebox
 
 import pygame
 from pygame.locals import *
@@ -11,7 +14,9 @@ from manager.sound_manager import sound_manager
 
 # 各エレメントの基礎となるもの(基礎クラス)
 class UIElement:
-    def __init__(self, screen, parent=None, sound_type="click", click_rect=None, row=0, col=0, focusable=False, **kwargs):
+    def __init__(self, screen, parent=None, 
+                 sound_type: str="click", click_rect: Optional[pygame.Rect]=None, 
+                 row: int=0, col: int=0, focusable: bool=False, **kwargs):
         self.screen = screen
         self.screen_size = screen.get_size()
 
@@ -49,7 +54,7 @@ class UIElement:
         return self.focusable
     
     # 決定音を鳴らす
-    def on_dicide(self):
+    def on_decide(self):
         if self.sound_type == "click":
             sound_manager.play("クリック")
         elif self.sound_type == "select":
@@ -70,7 +75,7 @@ class UIElement:
 
     # 衝突判定 ---------------------------------------------
     # 指定した点が描画内かをチェック
-    def collidepoint(self, pos):
+    def collidepoint(self, pos) -> bool:
         # もしクリック範囲の指定があれば
         if self.click_rect:
             return self.click_rect.collidepoint(pos_to_local(pos, self.parent))
@@ -78,7 +83,7 @@ class UIElement:
             return self.rect.collidepoint(pos_to_local(pos, self.parent))
     
     # 中心点を取得
-    def get_center(self):
+    def get_center(self) -> Tuple[int, int]:
         return pos_to_global(self.rect.center, self.parent)
 
     # イベント系 -------------------------------------------
@@ -94,9 +99,9 @@ class UIElement:
         self.hovered = hover
 
     # クリックした時にはクリック音を鳴らす
-    def handle_click(self, pos):
+    def handle_click(self, pos) -> bool:
         if self.collidepoint(pos):
-            self.on_dicide()
+            self.on_decide()
             return True
         return False
     
@@ -111,7 +116,8 @@ class SurfaceCache:
     def __init__(self):
         self._cache = {}
 
-    def get_surface(self, font, text, color, back_color=None):
+    def get_surface(self, font: pygame.font.Font, text: str, 
+                    color: Tuple[int, int, int], back_color: Optional[Tuple[int, int, int]]=None):
         key = (id(font), text, color, back_color)
         surf = self._cache.get(key)
         if surf is None:
@@ -124,7 +130,8 @@ class SurfaceCache:
 
 # テキスト表示クラス
 class TextBase:
-    def __init__(self, font_data, text, text_color=BLACK, background_color=None, **kwargs):
+    def __init__(self, font_data: Tuple[str, int], text: str, 
+                 text_color: Tuple[int, int, int]=BLACK, background_color: Optional[Tuple[int, int, int]]=None, **kwargs):
         self.font_path = font_data[0]
         self.font_size = font_data[1]
         self.font = pygame.font.Font(self.font_path, self.font_size)
@@ -138,7 +145,7 @@ class TextBase:
         #self.update_text_surface()
         super().__init__(**kwargs)
 
-    def update_text_surface(self, color=None, back_color=None):
+    def update_text_surface(self, color: Optional[Tuple[int, int, int]]=None, back_color: Optional[Tuple[int, int, int]]=None):
         if color is None:
             color = self.text_color
         if back_color is None:
@@ -153,42 +160,42 @@ class TextBase:
                 self.max_width = width
             self.max_height += height
         
-    def set_text(self, text):
+    def set_text(self, text: str):
         self.texts = text.splitlines()
         self.update_text_surface()
 
-    def set_text_color(self, color):
+    def set_text_color(self, color: Tuple[int, int, int]):
         self.text_color = color
         self.update_text_surface()
 
-    def set_background_color(self, color):
+    def set_background_color(self, color: Tuple[int, int, int]):
         self.background_color = color
         self.update_text_surface()
 
-    def set_font(self, new_font):
+    def set_font(self, new_font: pygame.font.Font):
         self.font = new_font
         self.update_text_surface()
 
-    def resize_font(self, screen_size):
+    def resize_font(self, screen_size: Tuple[int, int]):
         self.font = setting_font(self.font_path, self.font_size, screen_size)
         self.update_text_surface()
 
 # サイズ変更するmixin
 class ResizableMixin:
     def __init__(self, **kwargs):
-        self.bace_rect = None   # 初期配置（元サイズ）
+        self.base_rect = None   # 初期配置（元サイズ）
         super().__init__(**kwargs)
     
-    def set_bace_rect(self, rect):
-        if self.bace_rect is None:
-            self.bace_rect = rect.copy()
+    def set_base_rect(self, rect: pygame.Rect):
+        if self.base_rect is None:
+            self.base_rect = rect.copy()
 
-    def resize(self, screen_size, anchor=("left", "top"), scale_mode="free"):
+    def resize(self, screen_size: Tuple[int, int], anchor: Tuple[str, str]=("left", "top"), scale_mode: str="free") -> Optional[pygame.Rect]:
         """
         anchor: 固定する基準点（left, right, center / top, bottom, center）
         scale_mode: free→縦横別々, aspect→アスペクト比固定 
         """
-        if not self.bace_rect:
+        if not self.base_rect:
             return None
         
         scale_x, scale_y, aspect_scale = get_scales(screen_size)
@@ -198,27 +205,28 @@ class ResizableMixin:
         else:
             sx, sy = scale_x, scale_y
 
-        new_rect = pygame.Rect(0, 0, int(self.bace_rect.w * sx), int(self.bace_rect.h * sy))
+        new_rect = pygame.Rect(0, 0, int(self.base_rect.w * sx), int(self.base_rect.h * sy))
 
         if anchor[0] == "center":
-            new_rect.centerx = int(self.bace_rect.centerx * sx)
+            new_rect.centerx = int(self.base_rect.centerx * sx)
         elif anchor[0] == "right":
-            new_rect.right = int(self.bace_rect.right * sx)
+            new_rect.right = int(self.base_rect.right * sx)
         else:
-            new_rect.x = int(self.bace_rect.x * sx)
+            new_rect.x = int(self.base_rect.x * sx)
 
         if anchor[1] == "center":
-            new_rect.centery = int(self.bace_rect.centery * sy)
+            new_rect.centery = int(self.base_rect.centery * sy)
         elif anchor[1] == "bottom":
-            new_rect.bottom = int(self.bace_rect.bottom * sy)
+            new_rect.bottom = int(self.base_rect.bottom * sy)
         else:
-            new_rect.y = int(self.bace_rect.y * sy)
+            new_rect.y = int(self.base_rect.y * sy)
 
         return new_rect
 
 # rect変更できるクラス
 class RectSettingBase(ResizableMixin):
-    def __init__(self, x=0, y=0, centerx=None, centery=None, anchor=("left", "top"), **kwargs):
+    def __init__(self, x: int=0, y: int=0, centerx: Optional[int]=None, centery: Optional[int]=None, 
+                 anchor: Tuple[str, str]=("left", "top"), **kwargs):
         self.x = x
         self.y = y
         self.centerx = centerx
@@ -226,7 +234,7 @@ class RectSettingBase(ResizableMixin):
         self.anchor = anchor
         super().__init__(**kwargs)
 
-    def set_rect(self, rect):
+    def set_rect(self, rect: pygame.Rect) -> pygame.Rect:
         if self.x == "center":
             self.centerx = self.parent_surface.get_rect().centerx
         
@@ -253,17 +261,22 @@ class RectSettingBase(ResizableMixin):
 
 # ラベル
 class Label(UIElement, RectSettingBase, TextBase):
-    def __init__(self, screen, font_data, text, x=0, y=0, centerx=None, centery=None, anchor=("left", "top"), text_color=BLACK, background_color=None, 
-                 hover_type="box", hover_line_bold=1, hover_text_color=None, hover_back_color=WHITE,
-                 sound_type="click", row=0, col=0, focusable=None, parent=None, **kwargs):
-        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, font_data=font_data, text=text, x=x, y=y, centerx=centerx, centery=centery, anchor=anchor, text_color=text_color, background_color=background_color, **kwargs)
+    def __init__(self, screen, font_data: Tuple[str, int], text: str, 
+                 x: int=0, y: int=0, centerx: Optional[int]=None, centery: Optional[int]=None, anchor: Tuple[str, str]=("left", "top"), 
+                 text_color: Tuple[int, int, int]=BLACK, background_color: Optional[Tuple[int, int, int]]=None, 
+                 hover_type: str="box", hover_line_bold: int=1, hover_text_color: Optional[Tuple[int, int, int]]=None, 
+                 hover_back_color: Tuple[int, int, int]=WHITE,
+                 sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, parent: Optional[Any]=None, **kwargs):
+        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, 
+                         font_data=font_data, text=text, x=x, y=y, centerx=centerx, centery=centery, anchor=anchor, 
+                         text_color=text_color, background_color=background_color, **kwargs)
         self.hover_type = hover_type
         self.hover_line_bold = hover_line_bold
         self.hover_text_color = hover_text_color
         self.hover_back_color = hover_back_color
         self.update_text_surface()
 
-    def update_text_surface(self, color=None):
+    def update_text_surface(self, color: Optional[Tuple[int, int, int]]=None):
         super().update_text_surface(color)
         self.rect = Rect(self.x, self.y, self.max_width, self.max_height)
         self.rect = self.set_rect(self.rect)
@@ -304,12 +317,13 @@ class Label(UIElement, RectSettingBase, TextBase):
 
 # 高度なテキスト表示
 class RichTextRenderer:
-    def __init__(self, surface_cache):
+    def __init__(self, surface_cache: SurfaceCache):
         self.cache = surface_cache
         pass
 
     # テキストを色分けや画面幅などで行を変えたりいろいろして行ごとの塊を作る
-    def layout_paragraphs(self, paragraphs, font, max_width, default_color=WHITE):
+    def layout_paragraphs(self, paragraphs: List[str], font: pygame.font.Font, max_width: int, 
+                          default_color: Tuple[int, int, int]=WHITE) -> List[List[Tuple[str, Tuple[int, int, int], int]]]:
         """
         paragrapths: list[str]  (各段落は改行で分けられたもの)
         戻り値: lines: list of [(text, color, x), ...] (行ごと)
@@ -367,7 +381,7 @@ class RichTextRenderer:
         return lines
     
     # surface化(各surfaceとx位置y位置、トータルのwidthとheightを返す)
-    def build_surface(self, lines, font):
+    def build_surface(self, lines: List[List[Tuple[str, Tuple[int, int, int], int]]], font: pygame.font.Font) -> Tuple[List[Tuple[pygame.Surface, int, int]], int, int]:
         """
         lines -> (rendered_list, max_w, total_h)
         rendered_list: [(surface, x, y), ...]
@@ -387,7 +401,8 @@ class RichTextRenderer:
 
 # テキストフレームに表示する用のラベル
 class TextFrameLabel(UIElement):
-    def __init__(self, screen, frame_rect, parent=None, font_data=(FONT_PATH, FONT_SIZ), padding=10, row=0, col=0, focusable=False, **kwargs):
+    def __init__(self, screen, frame_rect: pygame.Rect, parent: Optional[Any]=None, font_data: Tuple[str, int]=(FONT_PATH, FONT_SIZ), 
+                 padding: int=10, row: int=0, col: int=0, focusable: bool=False, **kwargs):
         super().__init__(screen=screen, parent=parent, row=row, col=col, focusable=focusable, **kwargs)
         self.frame_rect = frame_rect
         self.font_data = font_data
@@ -412,7 +427,7 @@ class TextFrameLabel(UIElement):
         self.rebuild()
 
     # テキストを新しくセット
-    def set_text(self, text):
+    def set_text(self, text: Optional[str]):
         if text is None:
             text = ""
         self.paragraphs = text.splitlines()
@@ -430,7 +445,7 @@ class TextFrameLabel(UIElement):
         # build_surface
         self.rendered, self.max_w, self.total_h = self.renderer.build_surface(lines, self.font)
 
-    def relayout(self, screen, frame_rect, parent=None):
+    def relayout(self, screen, frame_rect: pygame.Rect, parent: Optional[Any]=None):
         super().relayout(screen, parent)
         self.frame_rect = frame_rect
         self.font = setting_font(self.font_data[0], self.font_data[1], screen.get_size())
@@ -450,11 +465,13 @@ class TextFrameLabel(UIElement):
 
 # ボタン
 class Button(UIElement, ResizableMixin, TextBase):
-    def __init__(self, screen, font_data, text, rect, on_click=None, text_color=BLACK, in_color=WHITE, out_color=GRAY, on_color=BLUE, parent=None, sound_type="click", row=0, col=0, focusable=False, **kwargs):
+    def __init__(self, screen, font_data: Tuple[str, int], text: str, rect: pygame.Rect, on_click: Optional[Callable]=None, 
+                 text_color: Tuple[int, int, int]=BLACK, in_color: Tuple[int, int, int]=WHITE, out_color: Tuple[int, int, int]=GRAY, on_color: Tuple[int, int, int]=BLUE, 
+                 parent: Optional[Any]=None, sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, **kwargs):
         super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, font_data=font_data, text=text, text_color=text_color, **kwargs)
 
         self.rect = Rect(rect)
-        self.set_bace_rect(self.rect)
+        self.set_base_rect(self.rect)
 
         self.update_text_surface()
 
@@ -498,9 +515,9 @@ class Button(UIElement, ResizableMixin, TextBase):
             current_y += h + 2
 
     # rectを設定する
-    def set_rect(self, rect):
+    def set_rect(self, rect: pygame.Rect):
         self.rect = Rect(rect)
-        self.set_bace_rect(self.rect)
+        self.set_base_rect(self.rect)
         self.update_text_surface()
 
     # 描画する
@@ -512,7 +529,7 @@ class Button(UIElement, ResizableMixin, TextBase):
     def is_clicked(self, pos):
         return self.collidepoint(pos)
     
-    def handle_click(self, pos):
+    def handle_click(self, pos) -> bool:
         if self.is_clicked(pos):
             if self.sound_type == "click":
                 sound_manager.play("クリック")
@@ -532,7 +549,7 @@ class ImageCache:
     def __init__(self):
         self.cache = {}
 
-    def load(self, path):
+    def load(self, path: str):
         if path not in self.cache:
             try:
                 # 画像の読み込み＆アルファ化(透明化)
@@ -543,8 +560,11 @@ class ImageCache:
 
 # 画像表示
 class Image(UIElement, RectSettingBase):
-    def __init__(self, screen, path, cache=None, scale=None, x=0, y=0, centerx=None, centery=None, line_flag=False, line_width=1, bg_flag=False,
-                 size_wh=None, anchor=("left", "top"), parent=None, sound_type="click", row=0, col=0, focusable=False, **kwargs):
+    def __init__(self, screen, path: str, cache: ImageCache=None, scale: float=None, 
+                 x: int=0, y: int=0, centerx: Optional[int]=None, centery: Optional[int]=None, 
+                 line_flag: bool=False, line_width: int=1, bg_flag: bool=False, size_wh: Optional[Tuple[int, int]]=None, 
+                 anchor: Tuple[str, str]=("left", "top"), parent: Optional[Any]=None, sound_type: str="click", 
+                 row: int=0, col: int=0, focusable: bool=False, **kwargs):
         super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, x=x, y=y, centerx=centerx, centery=centery, anchor=anchor, **kwargs)
 
         path = f"{PATH}{PICTURE}{path}"
@@ -558,14 +578,14 @@ class Image(UIElement, RectSettingBase):
         self.rect = None
         self.create_image(path)
         self.rect = self.set_rect(self.rect)
-        self.set_bace_rect(self.rect)
+        self.set_base_rect(self.rect)
     
         self.bg_flag = bg_flag
         self.line_flag = line_flag
         self.line_width = line_width
 
     # イメージを作成するよ
-    def create_image(self, path):
+    def create_image(self, path: str):
         self.load_image(path)
         # サイズ変更
         self.set_transform()
@@ -573,7 +593,7 @@ class Image(UIElement, RectSettingBase):
         self.rect = self.img.get_rect()
 
     # 画像の読み込み
-    def load_image(self, path):
+    def load_image(self, path: str):
         if self.cache:
             self.original_img = self.cache.load(path)
         else:
@@ -584,7 +604,7 @@ class Image(UIElement, RectSettingBase):
                 print(f"Error loading image: {e}")
 
     # 画像のサイズ変更
-    def set_transform(self, img=None, scale=None, size=None):
+    def set_transform(self, img: Optional[pygame.Surface]=None, scale: Optional[float]=None, size: Optional[Tuple[int, int]]=None):
         # 指定が無ければオリジナルイメージ
         if img is None:
             img = self.original_img
@@ -603,7 +623,7 @@ class Image(UIElement, RectSettingBase):
             self.img = img
 
     # 縮小サイズを変更するよ
-    def set_scale(self, new_scale=None, new_size=None):
+    def set_scale(self, new_scale: Optional[float]=None, new_size: Optional[Tuple[int, int]]=None):
         if new_scale:
             self.set_transform(scale=new_scale)
         elif new_size:
@@ -611,7 +631,8 @@ class Image(UIElement, RectSettingBase):
         self.rect = self.img.get_rect(center=self.rect.center)
 
     # 位置をセットする（x,y座標、主にカーソル用)
-    def set_position(self, x=None, y=None, centerx=None, centery=None, global_coords=True):
+    def set_position(self, x: Optional[int]=None, y: Optional[int]=None, centerx: Optional[int]=None, centery: Optional[int]=None, 
+                     global_coords: bool=True):
         """
         global_coords=Trueの場合はスクリーン座標。Falseの場合は親座標として扱う
         """
@@ -625,7 +646,7 @@ class Image(UIElement, RectSettingBase):
             px = None if centerx is not None else (x - ox if x is not None else None)
             py = None if centery is not None else (y - oy if y is not None else None)
             pcx = centerx - ox if centerx is not None else None
-            pcy = centery - ox if centery is not None else None
+            pcy = centery - oy if centery is not None else None
         
         else:
             # すでに親座標が渡されている場合
@@ -642,7 +663,7 @@ class Image(UIElement, RectSettingBase):
             if self.anchor[0] == "right":
                 self.rect.right = int(px)
             elif self.anchor[0] == "center":
-                self.rect.cneterx = int(px)
+                self.rect.centerx = int(px)
             else:
                 self.rect.x = int(px)
 
@@ -657,10 +678,10 @@ class Image(UIElement, RectSettingBase):
                 self.rect.y = int(py)
         
         #必要ならベース矩形を更新
-        self.set_bace_rect(self.rect)
+        self.set_base_rect(self.rect)
 
     # 画像を切り抜くよ
-    def cat_image(self, cat_rect):
+    def cat_image(self, cat_rect: pygame.Rect):
         self.img = self.original_img.subsurface(cat_rect).copy()
         self.set_transform(img=self.img)
         self.rect = self.img.get_rect(topleft=self.rect.topleft)
@@ -683,7 +704,7 @@ class Image(UIElement, RectSettingBase):
         super().relayout(screen, parent)
         new_rect = self.resize(self.screen_size)
         if new_rect is None:
-            self.bace_rect(self.rect)
+            self.set_base_rect(self.rect)
             new_rect = self.resize(self.screen_size)
 
         if self.scale:
@@ -705,7 +726,7 @@ class Image(UIElement, RectSettingBase):
 
 # ラベルの作成、再配置を共通化
 class HasLabelBase:
-    def __init__(self, label_text, label_padding=8, label_anchor="midleft", **kwargs):
+    def __init__(self, label_text: Optional[str], label_padding: int=8, label_anchor: str="midleft", **kwargs):
         self.label_text = label_text
         self.label_padding = label_padding
         self.label_anchor = label_anchor    # "center", "midleft", "midright"などrectのアンカー
@@ -713,7 +734,7 @@ class HasLabelBase:
         super().__init__(**kwargs)
 
     # Labelを作成
-    def ensure_label(self, screen, font_data, parent=None):
+    def ensure_label(self, screen, font_data: Tuple[str, int], parent: Optional[Any]=None):
         if self.label is None and self.label_text is not None:
             # 初回のみ作成
             self.label = Label(screen, font_data, self.label_text, x=0, y=0, parent=parent)
@@ -721,7 +742,7 @@ class HasLabelBase:
             self.label.set_text(self.label_text)
     
     # 親側のrectに対してラベルを配置
-    def place_label_to_rect(self, host_rect):
+    def place_label_to_rect(self, host_rect: pygame.Rect) -> None:
         if not self.label:
             return
         
@@ -747,7 +768,8 @@ class HasLabelBase:
 
 # ボックス描画を共通化
 class BoxStyleBase:
-    def __init__(self, fill_color=None, border_color=BLACK, border_width=2, under_line=False, **kwargs):
+    def __init__(self, fill_color: Optional[Tuple[int, int, int]]=None, border_color: Optional[Tuple[int, int, int]]=BLACK, 
+                 border_width: int=2, under_line: bool=False, **kwargs):
         self.fill_color = fill_color
         self.border_color = border_color
         self.border_width = border_width
@@ -755,7 +777,7 @@ class BoxStyleBase:
         super().__init__(**kwargs)
 
     # ボックスを描画する
-    def draw_box_rect(self, parent, rect):
+    def draw_box_rect(self, parent, rect: pygame.Rect):
         if self.fill_color is not None:
             pygame.draw.rect(parent, self.fill_color, rect)
 
@@ -767,14 +789,16 @@ class BoxStyleBase:
 
 # インプットボックス
 class InputBox(UIElement, HasLabelBase, BoxStyleBase, ResizableMixin):
-    def __init__(self, screen, font_data, rect, label_text="", input_flag=True, line_bold=2, sound_type="click", row=0, col=0, focusable=False, parent=None, **kwargs):
+    def __init__(self, screen, font_data: Tuple[str, int], rect: pygame.Rect, label_text: str="", 
+                 input_flag: bool=True, line_bold: int=2, 
+                 sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, parent: Optional[Any]=None, **kwargs):
         super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, label_text=label_text, label_padding=10, label_anchor="center", fill_color=WHITE if input_flag else None, border_width=line_bold, under_line=True, **kwargs)
 
         self.font_data = font_data
         self.font = pygame.font.Font(self.font_data[0], self.font_data[1])
 
         self.rect = rect
-        self.set_bace_rect(self.rect)
+        self.set_base_rect(self.rect)
 
         self.input_flag = input_flag
         
@@ -787,17 +811,17 @@ class InputBox(UIElement, HasLabelBase, BoxStyleBase, ResizableMixin):
         self.place_label_to_rect(self.rect)
 
     # フラグを設定して背景色を変える
-    def set_input_flag(self, flag):
+    def set_input_flag(self, flag: bool):
         self.input_flag = flag
         self.fill_color = WHITE if flag else None
 
     # ラベルの更新
-    def update_label(self, new_text):
+    def update_label(self, new_text: str):
         self.label_text = new_text
         self.create_label()
 
     # ラベルに表示されている値を取得する
-    def get_value(self):
+    def get_value(self) -> Union[int, str]:
         # ラベルに表示されている文字を、数字ならintにしてそうでないなら文字列として返す
         try:
             return int(self.label_text)
@@ -815,7 +839,7 @@ class InputBox(UIElement, HasLabelBase, BoxStyleBase, ResizableMixin):
             self.label.draw()
 
     # フォントサイズ変更
-    def resize_font(self, screen_size):
+    def resize_font(self, screen_size: Tuple[int, int]):
         self.font = setting_font(self.font_data[0], self.font_data[1], screen_size)
         self.create_label()
 
@@ -827,7 +851,7 @@ class InputBox(UIElement, HasLabelBase, BoxStyleBase, ResizableMixin):
 
 # 箱をクラスにするよ (主にプルダウンで使ってるよ)
 class Box(UIElement):
-    def __init__(self, screen, rect, parent=None, row=0, col=0, focusable=False, **kwargs):
+    def __init__(self, screen, rect: pygame.Rect, parent: Optional[Any]=None, row: int=0, col: int=0, focusable: bool=False, **kwargs):
         super().__init__(screen, parent, row, col, focusable, **kwargs)
         self.rect = rect
 
@@ -837,7 +861,9 @@ class Box(UIElement):
 
 # プルダウン機能
 class PullDown(UIElement, ResizableMixin):
-    def __init__(self, screen, font_data, rect, item_list, label_text="", pd_h=285, parent=None, sound_type="click", row=0, col=0, focusable=False, **kwargs):
+    def __init__(self, screen, font_data: Tuple[str, int], rect: pygame.Rect, item_list: List[str], 
+                 label_text: str="", pd_h: int=285, 
+                 parent: Optional[Any]=None, sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, **kwargs):
         super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, **kwargs)
 
         self.font_data = font_data
@@ -845,7 +871,7 @@ class PullDown(UIElement, ResizableMixin):
 
         # 基準位置
         self.rect = rect
-        self.set_bace_rect(self.rect)
+        self.set_base_rect(self.rect)
 
         # プルダウンに表示するリスト
         self.item_list = item_list
@@ -878,7 +904,7 @@ class PullDown(UIElement, ResizableMixin):
         self.list_hovered = False
 
     # ボックスのrectを計算
-    def _calc_box_rect(self):
+    def _calc_box_rect(self) -> pygame.Rect:
         # ラベル候補 + ▼ を含めた最大幅
         texts = self.item_list + ([self.label_text] if self.label_text else [])
         if texts:
@@ -962,7 +988,8 @@ class PullDown(UIElement, ResizableMixin):
         self._layout_dirty = False
 
     # 表示位置を変更する
-    def update_position(self, x=None, y=None, centerx=None, centery=None, anchor=("left", "top")):
+    def update_position(self, x: Optional[int]=None, y: Optional[int]=None, centerx: Optional[int]=None, centery: Optional[int]=None, 
+                        anchor: Tuple[str, str]=("left", "top")):
         if x is not None:
             if anchor[0] == "right":
                 self.rect.right = x
@@ -986,7 +1013,7 @@ class PullDown(UIElement, ResizableMixin):
         self._layout_dirty = True
 
     # ラベルの更新
-    def update_label(self, new_text):
+    def update_label(self, new_text: str):
         self.label_text = new_text
         if self.label is None:
             self.label = Label(self.screen, self.font_data, new_text, parent=self.parent)
@@ -995,7 +1022,7 @@ class PullDown(UIElement, ResizableMixin):
         self._place_triangle_and_label()
 
     # ボックスの表示
-    def draw(self, is_dropped):
+    def draw(self, is_dropped: bool):
         # ボックスと▼
         self.box.draw()
         self.triangle.draw()
@@ -1023,7 +1050,7 @@ class PullDown(UIElement, ResizableMixin):
         return self.box.collidepoint(pos)
 
     # クリック時の動作
-    def handle_click(self, pos, is_dropped):
+    def handle_click(self, pos: Tuple[int, int], is_dropped: bool) -> Optional[str]:
         if is_dropped and self.list_box and self.list_box.collidepoint(pos):
             hit_pos = pos_to_local(pos, self.parent)
             for text, surf, text_rect, hit_rect in self.entries:
@@ -1033,7 +1060,7 @@ class PullDown(UIElement, ResizableMixin):
         return None
     
     # マウスオーバー時の動作
-    def handle_mouse_hover(self, pos, is_dropped):
+    def handle_mouse_hover(self, pos: Tuple[int, int], is_dropped: bool):
         if is_dropped:
             self._ensure_layout()
             hovered = None
@@ -1058,7 +1085,7 @@ class PullDown(UIElement, ResizableMixin):
             pygame.draw.rect(self.parent_surface, BLACK, self.box.rect, 2)
 
     # フォントサイズ変更
-    def resize_font(self, screen_size):
+    def resize_font(self, screen_size: Tuple[int, int]):
         self.font = setting_font(self.font_data[0], self.font_data[1], screen_size)
         for label in (self.label, self.triangle):
             label.resize_font(screen_size)

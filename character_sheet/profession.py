@@ -1,13 +1,16 @@
+from typing import Optional, Tuple, List, Dict
+
 import pygame
 from pygame.locals import *
 
-from constans import *
-from utils import *
-from ui.ui_elements import *
+from constans import JSON_FOLDER, PROF_DATA_PATH, HOBBY_DATA_PATH, BLACK
+from utils import load_json
+from ui.ui_elements import Image, PullDown, Label
 
 # 職業クラス
 class Profession:
-    def __init__(self, screen, parent, font_datas, name, eng_name, skills, rect, view_rect):
+    def __init__(self, screen, parent, font_datas: List[Tuple[str, int]], name: str, eng_name: str, 
+                 skills: Dict[str, int], rect: pygame.Rect, view_rect: pygame.Rect):
         self.screen = screen
         self.parent = parent
         self.font_datas = font_datas
@@ -19,19 +22,19 @@ class Profession:
         self.rect = rect
         self.view_rect = view_rect
 
-        self.create_image()
+        self.create_images()
         self.labels = []
-        self.create_label()
+        self.create_labels()
     
     # 画像を作成する
-    def create_image(self):
+    def create_images(self):
         small_img_size = 0.1
         big_img_size = 0.35
         self.small_img = Image(self.screen, self.path, scale=small_img_size, x=self.rect.x, y=self.rect.y, line_flag=True, bg_flag=True, parent=self.parent)
         self.big_img = Image(self.screen, self.path, scale=big_img_size, x=self.view_rect.x, y=self.view_rect.y, line_flag=True, bg_flag=True, parent=self.parent)
 
     # ラベルを作成する
-    def create_label(self):
+    def create_labels(self):
         font_data = self.font_datas[0]
         small_font_data = self.font_datas[1]
 
@@ -50,7 +53,7 @@ class Profession:
         self.labels = [self.lbl_name, self.lbl_skill_title] + self.lbl_skills
 
     # 画像の位置をセットする
-    def set_img_position(self, size="small", x=None, y=None):
+    def set_img_position(self, size: str="small", x: Optional[int]=None, y: Optional[int]=None):
         if size == "big":
             if x:
                 self.big_img.rect.x = x
@@ -92,7 +95,7 @@ class Profession:
             label.relayout(screen, parent)
 
     # 表示
-    def draw(self, is_selected=False):
+    def draw(self, is_selected: bool=False):
         if self.small_img:
             self.small_img.draw()
         if is_selected and self.big_img:
@@ -106,19 +109,19 @@ class Profession:
         for label in self.lbl_skills:
             label.draw()
 
-    def handle_mouse_hover(self, pos):
+    def handle_mouse_hover(self, pos) -> Optional[str]:
         if self.small_img and self.small_img.collidepoint(pos):
             return f"あなたの職業を選択してください\n【{self.name}】"
         return None
 
-    def handle_click(self, pos):
+    def handle_click(self, pos) -> bool:
         if self.small_img and self.small_img.handle_click(pos):
             return True
         return False
 
 # 職業選択画面作るよ
 class ProfessionSelector:
-    def __init__(self, screen, parent, sheet_rect, font_datas):
+    def __init__(self, screen, parent, sheet_rect: pygame.Rect, font_datas: List[Tuple[str, int]]):
         self.screen = screen
         self.parent = parent
         self.sheet_rect = sheet_rect
@@ -140,7 +143,7 @@ class ProfessionSelector:
             self.create_profession()
 
     # 最適な行数列数を計算する
-    def calculate_best_grid(self, total_items, icon_size, margin):
+    def calculate_best_grid(self, total_items: int, icon_size: Tuple[int, int], margin: Tuple[int, int]) -> Tuple[int, int]:
         # 利用可能な描画エリアの幅
         available_width = self.sheet_rect.w
         available_height = self.sheet_rect.h // 2
@@ -201,7 +204,7 @@ class ProfessionSelector:
             item = Profession(self.screen, self.parent, self.font_datas, prof_key, name, skill, Rect(x, y, 50, 50), Rect(view_x, view_y, 100, 100))
             self.prof_items.append(item)
     
-    def relayout(self, screen, parent, sheet_rect):
+    def relayout(self, screen, parent, sheet_rect: pygame.Rect):
         self.screen = screen
         self.parent = parent
         self.sheet_rect = sheet_rect
@@ -212,7 +215,7 @@ class ProfessionSelector:
         for item in self.prof_items:
             item.draw()
 
-    def handle_click(self, pos):
+    def handle_click(self, pos) -> Optional[Profession]:
         for item in self.prof_items:
             if item.handle_click(pos):
                 return item
@@ -220,7 +223,7 @@ class ProfessionSelector:
 
 # 趣味選択画面作るよ
 class HobbySelector:
-    def __init__(self, screen, parent, select_item, font_datas, profession_rect):
+    def __init__(self, screen, parent, select_item: str, font_datas: List[Tuple[str, int]], profession_rect: pygame.Rect):
         self.screen = screen
         self.parent = parent
         self.select_item = select_item
@@ -255,11 +258,11 @@ class HobbySelector:
         self.label.relayout(screen, parent)
         self.pull.relayout(screen, parent)
 
-    def draw(self, is_dropped):
+    def draw(self, is_dropped: bool):
         self.label.draw()
         self.pull.draw(is_dropped)
 
-    def handle_mouse_hover(self, pos, is_dropped):
+    def handle_mouse_hover(self, pos, is_dropped: bool) -> Optional[str]:
         if self.pull.collidepoint(pos):
             return "あなたの趣味を選択してください"
         elif self.pull.list_box and self.pull.list_box.collidepoint(pos):

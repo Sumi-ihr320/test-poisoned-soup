@@ -1,5 +1,6 @@
 from typing import List, Tuple
 from ui.ui_elements import UIElement
+from input.focus_manager import FocusManager
 
 class UIContainer:
     def __init__(self, screen, parent=None):
@@ -21,13 +22,13 @@ class UIContainer:
         self.children.clear()
 
     # FocusManagerとの一括登録
-    def register_all(self, focus_manager):
+    def register_all(self, focus_manager: FocusManager):
         for c in self.children:
             if c.is_focusable():
                 focus_manager.register(c)
 
     # FocusManagerとの一括解除
-    def unregister_all(self, focus_manager):
+    def unregister_all(self, focus_manager: FocusManager):
         for c in self.children:
             if c in focus_manager.elements:
                 focus_manager.elements.remove(c)
@@ -42,7 +43,7 @@ class UIContainer:
                 return True
         return False
 
-    def handle_mouse_hover(self, pos: tuple[int, int]):
+    def handle_mouse_hover(self, pos: Tuple[int, int]):
         for c in self.children:
             c.handle_mouse_hover(pos)
     

@@ -1,19 +1,23 @@
 import random
+from typing import Tuple, Optional
+from pygame import Surface, Rect
 
-from constans import *
-from ui.ui_elements import *
+from constans import JSON_FOLDER, PROF_DATA_PATH, SKILL_DATA_PATH, HOBBY_DATA_PATH
+from utils import load_json, Calculation
+from models.characters import Player
+from manager.sound_manager import sound_manager
 
-from character_sheet.base_page import BacePage
-from character_sheet.profession import ProfessionSelector, HobbySelector
+from character_sheet.base_page import BasePage
+from character_sheet.profession import ProfessionSelector, HobbySelector, Profession
 
-class ProfessionPage(BacePage):
-    def __init__(self, screen, root, player, ofset=...):
+class ProfessionPage(BasePage):
+    def __init__(self, screen, root, player: Player, ofset: Optional[Tuple[int, int]]=None):
         super().__init__(screen, root, player, ofset)
 
         self.prof_selector = None
         self.hobby_selector = None
 
-    def load_selector(self, selected_hobby):
+    def load_selector(self, selected_hobby: Optional[str]=None):
         # 職業選択画面
         self.prof_selector = ProfessionSelector(self.screen, self, self.rect, self.font_datas)
 
@@ -25,7 +29,7 @@ class ProfessionPage(BacePage):
         self.prof_selector.relayout(screen, self, self.rect)
         self.hobby_selector.relayout(screen, self)
         
-    def draw(self, selected_profession, is_pulldown_open):
+    def draw(self, selected_profession: Optional[Profession], is_pulldown_open: bool) -> Tuple[Surface, Rect]:
         surface, rect = super().draw()
         if self.prof_selector:
             self.prof_selector.draw()
@@ -34,7 +38,7 @@ class ProfessionPage(BacePage):
         self.hobby_selector.draw(is_pulldown_open)
         return surface, rect
 
-    def handle_mouse_hover(self, pos, is_pulldown_open):
+    def handle_mouse_hover(self, pos, is_pulldown_open: bool) -> Optional[str]:
         pos = self.pos_calculation(pos)
         if is_pulldown_open:
             return self.hobby_selector.handle_mouse_hover(pos, is_pulldown_open)
@@ -45,11 +49,9 @@ class ProfessionPage(BacePage):
                     return text
         return None
     
-    def handle_click(self, pos, is_pulldown_open, selected_profession, selected_hobby):
-        #pos = self.pos_calculation(pos)
+    def handle_click(self, pos, is_pulldown_open: bool, selected_profession: Optional[Profession], selected_hobby: Optional[str]) -> Tuple[bool, Optional[Profession], Optional[str]]:
         # プルダウンのクリック処理
         if self.hobby_selector.pull.collidepoint(pos):
-            #self.sound_manager.play("クリック")
             is_pulldown_open = not is_pulldown_open
             print(f"is_pulldown_open:{is_pulldown_open}")
 
@@ -58,7 +60,7 @@ class ProfessionPage(BacePage):
             # 趣味欄のクリック処理
             selected_item = self.hobby_selector.pull.handle_click(pos, is_pulldown_open)
             if selected_item:
-                self.sound_manager.play("クリック")
+                sound_manager.play("クリック")
                 selected_hobby = selected_item
                 self.player.Hobby = selected_item
                 self.hobby_selector.pull.update_label(f"{selected_item}")
@@ -146,7 +148,7 @@ class ProfessionPage(BacePage):
                         remaining_points -= remaining_points
 
     # 選択した趣味から主人公のステータスにデータを入れるよ
-    def hobby_data_set(self, selected_hobby):
+    def hobby_data_set(self, selected_hobby: Optional[str]):
         # 主人公の持っている技能データ
         my_skills = self.player.skill
 

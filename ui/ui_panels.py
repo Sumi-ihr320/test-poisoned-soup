@@ -1,14 +1,19 @@
+from typing import List, Dict, Tuple, Any, Optional, Callable
 import pygame
+from pygame import Rect
 
-from utils import *
+from constans import FONT_PATH, FONT_SIZ, FRAME_SIZE, WHITE, BLACK, GRAY, State
+from utils import get_new_size, setting_font, Close
 from manager.sound_manager import sound_manager
 from ui.ui_elements import Button, TextFrameLabel, Label
 from ui.ui_container import UIContainer
+from ui.log_view import LogView
+from input.focus_manager import FocusManager
 
 # メニュー用のボタン
 class MenuButton(Button):
-    def __init__(self, screen, font_data, text, rect, on_click=None, enabled=True,
-                 parent=None, row=0, col=0, focusable=True, **kwargs):
+    def __init__(self, screen, font_data, text: str, rect: Rect, on_click: Callable=None, enabled: bool=True,
+                 parent: Optional[Any]=None, row: int=0, col: int=0, focusable: bool=True, **kwargs):
         super().__init__(screen=screen, font_data=font_data, text=text, rect=rect,
                          on_click=on_click, text_color=WHITE, in_color=BLACK, out_color=WHITE, on_color=GRAY,
                          parent=parent, sound_type="click", row=row, col=col, focusable=focusable, **kwargs)
@@ -40,7 +45,7 @@ class MenuButton(Button):
         self.focusable = state
         self._set_color()
 
-    def is_clicked(self, pos):
+    def is_clicked(self, pos) -> bool:
         # enabled=Falseの時はクリック判定しない
         if not self.enabled:
             return False
@@ -70,7 +75,8 @@ class MenuBar(UIContainer):
     sceneからはcreateボタン、set_enabled(index, bool)、register_all(focus_manager)などで操作する。
     """
     PADDING = 0
-    def __init__(self, screen, frame_rect, font_data, callback, enabled_flags={"セーブ":True, "ロード":True, "ログ":True}, parent=None):
+    def __init__(self, screen, frame_rect: Rect, font_data: Tuple[str, int], callback: Callable, enabled_flags: Dict[str, bool]={"セーブ":True, "ロード":True, "ログ":True}, 
+                 parent: Optional[Any]=None):
         super().__init__(screen, parent)
 
         self.frame_rect = frame_rect
@@ -90,7 +96,7 @@ class MenuBar(UIContainer):
         self._build(self.menu_items)
 
     # メニューボタンを作成する
-    def _build(self, labels_with_callbacks):
+    def _build(self, labels_with_callbacks: List[Tuple[str, Callable, bool, Optional[int]]]):
         x0, y0, widths, h = self.calculation_rect(labels_with_callbacks)
 
         cur_x = x0
@@ -98,7 +104,8 @@ class MenuBar(UIContainer):
         for i, (label, cd, enabled, col) in enumerate(labels_with_callbacks):
             w = widths[i]
             rect = Rect(cur_x, y0, w, h)
-            btn = MenuButton(self.screen, self.font_data, label, rect, on_click=cd, enabled=enabled, parent=self.parent, row=90, col=(col if col is not None else i))
+            btn = MenuButton(self.screen, self.font_data, label, rect, on_click=cd, enabled=enabled, 
+                             parent=self.parent, row=90, col=(col if col is not None else i))
             btns.append(btn)
             cur_x += w + self.PADDING
 
@@ -121,7 +128,7 @@ class MenuBar(UIContainer):
         """
 
     # メニューバー全体のrectを計算する
-    def calculation_rect(self, labels_with_callbacks):
+    def calculation_rect(self, labels_with_callbacks: List[Tuple[str, Callable, bool, Optional[int]]]) -> Tuple[int, int, List[int], int]:
         font = setting_font(self.font_data[0], self.font_data[1], self.screen_size)
         widths = []
         heights = []
@@ -161,14 +168,15 @@ class MenuBar(UIContainer):
         Close(self.root)
 
     # enabled/disable 個別操作
-    def set_enabled(self, idx, enabled: bool):
+    def set_enabled(self, idx: int, enabled: bool):
         if 0 < idx < len(self.children):
             self.children[idx].set_enabled(enabled)
 
 # テキストフレーム本体
 class TextFramePanel(UIContainer):
     PADDING = 10
-    def __init__(self, screen, parent=None, font_data=(FONT_PATH, FONT_SIZ), frame_size=FRAME_SIZE, next_callback=None, enabled_flags={"セーブ":True, "ロード":True, "ログ":True}):
+    def __init__(self, screen, parent: Optional[Any]=None, font_data: Tuple[str, int]=(FONT_PATH, FONT_SIZ), frame_size: Tuple[int, int]=FRAME_SIZE, 
+                 next_callback: Optional[Callable]=None, enabled_flags: Dict[str, bool]={"セーブ":True, "ロード":True, "ログ":True}):
         super().__init__(screen, parent)
 
         self.frame_size = frame_size
@@ -186,19 +194,13 @@ class TextFramePanel(UIContainer):
         self.text_label = TextFrameLabel(screen=self.screen, frame_rect=self.rect, font_data=self.font_data)
 
         # Nextボタン
-        #btn_w, btn_h = (40, 28)
-        #next_x = self.rect.right - btn_w - self.PADDING
-        #next_y = self.rect.bottom - btn_h - self.PADDING
         next_x = self.rect.right - self.PADDING
         next_y = self.rect.bottom - self.PADDING
-        # next_rect = Rect(self.rect.right - btn_w - self.PADDING, self.rect.bottom - btn_h - self.PADDING, btn_w, btn_h)
-        self.next_label = Label(screen=self.screen, font_data=self.font_data, text="▶", x=next_x, y=next_y, anchor=("right", "bottom"), text_color=WHITE, row=100, focusable=True)
-
-        #self.children = []
-        #self.focusables = []    # focur_managerに渡す用
+        self.next_label = Label(screen=self.screen, font_data=self.font_data, text="▶", x=next_x, y=next_y, anchor=("right", "bottom"), 
+                                text_color=WHITE, row=100, focusable=True)
 
     # テキストフレームのrectを割り出す
-    def calc_frame_rect(self):
+    def calc_frame_rect(self) -> Rect:
         screen_w, screen_h = self.screen_size
         frame_w, frame_h = get_new_size(self.screen_size, (FRAME_SIZE))
         frame_x = (screen_w // 2) - (frame_w // 2)
@@ -206,16 +208,20 @@ class TextFramePanel(UIContainer):
 
         return Rect(frame_x, frame_y, frame_w, frame_h)
 
-    def regster_all(self, focus_manager):
-        self.menu_bar.register_all(focus_manager)
-        focus_manager.regster(self.next_label)
-
-    def set_text(self, text):
+    def set_text(self, text: str):
         self.text_label.set_text(text)
 
-    def add_log_entry(self, log_view, text):
+    def add_log_entry(self, log_view: LogView, text: str):
         log_view.append(text)
         pass
+
+    def register_all(self, focus_manager: FocusManager):
+        self.menu_bar.register_all(focus_manager)
+        focus_manager.register(self.next_label)
+
+    def unregister_all(self, focus_manager: FocusManager):
+        self.menu_bar.unregister_all(focus_manager)
+        focus_manager.elements.remove(self.next_label)
 
     def relayout(self, screen, parent=None):
         super().relayout(screen, parent)

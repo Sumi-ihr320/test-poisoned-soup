@@ -1,12 +1,16 @@
+from typing import Dict, Tuple, Any, Optional, Callable
 
-from constans import PROF_DATA_PATH
-from ui.ui_elements import *
-#from models.characters import *
+from pygame import Rect
 
-from character_sheet.base_page import BacePage
+from constans import JSON_FOLDER, PROF_DATA_PATH
+from ui.ui_elements import Box, Label, Image
+from utils import load_json
+from models.characters import Player
 
-class ConfirmPage(BacePage):
-    def __init__(self, screen, root, player, save_data, callback, ofset=...):
+from character_sheet.base_page import BasePage
+
+class ConfirmPage(BasePage):
+    def __init__(self, screen, root, player: Player, save_data: Dict[str, Any], callback: Callable, ofset: Optional[Tuple[int, int]]=None):
         super().__init__(screen, root, player, ofset)
         self.save_data = save_data
         self.callback = callback
@@ -39,12 +43,12 @@ class ConfirmPage(BacePage):
 
     # アイテムを作成する
     def create_items(self):
-        self.create_label()
-        self.create_box()
-        self.create_image()
+        self.create_labels()
+        self.set_label_rect_and_create_box()
+        self.create_images()
 
     # ボックスを作成する
-    def create_box(self):
+    def set_label_rect_and_create_box(self):
         box_x, box_y = self.rect.width // 2, 10
         box_w, box_h = 0, 0
         margin_x, margin_y = 10, 5
@@ -82,7 +86,7 @@ class ConfirmPage(BacePage):
         self.box = Box(self.surface, Rect(box_x, box_y, box_w+10, box_h+10))
 
     # 画像を作成する
-    def create_image(self):
+    def create_images(self):
         # 性別画像
         sex_img_scale = 0.5
         for sex in ("man", "woman", "neuter"):
@@ -99,31 +103,31 @@ class ConfirmPage(BacePage):
             self.prof_img_dict[prof_data] = Image(self.screen, prof_img_path, scale=prof_img_scale, x=self.box.rect.x, y=self.box.rect.y+self.box.rect.h+10, line_flag=True, bg_flag=True, parent=self)
 
     # ラベルを作成する
-    def create_label(self):
+    def create_labels(self):
         font_data = self.font_datas[0]
         for name, text in self.status_dict.items():
             label = Label(self.screen, font_data, text, parent=self)
             self.label_dict[name] = label
 
     # ステータスラベルをアップデートする
-    def update_label(self):
+    def update_labels(self):
         self.set_player_data()
         for name, text in self.status_dict.items():
             self.label_dict[name].set_text(text)
-        self.create_box()
+        self.set_label_rect_and_create_box()
 
     def relayout(self, screen):
         super().relayout(screen)
         for label in self.label_dict.values():
             label.relayout(screen, self)
-        self.create_box()
+        self.set_label_rect_and_create_box()
         for sex_img in self.sex_img_dict.values():
             sex_img.relayout(screen, self)
         for prof_img in self.prof_img_dict.values():
             prof_img.relayout(screen, self)
 
     def draw(self):
-        self.update_label()
+        self.update_labels()
         self.bg_img.draw()
         self.box.draw()
         self.sex_img_dict[self.player.sex].draw()

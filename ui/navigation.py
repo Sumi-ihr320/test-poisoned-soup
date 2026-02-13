@@ -1,12 +1,14 @@
+from typing import List, Tuple, Optional
 import pygame
 
-from constans import *
-from utils import setting_font
-from ui.ui_elements import *
+from constans import FONT_PATH, FONT_SIZ, BLACK, RED, Position, PATH, PICTURE
+from utils import setting_font, get_scales
+from ui.ui_elements import Label, UIElement
+from input.focus_manager import FocusManager
 
 # キャラシのページナビゲーション
 class CharasheetNavigation:
-    def __init__(self, screen, surface_rect):
+    def __init__(self, screen, surface_rect: pygame.Rect):
         self.screen = screen
 
         # ナビゲーションを表示する基準となるシートや画像surfaceのrect
@@ -24,9 +26,12 @@ class CharasheetNavigation:
         font_height = font.render("→ 次へ", True, BLACK).get_height()
         y = self.surface_rect.bottom - 10 - font_height
 
-        self.to_next = Label(self.screen, self.font_data, "→ 次へ", x=self.surface_rect.right-10, y=y, anchor=("right", "top"))
-        self.to_prev = Label(self.screen, self.font_data, "← 戻る", x=self.surface_rect.left+10, y=y)
-        self.to_enter = Label(self.screen, self.font_data, "完了", centerx=self.surface_rect.centerx, y=y)
+        self.to_next = Label(self.screen, self.font_data, "→ 次へ", x=self.surface_rect.right-10, y=y, anchor=("right", "top"),
+                             focusable=True, row=50, col=0)
+        self.to_prev = Label(self.screen, self.font_data, "← 戻る", x=self.surface_rect.left+10, y=y,
+                             focusable=True, row=50, col=1)
+        self.to_enter = Label(self.screen, self.font_data, "完了", centerx=self.surface_rect.centerx, y=y,
+                              focusable=True, row=50, col=2)
 
         # ラベルリスト
         self.label_list = [self.to_next, self.to_prev, self.to_enter]
@@ -36,7 +41,17 @@ class CharasheetNavigation:
                            [self.to_next, self.to_prev],
                            [self.to_prev, self.to_enter]]
 
-    def handle_click(self, page, pos):
+    # フォーカスマネージャーに登録
+    def register_focus(self, page: int, focus_manager: FocusManager):
+        for navi in self.navi_items[page]:
+            focus_manager.register(navi)
+
+    # フォーカスマネージャーから全て削除
+    def unregister_all(self, focus_manager: FocusManager):
+        for label in self.label_list:
+            focus_manager.elements.remove(label)
+
+    def handle_click(self, page: int, pos: Tuple[int, int]) -> Optional[str]:
         click_set = {self.to_next: "next",
                      self.to_prev: "prev",
                      self.to_enter:"enter"}
@@ -46,13 +61,13 @@ class CharasheetNavigation:
                 return click_set.get(navi, None)
         return None
 
-    def relayout(self, screen, surface_rect):
+    def relayout(self, screen, surface_rect: pygame.Rect):
         self.screen = screen
         self.surface_rect = surface_rect
         for label in self.label_list:
             label.relayout(screen)
 
-    def draw(self, page):
+    def draw(self, page: int):
         navis = self.navi_items[page]
         for navi in navis:
             navi.draw()
@@ -60,7 +75,7 @@ class CharasheetNavigation:
 
 # メインプレイで使うナビゲーション
 class MainNavigation:
-    def __init__(self, screen, surface_rect):
+    def __init__(self, screen, surface_rect: pygame.Rect):
         self.screen = screen
 
         # ナビゲーションを表示する基準となるシートや画像surfaceのrect
@@ -68,14 +83,22 @@ class MainNavigation:
 
         self.navi_items = {}    # 各位置のナビゲーションを格納する辞書
 
-    def setup_navigation(self, positions):
+    def setup_navigation(self, positions: List[Position]):
         """表示する位置を指定してナビゲーションを初期化する"""
         self.navi_items.clear()
         
         for position in positions:
             self.navi_items[position] = PageNavigation(self.screen, self.surface_rect, position)
 
-    def relayout(self, screen, surface_rect):
+    def register_all(self, focus_manager: FocusManager):
+        for navi in self.navi_items.values():
+            focus_manager.register(navi)
+
+    def unregister_all(self, focus_manager: FocusManager):
+        for navi in self.navi_items.values():
+            focus_manager.elements.remove(navi)
+
+    def relayout(self, screen, surface_rect: pygame.Rect):
         self.screen = screen
         self.surface_rect = surface_rect
         for navi in self.navi_items.values():
@@ -86,7 +109,7 @@ class MainNavigation:
         for navi in self.navi_items.values():
             navi.draw()
 
-    def handle_click(self, pos):
+    def handle_click(self, pos: Tuple[int, int]) -> Optional[Position]:
         """ナビゲーションのクリック処理"""
         for position, navi in self.navi_items.items():
             if navi.handle_click(pos):
@@ -94,10 +117,10 @@ class MainNavigation:
         return None
 
 # ページ移動用の矢印表示するよ
-class PageNavigation:
-    def __init__(self, screen, surface_rect, position_flag=0):
-        self.screen = screen
-        self.screen_size = self.screen.get_size()
+class PageNavigation(UIElement):
+    def __init__(self, screen, surface_rect: pygame.Rect, position_flag: Position=Position.RIGHT,
+                 parent=None, sound_type="click", click_rect=None, row=0, col=0, focusable=True, **kwargs):
+        super().__init__(screen, parent, sound_type, click_rect, row, col, focusable, **kwargs)
 
         # 基準となる画像等surfaceのrect
         self.surface_rect = surface_rect
@@ -116,7 +139,7 @@ class PageNavigation:
                               Position.UNDER:([-20,-10],[0, 10], [20, -10])}
 
         # 位置の設定
-        self.navi_rect = None
+        self.rect = None
         self.position_calculation()
         self.triangle_position_calculation()
 
@@ -136,28 +159,28 @@ class PageNavigation:
 
     # ナビゲーションの場所を計算
     def position_calculation(self):
-        self.navi_rect = self.navi_img.get_rect()
+        self.rect = self.navi_img.get_rect()
 
         # x位置
         if self.position_flag == Position.UNDER:
-            self.navi_rect.center = (self.screen.get_width() // 2, self.surface_rect.bottom - 10)
+            self.rect.center = (self.screen.get_width() // 2, self.surface_rect.bottom - 10)
         else:
-            self.navi_rect.centerx = self.surface_rect.right if self.position_flag == Position.RIGHT else self.surface_rect.left
-            self.navi_rect.centery = self.surface_rect.centery
+            self.rect.centerx = self.surface_rect.right if self.position_flag == Position.RIGHT else self.surface_rect.left
+            self.rect.centery = self.surface_rect.centery
 
     # 三角形の場所を計算する
     def triangle_position_calculation(self):
         basic_position = self.triangle_dict[self.position_flag]
         self.triangle_position = []
         scale_x, scale_y, _ = get_scales(self.screen_size)
-        center_x, center_y = self.navi_rect.center
+        center_x, center_y = self.rect.center
         for l in basic_position:
             position = []
             position.append((l[0]*scale_x)+center_x)
             position.append((l[1]*scale_y)+center_y)
             self.triangle_position.append(position)
 
-    def relayout(self, screen, surface_rect):
+    def relayout(self, screen, surface_rect: pygame.Rect):
         self.screen = screen
         self.screen_size = screen.get_size()
         self.surface_rect = surface_rect
@@ -168,12 +191,8 @@ class PageNavigation:
     # 画像表示
     def draw(self):
         # バーの描画
-        self.screen.blit(self.navi_img, self.navi_rect)
+        self.screen.blit(self.navi_img, self.rect)
 
         # 三角形の描画
         pygame.draw.polygon(self.screen, BLACK, self.triangle_position)
 
-    def handle_click(self, pos):
-        if self.navi_rect.collidepoint(pos):
-            return True
-        return False
