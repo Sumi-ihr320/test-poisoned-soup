@@ -43,13 +43,15 @@ class CharasheetNavigation:
 
     # フォーカスマネージャーに登録
     def register_focus(self, page: int, focus_manager: FocusManager):
-        for navi in self.navi_items[page]:
-            focus_manager.register(navi)
+        for navis in self.navi_items[page]:
+            for navi in navis:
+                focus_manager.register(navi)
 
-    # フォーカスマネージャーから全て削除
-    def unregister_all(self, focus_manager: FocusManager):
-        for label in self.label_list:
-            focus_manager.elements.remove(label)
+    # フォーカスマネージャーから削除
+    def unregister_focus(self, page: int, focus_manager: FocusManager):
+        for navis in self.navi_items[page]:
+            for navi in navis:
+                focus_manager.elements.remove(navi)
 
     def handle_click(self, page: int, pos: Tuple[int, int]) -> Optional[str]:
         click_set = {self.to_next: "next",

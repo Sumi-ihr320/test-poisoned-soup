@@ -76,11 +76,27 @@ class CharacterSheetScene(BaseScene):
         self.pages.append(self.profession_page)
         self.pages.append(self.confirm_page)
 
+    # 指定したページのフォーカスを登録する
+    def register_page(self, page: int):
+        self.pages[page].register_all(self.focus_manager)
+
+    # 指定したページのフォーカスを削除する
+    def unregister_page(self, page: int):
+        self.pages[page].unregister_all(self.focus_manager)
+
+    # ページごとにフォーカスを登録・削除する
+    def change_register_page(self):
+        for page in range(len(self.pages)):
+            if page == self.current_page:
+                self.register_page(page)
+                self.navigation.register_focus(page, self.focus_manager)
+            else:
+                self.unregister_page(page)
+                self.navigation.unregister_focus(page, self.focus_manager)
+
     # すべての要素をフォーカスマネージャーに登録する
     def register_all(self):
-        for page in self.pages:
-            page.register_all(self.focus_manager)
-        self.navigation.register_all(self.focus_manager)
+        self.change_register_page()
         self.text_frame_panel.register_all(self.focus_manager)
 
     # 更新されたデータをステータスに入力＋自動計算する
