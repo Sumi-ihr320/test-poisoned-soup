@@ -1,34 +1,84 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Any
 from pygame import Surface, Rect
 
 from constans import STATUS_DATA_PATH, JSON_FOLDER
 from utils import load_json
 from character_sheet.status import Status, SexChange
 from models.characters import Player
-from manager.sound_manager import sound_manager
 from character_sheet.base_page import BasePage
+from character_sheet.status_calculator import *
 
 class StatusPage(BasePage):
     def __init__(self, screen, root, player: Player, ofset: Optional[Tuple[int, int]]=None):
         super().__init__(screen, root, player, ofset)
 
-        self.status_data = load_json(STATUS_DATA_PATH, JSON_FOLDER)
+        self.status_data: Dict[str, Dict[str, Any]] = load_json(STATUS_DATA_PATH, JSON_FOLDER)
 
         self.sex_button = None  # 性別ボタン
 
+    # ステータスアイテムの作成
     def create_status_items(self):
         font_data = self.font_datas[0]
         for status, items in self.status_data.items():
-            item = Status(self.screen, self, self.root, font_data, items["name"], status, items["view_name"], getattr(self.player, status),
-                        items["x"], items["y"], items["w"], items["h"], items["text"],
-                        items["button_flag"], items["input_flag"], items["box_flag"], items["dice_text"])
+            item = Status(self.screen, self, self.root, font_data=font_data, name=items["name"], status_name=status, label_name=items["view_name"], status=getattr(self.player, status),
+                        x=items["x"], y=items["y"], w=items["w"], h=items["h"], hover_text=items["text"],
+                        button_flag=items["button_flag"], input_flag=items["input_flag"], box_flag=items["box_flag"], dice_text=items["dice_text"],
+                        row=items["row"], col=items["col"])
             self.add_elements(item)
             if status == "sex":
-                self.sex_button = SexChange(self.screen, self, self.rect, font_data, items["view_name"], items["x"], items["y"], self.player.sex)
+                self.sex_button = SexChange(self.screen, parent=self, sheet_rect=self.rect, font_data=font_data, title_text=items["view_name"], 
+                                            x=items["x"], y=items["y"], flag=self.player.sex,
+                                            row=items["row"], col=items["col"])
 
     def load_status_items(self):
         if not self.elements:   # すでにアイテムがあるか確認
             self.create_status_items()
+
+    # 更新されたデータをステータスに入力＋自動計算する
+    def insert_data(self, status: Status):
+        setattr(self.player, status.status_name, status.input.get_value())
+        self.auto_calculation(status.status_name)
+
+    # ステータスの自動計算
+    def auto_calculation(self, name: str):
+        # 各ステータスに対応する計算
+        calculations = {"STR": [calculation_damage_bonus],
+                        "SIZ": [calculation_damage_bonus, calculation_health_point],
+                        "CON": [calculation_health_point],
+
+                        "POW": [calculation_power_related],
+                        "INT": [calculation_idea],
+                        "EDU": [calculation_educated_point],
+                        "DEX": [calculation_avoid_point]}
+
+        # 計算結果により変化するステータス
+        response_status = {calculation_damage_bonus: ["DB"],
+                          calculation_health_point: ["HP"],
+                          calculation_power_related: ["MP","Luck","SAN"],
+                          calculation_idea: ["Idea"],
+                          calculation_educated_point: ["Know"],
+                          calculation_avoid_point: ["Dodge"]}
+
+        if name in calculations:
+            for calculation in calculations[name]:
+                # 計算結果を取得する
+                val = calculation(self.player)
+                if name == "EDU":
+                    val = val if val < 99 else 99
+                # 計算結果をステータスに入力 & ラベルの更新
+                if name == "POW":
+                    for status, value in val.items():
+                        setattr(self.player, status, value)
+                for status in response_status[calculation]:
+                    if name != "POW":
+                        setattr(self.player, status, val)
+                    self.update_status_label(status, getattr(self.player, status))
+    
+    # ステータスラベルの更新
+    def update_status_label(self, name: str, val: int|str):
+        for item in self.elements:
+            if item.status_name == name:
+                item.input.update_label(f"{val}")
 
     # 画面サイズ変更時にポジション等を更新する
     def relayout(self, screen):
@@ -54,41 +104,23 @@ class StatusPage(BasePage):
 
     def handle_click(self, pos: Tuple[int, int]) -> Optional[Status]:
         if self.handle_sex_button(pos):
-            return None
+            return
         else:
             # 他のステータスの処理
             for item in self.elements:
                 # インプットボックス
                 if item.input and item.input.collidepoint(pos) and item.input_flag:   # かつ入力フラグがonの場合
                     item.input_process(self.player.EDU)
-                    return item
+                    self.insert_data(item)
                 # ダイスボタン
                 if item.button and item.button.handle_click(pos):
-                    return item
+                    self.insert_data(item)
 
     # 性別ボタンを押したとき
     def handle_sex_button(self, pos: Tuple[int, int]) -> bool:
-        on_button = False
-
-        # 男ボタン
-        if self.sex_button and self.sex_button.man.collidepoint(pos):
-            self.player.sex = "man"
-            on_button = True
-            
-        # 女ボタン
-        elif self.sex_button and self.sex_button.woman.collidepoint(pos):
-            self.player.sex = "woman"
-            on_button = True
-
-        # その他ボタン
-        elif self.sex_button and self.sex_button.neuter.collidepoint(pos):
-            self.player.sex = "neuter"
-            on_button = True
-
-        if on_button:
-            self.player.image = f"silhouette_{self.player.sex}.png"
-            sound_manager.play("クリック")
-            self.sex_button.update_sex(self.player.sex)
-        
-        return on_button
-
+        result = self.sex_button.handle_click(pos)
+        if result is not None:
+            self.player.sex = result
+            self.player.image = f"silhouette_{result}.png"
+            return True
+        return False

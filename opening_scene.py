@@ -72,13 +72,19 @@ class OpeningScene(BaseScene):
 
             action = self.focus_manager.handle_event(event)
 
+            if action is None:
+                self.scenario_manager.on_click()
+                if self.scenario_manager.is_active == False:
+                    self.state = State.CLOSE
+
+
 
     def update(self):
+        self.handle_events()
         if self.scenario_manager.is_active:
             self.scenario_manager.update()
-        self.draw()
         self.handle_mouse_hover()
-        self.handle_events()
+        self.draw()
         return self.next_state()
 
     # メニューボタン用のコールバック関数

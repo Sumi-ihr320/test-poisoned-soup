@@ -280,7 +280,7 @@ class Label(UIElement, RectSettingBase, TextBase):
         super().update_text_surface(color)
         self.rect = Rect(self.x, self.y, self.max_width, self.max_height)
         self.rect = self.set_rect(self.rect)
-        self.set_bace_rect(self.rect)
+        self.set_base_rect(self.rect)
 
     # ラベルを描画する
     def draw(self):

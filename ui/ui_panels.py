@@ -252,5 +252,4 @@ class TextFramePanel(UIContainer):
             return True
         elif self.next_label.handle_click(pos):
             return True
-        else:
-            return False
+        return False

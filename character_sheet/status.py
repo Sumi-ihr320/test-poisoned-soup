@@ -8,13 +8,14 @@ from utils import dice_confirmation, TopmostManager
 from ui.ui_elements import Label, Button, Image, InputBox, ImageCache, CustomDialog
 from input.focus_manager import FocusManager
 from manager.dice_service import DiceService
+from manager.sound_manager import sound_manager
 
 # ステータス作るよ
 class Status:
     MAX_STATUS_VALUE = 99
 
     def __init__(self, screen, parent, root, font_data: Tuple[str, int], name: str, status_name: str, label_name: str, status: str|int, 
-                 x: int, y: int, w: int, h: int, hover_text: str="", row: int=0,
+                 x: int, y: int, w: int, h: int, hover_text: str="", row: int=0, col: int=0,
                  button_flag: bool=True, input_flag: bool=True, box_flag: bool=True, dice_text: str=""):
         self.screen = screen
         self.parent = parent
@@ -28,6 +29,7 @@ class Status:
         self.hover_text = hover_text    # マウスオーバー時に表示される説明文
 
         self.row = row              # フォーカスマネージャー用の行番号  
+        self.col = col              # フォーカスマネージャー用の列番号
 
         self.dice_text = dice_text      # ダイスボタンに表示するテキスト
 
@@ -58,7 +60,7 @@ class Status:
         input_x = x + self.status_label.rect.w + 5
         input_y = y - 4     # ラベルより大きいので少し上に
         self.input = InputBox(self.screen, self.font_data, Rect(input_x, input_y, w, h), str(self.status), self.input_flag, parent=self.parent,
-                              focusable=self.input_flag, row=self.row, col=0)
+                              focusable=self.input_flag, row=self.row, col=self.col)
 
     # ダイスボタンを作成
     def create_dice_button(self):
@@ -67,8 +69,9 @@ class Status:
         # その幅分隣
         rect.x = rect.x + rect.w + 5
         self.button = Button(self.screen, self.font_data, self.dice_text, rect, self.dice_process, parent=self.parent,
-                             focusable=True, row=self.row, col=1)
+                             focusable=True, row=self.row, col=self.col+1)
 
+    # フォーカスマネージャーへの登録
     def register_all(self, focus_manager: FocusManager):
         if self.input:
             focus_manager.register(self.input)
@@ -145,7 +148,7 @@ class Status:
 # 選んだ性別によって画像が変わるようにするよ
 class SexChange:
     def __init__(self, screen, parent, sheet_rect: pygame.Rect, font_data: Tuple[str, int], title_text: str, 
-                 x: int, y: int, flag: str, row: int=0):
+                 x: int, y: int, flag: str, row: int=0, col: int=0):
         self.screen = screen
         self.parent = parent
         self.sheet_rect = sheet_rect
@@ -153,14 +156,17 @@ class SexChange:
 
         self.title_text = title_text
         self.title_x, self.title_y = x, y
+
         self.flag = flag
+
         self.row = row
+        self.col = col
 
         # 性別ボタン作成
         self.labels_dict = {}
         self.create_labels_dict()
         # ボタンを配置
-        self.button_placement()
+        self.placement_button()
 
         self.image_cache = ImageCache()
 
@@ -169,7 +175,7 @@ class SexChange:
         self.create_images_dict()
 
     # 性別ボタンの配置
-    def button_placement(self):
+    def placement_button(self):
         font = pygame.font.Font(self.font_data[0], self.font_data[1])
 
         # 性別欄のテキストの位置
@@ -215,7 +221,7 @@ class SexChange:
     def create_button_label(self, text: str, col: int) -> Label:
         push_color = (106,93,33)   # ボタンを押したときの色
         label = Label(self.screen, self.font_data, text, parent=self.parent, 
-                      focusable=True, row=self.row, col=col,
+                      focusable=True, row=self.row, col=self.col+col,
                       hover_text_color=WHITE, hover_back_color=push_color)
         return label
 
@@ -262,3 +268,12 @@ class SexChange:
             label.draw()
         
         self.images_dict[self.flag].draw()
+
+    def handle_click(self, pos: Tuple[int, int]):
+        for name, label in self.labels_dict.items():
+            if label.collidepoint(pos):
+                sound_manager.play("クリック")
+                self.update_sex(name)
+                return name
+        return None
+        

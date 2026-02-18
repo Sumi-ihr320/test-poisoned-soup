@@ -99,6 +99,7 @@ class CharacterSheetScene(BaseScene):
         self.change_register_page()
         self.text_frame_panel.register_all(self.focus_manager)
 
+    """
     # 更新されたデータをステータスに入力＋自動計算する
     def insert_data(self, status: Status):
         setattr(self.player, status.status_name, status.input.get_value())
@@ -144,7 +145,7 @@ class CharacterSheetScene(BaseScene):
         for item in self.status_page.elements:
             if item.status_name == name:
                 item.input.update_label(f"{val}")
-
+    """
     # 完了ボタンを押した時のイベント
     def event_enter_button(self):
         manual_input_fields = { "name": "名前が入力されていません",
@@ -246,9 +247,12 @@ class CharacterSheetScene(BaseScene):
             # 閉じるボタンかESCキーで終了
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 Close(self.root)
-            # マウス左クリック時
-            elif event.type == MOUSEBUTTONDOWN and event.button == 1:
-                self.handle_mouse_click(event.pos)
+
+            ## マウス左クリック時
+            #elif event.type == MOUSEBUTTONDOWN and event.button == 1:
+            #    self.handle_mouse_click(event.pos)
+
+            action = self.focus_manager.handle_event(event)
 
     # マウスクリック時
     def handle_mouse_click(self, pos: Tuple[int, int]):

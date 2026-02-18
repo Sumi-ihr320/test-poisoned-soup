@@ -1,4 +1,4 @@
-from typing import Tuple, Any
+from typing import List, Tuple, Any
 import pygame
 
 from constans import SHEET_SIZE, FONT_PATH, FONT_SIZ, SMALL_SIZ
@@ -35,9 +35,9 @@ class BasePage:
 
     # フォントデータの設定
     def setting_font_data(self):
-        font_data = (FONT_PATH, FONT_SIZ)
-        small_font_data = (FONT_PATH, SMALL_SIZ)
-        self.font_datas = [font_data, small_font_data]
+        font_data: Tuple[str, int] = (FONT_PATH, FONT_SIZ)
+        small_font_data: Tuple[str, int] = (FONT_PATH, SMALL_SIZ)
+        self.font_datas: List[Tuple[str, int]] = [font_data, small_font_data]
 
     # 要素を追加
     def add_elements(self, element: Any):
