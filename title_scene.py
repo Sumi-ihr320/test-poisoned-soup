@@ -101,17 +101,7 @@ class TitleScene(BaseScene):
 
         self.focus_manager.draw()
 
-    # マウスオーバーイベント
-    #def handle_mouse_hover(self):
-        # マウスオーバーで枠を表示するよ
-        #pos = pygame.mouse.get_pos()
-
-    #    self.mouse_focus = None
-
-    #    for content in self.contents_list:
-    #        content.handle_mouse_hover(pos)
-
-
+    # クリックでdecideされた時の処理
     def on_focus_decide(self, element):
         if element is self.start:
             sound_manager.stop("タイトル")
@@ -128,31 +118,6 @@ class TitleScene(BaseScene):
         elif element is self.close:
             Close(self.root)
 
-
-    # クリックイベント
-    def handle_click(self, pos):
-        if self.start.handle_click(pos):
-            sound_manager.stop("タイトル")
-            print(f"{self.start.texts}:{pos}")  # デバッグ用 
-            self.state = State.CLOSE
-
-        elif self.load.handle_click(pos):
-            sound_manager.stop("タイトル")
-            print(f"{self.load.texts}:{pos}")  # デバッグ用 
-            self.state = State.LOAD
-
-        elif self.setting.handle_click(pos):
-            sound_manager.stop("タイトル")
-            #sound_manager.play("選択")
-            print(f"{self.setting.texts}:{pos}")  # デバッグ用
-            self.state = State.SETTING
-
-        elif self.close.handle_click(pos):
-            print(f"{self.close.texts}:{pos}")  # デバッグ用 
-            Close(self.root)
-        else:
-            pass
-
     # イベント
     def handle_events(self):
         for event in pygame.event.get():
@@ -164,12 +129,9 @@ class TitleScene(BaseScene):
             if event.type == KEYDOWN and event.key == K_ESCAPE:
                 Close(self.root)
 
-            action = self.focus_manager.handle_event(event)
-
-            if action == "decide":
-                focusad = self.focus_manager.get_focused()
-                if focusad:
-                    self.on_focus_decide(focusad)
+            result = self.focus_manager.handle_event(event)
+            if result and result["action"] == "decide": 
+                self.on_focus_decide(result["target"])
 
     # 更新            
     def update(self):

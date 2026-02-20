@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 from tkinter import messagebox
 
 import pygame
@@ -60,6 +60,7 @@ class CharacterSheetScene(BaseScene):
 
         # フォーカスマネージャー
         self.focus_manager = FocusManager(self.screen)
+        self.register_all()
 
         # 状態フラグ
         self.state = State.NONE
@@ -85,9 +86,9 @@ class CharacterSheetScene(BaseScene):
         self.pages[page].unregister_all(self.focus_manager)
 
     # ページごとにフォーカスを登録・削除する
-    def change_register_page(self):
+    def change_register_page(self, target_page: int):
         for page in range(len(self.pages)):
-            if page == self.current_page:
+            if page == target_page:
                 self.register_page(page)
                 self.navigation.register_focus(page, self.focus_manager)
             else:
@@ -96,7 +97,7 @@ class CharacterSheetScene(BaseScene):
 
     # すべての要素をフォーカスマネージャーに登録する
     def register_all(self):
-        self.change_register_page()
+        self.change_register_page(self.current_page)
         self.text_frame_panel.register_all(self.focus_manager)
 
     """
@@ -214,13 +215,16 @@ class CharacterSheetScene(BaseScene):
         if self.current_page < len(self.pages) - 1:
             self.target_page = self.current_page + 1
             self.is_sliding = True
+            self.change_register_page(self.target_page)
     
     # 前のページを表示
     def prev_page(self):
         if self.current_page > 0:
             self.target_page = self.current_page - 1
             self.is_sliding = True
+            self.change_register_page(self.target_page)
 
+    """
     # マウスオーバーイベント
     def handle_mouse_hover(self):
         # マウスオーバーでテキスト表示するよ
@@ -240,7 +244,7 @@ class CharacterSheetScene(BaseScene):
             self.text_frame_panel.set_text(horver_text)
         else:
             self.text_frame_panel.set_text("")
-
+    """
     # イベントハンドラ
     def handle_events(self):
         for event in pygame.event.get():
@@ -248,12 +252,35 @@ class CharacterSheetScene(BaseScene):
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 Close(self.root)
 
-            ## マウス左クリック時
-            #elif event.type == MOUSEBUTTONDOWN and event.button == 1:
-            #    self.handle_mouse_click(event.pos)
+            result = self.focus_manager.handle_event(event)
 
-            action = self.focus_manager.handle_event(event)
+            if result:
+                if result["action"] == "hover":
+                    self.text_frame_panel.set_text(result["hover_text"])
+                else:
+                    self.text_frame_panel.set_text("")
+                    if result["action"] == "decide":
+                        if result["target"] in self.text_frame_panel.children:
+                            return
+                        if result["target"] in self.navigation.navi_items:
+                            if self.current_page == 1 and self.is_pulldown_open:
+                                self.is_pulldown_open = False
 
+                            if result["target"] == self.navigation.to_enter:
+                                self.event_enter_button()
+                            else:
+                                if result["target"] == self.navigation.to_next:
+                                    self.next_page()
+                                elif result["target"] == self.navigation.to_prev:
+                                    self.prev_page()
+
+                        
+                        if self.current_page == 0:
+                            self.status_page.handle_click(result["target"])
+                        elif self.current_page == 1:
+                            self.profession_page.handle_click(result["target"])
+
+    """
     # マウスクリック時
     def handle_mouse_click(self, pos: Tuple[int, int]):
         if self.text_frame_panel.handle_click(pos):
@@ -281,7 +308,7 @@ class CharacterSheetScene(BaseScene):
         elif self.current_page == 1:
         # 2ページ目だったら
             self.is_pulldown_open, self.selected_profession, self.selected_hobby = self.profession_page.handle_click(pos, self.is_pulldown_open, self.selected_profession, self.selected_hobby)
-
+    """
     # 画面サイズ更新時にポジションを変更する
     def relayout(self, screen: pygame.Surface):
         super().relayout(screen)

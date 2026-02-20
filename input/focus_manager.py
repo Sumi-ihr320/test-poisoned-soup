@@ -70,22 +70,32 @@ class FocusManager:
         elif input_mode_manager.is_keyboard():
             self._handle_keyboard(event)
 
+    # ホバー処理
+    def _handle_hover(self, pos):
+        for el in self.elements:
+            hover_text = el.handle_mouse_hover(pos)
+            if hover_text is not None:
+                return {"action": "hover", "text": hover_text}
+
+    # クリック処理
+    def _handle_click(self, pos, element):
+        result = element.handle_click(pos)
+        return {"action": "decide", "target": element, "result": result}
+
     # マウス操作処理
     def _handle_mouse(self, event) -> Optional[str]:
+        result = None
         if event.type == pygame.MOUSEMOTION:
             pos = event.pos
-            for el in self.elements:
-                el.handle_mouse_hover(pos)
+            result = self._handle_hover(pos)
         
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             pos = event.pos
             for el in self.elements:
                 if el.collidepoint(pos):
                     self._set_focus(el)
-                    el.handle_click(pos)
-                    return "decide"
-
-        return None
+                    result = self._handle_click(pos, el)
+        return result
 
     # 仮想カーソル処理
     def _handle_virtual_cursor(self, event):
@@ -93,15 +103,14 @@ class FocusManager:
         self.virtual_cursor.update(event)
 
         pos = self.virtual_cursor.get_pos()
-        for el in self.elements:
-            el.handle_mouse_hover(pos)
+        self._handle_hover(pos)
 
         # 仮想カーソル決定ボタン
         if event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_SPACE):
             hovered = self.virtual_cursor.check_hover(self.elements)
             if hovered:
-                self._set_focus(hovered) 
-                hovered.handl_click(pos)
+                self._set_focus(hovered)
+                self._handle_click(pos, hovered)
 
     # キーボード操作処理
     def _handle_keyboard(self, event):
@@ -120,7 +129,7 @@ class FocusManager:
             focused = self.get_focused()
             if focused:
                 pos = focused.get_center()
-                focused.handle_click(pos)
+                self._handle_click(pos, focused)
 
     # フォーカス関連
     def _move_focus_linear(self, delta: int):

@@ -33,7 +33,7 @@ class StatusPage(BasePage):
     def load_status_items(self):
         if not self.elements:   # すでにアイテムがあるか確認
             self.create_status_items()
-
+    
     # 更新されたデータをステータスに入力＋自動計算する
     def insert_data(self, status: Status):
         setattr(self.player, status.status_name, status.input.get_value())
@@ -79,7 +79,7 @@ class StatusPage(BasePage):
         for item in self.elements:
             if item.status_name == name:
                 item.input.update_label(f"{val}")
-
+    
     # 画面サイズ変更時にポジション等を更新する
     def relayout(self, screen):
         super().relayout(screen)

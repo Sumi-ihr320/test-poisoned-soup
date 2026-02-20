@@ -356,11 +356,9 @@ class SaveDataScene(BaseScene):
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 Close(self.root)
 
-            action = self.focus_manager.handle_event(event)
-            if action == "decide":
-                focused = self.focus_manager.get_focused()
-                if focused:
-                    self.on_focus_decide(focused)
+            result = self.focus_manager.handle_event(event)
+            if result and result["action"] == "decide":
+                self.on_focus_decide(result["target"])
 
     # focus_managerでdecideが返された時の処理
     def on_focus_decide(self, element: Any):
