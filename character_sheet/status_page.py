@@ -29,6 +29,7 @@ class StatusPage(BasePage):
                 self.sex_button = SexChange(self.screen, parent=self, sheet_rect=self.rect, font_data=font_data, title_text=items["view_name"], 
                                             x=items["x"], y=items["y"], flag=self.player.sex,
                                             row=items["row"], col=items["col"])
+            self.add_elements(self.sex_button)
 
     def load_status_items(self):
         if not self.elements:   # すでにアイテムがあるか確認
@@ -93,6 +94,7 @@ class StatusPage(BasePage):
             self.sex_button.draw()
         return surface, rect
     
+    # マウスオーバー
     def handle_mouse_hover(self, pos: Tuple[int, int]) -> Optional[str]:
         for item in self.elements:
             if item.button:
@@ -102,7 +104,14 @@ class StatusPage(BasePage):
                 return text
         return None
 
-    def handle_click(self, pos: Tuple[int, int]) -> Optional[Status]:
+    # クリックイベント
+    def handle_click(self, element, result: str):
+        if result in ["input", "button"]:
+            self.insert_data(element)
+        elif result in ["man", "woman", "neuter"]:
+            self.player.sex = result
+            self.player.image = f"silhouette_{result}.png"
+        """
         if self.handle_sex_button(pos):
             return
         else:
@@ -115,7 +124,7 @@ class StatusPage(BasePage):
                 # ダイスボタン
                 if item.button and item.button.handle_click(pos):
                     self.insert_data(item)
-
+        """
     # 性別ボタンを押したとき
     def handle_sex_button(self, pos: Tuple[int, int]) -> bool:
         result = self.sex_button.handle_click(pos)

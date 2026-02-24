@@ -769,4 +769,10 @@
 	status_page周りの細かい修正
 
 2026/2/20
-	
+	focus_managerのresultを変更
+
+2026/2/24
+	StatusからInputBoxにinput_processを移動
+	Statusにhandle_clickを追加
+	SexButtonにhandle_mouse_hoverを追加
+	status_pageのhandle_eventを修正

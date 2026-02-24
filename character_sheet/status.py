@@ -4,7 +4,7 @@ import pygame
 from pygame.locals import *
 
 from constans import WHITE
-from utils import dice_confirmation, TopmostManager
+from utils import dice_confirmation
 from ui.ui_elements import Label, Button, Image, InputBox, ImageCache, CustomDialog
 from input.focus_manager import FocusManager
 from manager.dice_service import DiceService
@@ -59,8 +59,8 @@ class Status:
         # ステータスラベルの隣
         input_x = x + self.status_label.rect.w + 5
         input_y = y - 4     # ラベルより大きいので少し上に
-        self.input = InputBox(self.screen, self.font_data, Rect(input_x, input_y, w, h), str(self.status), self.input_flag, parent=self.parent,
-                              focusable=self.input_flag, row=self.row, col=self.col)
+        self.input = InputBox(self.screen, self.root, self.font_data, Rect(input_x, input_y, w, h), str(self.status), self.input_flag, 
+                              parent=self.parent, focusable=self.input_flag, row=self.row, col=self.col)
 
     # ダイスボタンを作成
     def create_dice_button(self):
@@ -120,21 +120,22 @@ class Status:
     def input_process(self, edu: int):
         min, max = self.determine_input_range(edu)
         value_type = type(self.status)
-        num = 2 if value_type == int else None
-
-        # カスタムダイアログに入力された値を取得してラベルを更新する
-        with TopmostManager(self.root):
-            dialog = CustomDialog(self.root, self.name, f"あなたの{self.name}を入力してください", self.input.label_text, value_type, min, max, num)
-            value = dialog.result
-
-        if value is not None:
-            if self.input:
-                self.input.update_label(f"{value}")
+        num = 2 if value_type == int else 20
+        self.input.input_process(title=self.name, text=f"あなたの{self.name}", min=min, max=max, 
+                                 value_type=value_type, num_characters=num)
 
     # ダイス処理まとめるよ
     def dice_process(self):
         result = self.dice_service.roll(self.dice_text)
         self.input.update_label(f"{result}")
+
+    def handle_click(self, pos):
+        if self.input_flag and self.input and self.input.collidepoint(pos):
+            self.input_process(self.parent.player.EDU)
+            return "input"
+        elif self.button and self.button.handle_click(pos):
+            return "button"
+        return None
 
     def handle_mouse_hover(self, pos) -> Optional[str]:
         if self.status_label.collidepoint(pos):
@@ -268,6 +269,11 @@ class SexChange:
             label.draw()
         
         self.images_dict[self.flag].draw()
+
+    def handle_mouse_hover(self, pos: Tuple[int, int]):
+        for label in self.labels_dict.values():
+            if label.collidepoint(pos):
+                return "探索者の性別をクリックで選択してください"
 
     def handle_click(self, pos: Tuple[int, int]):
         for name, label in self.labels_dict.items():

@@ -789,10 +789,11 @@ class BoxStyleBase:
 
 # インプットボックス
 class InputBox(UIElement, HasLabelBase, BoxStyleBase, ResizableMixin):
-    def __init__(self, screen, font_data: Tuple[str, int], rect: pygame.Rect, label_text: str="", 
+    def __init__(self, screen, root, font_data: Tuple[str, int], rect: pygame.Rect, label_text: str="", 
                  input_flag: bool=True, line_bold: int=2, 
                  sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, parent: Optional[Any]=None, **kwargs):
         super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, label_text=label_text, label_padding=10, label_anchor="center", fill_color=WHITE if input_flag else None, border_width=line_bold, under_line=True, **kwargs)
+        self.root = root
 
         self.font_data = font_data
         self.font = pygame.font.Font(self.font_data[0], self.font_data[1])
@@ -827,6 +828,16 @@ class InputBox(UIElement, HasLabelBase, BoxStyleBase, ResizableMixin):
             return int(self.label_text)
         except ValueError:
             return self.label_text
+
+    # 入力処理
+    def input_process(self, title, text, min, max, value_type, num_characters):
+        # カスタムダイアログに入力された値を取得してラベルを更新する
+        with TopmostManager(self.root):
+            dialog = CustomDialog(self.root, title, f"{text}を入力してください", self.label_text, value_type, min, max, num_characters)
+            value = dialog.result
+
+        if value is not None:
+            self.update_label(f"{value}")
 
     # 描画
     def draw(self):

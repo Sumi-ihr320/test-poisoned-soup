@@ -260,25 +260,29 @@ class CharacterSheetScene(BaseScene):
                 else:
                     self.text_frame_panel.set_text("")
                     if result["action"] == "decide":
+                        # テキストフレームパネルのアイテムの場合
                         if result["target"] in self.text_frame_panel.children:
                             return
+                        
+                        # ナビゲーションアイテムの場合
                         if result["target"] in self.navigation.navi_items:
                             if self.current_page == 1 and self.is_pulldown_open:
                                 self.is_pulldown_open = False
 
                             if result["target"] == self.navigation.to_enter:
                                 self.event_enter_button()
-                            else:
-                                if result["target"] == self.navigation.to_next:
-                                    self.next_page()
-                                elif result["target"] == self.navigation.to_prev:
-                                    self.prev_page()
+                            elif result["target"] == self.navigation.to_next:
+                                self.next_page()
+                            elif result["target"] == self.navigation.to_prev:
+                                self.prev_page()
 
-                        
+                        # ステータスページの場合
                         if self.current_page == 0:
-                            self.status_page.handle_click(result["target"])
+                            self.status_page.handle_click(result["target"], result["result"])
+
+                        # 職業ページの場合
                         elif self.current_page == 1:
-                            self.profession_page.handle_click(result["target"])
+                            self.profession_page.handle_click(result["target"], result["result"])
 
     """
     # マウスクリック時
