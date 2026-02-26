@@ -5,20 +5,21 @@ from pygame.locals import *
 
 from constans import WHITE
 from utils import dice_confirmation
-from ui.ui_elements import Label, Button, Image, InputBox, ImageCache, CustomDialog
+from ui.ui_elements import Label, Button, Image, InputBox
+from ui.ui_cache import ImageCache
+from ui.ui_container import UIContainer
 from input.focus_manager import FocusManager
 from manager.dice_service import DiceService
 from manager.sound_manager import sound_manager
 
 # ステータス作るよ
-class Status:
+class Status(UIContainer):
     MAX_STATUS_VALUE = 99
 
     def __init__(self, screen, parent, root, font_data: Tuple[str, int], name: str, status_name: str, label_name: str, status: str|int, 
                  x: int, y: int, w: int, h: int, hover_text: str="", row: int=0, col: int=0,
                  button_flag: bool=True, input_flag: bool=True, box_flag: bool=True, dice_text: str=""):
-        self.screen = screen
-        self.parent = parent
+        super().__init__(screen, parent)
         self.root = root
 
         self.font_data = font_data
@@ -147,11 +148,11 @@ class Status:
         return None
 
 # 選んだ性別によって画像が変わるようにするよ
-class SexChange:
+class SexChange(UIContainer):
     def __init__(self, screen, parent, sheet_rect: pygame.Rect, font_data: Tuple[str, int], title_text: str, 
                  x: int, y: int, flag: str, row: int=0, col: int=0):
-        self.screen = screen
-        self.parent = parent
+        super().__init__(screen, parent)
+
         self.sheet_rect = sheet_rect
         self.font_data = font_data
 

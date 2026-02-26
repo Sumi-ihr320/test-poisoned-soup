@@ -125,6 +125,7 @@ class StatusPage(BasePage):
                 if item.button and item.button.handle_click(pos):
                     self.insert_data(item)
         """
+
     # 性別ボタンを押したとき
     def handle_sex_button(self, pos: Tuple[int, int]) -> bool:
         result = self.sex_button.handle_click(pos)

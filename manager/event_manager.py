@@ -3,7 +3,7 @@ from typing import List, Dict, Tuple, Any, Optional, Callable
 
 from constans import SKILL_DATA_PATH, JSON_FOLDER, ITEM_LIST, State
 from utils import load_json
-from ui.ui_elements import ImageCache
+from ui.ui_cache import ImageCache
 from ui.ui_panels import TextFramePanel
 from ui.ui_command import Command
 from ui.log_view import LogView

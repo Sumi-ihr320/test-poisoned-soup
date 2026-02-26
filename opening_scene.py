@@ -70,13 +70,12 @@ class OpeningScene(BaseScene):
             if event.type == KEYDOWN and event.key == K_ESCAPE:
                 Close(self.root)
 
-            action = self.focus_manager.handle_event(event)
+            result = self.focus_manager.handle_event(event)
 
-            if action is None:
+            if result is None:
                 self.scenario_manager.on_click()
                 if self.scenario_manager.is_active == False:
                     self.state = State.CLOSE
-
 
 
     def update(self):

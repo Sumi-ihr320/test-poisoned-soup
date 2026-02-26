@@ -1,8 +1,10 @@
 import pygame
 
-from constans import *
-from utils import *
-from ui.ui_elements import *
+from constans import FONT_PATH, FONT_SIZ, WHITE, BLACK_ALPHA
+from utils import setting_font
+from ui.ui_elements import Image
+from ui.ui_cache import SurfaceCache
+from ui.ui_base import RichTextRenderer
 
 class LogView:
     def __init__(self, screen, parent=None, font_data=(FONT_PATH, FONT_SIZ), padding=12, text_color=WHITE,

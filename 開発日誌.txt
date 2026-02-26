@@ -776,3 +776,8 @@
 	Statusにhandle_clickを追加
 	SexButtonにhandle_mouse_hoverを追加
 	status_pageのhandle_eventを修正
+
+2026/2/26
+	Status、SexButtonをUIContainer継承に変更
+	ui_elementsからui_base、ui_cache、ui_dialogsplayer_data_viewに分割
+	ui_elementsからInputBoxを分離、HasLabelBaseとBoxStyleBaseを統合。

@@ -26,20 +26,21 @@ class ConfirmPage(BasePage):
 
     # プレイヤーデータをリストに入れる
     def set_player_data(self):
-        sex_name = "男" if self.player.sex == "man" else ("女" if self.player.sex == "woman" else "その他")
-        self.status_dict = {"名前":f"名前：{getattr(self.player, "name")}",
-                            "年齢":f"年齢：{getattr(self.player, "age")}",
+        player_sex = getattr(self.player, "sex", "man")
+        sex_name = "男" if player_sex == "man" else ("女" if player_sex == "woman" else "その他")
+        self.status_dict = {"名前":f"名前：{getattr(self.player, "name", "")}",
+                            "年齢":f"年齢：{getattr(self.player, "age", 0)}",
                             "性別":f"性別：{sex_name}",
-                            "職業":f"職業：{self.player.Profession}",
-                            "趣味":f"趣味：{self.player.Hobby}",
-                            "STR":f"STR：{self.player.STR}",
-                            "CON":f"CON：{self.player.CON}",
-                            "SIZ":f"SIZ：{self.player.SIZ}",
-                            "DEX":f"DEX：{self.player.DEX}",
-                            "APP":f"APP：{self.player.APP}",
-                            "EDU":f"EDU：{self.player.EDU}",
-                            "INT":f"INT：{self.player.INT}",
-                            "POW":f"POW：{self.player.POW}"}
+                            "職業":f"職業：{getattr(self.player, "Profession", "")}",
+                            "趣味":f"趣味：{getattr(self.player, "Hobby", "")}",
+                            "STR":f"STR：{getattr(self.player, "STR", 0)}",
+                            "CON":f"CON：{getattr(self.player, "CON", 0)}",
+                            "SIZ":f"SIZ：{getattr(self.player, "SIZ", 0)}",
+                            "DEX":f"DEX：{getattr(self.player, "DEX", 0)}",
+                            "APP":f"APP：{getattr(self.player, "APP", 0)}",
+                            "EDU":f"EDU：{getattr(self.player, "EDU", 0)}",
+                            "INT":f"INT：{getattr(self.player, "INT", 0)}",
+                            "POW":f"POW：{getattr(self.player, "POW", 0)}"}
 
     # アイテムを作成する
     def create_items(self):

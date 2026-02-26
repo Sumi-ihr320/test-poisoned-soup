@@ -4,7 +4,8 @@ from pygame.locals import *
 
 from constans import BLACK, SHEET_COLOR, SHEET_SIZE
 from utils import get_new_size, get_scales, create_file_path
-from ui.ui_elements import Image, ImageCache
+from ui.ui_elements import Image
+from ui.ui_cache import ImageCache
 
 # 部屋の型を作るよ
 class Room:

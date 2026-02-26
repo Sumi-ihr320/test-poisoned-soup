@@ -3,7 +3,7 @@ from pygame.locals import *
 
 from constans import State, Position
 from utils import Close
-from ui.ui_elements import PlayerDataView
+from ui.player_data_view import PlayerDataView
 from core.game_state import GameStatus, Flags
 from models.characters import Player, Human
 

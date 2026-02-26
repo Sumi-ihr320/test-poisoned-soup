@@ -4,7 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "H:/マイドライブ/document"
+			"path": "../../../poisoned-soup/document"
 		}
 	],
 	"settings": {}

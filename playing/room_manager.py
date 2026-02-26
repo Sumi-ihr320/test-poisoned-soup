@@ -1,5 +1,5 @@
 from playing.room import Room
-from ui.ui_elements import ImageCache
+from ui.ui_cache import ImageCache
 
 class RoomManager:
     def __init__(self, screen, frame_rect, event_manager, flags, game_state):

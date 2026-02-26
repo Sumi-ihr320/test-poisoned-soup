@@ -3,7 +3,8 @@ import pygame
 
 from constans import FONT_PATH, FONT_SIZ, BLACK, RED, Position, PATH, PICTURE
 from utils import setting_font, get_scales
-from ui.ui_elements import Label, UIElement
+from ui.ui_elements import Label
+from ui.ui_base import UIElement
 from input.focus_manager import FocusManager
 
 # キャラシのページナビゲーション

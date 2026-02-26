@@ -12,7 +12,6 @@ from input.focus_manager import FocusManager
 from ui.ui_panels import TextFramePanel
 from ui.navigation import CharasheetNavigation
 from character_sheet.status_calculator import *
-from character_sheet.status import Status
 from character_sheet.status_page import StatusPage
 from character_sheet.profession_page import ProfessionPage
 from character_sheet.confirm_page import ConfirmPage

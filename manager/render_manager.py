@@ -4,7 +4,8 @@ from typing import Optional, Sequence, Tuple, Callable
 
 from constans import FONT_PATH, SMALL_SIZ
 from utils import get_scales, setting_font, get_room_rect
-from ui.ui_elements import Image, ImageCache
+from ui.ui_elements import Image
+from ui.ui_cache import ImageCache
 from ui.ui_command import CommandMenu, Command
 from ui.ui_panels import TextFramePanel
 from ui.log_view import LogView
