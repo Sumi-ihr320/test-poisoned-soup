@@ -5,7 +5,8 @@ from pygame.locals import *
 
 from constans import WHITE
 from utils import dice_confirmation
-from ui.ui_elements import Label, Button, Image, InputBox
+from ui.ui_elements import Label, Image
+from ui.ui_container_element import ContainerLabel, ContainerButton, ContainerInputBox
 from ui.ui_cache import ImageCache
 from ui.ui_container import UIContainer
 from input.focus_manager import FocusManager
@@ -53,15 +54,17 @@ class Status(UIContainer):
 
     # ラベル作成
     def create_label(self, x: int, y: int):
-        self.status_label = Label(self.screen, self.font_data, self.label_name, x, y, parent=self.parent)    # ラベル作成
+        self.status_label = Label(self.screen, self.font_data, self.label_name, x, y, parent=self.parent, hover_text=self.hover_text)    # ラベル作成
+        self.add(self.status_label)
 
     # インプットボックスを作成
     def create_input(self, x: int, y: int, w: int, h: int):
         # ステータスラベルの隣
         input_x = x + self.status_label.rect.w + 5
         input_y = y - 4     # ラベルより大きいので少し上に
-        self.input = InputBox(self.screen, self.root, self.font_data, Rect(input_x, input_y, w, h), str(self.status), self.input_flag, 
-                              parent=self.parent, focusable=self.input_flag, row=self.row, col=self.col)
+        self.input = ContainerInputBox(self.screen, self.root, self.font_data, Rect(input_x, input_y, w, h), str(self.status), self.input_flag, 
+                              parent=self.parent, focusable=self.input_flag, row=self.row, col=self.col, hover_text=self.hover_text)
+        self.add(self.input)
 
     # ダイスボタンを作成
     def create_dice_button(self):
@@ -69,32 +72,9 @@ class Status(UIContainer):
         rect = self.input.rect.copy() if self.input else self.status_label.rect.copy()
         # その幅分隣
         rect.x = rect.x + rect.w + 5
-        self.button = Button(self.screen, self.font_data, self.dice_text, rect, self.dice_process, parent=self.parent,
-                             focusable=True, row=self.row, col=self.col+1)
-
-    # フォーカスマネージャーへの登録
-    def register_all(self, focus_manager: FocusManager):
-        if self.input:
-            focus_manager.register(self.input)
-        if self.button:
-            focus_manager.register(self.button)
-
-    def relayout(self, screen, parent):
-        self.screen = screen
-        self.parent = parent
-        if self.status_label:
-            self.status_label.relayout(screen, parent)
-        if self.input:
-            self.input.relayout(screen, parent)
-        if self.button:
-            self.button.relayout(screen, parent)
-
-    def draw(self):
-        self.status_label.draw()
-        if self.input:
-            self.input.draw()
-        if self.button:
-            self.button.draw()
+        self.button = ContainerButton(self.screen, self.font_data, self.dice_text, rect, self.dice_process, parent=self.parent,
+                             focusable=True, row=self.row, col=self.col+1, hover_text="ダイスでランダムに値を決めることができます")
+        self.add(self.button)
 
     # 入力ボックスの最大値最小値を決めるよ
     def determine_input_range(self, edu: int) -> Tuple[int, int]:
@@ -136,15 +116,6 @@ class Status(UIContainer):
             return "input"
         elif self.button and self.button.handle_click(pos):
             return "button"
-        return None
-
-    def handle_mouse_hover(self, pos) -> Optional[str]:
-        if self.status_label.collidepoint(pos):
-            return self.hover_text
-        elif self.input and self.input.collidepoint(pos):
-            return self.hover_text
-        elif self.button and self.button.collidepoint(pos):
-            return "ダイスでランダムに値を決めることができます"
         return None
 
 # 選んだ性別によって画像が変わるようにするよ
@@ -220,11 +191,12 @@ class SexChange(UIContainer):
                             "neuter": self.create_image("neuter")}
 
     # ボタンラベル作成
-    def create_button_label(self, text: str, col: int) -> Label:
+    def create_button_label(self, text: str, col: int) -> ContainerLabel:
         push_color = (106,93,33)   # ボタンを押したときの色
-        label = Label(self.screen, self.font_data, text, parent=self.parent, 
+        label = ContainerLabel(self.screen, self.font_data, text, parent=self.parent, 
                       focusable=True, row=self.row, col=self.col+col,
-                      hover_text_color=WHITE, hover_back_color=push_color)
+                      hover_text_color=WHITE, hover_back_color=push_color, hover_text="探索者の性別をクリックで選択してください")
+        self.add(label)
         return label
 
     # 画像作成
@@ -235,7 +207,8 @@ class SexChange(UIContainer):
         img_path = f"silhouette_{flag}.png"
 
         image = Image(self.screen, img_path, self.image_cache, scale=img_size, x=image_x, y=image_y, 
-                      line_flag=True, bg_flag=True, line_width=2, parent=self.parent)        
+                      line_flag=True, bg_flag=True, line_width=2, parent=self.parent)
+        self.add(image)
         return image
 
     # フラグを確認してlabelのフォーカスを変更する
@@ -252,29 +225,11 @@ class SexChange(UIContainer):
         self.flag = flag
         self.check_flag_and_set_focus(flag)
 
-    def register_all(self, focus_manager: FocusManager):
-        for label in self.labels_dict.values():
-            focus_manager.register(label)
-
-    def relayout(self, screen: pygame.Surface, parent):
-        self.screen = screen
-        self.parent = parent
-        for label in self.labels_dict.values():
-            label.relayout(screen, parent)
-        for image in self.images_dict.values():
-            image.relayout(screen, parent)
-
     # 描画するよ
     def draw(self):
         for label in self.labels_dict.values():
             label.draw()
-        
         self.images_dict[self.flag].draw()
-
-    def handle_mouse_hover(self, pos: Tuple[int, int]):
-        for label in self.labels_dict.values():
-            if label.collidepoint(pos):
-                return "探索者の性別をクリックで選択してください"
 
     def handle_click(self, pos: Tuple[int, int]):
         for name, label in self.labels_dict.items():

@@ -111,22 +111,6 @@ class MenuBar(UIContainer):
 
         self.children = btns
 
-        """
-        font = pygame.font.Font(self.font_data[0], self.font_data[1])
-        surface = font.render("セーブ", True, WHITE)
-        rect = surface.get_rect()
-        self.button_w = 100 if rect.w + 5 <= 100 else rect.w + 5
-        self.button_h = 30 if rect.h + 2 <= 30 else rect.h + 2
-        
-        log_surface = font.render("ログ", True, WHITE)
-        log_rect = log_surface.get_rect()
-        self.log_button_w = 80 if log_rect.w + 5 <= 80 else log_rect.w + 5
-
-        # メニュー全体のサイズ
-        w, h = (self.button_w * 4) + self.log_button_w, self.button_h
-        self.rect = Rect((self.frame_rect.right-w), (self.frame_rect.y-h), w, h)
-        """
-
     # メニューバー全体のrectを計算する
     def calculation_rect(self, labels_with_callbacks: List[Tuple[str, Callable, bool, Optional[int]]]) -> Tuple[int, int, List[int], int]:
         font = setting_font(self.font_data[0], self.font_data[1], self.screen_size)

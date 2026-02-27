@@ -46,12 +46,18 @@ class BasePage:
     # すべての要素をフォーカスマネージャーに登録
     def register_all(self, focus_manager: FocusManager):
         for element in self.elements:
-            focus_manager.register(element)
+            if hasattr(element, "register_all"):
+                element.register_all(focus_manager)
+            else:
+                focus_manager.register(element)
 
     # すべての要素をフォーカスマネージャーから削除
     def unregister_all(self, focus_manager: FocusManager):
         for element in self.elements:
-            focus_manager.elements.remove(element)
+            if hasattr(element, "unregister_all"):
+                element.unregister_all(focus_manager)
+            else:
+                focus_manager.elements.remove(element)
     
     # 画面サイズ変更時の画面再配置
     def relayout(self, screen: pygame.Surface):

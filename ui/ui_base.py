@@ -1,19 +1,19 @@
 import re
-from typing import List, Tuple, Any, Optional
+from typing import List, Tuple, Optional
 
 import pygame
 
 from constans import BLACK, WHITE
 from utils import pos_to_local, pos_to_global, setting_font, parse_color_tags, get_scales
 from ui.ui_cache import SurfaceCache
-from ui.ui_elements import Label
 from manager.sound_manager import sound_manager
 
 # 各エレメントの基礎となるもの(基礎クラス)
 class UIElement:
     def __init__(self, screen, parent=None, 
                  sound_type: str="click", click_rect: Optional[pygame.Rect]=None, 
-                 row: int=0, col: int=0, focusable: bool=False, **kwargs):
+                 row: int=0, col: int=0, focusable: bool=False,
+                 hover_text: Optional[str]=None, **kwargs):
         self.screen = screen
         self.screen_size = screen.get_size()
 
@@ -32,6 +32,9 @@ class UIElement:
 
         self.hovered = False
         self.focused = False
+
+        self.hover_text = hover_text
+
         super().__init__(**kwargs)
 
     # フォーカス制御 ------------------------------------------
@@ -94,6 +97,11 @@ class UIElement:
         if hover and not self.hovered:  # 初めてホバーした時
             sound_manager.play("カーソル移動")
         self.hovered = hover
+
+        # もしhover_textがあれば、ホバーしてる際にそれを返す
+        if self.hover_text and hover:
+            return self.hover_text
+        return None
 
     # クリックした時にはクリック音を鳴らす
     def handle_click(self, pos) -> bool:

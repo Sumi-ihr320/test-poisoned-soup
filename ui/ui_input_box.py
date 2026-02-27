@@ -12,8 +12,9 @@ from ui.ui_elements import Label
 class InputBox(UIElement, ResizableMixin):
     def __init__(self, screen, root, font_data: Tuple[str, int], rect: pygame.Rect, label_text: str="", 
                  input_flag: bool=True, line_bold: int=2,
-                 sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, parent: Optional[Any]=None, **kwargs):
-        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, **kwargs)
+                 sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, 
+                 parent: Optional[Any]=None, hover_text: Optional[str]=None, **kwargs):
+        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, hover_text=hover_text, **kwargs)
         self.root = root
 
         self.font_data = font_data
@@ -136,3 +137,5 @@ class InputBox(UIElement, ResizableMixin):
         super().relayout(screen, parent)
         self.rect = self.resize(self.screen_size)
         self.resize_font(self.screen_size)
+
+    
