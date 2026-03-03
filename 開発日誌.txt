@@ -783,4 +783,10 @@
 	ui_elementsからInputBoxを分離、HasLabelBaseとBoxStyleBaseを統合。
 
 2026/2/27
+	ui_pull_down.pyにPullDownを分離
+	ui_container_elementsを作成
 	
+2026/3/3
+	ui_container_elementsにImageとPullDown追加
+	それに伴いstatus、status_page、character_sheet_scene、profession、profession_pageの修正、更新
+

@@ -54,7 +54,8 @@ class Status(UIContainer):
 
     # ラベル作成
     def create_label(self, x: int, y: int):
-        self.status_label = Label(self.screen, self.font_data, self.label_name, x, y, parent=self.parent, hover_text=self.hover_text)    # ラベル作成
+        self.status_label = Label(self.screen, self.font_data, self.label_name, x, y, 
+                                  parent=self.parent, hover_text=self.hover_text)    # ラベル作成
         self.add(self.status_label)
 
     # インプットボックスを作成
@@ -62,8 +63,9 @@ class Status(UIContainer):
         # ステータスラベルの隣
         input_x = x + self.status_label.rect.w + 5
         input_y = y - 4     # ラベルより大きいので少し上に
-        self.input = ContainerInputBox(self.screen, self.root, self.font_data, Rect(input_x, input_y, w, h), str(self.status), self.input_flag, 
-                              parent=self.parent, focusable=self.input_flag, row=self.row, col=self.col, hover_text=self.hover_text)
+        self.input = ContainerInputBox(self.screen, self.root, font_data=self.font_data, parent_container=self, 
+                                       rect=Rect(input_x, input_y, w, h), label_text=str(self.status), input_flag=self.input_flag, 
+                                       parent=self.parent, focusable=self.input_flag, row=self.row, col=self.col, hover_text=self.hover_text)
         self.add(self.input)
 
     # ダイスボタンを作成
@@ -72,8 +74,10 @@ class Status(UIContainer):
         rect = self.input.rect.copy() if self.input else self.status_label.rect.copy()
         # その幅分隣
         rect.x = rect.x + rect.w + 5
-        self.button = ContainerButton(self.screen, self.font_data, self.dice_text, rect, self.dice_process, parent=self.parent,
-                             focusable=True, row=self.row, col=self.col+1, hover_text="ダイスでランダムに値を決めることができます")
+        self.button = ContainerButton(self.screen, font_data=self.font_data, parent_container=self, 
+                                      text=self.dice_text, rect=rect, on_click=self.dice_process, 
+                                      parent=self.parent, focusable=True, row=self.row, col=self.col+1, 
+                                      hover_text="ダイスでランダムに値を決めることができます")
         self.add(self.button)
 
     # 入力ボックスの最大値最小値を決めるよ
@@ -109,6 +113,9 @@ class Status(UIContainer):
     def dice_process(self):
         result = self.dice_service.roll(self.dice_text)
         self.input.update_label(f"{result}")
+
+    def handle_mouse_hover(self, pos):
+        return self.status_label.handle_mouse_hover(pos)
 
     def handle_click(self, pos):
         if self.input_flag and self.input and self.input.collidepoint(pos):
@@ -193,9 +200,10 @@ class SexChange(UIContainer):
     # ボタンラベル作成
     def create_button_label(self, text: str, col: int) -> ContainerLabel:
         push_color = (106,93,33)   # ボタンを押したときの色
-        label = ContainerLabel(self.screen, self.font_data, text, parent=self.parent, 
-                      focusable=True, row=self.row, col=self.col+col,
-                      hover_text_color=WHITE, hover_back_color=push_color, hover_text="探索者の性別をクリックで選択してください")
+        label = ContainerLabel(self.screen, font_data=self.font_data, parent_container=self, text=text, 
+                               parent=self.parent, focusable=True, row=self.row, col=self.col+col,
+                               hover_text_color=WHITE, hover_back_color=push_color, 
+                               hover_text="探索者の性別をクリックで選択してください")
         self.add(label)
         return label
 
@@ -230,6 +238,9 @@ class SexChange(UIContainer):
         for label in self.labels_dict.values():
             label.draw()
         self.images_dict[self.flag].draw()
+
+    def handle_mouse_hover(self, pos):
+        return None
 
     def handle_click(self, pos: Tuple[int, int]):
         for name, label in self.labels_dict.items():

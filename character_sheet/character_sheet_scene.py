@@ -223,9 +223,20 @@ class CharacterSheetScene(BaseScene):
             self.is_sliding = True
             self.change_register_page(self.target_page)
 
-    """
     # マウスオーバーイベント
     def handle_mouse_hover(self):
+        key = pygame.mouse.get_pos()
+        horver_text = None
+
+        if self.current_page == 0:
+            horver_text = self.status_page.handle_mouse_hover(key)
+
+        if horver_text:
+            self.text_frame_panel.set_text(horver_text)
+        else:
+            self.text_frame_panel.set_text("")
+
+        """
         # マウスオーバーでテキスト表示するよ
         key = pygame.mouse.get_pos()
         horver_text = None
@@ -243,7 +254,7 @@ class CharacterSheetScene(BaseScene):
             self.text_frame_panel.set_text(horver_text)
         else:
             self.text_frame_panel.set_text("")
-    """
+        """
     # イベントハンドラ
     def handle_events(self):
         for event in pygame.event.get():

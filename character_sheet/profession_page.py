@@ -64,7 +64,7 @@ class ProfessionPage(BasePage):
                 selected_hobby = selected_item
                 self.player.Hobby = selected_item
                 self.hobby_selector.pull.update_label(f"{selected_item}")
-                self.hobby_data_set(selected_hobby)
+                self.set_to_skills_from_hobby(selected_hobby)
                 is_pulldown_open = False
         else:
             # もしプルダウンが開いていなかったら
@@ -73,12 +73,12 @@ class ProfessionPage(BasePage):
             if selected_item:
                 selected_profession = selected_item
                 self.player.Profession = selected_item.name
-                self.profession_data_set()
+                self.set_to_skills_from_profession()
 
         return is_pulldown_open, selected_profession, selected_hobby
 
     # 選択した職業から主人公のステータスにデータを入れるよ
-    def profession_data_set(self):
+    def set_to_skills_from_profession(self):
         # 主人公の所持スキルをリセット
         self.player.skill = {}
         # 回避もスキル一覧にあるので回避もリセット
@@ -148,7 +148,7 @@ class ProfessionPage(BasePage):
                         remaining_points -= remaining_points
 
     # 選択した趣味から主人公のステータスにデータを入れるよ
-    def hobby_data_set(self, selected_hobby: Optional[str]):
+    def set_to_skills_from_hobby(self, selected_hobby: Optional[str]):
         # 主人公の持っている技能データ
         my_skills = self.player.skill
 

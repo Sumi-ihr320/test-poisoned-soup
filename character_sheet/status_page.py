@@ -3,6 +3,7 @@ from pygame import Surface, Rect
 
 from constans import STATUS_DATA_PATH, JSON_FOLDER
 from utils import load_json
+from ui.ui_container_element import ContainerLabel, ContainerButton, ContainerInputBox
 from character_sheet.status import Status, SexChange
 from models.characters import Player
 from character_sheet.base_page import BasePage
@@ -97,40 +98,17 @@ class StatusPage(BasePage):
     # マウスオーバー
     def handle_mouse_hover(self, pos: Tuple[int, int]) -> Optional[str]:
         for item in self.elements:
-            if item.button:
-                item.button.handle_mouse_hover(pos)
             text = item.handle_mouse_hover(pos)
             if text is not None:
                 return text
         return None
 
     # クリックイベント
-    def handle_click(self, element, result: str):
-        if result in ["input", "button"]:
-            self.insert_data(element)
-        elif result in ["man", "woman", "neuter"]:
-            self.player.sex = result
-            self.player.image = f"silhouette_{result}.png"
-        """
-        if self.handle_sex_button(pos):
-            return
+    def handle_click(self, element: ContainerLabel|ContainerButton|ContainerInputBox, result: Status|SexChange):
+        if result == self.sex_button:
+            flag = [k for k, v in self.sex_button.labels_dict.items() if v == element][0]
+            self.sex_button.update_sex(flag)
+            self.player.sex = flag
+            self.player.image = f"silhouette_{flag}.png"
         else:
-            # 他のステータスの処理
-            for item in self.elements:
-                # インプットボックス
-                if item.input and item.input.collidepoint(pos) and item.input_flag:   # かつ入力フラグがonの場合
-                    item.input_process(self.player.EDU)
-                    self.insert_data(item)
-                # ダイスボタン
-                if item.button and item.button.handle_click(pos):
-                    self.insert_data(item)
-        """
-
-    # 性別ボタンを押したとき
-    def handle_sex_button(self, pos: Tuple[int, int]) -> bool:
-        result = self.sex_button.handle_click(pos)
-        if result is not None:
-            self.player.sex = result
-            self.player.image = f"silhouette_{result}.png"
-            return True
-        return False
+            self.insert_data(result)
