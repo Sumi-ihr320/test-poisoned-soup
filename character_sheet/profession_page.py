@@ -19,10 +19,10 @@ class ProfessionPage(BasePage):
 
     def load_selector(self, selected_hobby: Optional[str]=None):
         # 職業選択画面
-        self.prof_selector = ProfessionSelector(self.screen, self, self.rect, self.font_datas)
+        self.prof_selector = ProfessionSelector(self.screen, parent=self, sheet_rect=self.rect, font_datas=self.font_datas)
 
         # 趣味選択画面
-        self.hobby_selector = HobbySelector(self.screen, self, selected_hobby, self.font_datas, self.prof_selector.rect)
+        self.hobby_selector = HobbySelector(self.screen, parent=self, selected_hobby=selected_hobby, font_datas=self.font_datas, profession_rect=self.prof_selector.rect)
 
     def relayout(self, screen):
         super().relayout(screen)

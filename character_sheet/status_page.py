@@ -30,7 +30,7 @@ class StatusPage(BasePage):
                 self.sex_button = SexChange(self.screen, parent=self, sheet_rect=self.rect, font_data=font_data, title_text=items["view_name"], 
                                             x=items["x"], y=items["y"], flag=self.player.sex,
                                             row=items["row"], col=items["col"])
-            self.add_elements(self.sex_button)
+                self.add_elements(self.sex_button)
 
     def load_status_items(self):
         if not self.elements:   # すでにアイテムがあるか確認
@@ -79,7 +79,7 @@ class StatusPage(BasePage):
     # ステータスラベルの更新
     def update_status_label(self, name: str, val: int|str):
         for item in self.elements:
-            if item.status_name == name:
+            if hasattr(item, "status_name") and item.status_name == name:
                 item.input.update_label(f"{val}")
     
     # 画面サイズ変更時にポジション等を更新する

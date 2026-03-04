@@ -18,7 +18,7 @@ class BasePage:
         self.setting_font_data()
 
         self.create_surface_and_rect()
-        self.bg_img = Image(self.screen, "old_paper.jpg", x="center", y="center", size_wh=SHEET_SIZE, parent=self)
+        self.bg_img = Image(self.screen, path="old_paper.jpg", x="center", y="center", size_wh=SHEET_SIZE, parent=self)
 
         self.offset = offset if offset else (self.rect.x, self.rect.y)
 

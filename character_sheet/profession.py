@@ -35,12 +35,12 @@ class Profession(UIContainer):
     def create_images(self):
         small_img_size = 0.1
         big_img_size = 0.35
-        self.small_img = ContainerImage(self.screen, self, self.path, scale=small_img_size, x=self.rect.x, y=self.rect.y, 
+        self.small_img = ContainerImage(self.screen, parent_container=self, path=self.path, scale=small_img_size, x=self.rect.x, y=self.rect.y, 
                                         line_flag=True, bg_flag=True, 
                                         parent=self.parent, focusable=True, hover_text=f"あなたの職業を選択してください\n【{self.name}】",
                                         row=self.row, col=self.col)
         self.add(self.small_img)
-        self.big_img = Image(self.screen, self.path, scale=big_img_size, x=self.view_rect.x, y=self.view_rect.y, 
+        self.big_img = Image(self.screen, path=self.path, scale=big_img_size, x=self.view_rect.x, y=self.view_rect.y, 
                              line_flag=True, bg_flag=True, parent=self.parent)
         self.add(self.big_img)
 
@@ -217,7 +217,8 @@ class ProfessionSelector(UIContainer):
         for prof_key, prof_data in self.prof_data.items():
             name = prof_data["name"]
             skill = prof_data["skill"]
-            item = Profession(self.screen, self.parent, self, self.font_datas, prof_key, name, skill, Rect(x, y, 50, 50), Rect(view_x, view_y, 100, 100))
+            item = Profession(self.screen, parent=self.parent, parent_container=self, font_datas=self.font_datas, 
+                              name=prof_key, eng_name=name, skills=skill, rect=Rect(x, y, 50, 50), view_rect=Rect(view_x, view_y, 100, 100))
             self.prof_items.append(item)
             self.add(item)
     
@@ -256,12 +257,12 @@ class HobbySelector(UIContainer):
         hobby_text = "趣味"
         font = pygame.font.Font(font_data[0], font_data[1])
         text_rect = font.render(hobby_text, True, BLACK).get_rect()
-        self.label = Label(self.screen, font_data, hobby_text, self.profession_rect.right, self.profession_rect.y-text_rect.h-10, anchor=("right", "top"), parent=self.parent)
+        self.label = Label(self.screen, font_data=font_data, text=hobby_text, x=self.profession_rect.right, y=self.profession_rect.y-text_rect.h-10, anchor=("right", "top"), parent=self.parent)
         self.add(self.label)
 
         list_item = self.selected_hobby if self.selected_hobby != "" else "未選択"
-        self.pull = ContainerPullDown(self.screen, small_font_data, self, Rect(440,self.label.rect.y-8,150,25), 
-                                      list(self.hobby_list), list_item, 180, 
+        self.pull = ContainerPullDown(self.screen, font_data=small_font_data, parent_container=self, rect=Rect(440,self.label.rect.y-8,150,25), 
+                                      item_list=list(self.hobby_list), label_text=list_item, pd_h=180, 
                                       parent=self.parent, focusable=True, row=0, col=0, hover_text="あなたの趣味を選択してください")
         self.pull.update_position(x=self.label.rect.x-10, anchor=("right", "top"))
         self.add(self.pull)

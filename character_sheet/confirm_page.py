@@ -92,7 +92,7 @@ class ConfirmPage(BasePage):
         sex_img_scale = 0.5
         for sex in ("man", "woman", "neuter"):
             sex_img_path = f"silhouette_{sex}.png"
-            img = Image(self.screen, sex_img_path, scale=sex_img_scale, x=100, y=10, line_flag=True, bg_flag=True, parent=self)
+            img = Image(self.screen, path=sex_img_path, scale=sex_img_scale, x=100, y=10, line_flag=True, bg_flag=True, parent=self)
             img.rect.topleft = (self.rect.width // 2 - img.rect.width - 10, img.rect.y)
             self.sex_img_dict[sex] = img
 
@@ -100,14 +100,14 @@ class ConfirmPage(BasePage):
         prof_img_scale = 0.2
         profession_data = load_json(PROF_DATA_PATH, JSON_FOLDER)
         for prof_data in profession_data:
-            prof_img_path = f"prof_{profession_data[prof_data]["name"]}.png"
-            self.prof_img_dict[prof_data] = Image(self.screen, prof_img_path, scale=prof_img_scale, x=self.box.rect.x, y=self.box.rect.y+self.box.rect.h+10, line_flag=True, bg_flag=True, parent=self)
+            prof_img_path = f"prof_{profession_data[prof_data]['name']}.png"
+            self.prof_img_dict[prof_data] = Image(self.screen, path=prof_img_path, scale=prof_img_scale, x=self.box.rect.x, y=self.box.rect.y+self.box.rect.h+10, line_flag=True, bg_flag=True, parent=self)
 
     # ラベルを作成する
     def create_labels(self):
         font_data = self.font_datas[0]
         for name, text in self.status_dict.items():
-            label = Label(self.screen, font_data, text, parent=self)
+            label = Label(self.screen, font_data=font_data, text=text, parent=self)
             self.label_dict[name] = label
 
     # ステータスラベルをアップデートする

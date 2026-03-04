@@ -11,7 +11,7 @@ from input.focus_manager import FocusManager
 
 from ui.ui_panels import TextFramePanel
 from ui.navigation import CharasheetNavigation
-from character_sheet.status_calculator import *
+#from character_sheet.status_calculator import *
 from character_sheet.status_page import StatusPage
 from character_sheet.profession_page import ProfessionPage
 from character_sheet.confirm_page import ConfirmPage
@@ -86,14 +86,16 @@ class CharacterSheetScene(BaseScene):
 
     # ページごとにフォーカスを登録・削除する
     def change_register_page(self, target_page: int):
+        # target_page以外のページのフォーカスを先に削除しておく
         for page in range(len(self.pages)):
-            if page == target_page:
-                self.register_page(page)
-                self.navigation.register_focus(page, self.focus_manager)
-            else:
+            if page != target_page:
                 self.unregister_page(page)
                 self.navigation.unregister_focus(page, self.focus_manager)
 
+        # target_pageのフォーカスを登録する
+        self.register_page(target_page)
+        self.navigation.register_focus(target_page, self.focus_manager)
+        
     # すべての要素をフォーカスマネージャーに登録する
     def register_all(self):
         self.change_register_page(self.current_page)
@@ -266,7 +268,7 @@ class CharacterSheetScene(BaseScene):
 
             if result:
                 if result["action"] == "hover":
-                    self.text_frame_panel.set_text(result["hover_text"])
+                    self.text_frame_panel.set_text(result["text"])
                 else:
                     self.text_frame_panel.set_text("")
                     if result["action"] == "decide":

@@ -9,7 +9,6 @@ from ui.ui_elements import Label, Image
 from ui.ui_container_element import ContainerLabel, ContainerButton, ContainerInputBox
 from ui.ui_cache import ImageCache
 from ui.ui_container import UIContainer
-from input.focus_manager import FocusManager
 from manager.dice_service import DiceService
 from manager.sound_manager import sound_manager
 
@@ -54,7 +53,7 @@ class Status(UIContainer):
 
     # ラベル作成
     def create_label(self, x: int, y: int):
-        self.status_label = Label(self.screen, self.font_data, self.label_name, x, y, 
+        self.status_label = Label(self.screen, font_data=self.font_data, text=self.label_name, x=x, y=y, 
                                   parent=self.parent, hover_text=self.hover_text)    # ラベル作成
         self.add(self.status_label)
 
@@ -214,7 +213,7 @@ class SexChange(UIContainer):
 
         img_path = f"silhouette_{flag}.png"
 
-        image = Image(self.screen, img_path, self.image_cache, scale=img_size, x=image_x, y=image_y, 
+        image = Image(self.screen, path=img_path, cache=self.image_cache, scale=img_size, x=image_x, y=image_y, 
                       line_flag=True, bg_flag=True, line_width=2, parent=self.parent)
         self.add(image)
         return image

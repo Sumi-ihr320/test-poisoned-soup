@@ -104,7 +104,7 @@ class MenuBar(UIContainer):
         for i, (label, cd, enabled, col) in enumerate(labels_with_callbacks):
             w = widths[i]
             rect = Rect(cur_x, y0, w, h)
-            btn = MenuButton(self.screen, self.font_data, label, rect, on_click=cd, enabled=enabled, 
+            btn = MenuButton(self.screen, font_data=self.font_data, text=label, rect=rect, on_click=cd, enabled=enabled, 
                              parent=self.parent, row=90, col=(col if col is not None else i))
             btns.append(btn)
             cur_x += w + self.PADDING
@@ -164,7 +164,7 @@ class TextFramePanel(UIContainer):
         super().__init__(screen, parent)
 
         self.frame_size = frame_size
-        self.margin_bottom = 30
+        self.margin_bottom = 20
 
         # テキストフレームのrect計算
         self.rect = self.calc_frame_rect()

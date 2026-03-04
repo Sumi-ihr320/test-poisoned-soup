@@ -3,7 +3,8 @@ from pygame.locals import *
 
 from constans import SIZE_MAP, FONT_PATH, SMALL_SIZ, CONTENTS_SIZ, TITLE_SIZ, SETTING_COLOR, GRAY, BLACK, WHITE
 from utils import get_new_size
-from ui.ui_elements import Label, PullDown, Image
+from ui.ui_elements import Label, Image
+from ui.ui_pull_down import PullDown
 from manager.sound_manager import sound_manager
 from base_scene import BaseScene
 

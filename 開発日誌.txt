@@ -790,3 +790,5 @@
 	ui_container_elementsにImageとPullDown追加
 	それに伴いstatus、status_page、character_sheet_scene、profession、profession_pageの修正、更新
 
+2026/3/4
+	character_sheet_page周りの調整

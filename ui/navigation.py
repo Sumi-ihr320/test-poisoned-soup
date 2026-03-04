@@ -19,20 +19,17 @@ class CharasheetNavigation:
 
         self.label_list = []
         self.navi_items = []
-        self.create_label()
+        self.create_labels()
 
-    # ラベルを作成
-    def create_label(self):
+    # ラベル群を作成
+    def create_labels(self):
         font = setting_font(self.font_data[0], self.font_data[1], self.screen.get_size())
         font_height = font.render("→ 次へ", True, BLACK).get_height()
         y = self.surface_rect.bottom - 10 - font_height
 
-        self.to_next = Label(self.screen, self.font_data, "→ 次へ", x=self.surface_rect.right-10, y=y, anchor=("right", "top"),
-                             focusable=True, row=50, col=0)
-        self.to_prev = Label(self.screen, self.font_data, "← 戻る", x=self.surface_rect.left+10, y=y,
-                             focusable=True, row=50, col=1)
-        self.to_enter = Label(self.screen, self.font_data, "完了", centerx=self.surface_rect.centerx, y=y,
-                              focusable=True, row=50, col=2)
+        self.to_next = self.create_label(text="→ 次へ", x=self.surface_rect.right-10, y=y, anchor=("right", "top"))
+        self.to_prev = self.create_label(text="← 戻る", x=self.surface_rect.left+10, y=y, col=1)
+        self.to_enter = self.create_label(text="完了", centerx=self.surface_rect.centerx, y=y, col=2)
 
         # ラベルリスト
         self.label_list = [self.to_next, self.to_prev, self.to_enter]
@@ -42,16 +39,23 @@ class CharasheetNavigation:
                            [self.to_next, self.to_prev],
                            [self.to_prev, self.to_enter]]
 
+    # ラベル作成
+    def create_label(self, text: str, x: int=0, y: int=0, centerx: Optional[int]=None,
+                     anchor: Tuple[str, str]=("left", "top"), col: int=0):
+        label = Label(self.screen, font_data=self.font_data, text=text, 
+                      x=x, y=y, centerx=centerx, anchor=anchor,
+                      focusable=True, row=50, col=col)
+        return label
+
     # フォーカスマネージャーに登録
     def register_focus(self, page: int, focus_manager: FocusManager):
-        for navis in self.navi_items[page]:
-            for navi in navis:
-                focus_manager.register(navi)
+        for navi in self.navi_items[page]:
+            focus_manager.register(navi)
 
     # フォーカスマネージャーから削除
     def unregister_focus(self, page: int, focus_manager: FocusManager):
-        for navis in self.navi_items[page]:
-            for navi in navis:
+        for navi in self.navi_items[page]:
+            if navi in focus_manager.elements:
                 focus_manager.elements.remove(navi)
 
     def handle_click(self, page: int, pos: Tuple[int, int]) -> Optional[str]:
