@@ -144,7 +144,6 @@ class ProfessionSelector(UIContainer):
 
         self.font_datas = font_datas
 
-        self.prof_items = []
         self.selected_profession = None     # 現在保持している職業
 
         self.load_and_setup_data()
@@ -190,7 +189,7 @@ class ProfessionSelector(UIContainer):
         icon_w, icon_h = 50, 50
         margin_x, margin_y = 5, 5
 
-        rows, cols = self.calculate_best_grid(len(self.prof_items), (icon_w, icon_h), (margin_x, margin_y))
+        rows, cols = self.calculate_best_grid(len(self.children), (icon_w, icon_h), (margin_x, margin_y))
 
         total_w = cols * icon_w + (cols - 1) * margin_x
         total_h = rows * icon_h + (rows - 1) * margin_y
@@ -201,7 +200,7 @@ class ProfessionSelector(UIContainer):
 
         self.rect = pygame.Rect(start_x, start_y, total_w, total_h)
 
-        for i, prof in enumerate(self.prof_items):
+        for i, prof in enumerate(self.children):
             row = i // cols
             col = i % cols
             x = start_x + col * (icon_w + margin_x)
@@ -219,25 +218,29 @@ class ProfessionSelector(UIContainer):
             skill = prof_data["skill"]
             item = Profession(self.screen, parent=self.parent, parent_container=self, font_datas=self.font_datas, 
                               name=prof_key, eng_name=name, skills=skill, rect=Rect(x, y, 50, 50), view_rect=Rect(view_x, view_y, 100, 100))
-            self.prof_items.append(item)
             self.add(item)
-    
+
+    def handle_click(self, pos) -> Optional[Profession]:
+        for child in self.children:
+            if child.handle_click(pos):
+                self.selected_profession = child
+                return True
+        return False
+
     def relayout(self, screen, parent, sheet_rect: pygame.Rect):
         self.sheet_rect = sheet_rect
         super().relayout(screen, parent)
 
-    def handle_click(self, pos) -> Optional[Profession]:
-        for item in self.prof_items:
-            if item.handle_click(pos):
-                return item
-        return None
+    def draw(self):
+        for child in self.children:
+            child.draw(is_selected=(child == self.selected_profession))
 
 # 趣味選択画面作るよ
 class HobbySelector(UIContainer):
-    def __init__(self, screen, parent, selected_hobby: str, font_datas: List[Tuple[str, int]], profession_rect: pygame.Rect):
+    def __init__(self, screen, parent, font_datas: List[Tuple[str, int]], profession_rect: pygame.Rect):
         super().__init__(screen, parent)
 
-        self.selected_hobby = selected_hobby
+        self.selected_hobby = None      # 現在保持している趣味
         self.font_datas = font_datas
         self.profession_rect = profession_rect
 
@@ -267,13 +270,3 @@ class HobbySelector(UIContainer):
         self.pull.update_position(x=self.label.rect.x-10, anchor=("right", "top"))
         self.add(self.pull)
 
-    def draw(self, is_dropped: bool):
-        self.label.draw()
-        self.pull.draw(is_dropped)
-
-    def handle_mouse_hover(self, pos, is_dropped: bool) -> Optional[str]:
-        if self.pull.collidepoint(pos):
-            return "あなたの趣味を選択してください"
-        elif self.pull.list_box and self.pull.list_box.collidepoint(pos):
-            self.pull.handle_mouse_hover(pos, is_dropped)
-        return None

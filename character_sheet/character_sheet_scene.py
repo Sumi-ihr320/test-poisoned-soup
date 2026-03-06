@@ -11,7 +11,6 @@ from input.focus_manager import FocusManager
 
 from ui.ui_panels import TextFramePanel
 from ui.navigation import CharasheetNavigation
-#from character_sheet.status_calculator import *
 from character_sheet.status_page import StatusPage
 from character_sheet.profession_page import ProfessionPage
 from character_sheet.confirm_page import ConfirmPage
@@ -101,53 +100,6 @@ class CharacterSheetScene(BaseScene):
         self.change_register_page(self.current_page)
         self.text_frame_panel.register_all(self.focus_manager)
 
-    """
-    # 更新されたデータをステータスに入力＋自動計算する
-    def insert_data(self, status: Status):
-        setattr(self.player, status.status_name, status.input.get_value())
-        self.auto_calculation(status.status_name)
-
-    # ステータスの自動計算
-    def auto_calculation(self, name: str):
-        # 各ステータスに対応する計算
-        calculations = {"STR": [calculation_damage_bonus],
-                        "SIZ": [calculation_damage_bonus, calculation_health_point],
-                        "CON": [calculation_health_point],
-
-                        "POW": [calculation_power_related],
-                        "INT": [calculation_idea],
-                        "EDU": [calculation_educated_point],
-                        "DEX": [calculation_avoid_point]}
-
-        # 計算結果により変化するステータス
-        response_status = {calculation_damage_bonus: ["DB"],
-                          calculation_health_point: ["HP"],
-                          calculation_power_related: ["MP","Luck","SAN"],
-                          calculation_idea: ["Idea"],
-                          calculation_educated_point: ["Know"],
-                          calculation_avoid_point: ["Dodge"]}
-
-        if name in calculations:
-            for calculation in calculations[name]:
-                # 計算結果を取得する
-                val = calculation(self.player)
-                if name == "EDU":
-                    val = val if val < 99 else 99
-                # 計算結果をステータスに入力 & ラベルの更新
-                if name == "POW":
-                    for status, value in val.items():
-                        setattr(self.player, status, value)
-                for status in response_status[calculation]:
-                    if name != "POW":
-                        setattr(self.player, status, val)
-                    self.update_status_label(status, getattr(self.player, status))
-    
-    # ステータスラベルの更新
-    def update_status_label(self, name: str, val: int|str):
-        for item in self.status_page.elements:
-            if item.status_name == name:
-                item.input.update_label(f"{val}")
-    """
     # 完了ボタンを押した時のイベント
     def event_enter_button(self):
         manual_input_fields = { "name": "名前が入力されていません",
@@ -188,7 +140,6 @@ class CharacterSheetScene(BaseScene):
 
             #self.callback(State.SAVE, self.save_data)
             self.state = State.SAVE
-
 
     # ページを表示する
     def draw_page(self):
@@ -257,6 +208,7 @@ class CharacterSheetScene(BaseScene):
         else:
             self.text_frame_panel.set_text("")
         """
+
     # イベントハンドラ
     def handle_events(self):
         for event in pygame.event.get():

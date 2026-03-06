@@ -2,6 +2,7 @@ from typing import Any, List, Optional, Tuple
 
 import pygame
 from pygame import Rect
+from pygame.locals import *
 
 from constans import BLACK, BLUE, WHITE
 from utils import pos_to_local, setting_font
@@ -55,6 +56,10 @@ class PullDown(UIElement, ResizableMixin):
         # hover状態
         self.box_hovered = False
         self.list_hovered = False
+
+        self.is_dropped = False   # プルダウンが開いているかどうか
+        self.focused_index = -1   # ドロップ内の内部フォーカス
+        self.selected_item = None    # 選択されたアイテム
 
     # ボックスのrectを計算
     def _calc_box_rect(self) -> pygame.Rect:
@@ -174,47 +179,32 @@ class PullDown(UIElement, ResizableMixin):
             self.label.set_text(new_text)
         self._place_triangle_and_label()
 
-    # ボックスの表示
-    def draw(self, is_dropped: bool):
-        # ボックスと▼
-        self.box.draw()
-        self.triangle.draw()
-
-        # テキストがあればテキスト
-        if self.label:
-            self.label.draw()
-
-        # ドロップしている時だけリストを描画
-        if is_dropped:
-            self._ensure_layout()
-            self.list_box.draw()
-
-            for text, surf, text_rect, hit_rect in self.entries:
-                # hoverされてる時は背景色を変える
-                if self._hovered_item == text:
-                    pygame.draw.rect(self.parent_surface, BLUE, hit_rect)
-                else:
-                    pygame.draw.rect(self.parent_surface, WHITE, hit_rect)
-
-                # テキストを描画
-                self.parent_surface.blit(surf, text_rect)
-
     def collidepoint(self, pos):
         return self.box.collidepoint(pos)
 
     # クリック時の動作
-    def handle_click(self, pos: Tuple[int, int], is_dropped: bool) -> Optional[str]:
-        if is_dropped and self.list_box and self.list_box.collidepoint(pos):
+    def handle_click(self, pos: Tuple[int, int]) -> bool:
+        if self.collidepoint(pos):
+            self.on_decide()
+            self.is_dropped = not self.is_dropped
+            if self.is_dropped and self.focused_index < 0 and self.item_list:
+                self.focused_index = 0
+            return True
+
+        if self.is_dropped and self.list_box and self.list_box.collidepoint(pos):
             hit_pos = pos_to_local(pos, self.parent)
             for text, surf, text_rect, hit_rect in self.entries:
                 if hit_rect.collidepoint(hit_pos):
-                    sound_manager.play("クリック")
-                    return text
-        return None
+                    self.on_decide()
+                    self.selected_item = text
+                    self.update_label(self.selected_item)
+                    self.is_dropped = False
+                    return True
+        return False
     
     # マウスオーバー時の動作
-    def handle_mouse_hover(self, pos: Tuple[int, int], is_dropped: bool):
-        if is_dropped:
+    def handle_mouse_hover(self, pos: Tuple[int, int]):
+        if self.is_dropped:
             self._ensure_layout()
             hovered = None
             hit_pos = pos_to_local(pos, self.parent)
@@ -234,8 +224,46 @@ class PullDown(UIElement, ResizableMixin):
         if is_box_hover and not self.box_hovered:  # 初めてホバーした時
             sound_manager.play("カーソル移動")
         self.box_hovered = is_box_hover
-        if is_box_hover:
-            pygame.draw.rect(self.parent_surface, BLACK, self.box.rect, 2)
+
+        return self.hover_text if self.hover_text and self.collidepoint(pos) else None
+
+    # キーボード操作時の動作
+    def handle_keydown(self, event: pygame.event.Event) -> bool:
+        # 閉じている時
+        if not self.is_dropped:
+            if event.key in (K_RETURN, K_SPACE):
+                self.on_decide()
+                self.is_dropped = True
+                self.focused_index = 0
+                return True
+            return False
+        
+        # 開いている時
+        if event.key == K_UP:
+            self.focused_index = max(0, self.focused_index - 1)
+            self._hovered_item = self.get_focused_item()
+            sound_manager.play("カーソル移動")
+            return True
+        elif event.key == K_DOWN:
+            self.focused_index = min(len(self.item_list)-1, self.focused_index + 1)
+            self._hovered_item = self.get_focused_item()
+            sound_manager.play("カーソル移動")
+            return True
+        elif event.key in (K_RETURN, K_SPACE):
+            self.on_decide()
+            self.selected_item = self.get_focused_item()
+            self.update_label(self.selected_item)
+            self.is_dropped = False
+            return True
+        elif event.key == K_ESCAPE:
+            self.on_decide()
+            self.is_dropped = False
+            return True
+
+        return False
+
+    def get_focused_item(self):
+        return self.item_list[self.focused_index] if self.item_list else None
 
     # フォントサイズ変更
     def resize_font(self, screen_size: Tuple[int, int]):
@@ -250,3 +278,33 @@ class PullDown(UIElement, ResizableMixin):
         super().relayout(screen, parent)
         self.rect = self.resize(self.screen_size)
         self.resize_font(self.screen_size)
+
+    # ボックスの表示
+    def draw(self):
+        # ボックスと▼
+        self.box.draw()
+        # ボックスhover時 縁取り
+        if self.box_hovered:
+            pygame.draw.rect(self.parent_surface, BLACK, self.box.rect, 2)
+
+        self.triangle.draw()
+
+        # テキストがあればテキスト
+        if self.label:
+            self.label.draw()
+
+        # ドロップしている時だけリストを描画
+        if self.is_dropped:
+            self._ensure_layout()
+            self.list_box.draw()
+
+            for text, surf, text_rect, hit_rect in self.entries:
+                # hoverされてる時は背景色を変える
+                if self._hovered_item == text:
+                    pygame.draw.rect(self.parent_surface, BLUE, hit_rect)
+                else:
+                    pygame.draw.rect(self.parent_surface, WHITE, hit_rect)
+
+                # テキストを描画
+                self.parent_surface.blit(surf, text_rect)
+

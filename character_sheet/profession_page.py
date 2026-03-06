@@ -6,6 +6,7 @@ from constans import JSON_FOLDER, PROF_DATA_PATH, SKILL_DATA_PATH, HOBBY_DATA_PA
 from utils import load_json, Calculation
 from models.characters import Player
 from manager.sound_manager import sound_manager
+from ui.ui_container_element import ContainerImage, ContainerPullDown
 
 from character_sheet.base_page import BasePage
 from character_sheet.profession import ProfessionSelector, HobbySelector, Profession
@@ -29,53 +30,26 @@ class ProfessionPage(BasePage):
         self.prof_selector.relayout(screen, self, self.rect)
         self.hobby_selector.relayout(screen, self)
         
-    def draw(self, selected_profession: Optional[Profession], is_pulldown_open: bool) -> Tuple[Surface, Rect]:
+    def draw(self) -> Tuple[Surface, Rect]:
         surface, rect = super().draw()
         if self.prof_selector:
             self.prof_selector.draw()
-        if selected_profession:
-            selected_profession.draw(is_selected=True)
-        self.hobby_selector.draw(is_pulldown_open)
+        if self.hobby_selector:
+            self.hobby_selector.draw()
         return surface, rect
-
-    def handle_mouse_hover(self, pos, is_pulldown_open: bool) -> Optional[str]:
-        pos = self.pos_calculation(pos)
-        if is_pulldown_open:
-            return self.hobby_selector.handle_mouse_hover(pos, is_pulldown_open)
-        else:
-            for prof in self.prof_selector.prof_items:
-                text = prof.handle_mouse_hover(pos)
-                if text:
-                    return text
-        return None
     
-    def handle_click(self, pos, is_pulldown_open: bool, selected_profession: Optional[Profession], selected_hobby: Optional[str]) -> Tuple[bool, Optional[Profession], Optional[str]]:
-        # プルダウンのクリック処理
-        if self.hobby_selector.pull.collidepoint(pos):
-            is_pulldown_open = not is_pulldown_open
-            print(f"is_pulldown_open:{is_pulldown_open}")
+    def handle_click(self, element: ContainerImage|ContainerPullDown, result: Profession|HobbySelector):
+        if result in self.prof_selector.children:
+            self.prof_selector.selected_profession = result
+            self.player.Profession = result.name
+            self.set_to_skills_from_profession()
 
-        # プルダウンが開いているときは
-        if is_pulldown_open:
-            # 趣味欄のクリック処理
-            selected_item = self.hobby_selector.pull.handle_click(pos, is_pulldown_open)
-            if selected_item:
-                sound_manager.play("クリック")
-                selected_hobby = selected_item
-                self.player.Hobby = selected_item
-                self.hobby_selector.pull.update_label(f"{selected_item}")
-                self.set_to_skills_from_hobby(selected_hobby)
-                is_pulldown_open = False
-        else:
-            # もしプルダウンが開いていなかったら
-            # 職業のクリック処理
-            selected_item = self.prof_selector.handle_click(pos)
-            if selected_item:
-                selected_profession = selected_item
-                self.player.Profession = selected_item.name
-                self.set_to_skills_from_profession()
-
-        return is_pulldown_open, selected_profession, selected_hobby
+        elif result in self.hobby_selector.children:
+            if hasattr(element, "selected_item"):
+                self.hobby_selector.selected_hobby = element.selected_item
+                self.player.Hobby = element.selected_item
+                if self.player.Hobby:
+                    self.set_to_skills_from_hobby()
 
     # 選択した職業から主人公のステータスにデータを入れるよ
     def set_to_skills_from_profession(self):
@@ -148,13 +122,13 @@ class ProfessionPage(BasePage):
                         remaining_points -= remaining_points
 
     # 選択した趣味から主人公のステータスにデータを入れるよ
-    def set_to_skills_from_hobby(self, selected_hobby: Optional[str]):
+    def set_to_skills_from_hobby(self):
         # 主人公の持っている技能データ
         my_skills = self.player.skill
 
         # 趣味リストの技能データ
         hobby_list = load_json(HOBBY_DATA_PATH, JSON_FOLDER)
-        hobby_skills = hobby_list[selected_hobby]
+        hobby_skills = hobby_list[self.player.Hobby]
         # 技能リスト
         skill_list = load_json(SKILL_DATA_PATH, JSON_FOLDER)
 

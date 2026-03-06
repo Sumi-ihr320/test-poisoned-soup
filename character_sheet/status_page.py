@@ -91,8 +91,8 @@ class StatusPage(BasePage):
 
     def draw(self) -> Tuple[Surface, Rect]:
         surface, rect = super().draw()
-        if self.sex_button:
-            self.sex_button.draw()
+        #if self.sex_button:
+        #    self.sex_button.draw()
         return surface, rect
     
     # マウスオーバー

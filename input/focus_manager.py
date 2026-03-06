@@ -117,6 +117,12 @@ class FocusManager:
         if event.type != pygame.KEYDOWN:
             return
         
+        focused = self.get_focused()
+        if focused and hasattr(focused, "handle_keydown"):
+            consumed = focused.handle_keydown(event)
+            if consumed:
+                return
+        
         if event.key in (pygame.K_UP,):
             self._move_focus_grid("up")
         elif event.key in (pygame.K_LEFT,):

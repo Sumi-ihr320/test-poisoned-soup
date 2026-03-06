@@ -792,3 +792,9 @@
 
 2026/3/4
 	character_sheet_page周りの調整
+
+2026/3/6
+	PullDownにhandle_keydownを追加
+	focus_managerにfocusedにhandle_keydownが存在する場合を追加
+	professionとhobby周りを修正
+	
