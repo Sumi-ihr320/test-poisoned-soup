@@ -75,9 +75,10 @@ class MenuBar(UIContainer):
     sceneからはcreateボタン、set_enabled(index, bool)、register_all(focus_manager)などで操作する。
     """
     PADDING = 0
-    def __init__(self, screen, frame_rect: Rect, font_data: Tuple[str, int], callback: Callable, enabled_flags: Dict[str, bool]={"セーブ":True, "ロード":True, "ログ":True}, 
+    def __init__(self, screen, root, frame_rect: Rect, font_data: Tuple[str, int], callback: Callable, enabled_flags: Dict[str, bool]={"セーブ":True, "ロード":True, "ログ":True}, 
                  parent: Optional[Any]=None):
         super().__init__(screen, parent)
+        self.root = root
 
         self.frame_rect = frame_rect
 
@@ -159,9 +160,10 @@ class MenuBar(UIContainer):
 # テキストフレーム本体
 class TextFramePanel(UIContainer):
     PADDING = 10
-    def __init__(self, screen, parent: Optional[Any]=None, font_data: Tuple[str, int]=(FONT_PATH, FONT_SIZ), frame_size: Tuple[int, int]=FRAME_SIZE, 
+    def __init__(self, screen, root, parent: Optional[Any]=None, font_data: Tuple[str, int]=(FONT_PATH, FONT_SIZ), frame_size: Tuple[int, int]=FRAME_SIZE, 
                  next_callback: Optional[Callable]=None, enabled_flags: Dict[str, bool]={"セーブ":True, "ロード":True, "ログ":True}):
         super().__init__(screen, parent)
+        self.root = root
 
         self.frame_size = frame_size
         self.margin_bottom = 20
@@ -172,7 +174,7 @@ class TextFramePanel(UIContainer):
         self.font_data = font_data
 
         # メニューバー
-        self.menu_bar = MenuBar(screen=self.screen, frame_rect=self.rect, font_data=self.font_data, callback=next_callback, enabled_flags=enabled_flags)
+        self.menu_bar = MenuBar(screen=self.screen, root=self.root, frame_rect=self.rect, font_data=self.font_data, callback=next_callback, enabled_flags=enabled_flags)
 
         # 内部ラベル
         self.text_label = TextFrameLabel(screen=self.screen, frame_rect=self.rect, font_data=self.font_data)

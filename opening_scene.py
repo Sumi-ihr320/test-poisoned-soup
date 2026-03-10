@@ -27,10 +27,10 @@ class OpeningScene(BaseScene):
 
         # テキストフレームパネル
         enabled_flags = {"セーブ":False, "ロード":True, "ログ":True}
-        self.text_frame_panel = TextFramePanel(self.screen, next_callback=self.set_state, enabled_flags=enabled_flags)
+        self.text_frame_panel = TextFramePanel(self.screen, self.root, next_callback=self.set_state, enabled_flags=enabled_flags)
 
         # マネージャーを初期化
-        event_manager = EventManager(self.screen, log_view=self.log_view)
+        event_manager = EventManager(self.screen, self.root, log_view=self.log_view)
         self.scenario_manager = ScenarioManager(self.screen, event_manager, "opening")
 
 

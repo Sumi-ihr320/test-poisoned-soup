@@ -24,14 +24,20 @@ class UIContainer:
     # FocusManagerとの一括登録
     def register_all(self, focus_manager: FocusManager):
         for c in self.children:
-            if c.is_focusable():
-                focus_manager.register(c)
+            if hasattr(c, "register_all"):
+                c.register_all(focus_manager)
+            else:
+                if c.is_focusable():
+                    focus_manager.register(c)
 
     # FocusManagerとの一括解除
     def unregister_all(self, focus_manager: FocusManager):
         for c in self.children:
-            if c in focus_manager.elements:
-                focus_manager.elements.remove(c)
+            if hasattr(c, "unregister_all"):
+                c.unregister_all(focus_manager)
+            else:
+                if c in focus_manager.elements:
+                    focus_manager.elements.remove(c)
 
     def draw(self):
         for c in self.children:

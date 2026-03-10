@@ -798,3 +798,6 @@
 	focus_managerにfocusedにhandle_keydownが存在する場合を追加
 	professionとhobby周りを修正
 	
+2026/3/10
+	ui_panelsのmenuberにrootを追加。closeボタンが機能できてなかった。
+	ui_containerのregister_allにif hasatter(c, "register_all")を追加。

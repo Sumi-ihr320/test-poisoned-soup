@@ -5,25 +5,32 @@ from pygame import Surface, Rect
 from constans import JSON_FOLDER, PROF_DATA_PATH, SKILL_DATA_PATH, HOBBY_DATA_PATH
 from utils import load_json, Calculation
 from models.characters import Player
-from manager.sound_manager import sound_manager
 from ui.ui_container_element import ContainerImage, ContainerPullDown
 
 from character_sheet.base_page import BasePage
 from character_sheet.profession import ProfessionSelector, HobbySelector, Profession
 
 class ProfessionPage(BasePage):
-    def __init__(self, screen, root, player: Player, ofset: Optional[Tuple[int, int]]=None):
-        super().__init__(screen, root, player, ofset)
+    def __init__(self, screen, root, text_frame_rect: Rect, player: Player, offset: Optional[Tuple[int, int]] = None):
+        super().__init__(screen, root, text_frame_rect, player, offset)
 
         self.prof_selector = None
         self.hobby_selector = None
 
-    def load_selector(self, selected_hobby: Optional[str]=None):
+    def load_selector(self):
         # 職業選択画面
         self.prof_selector = ProfessionSelector(self.screen, parent=self, sheet_rect=self.rect, font_datas=self.font_datas)
 
         # 趣味選択画面
-        self.hobby_selector = HobbySelector(self.screen, parent=self, selected_hobby=selected_hobby, font_datas=self.font_datas, profession_rect=self.prof_selector.rect)
+        self.hobby_selector = HobbySelector(self.screen, parent=self, font_datas=self.font_datas, profession_rect=self.prof_selector.rect)
+
+    def register_all(self, focus_manager):
+        self.prof_selector.register_all(focus_manager)
+        self.hobby_selector.register_all(focus_manager)
+    
+    def unregister_all(self, focus_manager):
+        self.prof_selector.unregister_all(focus_manager)
+        self.hobby_selector.unregister_all(focus_manager)
 
     def relayout(self, screen):
         super().relayout(screen)

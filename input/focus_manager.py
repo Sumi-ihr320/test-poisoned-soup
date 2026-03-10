@@ -88,6 +88,7 @@ class FocusManager:
         if event.type == pygame.MOUSEMOTION:
             pos = event.pos
             result = self._handle_hover(pos)
+            return result
         
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             pos = event.pos
@@ -95,6 +96,7 @@ class FocusManager:
                 if el.collidepoint(pos):
                     self._set_focus(el)
                     result = self._handle_click(pos, el)
+                    return result
         return result
 
     # 仮想カーソル処理

@@ -10,8 +10,8 @@ from models.characters import Player
 from character_sheet.base_page import BasePage
 
 class ConfirmPage(BasePage):
-    def __init__(self, screen, root, player: Player, save_data: Dict[str, Any], callback: Callable, ofset: Optional[Tuple[int, int]]=None):
-        super().__init__(screen, root, player, ofset)
+    def __init__(self, screen, root, text_frame_rect, player: Player, save_data: Dict[str, Any], callback: Callable, offset: Optional[Tuple[int, int]]=None):
+        super().__init__(screen, root, text_frame_rect, player, offset)
         self.save_data = save_data
         self.callback = callback
         
@@ -131,9 +131,11 @@ class ConfirmPage(BasePage):
         self.update_labels()
         self.bg_img.draw()
         self.box.draw()
-        self.sex_img_dict[self.player.sex].draw()
+        player_sex = getattr(self.player, "sex", "man")
+        self.sex_img_dict[player_sex].draw()
         if self.player.Profession:
-            self.prof_img_dict[self.player.Profession].draw()
+            player_prof = getattr(self.player, "Profession", "")
+            self.prof_img_dict[player_prof].draw()
         for label in self.label_dict.values():
             label.draw()
         return self.surface, self.rect

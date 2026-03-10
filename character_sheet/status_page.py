@@ -10,8 +10,8 @@ from character_sheet.base_page import BasePage
 from character_sheet.status_calculator import *
 
 class StatusPage(BasePage):
-    def __init__(self, screen, root, player: Player, ofset: Optional[Tuple[int, int]]=None):
-        super().__init__(screen, root, player, ofset)
+    def __init__(self, screen, root, text_frame_rect: Rect, player: Player, offset: Optional[Tuple[int, int]] = None):
+        super().__init__(screen, root, text_frame_rect, player, offset)
 
         self.status_data: Dict[str, Dict[str, Any]] = load_json(STATUS_DATA_PATH, JSON_FOLDER)
 
@@ -111,4 +111,5 @@ class StatusPage(BasePage):
             self.player.sex = flag
             self.player.image = f"silhouette_{flag}.png"
         else:
-            self.insert_data(result)
+            if isinstance(result, Status):
+                self.insert_data(result)

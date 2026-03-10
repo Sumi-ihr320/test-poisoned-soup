@@ -35,10 +35,10 @@ class MainPlayScene(BaseScene):
         self.log_view_flag = False
 
         # テキストフレーム
-        self.text_frame_panel = TextFramePanel(self.screen, next_callback=self.set_state)
+        self.text_frame_panel = TextFramePanel(self.screen, self.root, next_callback=self.set_state)
 
         # 管理用
-        self.event_manager = EventManager(self.screen, self.player_status, self.girl_status, self.game_state, self.flags,
+        self.event_manager = EventManager(self.screen, self.root, self.player_status, self.girl_status, self.game_state, self.flags,
                                           self.text_frame_panel, self.log_view,
                                           self.handle_next_scenario, self.handle_move_room, self.handle_room_view, self.set_state)
         room_id = f"{self.game_state.room}-room"

@@ -35,7 +35,7 @@ class CharacterSheetScene(BaseScene):
         
         # テキストフレーム
         enabled_flags = {"セーブ": False, "ロード": True, "ログ": False}
-        self.text_frame_panel = TextFramePanel(self.screen, enabled_flags=enabled_flags, next_callback=self.set_state)
+        self.text_frame_panel = TextFramePanel(self.screen, self.root, enabled_flags=enabled_flags, next_callback=self.set_state)
         frame_rect = self.text_frame_panel.rect
 
         # ページ管理
@@ -68,7 +68,7 @@ class CharacterSheetScene(BaseScene):
         self.status_page = StatusPage(self.screen, self.root, frame_rect, self.player)
         self.status_page.load_status_items()
         self.profession_page = ProfessionPage(self.screen, self.root, frame_rect, self.player)
-        self.profession_page.load_selector(self.selected_hobby)
+        self.profession_page.load_selector()
         self.confirm_page = ConfirmPage(self.screen, self.root, frame_rect, self.player, self.save_data, self.set_state)
 
         self.pages.append(self.status_page)
@@ -157,10 +157,7 @@ class CharacterSheetScene(BaseScene):
 
     # ページを表示してSurfaceとRectを返す
     def draw_page_get_surface_and_rect(self, page: int) -> Tuple[pygame.Surface, pygame.Rect]:
-        if self.pages[page] == self.profession_page:
-            return self.pages[page].draw(self.selected_profession, self.is_pulldown_open)
-        else:
-            return self.pages[page].draw()
+        return self.pages[page].draw()
 
     # 次のページを表示
     def next_page(self):
@@ -229,7 +226,7 @@ class CharacterSheetScene(BaseScene):
                             return
                         
                         # ナビゲーションアイテムの場合
-                        if result["target"] in self.navigation.navi_items:
+                        if result["target"] in self.navigation.navi_items[self.current_page]:
                             if self.current_page == 1 and self.is_pulldown_open:
                                 self.is_pulldown_open = False
 
