@@ -111,5 +111,8 @@ class StatusPage(BasePage):
             self.player.sex = flag
             self.player.image = f"silhouette_{flag}.png"
         else:
+            if isinstance(element, ContainerInputBox):
+                result.input_process(self.player.EDU)
+
             if isinstance(result, Status):
                 self.insert_data(result)

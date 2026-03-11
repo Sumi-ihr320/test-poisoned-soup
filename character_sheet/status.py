@@ -54,7 +54,7 @@ class Status(UIContainer):
     # ラベル作成
     def create_label(self, x: int, y: int):
         self.status_label = Label(self.screen, font_data=self.font_data, text=self.label_name, x=x, y=y, 
-                                  parent=self.parent, hover_text=self.hover_text)    # ラベル作成
+                                  parent=self.parent, hover_text=self.hover_text, hover_back_color=None)
         self.add(self.status_label)
 
     # インプットボックスを作成

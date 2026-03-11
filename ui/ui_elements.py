@@ -15,7 +15,7 @@ class Label(UIElement, RectSettingBase, TextBase):
                  x: int=0, y: int=0, centerx: Optional[int]=None, centery: Optional[int]=None, anchor: Tuple[str, str]=("left", "top"), 
                  text_color: Tuple[int, int, int]=BLACK, background_color: Optional[Tuple[int, int, int]]=None, 
                  hover_type: str="box", hover_line_bold: int=1, hover_text_color: Optional[Tuple[int, int, int]]=None, 
-                 hover_back_color: Tuple[int, int, int]=WHITE, hover_text: Optional[str]=None,
+                 hover_back_color: Optional[Tuple[int, int, int]]=WHITE, hover_text: Optional[str]=None,
                  sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, parent: Optional[Any]=None, **kwargs):
         super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, 
                          font_data=font_data, text=text, x=x, y=y, centerx=centerx, centery=centery, anchor=anchor, 
@@ -37,10 +37,11 @@ class Label(UIElement, RectSettingBase, TextBase):
         # マウスオーバー時背景に四角を描く
         if self.hovered or self.focused:
             rect = self.click_rect if self.click_rect else self.rect
-            if self.hover_type == "box":
-                pygame.draw.rect(self.parent_surface, self.hover_back_color, rect)
-            elif self.hover_type == "line":
-                pygame.draw.rect(self.parent_surface, self.hover_back_color, rect, self.hover_line_bold)
+            if self.hover_back_color:
+                if self.hover_type == "box":
+                    pygame.draw.rect(self.parent_surface, self.hover_back_color, rect)
+                elif self.hover_type == "line":
+                    pygame.draw.rect(self.parent_surface, self.hover_back_color, rect, self.hover_line_bold)
 
         # マウスオーバー時文字色を変える(入力があれば)
         color = self.text_color if not self.hovered else (self.hover_text_color if self.hover_text_color else self.text_color)

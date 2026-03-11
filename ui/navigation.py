@@ -44,6 +44,7 @@ class CharasheetNavigation:
                      anchor: Tuple[str, str]=("left", "top"), col: int=0):
         label = Label(self.screen, font_data=self.font_data, text=text, 
                       x=x, y=y, centerx=centerx, anchor=anchor,
+                      hover_back_color=None,
                       focusable=True, row=50, col=col)
         return label
 

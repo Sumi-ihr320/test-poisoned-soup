@@ -801,3 +801,7 @@
 2026/3/10
 	ui_panelsのmenuberにrootを追加。closeボタンが機能できてなかった。
 	ui_containerのregister_allにif hasatter(c, "register_all")を追加。
+
+2026/3/11
+	Labelのhover_back_colorにNoneを設定できるように変更。
+	それに伴い諸々を修正

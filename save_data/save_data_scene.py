@@ -41,7 +41,7 @@ class SaveDataScene(BaseScene):
         self.select_file_name = None
 
         # セーブデータリスト
-        self.extract_save_data_list()
+        self.fetch_and_validate_save_data_list()
 
         # セーブデータのファイルとラベルのリスト
         self.data_label_list = []   # セーブデータファイルとラベルのリスト
@@ -197,7 +197,7 @@ class SaveDataScene(BaseScene):
         result = self.save_data_manager.delete_file(self.select_file_name)
         if result["success"]:
             self.show_info("削除が完了しました", "削除")
-            self.extract_save_data_list()
+            self.fetch_and_validate_save_data_list()
             self.refresh_label_list()
             self.draw()
         else:

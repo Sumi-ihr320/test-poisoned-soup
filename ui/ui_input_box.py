@@ -49,7 +49,8 @@ class InputBox(UIElement, ResizableMixin):
     def ensure_label(self, screen, font_data: Tuple[str, int], parent: Optional[Any]=None):
         if self.label is None and self.label_text is not None:
             # 初回のみ作成
-            self.label = Label(screen, font_data=font_data, text=self.label_text, x=0, y=0, parent=parent)
+            self.label = Label(screen, font_data=font_data, text=self.label_text, x=0, y=0, parent=parent, 
+                               hover_back_color=None)
         elif self.label:
             self.label.set_text(self.label_text)
     

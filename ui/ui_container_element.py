@@ -73,21 +73,36 @@ class ContainerPullDown(PullDown):
         self.parent_container = parent_container
 
     # クリック時の動作
-    def handle_click(self, pos: Tuple[int, int]) -> bool:
+    def handle_click(self, pos: Tuple[int, int]) -> Optional[object]:
+        # ドロップが開いている場合
+        if self.is_dropped:
+            # ボックスをクリック → ドロップを閉じる
+            if self.collidepoint(pos):
+                self.on_decide()
+                self.is_dropped = False
+                return self.parent_container
+
+            # リスト内をクリック            
+            if self.list_box and self.list_box.collidepoint(pos):
+                hit_pos = pos_to_local(pos, self.parent)
+                for text, surf, text_rect, hit_rect in self.entries:
+                    if hit_rect.collidepoint(hit_pos):
+                        sound_manager.play("クリック")
+                        self.selected_item = text
+                        self.update_label(text)
+                        self.is_dropped = False
+                        return self.parent_container
+                # リスト枠内だが項目外 → クリック消費
+                return self.parent_container
+            # ドロップ枠外 → クリック消費しない
+            return None
+
+        # ドロップが閉じている場合
         if self.collidepoint(pos):
             self.on_decide()
-            self.is_dropped = not self.is_dropped
+            self.is_dropped = True
             if self.is_dropped and self.focused_index < 0 and self.item_list:
                 self.focused_index = 0
             return self.parent_container
 
-        if self.is_dropped and self.list_box and self.list_box.collidepoint(pos):
-            hit_pos = pos_to_local(pos, self.parent)
-            for text, surf, text_rect, hit_rect in self.entries:
-                if hit_rect.collidepoint(hit_pos):
-                    sound_manager.play("クリック")
-                    self.selected_item = text
-                    self.update_label(text)
-                    self.is_dropped = False
-                    return self.parent_container
         return None
