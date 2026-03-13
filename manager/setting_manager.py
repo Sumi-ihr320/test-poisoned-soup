@@ -18,32 +18,44 @@ class SettingManager:
         }
         self.load_settings()
 
+    # エラーメッセージを表示する
+    def show_error(self, flag: str, message: str):
+        with TopmostManager(self.root):
+            messagebox.showerror(title=f"{flag}エラー", message=message)
+
+    # InputModeを文字列に変換
+    def enum_to_str(self, input_mode: InputMode) -> str:
+        return input_mode.value
+    
+    # 文字列をInputModeに変換
+    def str_to_enum(self, input_mode_str: str) -> InputMode:
+        return InputMode(input_mode_str)    
+
     # 設定ファイルを読み込む
     def load_settings(self):
         if os.path.exists(self.FILE_PATH):
             try:
                 with open(self.FILE_PATH, "r") as f:
                     self.settings = json.load(f)
+                    self.settings["input_mode"] = self.str_to_enum(self.settings["input_mode"])
             except FileNotFoundError:
-                with TopmostManager(self.root):
-                    messagebox.showerror("ロードエラー", "設定ファイルが見つかりません")
+                self.show_error("ロード", "設定ファイルが見つかりません")
             except json.JSONDecodeError:
-                with TopmostManager(self.root):
-                    messagebox.showerror("ロードエラー", "設定データのファイル形式が正しくありません")
+                self.show_error("ロード", "設定データのファイル形式が正しくありません")
             except Exception as e:
                 print(f"ロードエラー: {e}")
-                with TopmostManager(self.root):
-                    messagebox.showerror("ロードエラー", f"設定データのロードに失敗しました: {str(e)}")
-
+                self.show_error("ロード", f"設定データのロードに失敗しました: {str(e)}")
+ 
     # 設定をjsonファイルに保存する
     def save_settings(self):
+        settings = self.settings.copy()
+        settings["input_mode"] = self.enum_to_str(settings["input_mode"])
         try:
             with open(self.FILE_PATH, "w") as f:
-                json.dump(self.settings, f, indent=4)
+                json.dump(settings, f, indent=4)
         except Exception as e:
             print(f"セーブエラー: {e}")
-            with TopmostManager(self.root):
-                messagebox.showerror("セーブエラー", "設定データのセーブに失敗しました")
+            self.show_error("セーブ", "設定データのセーブに失敗しました")
 
     # 設定値を取得
     def get(self, key):

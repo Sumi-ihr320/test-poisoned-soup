@@ -186,26 +186,6 @@ class CharacterSheetScene(BaseScene):
         else:
             self.text_frame_panel.set_text("")
 
-        """
-        # マウスオーバーでテキスト表示するよ
-        key = pygame.mouse.get_pos()
-        horver_text = None
-
-        #self.menu_controller.handle_mouse_hover(key)
-        self.text_frame_panel.handle_mouse_hover(key)
-        
-        # ページによって変わる
-        if self.current_page == 0:
-            horver_text = self.status_page.handle_mouse_hover(key)
-        elif self.current_page == 1:
-            horver_text = self.profession_page.handle_mouse_hover(key, self.is_pulldown_open)
-
-        if horver_text:
-            self.text_frame_panel.set_text(horver_text)
-        else:
-            self.text_frame_panel.set_text("")
-        """
-
     # イベントハンドラ
     def handle_events(self):
         for event in pygame.event.get():

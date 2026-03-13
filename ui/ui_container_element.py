@@ -77,7 +77,7 @@ class ContainerPullDown(PullDown):
         # ドロップが開いている場合
         if self.is_dropped:
             # ボックスをクリック → ドロップを閉じる
-            if self.collidepoint(pos):
+            if self.box.collidepoint(pos):
                 self.on_decide()
                 self.is_dropped = False
                 return self.parent_container

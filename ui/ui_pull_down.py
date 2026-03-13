@@ -180,26 +180,43 @@ class PullDown(UIElement, ResizableMixin):
         self._place_triangle_and_label()
 
     def collidepoint(self, pos):
+        if self.is_dropped:
+            return self.list_box.collidepoint(pos) or self.box.collidepoint(pos)
         return self.box.collidepoint(pos)
 
     # クリック時の動作
     def handle_click(self, pos: Tuple[int, int]) -> bool:
+        # ドロップが開いている場合
+        if self.is_dropped:
+            # ボックスをクリック → ドロップを閉じる
+            if self.box.collidepoint(pos):
+                self.on_decide()
+                self.is_dropped = False
+                return True
+
+            # リスト内をクリック            
+            if self.list_box and self.list_box.collidepoint(pos):
+                hit_pos = pos_to_local(pos, self.parent)
+                for text, surf, text_rect, hit_rect in self.entries:
+                    if hit_rect.collidepoint(hit_pos):
+                        sound_manager.play("クリック")
+                        self.selected_item = text
+                        self.update_label(text)
+                        self.is_dropped = False
+                        return True
+                # リスト枠内だが項目外 → クリック消費
+                return True
+            # ドロップ枠外 → クリック消費しない
+            return False
+
+        # ドロップが閉じている場合
         if self.collidepoint(pos):
             self.on_decide()
-            self.is_dropped = not self.is_dropped
+            self.is_dropped = True
             if self.is_dropped and self.focused_index < 0 and self.item_list:
                 self.focused_index = 0
             return True
 
-        if self.is_dropped and self.list_box and self.list_box.collidepoint(pos):
-            hit_pos = pos_to_local(pos, self.parent)
-            for text, surf, text_rect, hit_rect in self.entries:
-                if hit_rect.collidepoint(hit_pos):
-                    self.on_decide()
-                    self.selected_item = text
-                    self.update_label(self.selected_item)
-                    self.is_dropped = False
-                    return True
         return False
     
     # マウスオーバー時の動作

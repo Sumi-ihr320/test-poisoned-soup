@@ -92,6 +92,14 @@ class FocusManager:
         
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             pos = event.pos
+
+            # 展開中オーバーレイ優先
+            overlay = self._find_open_overlay(pos)
+            if overlay:
+                self._set_focus(overlay)
+                return self._handle_click(pos, overlay)
+            
+            # 通常判定
             for el in self.elements:
                 if el.collidepoint(pos):
                     self._set_focus(el)
@@ -207,24 +215,6 @@ class FocusManager:
             self.focus_idx = 0 if self.elements else -1
         self._apply_focus()
 
-        """
-        if element in self.elements:
-            for el in self.elements:
-                el.set_focus(el == element)
-            if element in self.elements:
-                self.focus_idx = self.elements.index(element)
-        else:
-            # どれにも当たらなかった → index0 にフォーカス
-            if self.elements:
-                fallback = self.elements[0]
-                for el in self.elements:
-                    el.set_focus(el is fallback)
-                self.focus_idx = 0
-            else:
-                # elementsが空 → 何もしない
-                self.focus_idx = -1
-        """
-
     # indexからfocusをセットする
     def _apply_focus(self):
         if not self.elements:
@@ -243,6 +233,17 @@ class FocusManager:
         if not self.elements:
             return None
         return self.elements[self.focus_idx]
+
+    def _find_open_overlay(self, pos):
+        # 後ろから見る
+        for el in reversed(self.elements):
+            if getattr(el, "is_dropped", False):
+                # box上 or 展開リスト上ならこの要素にクリックを委譲
+                in_box = el.box.collidepoint(pos)
+                in_list = bool(getattr(el, "list_box", None) and el.list_box.collidepoint(pos))
+                if in_box or in_list:
+                    return el
+        return None
 
     # マウスモードから他モードへ切り替え
     def switch_from_mouse(self):

@@ -805,3 +805,8 @@
 2026/3/11
 	Labelのhover_back_colorにNoneを設定できるように変更。
 	それに伴い諸々を修正
+
+2026/3/13
+	ui_pull_downのcolidepointをis_dropped時はlist_boxの範囲も確認するように変更。
+	focus_managerがis_dropped時はそのアイテムを優先するように変更。
+	setting_managerがInputModeを保存できなかったので保存できるように変換コードを追加。

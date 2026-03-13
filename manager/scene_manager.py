@@ -68,9 +68,9 @@ class SceneManager:
             elif event_name == "setting":
                 self.event_map["setting"] = SettingScene(self.screen, self.root, self.setting_manager, self.previous_event)
             elif event_name == "save":
-                self.event_map["save"] = SaveDataScene(self.screen, self.root, "save", self.previous_event, self.save_data)
+                self.event_map["save"] = SaveDataScene(self.screen, self.root, "save", self.previous_event, self.save_data, self.setting_manager)
             elif event_name == "load":
-                self.event_map["load"] = SaveDataScene(self.screen, self.root, "load", self.previous_event, self.save_data)
+                self.event_map["load"] = SaveDataScene(self.screen, self.root, "load", self.previous_event, self.save_data, self.setting_manager)
             elif event_name == "play":
                 self.event_map["play"] = MainPlayScene(self.screen, self.root, self.save_data)
             elif event_name == "ending":

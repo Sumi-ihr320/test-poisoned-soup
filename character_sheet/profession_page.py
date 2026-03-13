@@ -25,12 +25,12 @@ class ProfessionPage(BasePage):
         self.hobby_selector = HobbySelector(self.screen, parent=self, font_datas=self.font_datas, profession_rect=self.prof_selector.rect)
 
     def register_all(self, focus_manager):
-        self.prof_selector.register_all(focus_manager)
         self.hobby_selector.register_all(focus_manager)
+        self.prof_selector.register_all(focus_manager)
     
     def unregister_all(self, focus_manager):
-        self.prof_selector.unregister_all(focus_manager)
         self.hobby_selector.unregister_all(focus_manager)
+        self.prof_selector.unregister_all(focus_manager)
 
     def relayout(self, screen):
         super().relayout(screen)
@@ -46,17 +46,18 @@ class ProfessionPage(BasePage):
         return surface, rect
     
     def handle_click(self, element: ContainerImage|ContainerPullDown, result: Profession|HobbySelector):
-        if result in self.prof_selector.children:
-            self.prof_selector.selected_profession = result
-            self.player.Profession = result.name
-            self.set_to_skills_from_profession()
-
-        elif result in self.hobby_selector.children:
+        if result == self.hobby_selector:
             if hasattr(element, "selected_item"):
                 self.hobby_selector.selected_hobby = element.selected_item
                 self.player.Hobby = element.selected_item
                 if self.player.Hobby:
                     self.set_to_skills_from_hobby()
+
+        elif result in self.prof_selector.children:
+            self.prof_selector.selected_profession = result
+            self.player.Profession = result.name
+            self.set_to_skills_from_profession()
+
 
     # 選択した職業から主人公のステータスにデータを入れるよ
     def set_to_skills_from_profession(self):
