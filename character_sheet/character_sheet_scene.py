@@ -1,12 +1,11 @@
 from typing import Tuple, Optional
-from tkinter import messagebox
 
 import pygame
 from pygame.locals import *
 
 from constans import ITEM_LIST, JSON_FOLDER, State
-from utils import load_json, Close, TopmostManager
-from models.characters import Player, Human
+from utils import load_json, Close
+from models.characters import Player
 from input.focus_manager import FocusManager
 
 from ui.ui_panels import TextFramePanel
@@ -100,47 +99,6 @@ class CharacterSheetScene(BaseScene):
         self.change_register_page(self.current_page)
         self.text_frame_panel.register_all(self.focus_manager)
 
-    # 完了ボタンを押した時のイベント
-    def event_enter_button(self):
-        manual_input_fields = { "name": "名前が入力されていません",
-                                "age": "年齢が入力されていません",
-                                "STR": "STRが入力されていません",
-                                "CON": "CONが入力されていません",
-                                "SIZ": "SIZが入力されていません",
-                                "DEX": "DEXが入力されていません",
-                                "APP": "APPが入力されていません",
-                                "EDU": "EDUが入力されていません",
-                                "INT": "INTが入力されていません",
-                                "POW": "POWが入力されていません",
-                                "Profession":"職業が選択されていません",
-                                "Hobby":"趣味が選択されていません"
-                                }
-        texts = []
-
-        # 手動入力が必要なステータスのみエラーチェックする
-        for status, error_msg in manual_input_fields.items():
-            if getattr(self.player, status) == "" or getattr(self.player, status) == 0:
-                texts.append(error_msg)
-        if texts:
-            text = "\n".join(texts)
-            with TopmostManager(self.root):
-                messagebox.showerror("未入力", text)
-        else:
-            # セーブデータに主人公データを入れる
-            self.save_data["player_status"] = self.player.to_dict()
-
-            # セーブデータに少女のデータを入れる
-            girl = Human("下僕の少女", "Girl.png", 4, 6, 10, 5, 10, 10,"-1d4", 8, 10, 10,
-                         {"目星":55, "聞き耳":55, "忍び歩き":40,"隠れる":40,"応急手当":50, "中国語（母国語）":40, "追跡":50, "その他言語（主人公の母国語）":31,"クトゥルフ神話":15, "拳銃":20},
-                         17, "woman", 13, 6, 50, 50, 30, 0, 0, "放浪者")
-            girl.add_item(ITEM_LIST["bloody_robe"])
-            girl.add_item(ITEM_LIST["gun"])
-
-            self.save_data["girl_status"] = girl.to_dict()
-
-            #self.callback(State.SAVE, self.save_data)
-            self.state = State.SAVE
-
     # ページを表示する
     def draw_page(self):
         current, current_rect = self.draw_page_get_surface_and_rect(self.current_page)
@@ -181,10 +139,10 @@ class CharacterSheetScene(BaseScene):
         if self.current_page == 0:
             horver_text = self.status_page.handle_mouse_hover(key)
 
-        if horver_text:
-            self.text_frame_panel.set_text(horver_text)
-        else:
-            self.text_frame_panel.set_text("")
+            if horver_text:
+                self.text_frame_panel.set_text(horver_text)
+            #else:
+            #    self.text_frame_panel.set_text("")
 
     # イベントハンドラ
     def handle_events(self):
@@ -210,10 +168,12 @@ class CharacterSheetScene(BaseScene):
                             if self.current_page == 1 and self.is_pulldown_open:
                                 self.is_pulldown_open = False
 
-                            if result["target"] == self.navigation.to_enter:
-                                self.event_enter_button()
-                            elif result["target"] == self.navigation.to_next:
+                            if result["target"] == self.navigation.to_finalize:
+                                self.confirm_page.handle_click(result["target"], result["result"])
+                                
+                            if result["target"] == self.navigation.to_next:
                                 self.next_page()
+
                             elif result["target"] == self.navigation.to_prev:
                                 self.prev_page()
 
@@ -224,36 +184,14 @@ class CharacterSheetScene(BaseScene):
                         # 職業ページの場合
                         elif self.current_page == 1:
                             self.profession_page.handle_click(result["target"], result["result"])
-
-    """
-    # マウスクリック時
-    def handle_mouse_click(self, pos: Tuple[int, int]):
-        if self.text_frame_panel.handle_click(pos):
-            return
-        
-        # ページ移動
-        result = self.navigation.handle_click(self.current_page, pos)
-        if result:
-            if self.current_page == 1 and self.is_pulldown_open:
-                self.is_pulldown_open = False
-            if result == "enter":
-                self.event_enter_button()
             else:
-                self.is_sliding = True
-                if result == "next":
-                    self.next_page()
-                else:
-                    self.prev_page()
-            
-        # １ページ目だったら
-        if self.current_page == 0:
-            item = self.status_page.handle_click(pos)
-            if item:
-                self.insert_data(item)
-        elif self.current_page == 1:
-        # 2ページ目だったら
-            self.is_pulldown_open, self.selected_profession, self.selected_hobby = self.profession_page.handle_click(pos, self.is_pulldown_open, self.selected_profession, self.selected_hobby)
-    """
+                self.text_frame_panel.set_text("")                
+                            
+    def set_state(self, state=State.NONE, save_data=None):
+        if save_data:
+            self.save_data = save_data
+        super().set_state(state)
+
     # 画面サイズ更新時にポジションを変更する
     def relayout(self, screen: pygame.Surface):
         super().relayout(screen)
@@ -280,12 +218,13 @@ class CharacterSheetScene(BaseScene):
                 self.is_sliding = False
 
         self.draw_page()    # ページに応じた描画
-        self.handle_mouse_hover()
+        #self.handle_mouse_hover()
         self.handle_events()
         return self.next_state()
 
     def next_state(self):
         if self.state == State.SAVE:
+            self.state = State.NONE
             return "save", self.save_data
         elif self.state == State.LOAD:
             self.state = State.NONE

@@ -1,11 +1,13 @@
 from typing import Dict, Tuple, Any, Optional, Callable
 
 from pygame import Rect
+from tkinter import messagebox
 
-from constans import JSON_FOLDER, PROF_DATA_PATH
+from constans import JSON_FOLDER, PROF_DATA_PATH, ITEM_LIST, State
+from utils import load_json, TopmostManager
+from models.characters import Player, Human
 from ui.ui_elements import Box, Label, Image
 from utils import load_json
-from models.characters import Player
 
 from character_sheet.base_page import BasePage
 
@@ -48,6 +50,46 @@ class ConfirmPage(BasePage):
         self.set_label_rect_and_create_box()
         self.create_images()
 
+    # バリデーションと完了処理
+    def validate_and_finalize(self):
+        manual_input_fields = { "name": "名前が入力されていません",
+                                "age": "年齢が入力されていません",
+                                "STR": "STRが入力されていません",
+                                "CON": "CONが入力されていません",
+                                "SIZ": "SIZが入力されていません",
+                                "DEX": "DEXが入力されていません",
+                                "APP": "APPが入力されていません",
+                                "EDU": "EDUが入力されていません",
+                                "INT": "INTが入力されていません",
+                                "POW": "POWが入力されていません",
+                                "Profession":"職業が選択されていません",
+                                "Hobby":"趣味が選択されていません"
+                                }
+        texts = []
+
+        # 手動入力が必要なステータスのみエラーチェックする
+        for status, error_msg in manual_input_fields.items():
+            if getattr(self.player, status) == "" or getattr(self.player, status) == 0:
+                texts.append(error_msg)
+        if texts:
+            text = "\n".join(texts)
+            with TopmostManager(self.root):
+                messagebox.showerror("未入力", text)
+            return False
+        
+        # セーブデータに主人公データを入れる
+        self.save_data["player_status"] = self.player.to_dict()
+
+        # セーブデータに少女のデータを入れる
+        girl = Human("下僕の少女", "Girl.png", 4, 6, 10, 5, 10, 10,"-1d4", 8, 10, 10,
+                        {"目星":55, "聞き耳":55, "忍び歩き":40,"隠れる":40,"応急手当":50, "中国語（母国語）":40, "追跡":50, "その他言語（主人公の母国語）":31,"クトゥルフ神話":15, "拳銃":20},
+                        17, "woman", 13, 6, 50, 50, 30, 0, 0, "放浪者")
+        girl.add_item(ITEM_LIST["bloody_robe"])
+        girl.add_item(ITEM_LIST["gun"])
+
+        self.save_data["girl_status"] = girl.to_dict()
+        return True
+            
     # ボックスを作成する
     def set_label_rect_and_create_box(self):
         box_x, box_y = self.rect.width // 2, 10
@@ -116,6 +158,11 @@ class ConfirmPage(BasePage):
         for name, text in self.status_dict.items():
             self.label_dict[name].set_text(text)
         self.set_label_rect_and_create_box()
+
+    def handle_click(self, element, result: bool):
+        if result:
+            if self.validate_and_finalize():
+                self.callback(State.SAVE, self.save_data)
 
     def relayout(self, screen):
         super().relayout(screen)

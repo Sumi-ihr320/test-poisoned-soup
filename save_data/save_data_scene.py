@@ -230,7 +230,7 @@ class SaveDataScene(BaseScene):
             if not messagebox.askokcancel(mode, message):
                 return False
         return True
-    
+            
     # ファイル名を作る
     def create_filename(self):
         # 今日の日付と時間を取得
@@ -308,16 +308,6 @@ class SaveDataScene(BaseScene):
                 updated_labels.append(data)
 
             self.data_label_list = updated_labels
-
-            """# ファイル一覧の更新内容をラベルに反映
-            for save_data in self.save_data_list:
-                save_data_number = self.save_data_manager.extract_file_number(save_data)
-                for data in self.data_label_list:
-                    if data["number"] == save_data_number:
-                        data["file"] = save_data
-                        data_name = save_data.replace(".json", "")
-                        data["label"].set_text(data_name)
-            """
 
         self.set_save_data_rect()
 
@@ -398,11 +388,15 @@ class SaveDataScene(BaseScene):
             
             elif self.befor_event == "charasheet":
                 if self.save_load_flag == "save":
-                    if self.ask_confirmation("セーブせずに本編に進みますか？", "閉じる"):
-                        return "play", self.save_data
-                    else:
-                        self.state = State.NONE
-                        return "save", self.save_data
+                    with TopmostManager(self.root):
+                        result = messagebox.askyesnocancel("閉じる", "セーブせずに本編に進みますか？")
+                        if result is None:
+                            self.state = State.NONE
+                            return "save", self.save_data
+                        if result:
+                            self.state = State.NONE
+                            return "play", self.save_data
+                        return "charasheet", None
                 else:
                     return "charasheet", None
 

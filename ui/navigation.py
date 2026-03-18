@@ -29,15 +29,15 @@ class CharasheetNavigation:
 
         self.to_next = self.create_label(text="→ 次へ", x=self.surface_rect.right-10, y=y, anchor=("right", "top"))
         self.to_prev = self.create_label(text="← 戻る", x=self.surface_rect.left+10, y=y, col=1)
-        self.to_enter = self.create_label(text="完了", centerx=self.surface_rect.centerx, y=y, col=2)
+        self.to_finalize = self.create_label(text="完了", centerx=self.surface_rect.centerx, y=y, col=2)
 
         # ラベルリスト
-        self.label_list = [self.to_next, self.to_prev, self.to_enter]
+        self.label_list = [self.to_next, self.to_prev, self.to_finalize]
 
         # 各位置のナビゲーションをページごとに格納するリスト
         self.navi_items = [[self.to_next],
                            [self.to_next, self.to_prev],
-                           [self.to_prev, self.to_enter]]
+                           [self.to_prev, self.to_finalize]]
 
     # ラベル作成
     def create_label(self, text: str, x: int=0, y: int=0, centerx: Optional[int]=None,
@@ -62,7 +62,7 @@ class CharasheetNavigation:
     def handle_click(self, page: int, pos: Tuple[int, int]) -> Optional[str]:
         click_set = {self.to_next: "next",
                      self.to_prev: "prev",
-                     self.to_enter:"enter"}
+                     self.to_finalize:"finalize"}
         navis = self.navi_items[page]
         for navi in navis:
             if navi.collidepoint(pos):
@@ -79,7 +79,7 @@ class CharasheetNavigation:
         navis = self.navi_items[page]
         for navi in navis:
             navi.draw()
-            pygame.draw.rect(self.screen, RED, navi.rect, 2)
+            pygame.draw.rect(self.screen, RED, navi.rect, 2)    # デバッグ用
 
 # メインプレイで使うナビゲーション
 class MainNavigation:

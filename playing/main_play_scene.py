@@ -291,7 +291,6 @@ class MainPlayScene(BaseScene):
         if flag:
             self.log_view_flag = False
 
-
     def next_state(self):
         if self.state == State.SAVE:
             self.state = State.NONE
@@ -303,7 +302,9 @@ class MainPlayScene(BaseScene):
             self.state = State.NONE
             return "setting", self.save_data
         elif self.state == State.LOG:
+            self.state = State.NONE
             self.log_view_flag = True
         elif self.state == State.CLOSE:
+            self.state = State.NONE
             return "ending", self.save_data
         return "play", self.save_data
