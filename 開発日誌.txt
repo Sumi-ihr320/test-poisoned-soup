@@ -815,3 +815,11 @@
 	character_sheet_sceneにあったevent_enter_buttonをconfirm_pageにvalidate_and_finalizeとして移動
 	save_data_sceneにて、character_sheet_sceneから移動した場合の閉じるボタンの挙動を、saveせずにplayに移るのみではなくcharacter_sheetに戻ることができるようにyes_no_cancelメッセージに変更。
 	navigationのenterボタンをfinalizeボタンに名称変更
+
+2026/4/1
+	focus_managerにhover_elementsを追加
+	hover専用アイテムを追加できるように。
+	Statusのregister_allにhover_elementに登録を追加。
+	ui_containerのunregister_allにhover_elementのremoveを追加
+	log_viewにis_openを追加。log_view内で判断するように変更
+	main_navigationを修正中

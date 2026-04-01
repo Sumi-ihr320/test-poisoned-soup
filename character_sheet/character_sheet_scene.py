@@ -1,4 +1,4 @@
-from typing import Tuple, Optional
+from typing import Tuple
 
 import pygame
 from pygame.locals import *
@@ -131,19 +131,6 @@ class CharacterSheetScene(BaseScene):
             self.is_sliding = True
             self.change_register_page(self.target_page)
 
-    # マウスオーバーイベント
-    def handle_mouse_hover(self):
-        key = pygame.mouse.get_pos()
-        horver_text = None
-
-        if self.current_page == 0:
-            horver_text = self.status_page.handle_mouse_hover(key)
-
-            if horver_text:
-                self.text_frame_panel.set_text(horver_text)
-            #else:
-            #    self.text_frame_panel.set_text("")
-
     # イベントハンドラ
     def handle_events(self):
         for event in pygame.event.get():
@@ -218,7 +205,6 @@ class CharacterSheetScene(BaseScene):
                 self.is_sliding = False
 
         self.draw_page()    # ページに応じた描画
-        #self.handle_mouse_hover()
         self.handle_events()
         return self.next_state()
 

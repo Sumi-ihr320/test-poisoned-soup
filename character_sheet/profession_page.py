@@ -58,7 +58,6 @@ class ProfessionPage(BasePage):
             self.player.Profession = result.name
             self.set_to_skills_from_profession()
 
-
     # 選択した職業から主人公のステータスにデータを入れるよ
     def set_to_skills_from_profession(self):
         # 主人公の所持スキルをリセット

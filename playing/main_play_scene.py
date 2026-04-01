@@ -32,7 +32,6 @@ class MainPlayScene(BaseScene):
 
         # ログ表示機能
         self.log_view = LogView(self.screen, callback=self.log_view_end)
-        self.log_view_flag = False
 
         # テキストフレーム
         self.text_frame_panel = TextFramePanel(self.screen, self.root, next_callback=self.set_state)
@@ -205,36 +204,21 @@ class MainPlayScene(BaseScene):
         self.event_manager.render_manager.handle_mouse_hover(key)
         self.room_manager.handle_mouse_hover(key)
 
-    # キーダウンイベント
-    def handle_keydown(self, key):
-        # ESCキーで終了
-        if key == K_ESCAPE:
-            Close(self.root)
-
-        # エンターキーでクリックイベント
-        #elif key == K_RETURN or key == K_KP_ENTER:
-            #self.handle_click(self.cursor.get_pos())
-
     # イベントハンドラ
     def handle_events(self):
         for event in pygame.event.get():
             # 閉じるボタンで終了
-            if event.type == QUIT:
+            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 Close(self.root)
 
+            result = self.focus_manager.handle_event(event)
+
+            """
             # キーボード押下時
             if event.type == KEYDOWN:
-                #if not self.use_virtual_cursor:
-                    # ボタンを押すことでキーボードモードに変更
-                    #self.use_virtual_cursor = on_keybord(self.cursor)
                     
                 self.handle_keydown(event.key)
 
-            # マウス移動時
-            #if event.type == MOUSEMOTION:
-                #if self.use_virtual_cursor:
-                    # マウスを動かしたらキーボードモード終了
-                #    self.use_virtual_cursor = off_keybord(self.cursor)
 
             # マウスクリック時
             if event.type == MOUSEBUTTONDOWN:
@@ -245,7 +229,28 @@ class MainPlayScene(BaseScene):
                 # 右クリック
                 elif event.button == 3:
                     self.handle_click_right(event)
-                    
+            """                     
+
+    # フォーカス登録
+    def register_all(self):
+        # 1. LogView
+        if self.log_view.is_open:
+            self.log_view.register_all(self.focus_manager)
+        else:
+            self.log_view.unregister_all(self.focus_manager)
+        
+        # 2. TextFramePanel
+        self.event_manager.register_all(self.focus_manager)
+
+        # 3.Navigation
+        self.navigation.register_all(self.focus_manager)
+
+    # フォーカス削除
+    def unregister_all(self):
+        self.log_view.unregister_all(self.focus_manager)
+        self.event_manager.unregister_all(self.focus_manager)
+        self.navigation.unregister_all(self.focus_manager) 
+
     # 表示
     def draw(self):
         #create_frame(self.screen)       # テキストフレームの表示
@@ -257,25 +262,15 @@ class MainPlayScene(BaseScene):
 
         # ステータスの表示
         self.status_label.update(self.player_status, self.girl_status, self.game_state, self.flags)
-
-        # イベントマネージャーの表示
-        #self.event_manager.draw()
         
         # シナリオマネージャーの表示
         self.scenario_manager.draw()
 
         # ログ表示
-        if self.log_view_flag:
-            self.log_view.draw()
-
-        # バーチャルカーソルの表示
-        #if self.use_virtual_cursor:
-        #    self.cursor.draw()
+        self.log_view.draw()
             
     # 更新
     def update(self):
-        #if self.use_virtual_cursor:
-            #handle_cursor_move(self.use_virtual_cursor, self.cursor)
 
         if self.scenario_manager.is_active:
             self.scenario_manager.update()
@@ -285,11 +280,6 @@ class MainPlayScene(BaseScene):
         self.handle_mouse_hover()
         self.handle_events()
         return self.next_state()
-
-    # ログ表示を閉じる用のコールバック関数
-    def log_view_end(self, flag):
-        if flag:
-            self.log_view_flag = False
 
     def next_state(self):
         if self.state == State.SAVE:
@@ -303,7 +293,7 @@ class MainPlayScene(BaseScene):
             return "setting", self.save_data
         elif self.state == State.LOG:
             self.state = State.NONE
-            self.log_view_flag = True
+            self.log_view.is_open = True
         elif self.state == State.CLOSE:
             self.state = State.NONE
             return "ending", self.save_data

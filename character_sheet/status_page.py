@@ -1,5 +1,5 @@
 from typing import Tuple, Optional, Any
-from pygame import Surface, Rect
+from pygame import Rect
 
 from constans import STATUS_DATA_PATH, JSON_FOLDER
 from utils import load_json
@@ -88,21 +88,7 @@ class StatusPage(BasePage):
         for item in self.elements:
             item.relayout(screen, self)
         self.sex_button.relayout(screen, self)
-
-    def draw(self) -> Tuple[Surface, Rect]:
-        surface, rect = super().draw()
-        #if self.sex_button:
-        #    self.sex_button.draw()
-        return surface, rect
     
-    # マウスオーバー
-    def handle_mouse_hover(self, pos: Tuple[int, int]) -> Optional[str]:
-        for item in self.elements:
-            text = item.handle_mouse_hover(pos)
-            if text is not None:
-                return text
-        return None
-
     # クリックイベント
     def handle_click(self, element: ContainerLabel|ContainerButton|ContainerInputBox, result: Status|SexChange):
         if result == self.sex_button:

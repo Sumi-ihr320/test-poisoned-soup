@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Tuple
 
 import pygame
 from pygame.locals import *
@@ -9,8 +9,8 @@ from ui.ui_elements import Label, Image
 from ui.ui_container_element import ContainerLabel, ContainerButton, ContainerInputBox
 from ui.ui_cache import ImageCache
 from ui.ui_container import UIContainer
+from input.focus_manager import FocusManager
 from manager.dice_service import DiceService
-from manager.sound_manager import sound_manager
 
 # ステータス作るよ
 class Status(UIContainer):
@@ -113,17 +113,24 @@ class Status(UIContainer):
         result = self.dice_service.roll(self.dice_text)
         self.input.update_label(f"{result}")
 
-    def handle_mouse_hover(self, pos):
-        return self.status_label.handle_mouse_hover(pos)
+    # FocusManagerとの一括登録
+    def register_all(self, focus_manager: FocusManager):
+        for c in self.children:
+            if hasattr(c, 'register_all'):
+                c.register_all(focus_manager)
+            else:
+                if c.is_focusable():
+                    focus_manager.register(c)
+            
+            # input_flag が False(入力不可) な場合、ホバー専用要素として登録
+            if c == self.input:
+                if not self.input_flag and c.hover_text:
+                    focus_manager.register_hover_only(c)
 
-    def handle_click(self, pos):
-        if self.input_flag and self.input and self.input.collidepoint(pos):
-            self.input_process(self.parent.player.EDU)
-            return "input"
-        elif self.button and self.button.handle_click(pos):
-            return "button"
-        return None
-
+            # status_label もホバー専用登録
+            if c == self.status_label and c.hover_text:
+                focus_manager.register_hover_only(c)
+        
 # 選んだ性別によって画像が変わるようにするよ
 class SexChange(UIContainer):
     def __init__(self, screen, parent, sheet_rect: pygame.Rect, font_data: Tuple[str, int], title_text: str, 
@@ -237,15 +244,3 @@ class SexChange(UIContainer):
         for label in self.labels_dict.values():
             label.draw()
         self.images_dict[self.flag].draw()
-
-    def handle_mouse_hover(self, pos):
-        return None
-
-    def handle_click(self, pos: Tuple[int, int]):
-        for name, label in self.labels_dict.items():
-            if label.collidepoint(pos):
-                sound_manager.play("クリック")
-                self.update_sex(name)
-                return name
-        return None
-        

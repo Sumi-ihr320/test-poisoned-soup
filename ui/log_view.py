@@ -8,7 +8,7 @@ from ui.ui_base import RichTextRenderer
 
 class LogView:
     def __init__(self, screen, parent=None, font_data=(FONT_PATH, FONT_SIZ), padding=12, text_color=WHITE,
-                 max_entries=500, block_spacing=8, callback=None):
+                 max_entries=500, block_spacing=8):
         self.screen = screen
         self.screen_size = screen.get_size()
 
@@ -19,15 +19,12 @@ class LogView:
         self._setting_rect()
         self.padding = padding
         
-
         self.font_data = font_data
         self.font = self._entry_font()
         self.text_color = text_color
 
         self.max_entries = max_entries
         self.block_spacing = block_spacing
-
-        self.callback = callback
 
         # 共有キャッシュ/レンダラー
         self.cache = SurfaceCache()
@@ -44,6 +41,9 @@ class LogView:
 
         # ×ボタン
         self.close_image = Image(self.screen, "close_button.png", scale=0.5, x=self.frame_rect.right - 10, y=self.frame_rect.y + 10, anchor=("right", "top"))
+
+        # 表示フラグ
+        self.is_open = False
 
         # options
         self.show_background = True
@@ -127,11 +127,20 @@ class LogView:
             new_entries.append(self._render_entry(e['text']))
         self.entries = new_entries
         self._recompute_layout()
-        self.scroll_to_bottom
+        self.scroll_to_bottom()
+
+    # フォーカスマネージャーに登録
+    def register_all(self, focus_manager):
+        focus_manager.register(self.close_image)
+
+    # フォーカスマネージャーから削除
+    def unregister_all(self, focus_manager):
+        if self.close_image in focus_manager.elements:
+            focus_manager.elements.remove(self.close_image)
 
     # ログ表示を終了
     def close(self):
-        self.callback(True)
+        self.is_open = False
 
     def handle_click(self, pos):
         if self.close_image.handle_click(pos):
@@ -150,6 +159,9 @@ class LogView:
         self.close_image.relayout()
 
     def draw(self):
+        if not self.is_open:
+            return
+        
         # 背景
         if self.show_background:
             s = pygame.Surface((self.frame_rect.w, self.frame_rect.h), pygame.SRCALPHA)

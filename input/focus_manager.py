@@ -13,7 +13,8 @@ class FocusManager:
 
         self.page_elements = []
         self.optional_elements = []
-        self.elements = []  # 登録順のリスト
+        self.elements = []          # フォーカス可能な要素
+        self.hover_elements = []    # ホバー機能のみの要素
         self.focus_idx = 0
         self.virtual_cursor = VirtualCursor(screen)
 
@@ -22,10 +23,20 @@ class FocusManager:
         # フォーカス対象の要素を登録
         if element.is_focusable():
             self.elements.append(element)
+    
+    # ホバーのみの要素を登録
+    def register_hover_only(self, element: Any):
+        self.hover_elements.append(element)
+
+    # ホバーのみの要素を削除
+    def unregister_hover_only(self, element: Any):
+        if element in self.hover_elements:
+            self.hover_elements.remove(element)
 
     # 初期化
     def clear(self):
         self.elements.clear()
+        self.hover_elements.clear()
         self.focus_idx = 0
 
     # イベント分岐
@@ -72,10 +83,19 @@ class FocusManager:
 
     # ホバー処理
     def _handle_hover(self, pos):
+        # フォーカス要素のホバー
         for el in self.elements:
             hover_text = el.handle_mouse_hover(pos)
             if hover_text is not None:
                 return {"action": "hover", "text": hover_text}
+        
+        # ホバー専用要素のホバー
+        for el in self.hover_elements:
+            hover_text = el.handle_mouse_hover(pos)
+            if hover_text is not None:
+                return {"action": "hover", "text": hover_text}
+
+        return None
 
     # クリック処理
     def _handle_click(self, pos, element):

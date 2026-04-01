@@ -38,6 +38,8 @@ class UIContainer:
             else:
                 if c in focus_manager.elements:
                     focus_manager.elements.remove(c)
+                if c in focus_manager.hover_elements:
+                    focus_manager.hover_elements.remove(c)
 
     def draw(self):
         for c in self.children:

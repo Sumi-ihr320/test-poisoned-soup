@@ -1,0 +1,105 @@
+﻿{
+  "player_status": {
+    "type": "Player",
+    "name": "誠",
+    "image": "silhouette_neuter.png",
+    "STR": 16,
+    "CON": 9,
+    "SIZ": 10,
+    "DEX": 9,
+    "INT": 6,
+    "POW": 12,
+    "DB": "+1D4",
+    "HP": 9,
+    "MP": 12,
+    "Dodge": 18,
+    "skill": {
+      "言いくるめ": 10,
+      "芸術": 13,
+      "写真術": 77,
+      "心理学": 86,
+      "製作": 31,
+      "目星": 41,
+      "歴史": 36,
+      "博物学": 71
+    },
+    "age": 25,
+    "sex": "neuter",
+    "APP": 14,
+    "EDU": 14,
+    "Luck": 60,
+    "Idea": 30,
+    "Know": 70,
+    "SAN": 60,
+    "max_SAN": 0,
+    "Profession": "芸術家",
+    "inventory": [
+      {
+        "name": "白いローブ",
+        "img_name": null,
+        "category": "armor",
+        "armor_point": 0
+      }
+    ],
+    "Hobby": "人間観察",
+    "girl_like_ability": 0
+  },
+  "girl_status": {
+    "type": "Human",
+    "name": "下僕の少女",
+    "image": "Girl.png",
+    "STR": 4,
+    "CON": 6,
+    "SIZ": 10,
+    "DEX": 5,
+    "INT": 10,
+    "POW": 10,
+    "DB": "-1d4",
+    "HP": 8,
+    "MP": 10,
+    "Dodge": 10,
+    "skill": {
+      "目星": 55,
+      "聞き耳": 55,
+      "忍び歩き": 40,
+      "隠れる": 40,
+      "応急手当": 50,
+      "中国語（母国語）": 40,
+      "追跡": 50,
+      "その他言語（主人公の母国語）": 31,
+      "クトゥルフ神話": 15,
+      "拳銃": 20
+    },
+    "age": 17,
+    "sex": "woman",
+    "APP": 13,
+    "EDU": 6,
+    "Luck": 50,
+    "Idea": 50,
+    "Know": 30,
+    "SAN": 0,
+    "max_SAN": 0,
+    "Profession": "放浪者",
+    "inventory": [
+      {
+        "name": "血まみれの白いローブ",
+        "img_name": null,
+        "category": "armor",
+        "armor_point": 0
+      },
+      {
+        "name": "22口径ショート・オートマチック",
+        "img_name": "Pistol.png",
+        "category": "weapon",
+        "skill": "拳銃",
+        "damage_dice": "1d6",
+        "attack_range": "10m",
+        "one_round": 3,
+        "bullets": 6,
+        "durability": 6
+      }
+    ]
+  },
+  "game_state": {},
+  "flags": {}
+}

@@ -90,18 +90,27 @@ class MainNavigation:
         self.surface_rect = surface_rect
 
         self.navi_items = {}    # 各位置のナビゲーションを格納する辞書
+        for position in Position:
+            self.create_navigation(position)
 
-    def setup_navigation(self, positions: List[Position]):
-        """表示する位置を指定してナビゲーションを初期化する"""
-        self.navi_items.clear()
+    # ナビゲーションの作成
+    def create_navigation(self, position: Position):
+        self.navi_items[position] = PageNavigation(self.screen, self.surface_rect, position)
+
+    def set_up_navigation(self, positions: List[Position]):
         
-        for position in positions:
-            self.navi_items[position] = PageNavigation(self.screen, self.surface_rect, position)
 
+
+    # 過去のフォーカスを削除して新しいフォーカスを登録する
+    def update_register(self, focus_manager: FocusManager):
+
+
+    # フォーカスを全て登録する
     def register_all(self, focus_manager: FocusManager):
         for navi in self.navi_items.values():
             focus_manager.register(navi)
 
+    # フォーカスを全て削除する
     def unregister_all(self, focus_manager: FocusManager):
         for navi in self.navi_items.values():
             focus_manager.elements.remove(navi)

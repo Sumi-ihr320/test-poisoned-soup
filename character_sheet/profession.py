@@ -126,16 +126,6 @@ class Profession(UIContainer):
         for label in self.lbl_skills:
             label.draw()
 
-    def handle_mouse_hover(self, pos) -> Optional[str]:
-        if self.small_img and self.small_img.collidepoint(pos):
-            return f"あなたの職業を選択してください\n【{self.name}】"
-        return None
-
-    def handle_click(self, pos) -> bool:
-        if self.small_img and self.small_img.handle_click(pos):
-            return True
-        return False
-
 # 職業選択画面作るよ
 class ProfessionSelector(UIContainer):
     def __init__(self, screen, parent, sheet_rect: pygame.Rect, font_datas: List[Tuple[str, int]]):
@@ -219,13 +209,6 @@ class ProfessionSelector(UIContainer):
             item = Profession(self.screen, parent=self.parent, parent_container=self, font_datas=self.font_datas, 
                               name=prof_key, eng_name=name, skills=skill, rect=Rect(x, y, 50, 50), view_rect=Rect(view_x, view_y, 100, 100))
             self.add(item)
-
-    def handle_click(self, pos) -> Optional[Profession]:
-        for child in self.children:
-            if child.handle_click(pos):
-                self.selected_profession = child
-                return True
-        return False
 
     def relayout(self, screen, parent, sheet_rect: pygame.Rect):
         self.sheet_rect = sheet_rect
