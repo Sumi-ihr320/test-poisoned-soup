@@ -82,9 +82,11 @@ class MainPlayScene(BaseScene):
     # ナビゲーションバーのセット
     def setup_navigetion(self):
         if self.game_state.room == "center":
-            self.navigation.setup_navigation([Position.RIGHT, Position.LEFT])
+            position_list = [Position.RIGHT, Position.LEFT]
         else:
-            self.navigation.setup_navigation([Position.UNDER])
+            position_list = [Position.UNDER]
+        self.navigation.setup_navigation(position_list)
+        self.navigation.update_register(self.focus_manager)
     
     # イベントマネージャーから次のシナリオを受け取るためのコールバック関数
     def handle_next_scenario(self, next_scenario: str):
@@ -137,7 +139,7 @@ class MainPlayScene(BaseScene):
                 self.room_manager.move_to_room("left")
                 state = True
         else:
-            if clicked_position is not None:
+            if clicked_position == Position.UNDER:
                 self.game_state.time -= 2
                 self.room_manager.move_to_room("under")
                 self.setup_navigetion()
@@ -213,6 +215,21 @@ class MainPlayScene(BaseScene):
 
             result = self.focus_manager.handle_event(event)
 
+            if result:
+                if result["action"] == "decide":
+                    # ログ表示画面のボタンの場合
+                    if result["target"] == self.log_view.close_image:
+                        self.log_view.is_open = False
+                        self.log_view.unregister_all(self.focus_manager)
+
+                    # テキストフレームパネルのアイテムの場合
+                    if result["target"] in self.text_frame_panel.children:
+                        return
+
+                    # ナビゲーションアイテムの場合
+                    if result["target"] in self.navigation.current_navis.values():
+                        self.handle_navigation(result["result"])
+
             """
             # キーボード押下時
             if event.type == KEYDOWN:
@@ -243,7 +260,7 @@ class MainPlayScene(BaseScene):
         self.event_manager.register_all(self.focus_manager)
 
         # 3.Navigation
-        self.navigation.register_all(self.focus_manager)
+        self.navigation.update_register(self.focus_manager)
 
     # フォーカス削除
     def unregister_all(self):

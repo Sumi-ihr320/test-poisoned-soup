@@ -89,21 +89,27 @@ class MainNavigation:
         # ナビゲーションを表示する基準となるシートや画像surfaceのrect
         self.surface_rect = surface_rect
 
-        self.navi_items = {}    # 各位置のナビゲーションを格納する辞書
+        self.navi_items = {}        # 各位置のナビゲーション一覧
         for position in Position:
             self.create_navigation(position)
+
+        self.current_navis = {}     # 現在のページに表示するナビゲーション
 
     # ナビゲーションの作成
     def create_navigation(self, position: Position):
         self.navi_items[position] = PageNavigation(self.screen, self.surface_rect, position)
 
-    def set_up_navigation(self, positions: List[Position]):
-        
+    # 現在のページに表示するナビゲーションをセットする
+    def setup_navigation(self, positions: List[Position]):
+        self.current_navis.clear()
+        for position in positions:
+            self.current_navis[position] = self.navi_items[position]
 
-
-    # 過去のフォーカスを削除して新しいフォーカスを登録する
+    # 過去のフォーカスを削除して現在のnavigationのフォーカスを登録する
     def update_register(self, focus_manager: FocusManager):
-
+        self.unregister_all(focus_manager)
+        for navi in self.current_navis.values():
+            focus_manager.register(navi)
 
     # フォーカスを全て登録する
     def register_all(self, focus_manager: FocusManager):
@@ -113,7 +119,8 @@ class MainNavigation:
     # フォーカスを全て削除する
     def unregister_all(self, focus_manager: FocusManager):
         for navi in self.navi_items.values():
-            focus_manager.elements.remove(navi)
+            if navi in focus_manager.elements:
+                focus_manager.elements.remove(navi)
 
     def relayout(self, screen, surface_rect: pygame.Rect):
         self.screen = screen
@@ -123,15 +130,8 @@ class MainNavigation:
 
     def draw(self):
         """現在の位置にあるナビゲーションを描画する"""
-        for navi in self.navi_items.values():
+        for navi in self.current_navis.values():
             navi.draw()
-
-    def handle_click(self, pos: Tuple[int, int]) -> Optional[Position]:
-        """ナビゲーションのクリック処理"""
-        for position, navi in self.navi_items.items():
-            if navi.handle_click(pos):
-                return position
-        return None
 
 # ページ移動用の矢印表示するよ
 class PageNavigation(UIElement):
@@ -196,6 +196,12 @@ class PageNavigation(UIElement):
             position.append((l[0]*scale_x)+center_x)
             position.append((l[1]*scale_y)+center_y)
             self.triangle_position.append(position)
+
+    def handle_click(self, pos) -> bool:
+        if self.collidepoint(pos):
+            self.on_decide()
+            return self.position_flag
+        return None
 
     def relayout(self, screen, surface_rect: pygame.Rect):
         self.screen = screen

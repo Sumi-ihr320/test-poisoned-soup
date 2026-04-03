@@ -823,3 +823,7 @@
 	ui_containerのunregister_allにhover_elementのremoveを追加
 	log_viewにis_openを追加。log_view内で判断するように変更
 	main_navigationを修正中
+
+2026/4/3
+	main_navigationを毎度作り直すのではなく全部作っておいてどれを表示するかを変更する形に変更。
+	main_play_sceneのhandle_eventにfocus_managerのresultがnavigationの場合を追加。
