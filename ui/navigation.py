@@ -9,11 +9,13 @@ from input.focus_manager import FocusManager
 
 # キャラシのページナビゲーション
 class CharasheetNavigation:
-    def __init__(self, screen, surface_rect: pygame.Rect):
+    def __init__(self, screen, surface_rect: pygame.Rect, result_type="navigation"):
         self.screen = screen
 
         # ナビゲーションを表示する基準となるシートや画像surfaceのrect
         self.surface_rect = surface_rect
+
+        self.result_type = result_type
 
         self.font_data = (FONT_PATH, FONT_SIZ)
 
@@ -135,12 +137,15 @@ class MainNavigation:
 
 # ページ移動用の矢印表示するよ
 class PageNavigation(UIElement):
-    def __init__(self, screen, surface_rect: pygame.Rect, position_flag: Position=Position.RIGHT,
+    def __init__(self, screen, surface_rect: pygame.Rect, result_type="navigation", position_flag: Position=Position.RIGHT, 
                  parent=None, sound_type="click", click_rect=None, row=0, col=0, focusable=True, **kwargs):
-        super().__init__(screen, parent, sound_type, click_rect, row, col, focusable, **kwargs)
+        super().__init__(screen, parent, result_type=result_type, sound_type=sound_type, click_rect=click_rect, row=row, col=col, focusable=focusable, **kwargs)
 
         # 基準となる画像等surfaceのrect
         self.surface_rect = surface_rect
+
+        # click時に返す内容のタイプ
+        self.result_type = result_type
 
         # どの位置にナビゲーションを設置するのかのフラグ
         self.position_flag = position_flag

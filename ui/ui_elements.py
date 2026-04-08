@@ -16,8 +16,8 @@ class Label(UIElement, RectSettingBase, TextBase):
                  text_color: Tuple[int, int, int]=BLACK, background_color: Optional[Tuple[int, int, int]]=None, 
                  hover_type: str="box", hover_line_bold: int=1, hover_text_color: Optional[Tuple[int, int, int]]=None, 
                  hover_back_color: Optional[Tuple[int, int, int]]=WHITE, hover_text: Optional[str]=None,
-                 sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, parent: Optional[Any]=None, **kwargs):
-        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, 
+                 result_type: Optional[str]=None, sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, parent: Optional[Any]=None, **kwargs):
+        super().__init__(screen=screen, parent=parent, result_type=result_type, sound_type=sound_type, row=row, col=col, focusable=focusable, 
                          font_data=font_data, text=text, x=x, y=y, centerx=centerx, centery=centery, anchor=anchor, 
                          text_color=text_color, background_color=background_color, hover_text=hover_text, **kwargs)
         self.hover_type = hover_type
@@ -134,9 +134,9 @@ class TextFrameLabel(UIElement):
 class Button(UIElement, ResizableMixin, TextBase):
     def __init__(self, screen, font_data: Tuple[str, int], text: str, rect: pygame.Rect, on_click: Optional[Callable]=None, 
                  text_color: Tuple[int, int, int]=BLACK, in_color: Tuple[int, int, int]=WHITE, out_color: Tuple[int, int, int]=GRAY, on_color: Tuple[int, int, int]=BLUE, 
-                 parent: Optional[Any]=None, sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, 
+                 parent: Optional[Any]=None, result_type: Optional[str]=None, sound_type: str="click", row: int=0, col: int=0, focusable: bool=False, 
                  hover_text: Optional[str]=None, **kwargs):
-        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, font_data=font_data, text=text, text_color=text_color, hover_text=hover_text, **kwargs)
+        super().__init__(screen=screen, parent=parent, result_type=result_type, sound_type=sound_type, row=row, col=col, focusable=focusable, font_data=font_data, text=text, text_color=text_color, hover_text=hover_text, **kwargs)
 
         self.rect = Rect(rect)
         self.set_base_rect(self.rect)
@@ -218,9 +218,10 @@ class Image(UIElement, RectSettingBase):
     def __init__(self, screen, path: str, cache: ImageCache=None, scale: float=None, 
                  x: int=0, y: int=0, centerx: Optional[int]=None, centery: Optional[int]=None, 
                  line_flag: bool=False, line_width: int=1, bg_flag: bool=False, size_wh: Optional[Tuple[int, int]]=None, 
-                 anchor: Tuple[str, str]=("left", "top"), parent: Optional[Any]=None, sound_type: str="click", 
-                 row: int=0, col: int=0, focusable: bool=False, hover_text: Optional[str]=None, **kwargs):
-        super().__init__(screen=screen, parent=parent, sound_type=sound_type, row=row, col=col, focusable=focusable, x=x, y=y, centerx=centerx, centery=centery, anchor=anchor, hover_text=hover_text, **kwargs)
+                 anchor: Tuple[str, str]=("left", "top"), parent: Optional[Any]=None, result_type: Optional[str]=None, 
+                 sound_type: str="click", row: int=0, col: int=0, 
+                 focusable: bool=False, hover_text: Optional[str]=None, **kwargs):
+        super().__init__(screen=screen, parent=parent, result_type=result_type, sound_type=sound_type, row=row, col=col, focusable=focusable, x=x, y=y, centerx=centerx, centery=centery, anchor=anchor, hover_text=hover_text, **kwargs)
 
         path = f"{PATH}{PICTURE}{path}"
         self.cache = cache

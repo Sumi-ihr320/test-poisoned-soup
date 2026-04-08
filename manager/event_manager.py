@@ -501,6 +501,14 @@ class EventManager:
         """戦闘イベントを開始"""
         print(f"Starting fight with {enemy}")
 
+    # フォーカス登録
+    def register_all(self, focus_manager):
+        self.render_manager.register_all(focus_manager)
+
+    # フォーカス削除
+    def unregister_all(self, focus_manager):
+        self.render_manager.unregister_all(focus_manager)
+
     # 表示する
     def draw(self):
         if self.current_display_text:

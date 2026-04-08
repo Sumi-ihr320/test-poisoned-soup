@@ -233,6 +233,17 @@ class RenderManager:
         if self.text_frame_panel.handle_click(pos):
             return
 
+    def register_all(self, focus_manager):
+        self.text_frame_panel.register_all(focus_manager)
+        self.command_menu.register_all(focus_manager) if self.command_menu else None
+        focus_manager.register(self.girl_image)
+
+    def unregister_all(self, focus_manager):
+        self.text_frame_panel.unregister_all(focus_manager)
+        self.command_menu.unregister_all(focus_manager) if self.command_menu else None
+        if self.girl_image in focus_manager.elements:
+            focus_manager.unregister(self.girl_image)
+
     # テキストを表示する
     def draw_text(self, text):
         self.text_frame_panel.set_text(text)

@@ -77,9 +77,11 @@ class FocusManager:
             action = self._handle_mouse(event)
             return action
         elif input_mode_manager.is_cursor():
-            self._handle_virtual_cursor(event)
+            action = self._handle_virtual_cursor(event)
+            return action
         elif input_mode_manager.is_keyboard():
-            self._handle_keyboard(event)
+            action = self._handle_keyboard(event)
+            return action
 
     # ホバー処理
     def _handle_hover(self, pos):
@@ -100,7 +102,15 @@ class FocusManager:
     # クリック処理
     def _handle_click(self, pos, element):
         result = element.handle_click(pos)
-        return {"action": "decide", "target": element, "result": result}
+        result_type = getattr(element, "result_type", None)
+        if result_type == "scenario":
+            return {"action": "next_scenario", "next": result}
+        elif result_type == "navigation":
+            return {"action": "navigation", "result": result}
+        elif result_type == "menu":
+            return {"action": "menu", "result": result}
+        else:
+            return {"action": "decide", "target": element, "result": result}
 
     # マウス操作処理
     def _handle_mouse(self, event) -> Optional[str]:
@@ -129,29 +139,40 @@ class FocusManager:
 
     # 仮想カーソル処理
     def _handle_virtual_cursor(self, event):
+        result = None
         # 仮想カーソルを動かしてhover対象をfocus
         self.virtual_cursor.update(event)
 
         pos = self.virtual_cursor.get_pos()
-        self._handle_hover(pos)
+        result = self._handle_hover(pos)
+        if result:
+            return result
 
         # 仮想カーソル決定ボタン
         if event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_SPACE):
             hovered = self.virtual_cursor.check_hover(self.elements)
             if hovered:
                 self._set_focus(hovered)
-                self._handle_click(pos, hovered)
+                result = self._handle_click(pos, hovered)
+                return result
+            else:
+                result = {"action": "cursor_click", "pos": pos}
+                return result
+            
+        return result
 
     # キーボード操作処理
     def _handle_keyboard(self, event):
+        result = None
+
         if event.type != pygame.KEYDOWN:
-            return
+            return result
         
         focused = self.get_focused()
         if focused and hasattr(focused, "handle_keydown"):
             consumed = focused.handle_keydown(event)
             if consumed:
-                return
+                return result
         
         if event.key in (pygame.K_UP,):
             self._move_focus_grid("up")
@@ -165,8 +186,10 @@ class FocusManager:
             focused = self.get_focused()
             if focused:
                 pos = focused.get_center()
-                self._handle_click(pos, focused)
-
+                result = self._handle_click(pos, focused)
+                return result
+        return result
+            
     # フォーカス関連
     def _move_focus_linear(self, delta: int):
         if not self.elements:

@@ -827,3 +827,9 @@
 2026/4/3
 	main_navigationを毎度作り直すのではなく全部作っておいてどれを表示するかを変更する形に変更。
 	main_play_sceneのhandle_eventにfocus_managerのresultがnavigationの場合を追加。
+
+2026/4/8
+	focus_managerにvircual_cursorの場合とkeyboardの場合のresultを記述
+	focus_managerのresult、actionの種類をresult_typeで分けることに。
+	UIElementにresult_typeを追加。
+	navigationのtypeをnavigationに。それに伴いcharacter_sheetとmain_playのhandle_eventを修正

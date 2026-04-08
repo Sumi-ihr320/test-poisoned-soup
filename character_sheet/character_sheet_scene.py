@@ -145,25 +145,24 @@ class CharacterSheetScene(BaseScene):
                     self.text_frame_panel.set_text(result["text"])
                 else:
                     self.text_frame_panel.set_text("")
+
+                    # ナビゲーションの場合
+                    if result["action"] == "navigation":
+                        result_text = result[result]
+                        if result_text == "next":
+                            self.next_page()
+                        elif result_text == "prev":
+                            self.prev_page()
+                        elif result_text == "finalize":
+                            if self.current_page == 1 and self.is_pulldown_open:
+                                self.is_pulldown_open = False
+
+                    # その他の場合
                     if result["action"] == "decide":
                         # テキストフレームパネルのアイテムの場合
                         if result["target"] in self.text_frame_panel.children:
                             return
                         
-                        # ナビゲーションアイテムの場合
-                        if result["target"] in self.navigation.navi_items[self.current_page]:
-                            if self.current_page == 1 and self.is_pulldown_open:
-                                self.is_pulldown_open = False
-
-                            if result["target"] == self.navigation.to_finalize:
-                                self.confirm_page.handle_click(result["target"], result["result"])
-                                
-                            if result["target"] == self.navigation.to_next:
-                                self.next_page()
-
-                            elif result["target"] == self.navigation.to_prev:
-                                self.prev_page()
-
                         # ステータスページの場合
                         if self.current_page == 0:
                             self.status_page.handle_click(result["target"], result["result"])

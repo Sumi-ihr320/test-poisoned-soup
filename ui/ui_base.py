@@ -10,7 +10,7 @@ from manager.sound_manager import sound_manager
 
 # 各エレメントの基礎となるもの(基礎クラス)
 class UIElement:
-    def __init__(self, screen, parent=None, 
+    def __init__(self, screen, parent=None, result_type: Optional[str]=None,
                  sound_type: str="click", click_rect: Optional[pygame.Rect]=None, 
                  row: int=0, col: int=0, focusable: bool=False,
                  hover_text: Optional[str]=None, **kwargs):
@@ -20,6 +20,8 @@ class UIElement:
         self.parent = parent
 
         self.parent_surface = parent.surface if parent is not None else screen
+
+        self.result_type = result_type
 
         self.rect = None
         self.click_rect = click_rect

@@ -120,14 +120,6 @@ class MainPlayScene(BaseScene):
         self.selected_item = None
         return False
 
-    # 少女の表示中に少女をクリックで起こるイベント
-    def handle_girl_click_event(self, pos):
-        self.event_manager.render_manager.handle_girl_click(pos)
-
-    # コマンドメニューイベント
-    def handle_command_menu_event(self, pos):
-        self.event_manager.render_manager.handle_command_click(pos)
-
     # ナビゲーションバーをクリックした場合のイベント
     def handle_navigation(self, clicked_position: Position):
         state = False
@@ -162,39 +154,14 @@ class MainPlayScene(BaseScene):
 
     # クリックイベント
     def handle_click(self, pos):
-        # ログ表示
-        if self.log_view_flag:
-            self.log_view.handle_click(pos)
-        else:
-            # render_managerのクリックイベント処理
-            if self.event_manager.render_manager.handle_click(pos):
+        # シナリオ進行
+        self.scenario_manager.on_click()
+
+        # シナリオ進行中ではない場合
+        if not self.scenario_manager.is_active:
+            # アイテムクリックイベント
+            if self.handle_item_click_event(pos):
                 return
-            #if self.text_frame_panel.handle_click(pos):
-            #    return
-
-            # シナリオ進行
-            self.scenario_manager.on_click()
-
-            # シナリオ進行中ではない場合
-            if not self.scenario_manager.is_active:
-
-                # コマンドメニュー表示中はそれを優先
-                if self.event_manager.render_manager.command_menu:
-                    self.handle_command_menu_event(pos)
-                
-                # ナビゲーションバーによる移動
-                elif self.handle_navigation(self.navigation.handle_click(pos)):
-                    return
-                
-                # 少女が表示中は少女のクリックイベントがアイテムより優先される
-                elif self.handle_girl_click_event(pos):
-                    return
-
-                # アイテムクリックイベント
-                elif self.handle_item_click_event(pos):
-                    return
-
-            sound_manager.play("クリック")
 
     # マウスオーバー
     def handle_mouse_hover(self):
@@ -230,23 +197,22 @@ class MainPlayScene(BaseScene):
                     if result["target"] in self.navigation.current_navis.values():
                         self.handle_navigation(result["result"])
 
-            """
-            # キーボード押下時
-            if event.type == KEYDOWN:
+                elif result["action"] == "cursor_click":
+                    pos = result["pos"]
+                    self.handle_click(pos)
+
+            else:
+                # マウスクリック時
+                if event.type == MOUSEBUTTONDOWN:
+                    # 左クリック
+                    if event.button == 1:
+                        self.handle_click(event.pos)
                     
-                self.handle_keydown(event.key)
-
-
-            # マウスクリック時
-            if event.type == MOUSEBUTTONDOWN:
-                # 左クリック
-                if event.button == 1:
-                    self.handle_click(event.pos)
-
-                # 右クリック
-                elif event.button == 3:
-                    self.handle_click_right(event)
-            """                     
+                    """
+                    # 右クリック
+                    elif event.button == 3:
+                        self.handle_click_right(event)
+                    """
 
     # フォーカス登録
     def register_all(self):
