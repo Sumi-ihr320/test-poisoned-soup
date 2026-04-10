@@ -40,7 +40,7 @@ class LogView:
         self.scroll_y = 0
 
         # ×ボタン
-        self.close_image = Image(self.screen, "close_button.png", scale=0.5, 
+        self.close_image = Image(self.screen, path="close_button.png", scale=0.5, 
                                  x=self.frame_rect.right - 10, y=self.frame_rect.y + 10, anchor=("right", "top"),
                                  focusable=True)
 

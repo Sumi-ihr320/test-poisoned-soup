@@ -130,6 +130,12 @@ class ScenarioManager:
         print(f" 結果表示中: {self.event_manager.pending_result_display}")
         print(f" 分岐情報: {branch_info}")
 
+    def register_all(self, focus_manager):
+        self.event_manager.register_all(focus_manager)
+
+    def unregister_all(self, focus_manager):
+        self.event_manager.unregister_all(focus_manager)
+
     # 現在のステップの描画をイベントマネージャーに依頼
     def draw(self):
         #if self.is_active and self.current_index < len(self.current_steps):

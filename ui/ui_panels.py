@@ -13,10 +13,10 @@ from input.focus_manager import FocusManager
 # メニュー用のボタン
 class MenuButton(Button):
     def __init__(self, screen, font_data, text: str, rect: Rect, on_click: Callable=None, enabled: bool=True,
-                 parent: Optional[Any]=None, row: int=0, col: int=0, focusable: bool=True, **kwargs):
+                 parent: Optional[Any]=None, result_type: Optional[str]="menu", row: int=0, col: int=0, focusable: bool=True, **kwargs):
         super().__init__(screen=screen, font_data=font_data, text=text, rect=rect,
                          on_click=on_click, text_color=WHITE, in_color=BLACK, out_color=WHITE, on_color=GRAY,
-                         parent=parent, sound_type="click", row=row, col=col, focusable=focusable, **kwargs)
+                         parent=parent, result_type=result_type, sound_type="click", row=row, col=col, focusable=focusable, **kwargs)
 
         self.enabled = enabled
         # focusable は enabled に従う。
@@ -183,7 +183,7 @@ class TextFramePanel(UIContainer):
         next_x = self.rect.right - self.PADDING
         next_y = self.rect.bottom - self.PADDING
         self.next_label = Label(screen=self.screen, font_data=self.font_data, text="▶", x=next_x, y=next_y, anchor=("right", "bottom"), 
-                                text_color=WHITE, row=100, focusable=True)
+                                text_color=WHITE, result_type="next", row=100, focusable=True)
 
     # テキストフレームのrectを割り出す
     def calc_frame_rect(self) -> Rect:

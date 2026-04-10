@@ -9,9 +9,10 @@ from ui.ui_cache import ImageCache
 from ui.ui_command import CommandMenu, Command
 from ui.ui_panels import TextFramePanel
 from ui.log_view import LogView
+from input.focus_manager import FocusManager
 
 class RenderManager:
-    def __init__(self, screen, image_cache:ImageCache=None, text_frame_panel:TextFramePanel=None, log_view:LogView=None, next_scenario_cb:Callable=None):
+    def __init__(self, screen, image_cache: Optional[ImageCache]=None, text_frame_panel: Optional[TextFramePanel]=None, log_view: Optional[LogView]=None, focus_manager: Optional[FocusManager]=None, next_scenario_cb: Optional[Callable]=None):
         self.screen = screen
         self.screen_size = screen.get_size()
 
@@ -21,6 +22,7 @@ class RenderManager:
         # テキスト表示関連
         self.text_frame_panel = text_frame_panel if text_frame_panel else TextFramePanel(self.screen)
         self.log_view = log_view if log_view else LogView(self.screen)
+        self.focus_manager = focus_manager if focus_manager else FocusManager(self.screen)
 
         # 次のシナリオへ移行するコールバック
         self.next_scenario_cb = next_scenario_cb
@@ -56,9 +58,13 @@ class RenderManager:
         x = 200 if position == "right" else (-200 if position == "left" else "center")
         if x != "center":
             x = x * scale_x
-        self.girl_image = Image(screen=self.screen, path=file_name, cache=self.image_cache, scale=scale, x=x, y=frame_rect.top, anchor=("center", "bottom"))
+        self.girl_image = Image(screen=self.screen, path=file_name, cache=self.image_cache, scale=scale, x=x, y=frame_rect.top, anchor=("center", "bottom"),
+                                focusable=True)
+        self.focus_manager.register(self.girl_image)
 
     def hidden_girl_image(self):
+        if self.girl_image and self.girl_image in self.focus_manager.elements:
+            self.focus_manager.elements.remove(self.girl_image)
         self.girl_image = None
 
     # 画像イメージを表示する
@@ -98,6 +104,7 @@ class RenderManager:
 
         #start_position = self.get_position()
         self.command_menu = CommandMenu(self.screen, commands, start_position=pos)
+        self.command_menu.register_all(self.focus_manager)
 
     # target文字列から対象rectを取得
     def resolve_target_rect(self, target: str):
@@ -233,16 +240,17 @@ class RenderManager:
         if self.text_frame_panel.handle_click(pos):
             return
 
-    def register_all(self, focus_manager):
+    def register_all(self, focus_manager: FocusManager):
         self.text_frame_panel.register_all(focus_manager)
         self.command_menu.register_all(focus_manager) if self.command_menu else None
-        focus_manager.register(self.girl_image)
+        if self.girl_image:
+            focus_manager.register(self.girl_image)
 
-    def unregister_all(self, focus_manager):
+    def unregister_all(self, focus_manager: FocusManager):
         self.text_frame_panel.unregister_all(focus_manager)
         self.command_menu.unregister_all(focus_manager) if self.command_menu else None
         if self.girl_image in focus_manager.elements:
-            focus_manager.unregister(self.girl_image)
+            focus_manager.elements.remove(self.girl_image)
 
     # テキストを表示する
     def draw_text(self, text):

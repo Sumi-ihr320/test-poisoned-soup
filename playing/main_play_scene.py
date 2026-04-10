@@ -183,6 +183,16 @@ class MainPlayScene(BaseScene):
             result = self.focus_manager.handle_event(event)
 
             if result:
+                # ナビゲーションの場合
+                if result["action"] == "navigation":
+                    self.handle_navigation(result["result"])
+
+                if result["action"] == "scenario":
+                    if self.event_manager.render_manager.command_menu in self.focus_manager.elements:
+                        self.event_manager.render_manager.command_menu.unregister_all(self.focus_manager)
+                    self.event_manager.render_manager.command_menu = None
+                    self.scenario_manager.start_scenario(result["result"])
+
                 if result["action"] == "decide":
                     # ログ表示画面のボタンの場合
                     if result["target"] == self.log_view.close_image:
@@ -193,10 +203,7 @@ class MainPlayScene(BaseScene):
                     if result["target"] in self.text_frame_panel.children:
                         return
 
-                    # ナビゲーションアイテムの場合
-                    if result["target"] in self.navigation.current_navis.values():
-                        self.handle_navigation(result["result"])
-
+                # VirtualCursorのクリックイベント
                 elif result["action"] == "cursor_click":
                     pos = result["pos"]
                     self.handle_click(pos)
@@ -223,7 +230,7 @@ class MainPlayScene(BaseScene):
             self.log_view.unregister_all(self.focus_manager)
         
         # 2. TextFramePanel
-        self.event_manager.register_all(self.focus_manager)
+        self.scenario_manager.register_all(self.focus_manager)
 
         # 3.Navigation
         self.navigation.update_register(self.focus_manager)
@@ -231,7 +238,7 @@ class MainPlayScene(BaseScene):
     # フォーカス削除
     def unregister_all(self):
         self.log_view.unregister_all(self.focus_manager)
-        self.event_manager.unregister_all(self.focus_manager)
+        self.scenario_manager.unregister_all(self.focus_manager)
         self.navigation.unregister_all(self.focus_manager) 
 
     # 表示

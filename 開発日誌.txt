@@ -833,3 +833,10 @@
 	focus_managerのresult、actionの種類をresult_typeで分けることに。
 	UIElementにresult_typeを追加。
 	navigationのtypeをnavigationに。それに伴いcharacter_sheetとmain_playのhandle_eventを修正
+
+2026/4/10
+	navigationにNavigationLabelを追加。
+	character_sheet_sceneのhandle_eventを修正
+	opening_sceneのhandle_eventを修正。advance_scenario関数を追加。
+	render_managerのregisterをscenario_managerから登録できるように。
+	render_managerにfocus_managerを読み込み表示、非表示でfocusを登録削除できるように(girl_image、command_menu)。

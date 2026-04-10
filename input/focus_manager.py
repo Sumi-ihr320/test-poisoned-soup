@@ -109,6 +109,8 @@ class FocusManager:
             return {"action": "navigation", "result": result}
         elif result_type == "menu":
             return {"action": "menu", "result": result}
+        elif result_type == "next":
+            return {"action": "next"}
         else:
             return {"action": "decide", "target": element, "result": result}
 

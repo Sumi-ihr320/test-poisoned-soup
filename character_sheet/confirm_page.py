@@ -159,8 +159,8 @@ class ConfirmPage(BasePage):
             self.label_dict[name].set_text(text)
         self.set_label_rect_and_create_box()
 
-    def handle_click(self, element, result: bool):
-        if result:
+    def handle_click(self, result: str):
+        if result == "finalize":
             if self.validate_and_finalize():
                 self.callback(State.SAVE, self.save_data)
 

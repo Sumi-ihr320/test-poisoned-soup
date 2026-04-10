@@ -141,14 +141,19 @@ class CharacterSheetScene(BaseScene):
             result = self.focus_manager.handle_event(event)
 
             if result:
+                # ホバーイベント
                 if result["action"] == "hover":
                     self.text_frame_panel.set_text(result["text"])
                 else:
                     self.text_frame_panel.set_text("")
-
+                    
+                    # テキストフレームパネルのメニューの場合
+                    if result["action"] == "menu":
+                        return
+                    
                     # ナビゲーションの場合
-                    if result["action"] == "navigation":
-                        result_text = result[result]
+                    elif result["action"] == "navigation":
+                        result_text = result["result"]
                         if result_text == "next":
                             self.next_page()
                         elif result_text == "prev":
@@ -156,13 +161,10 @@ class CharacterSheetScene(BaseScene):
                         elif result_text == "finalize":
                             if self.current_page == 1 and self.is_pulldown_open:
                                 self.is_pulldown_open = False
+                            self.confirm_page.handle_click(result_text)
 
                     # その他の場合
-                    if result["action"] == "decide":
-                        # テキストフレームパネルのアイテムの場合
-                        if result["target"] in self.text_frame_panel.children:
-                            return
-                        
+                    if result["action"] == "decide":                        
                         # ステータスページの場合
                         if self.current_page == 0:
                             self.status_page.handle_click(result["target"], result["result"])

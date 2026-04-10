@@ -7,6 +7,7 @@ from ui.ui_cache import ImageCache
 from ui.ui_panels import TextFramePanel
 from ui.ui_command import Command
 from ui.log_view import LogView
+from input.focus_manager import FocusManager
 from .render_manager import RenderManager
 from .dice_service import DiceService
 from .event_processors.dice_processor import DiceProcessor
@@ -17,7 +18,7 @@ from .event_processors.display_processor import DisplayProcessor
 
 class EventManager:
     def __init__(self, screen, root, player=None, girl=None, game_state=None, flags=None, 
-                 text_frame_panel: Optional[TextFramePanel]=None, log_view: Optional[LogView]=None,
+                 text_frame_panel: Optional[TextFramePanel]=None, log_view: Optional[LogView]=None, focus_manager: Optional[FocusManager]=None,
                  next_scenario_call_back: Optional[Callable]=None, move_to_room_call_back: Optional[Callable]=None, room_new_view: Optional[Callable]=None, set_state: Optional[Callable]=None):
         self.screen = screen
         self.screen_size = self.screen.get_size()
@@ -39,11 +40,13 @@ class EventManager:
         self.image_cache = ImageCache()
         self.log_view = log_view if log_view else LogView(self.screen)
         self.text_frame_panel = text_frame_panel if text_frame_panel else TextFramePanel(self.screen, self.root)
+        self.focus_manager = focus_manager if focus_manager else FocusManager(self.screen)
         self.render_manager = RenderManager(
             self.screen, 
             self.image_cache, 
             self.text_frame_panel, 
             self.log_view,
+            self.focus_manager,
             next_scenario_cb=self.to_callback_next_scenario)
 
         # プロセッサー
