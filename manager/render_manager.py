@@ -139,7 +139,6 @@ class RenderManager:
         safe_y = max(margin, frame_rect.top - menu_h - margin if frame_rect else screen_rect.bottom - menu_h - margin)
         return (max(margin, safe_x), max(margin, safe_y))
 
-
     # targetが指定されていない場合のコマンドメニューのデフォルト位置
     def get_default_command_menu_position(self, menu_h: int) -> Tuple[int, int]:
         room = self.room_rect
@@ -178,6 +177,12 @@ class RenderManager:
             x, y = self.screen_size[0]//2 + 120, 100
 
         return (x, y)
+
+    # コマンドメニューを閉じる
+    def close_command_menu(self):
+        if self.command_menu:
+            self.command_menu.unregister_all(self.focus_manager)
+            self.command_menu = None
 
     # テキスト描画領域にテキストをセットする
     def set_text(self, text):

@@ -840,3 +840,7 @@
 	opening_sceneのhandle_eventを修正。advance_scenario関数を追加。
 	render_managerのregisterをscenario_managerから登録できるように。
 	render_managerにfocus_managerを読み込み表示、非表示でfocusを登録削除できるように(girl_image、command_menu)。
+
+2026/4/14
+	render_managerにclose_command_menuを作成。
+	main_play_sceneにregister_focus_with_display_logを作成。

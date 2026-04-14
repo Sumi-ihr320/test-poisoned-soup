@@ -188,16 +188,14 @@ class MainPlayScene(BaseScene):
                     self.handle_navigation(result["result"])
 
                 if result["action"] == "scenario":
-                    if self.event_manager.render_manager.command_menu in self.focus_manager.elements:
-                        self.event_manager.render_manager.command_menu.unregister_all(self.focus_manager)
-                    self.event_manager.render_manager.command_menu = None
+                    self.event_manager.render_manager.close_command_menu()
                     self.scenario_manager.start_scenario(result["result"])
 
                 if result["action"] == "decide":
                     # ログ表示画面のボタンの場合
                     if result["target"] == self.log_view.close_image:
                         self.log_view.is_open = False
-                        self.log_view.unregister_all(self.focus_manager)
+                        self.register_focus_with_close_log()
 
                     # テキストフレームパネルのアイテムの場合
                     if result["target"] in self.text_frame_panel.children:
@@ -221,7 +219,23 @@ class MainPlayScene(BaseScene):
                         self.handle_click_right(event)
                     """
 
-    # フォーカス登録
+    # ログ表示開始時にセットするフォーカス登録
+    def register_focus_with_display_log(self):
+        # ログ表示のフォーカス登録
+        self.log_view.register_all(self.focus_manager)
+
+        # ナビゲーションのフォーカス削除
+        self.navigation.unregister_all(self.focus_manager)
+
+    # ログ表示終了時にセットするフォーカス登録
+    def register_focus_with_close_log(self):
+        # ログ表示のフォーカス削除
+        self.log_view.unregister_all(self.focus_manager)
+
+        # ナビゲーションのフォーカス登録
+        self.navigation.update_register(self.focus_manager)
+
+    # フォーカス全登録
     def register_all(self):
         # 1. LogView
         if self.log_view.is_open:
@@ -235,7 +249,7 @@ class MainPlayScene(BaseScene):
         # 3.Navigation
         self.navigation.update_register(self.focus_manager)
 
-    # フォーカス削除
+    # フォーカス全削除
     def unregister_all(self):
         self.log_view.unregister_all(self.focus_manager)
         self.scenario_manager.unregister_all(self.focus_manager)
@@ -284,6 +298,7 @@ class MainPlayScene(BaseScene):
         elif self.state == State.LOG:
             self.state = State.NONE
             self.log_view.is_open = True
+            self.register_focus_with_display_log()
         elif self.state == State.CLOSE:
             self.state = State.NONE
             return "ending", self.save_data
