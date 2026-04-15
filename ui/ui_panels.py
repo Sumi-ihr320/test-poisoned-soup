@@ -2,7 +2,7 @@ from typing import List, Dict, Tuple, Any, Optional, Callable
 import pygame
 from pygame import Rect
 
-from constans import FONT_PATH, FONT_SIZ, FRAME_SIZE, WHITE, BLACK, GRAY, State
+from constans import FONT_PATH, FONT_SIZ, FONT_PATH_TRIANGLE, FRAME_SIZE, WHITE, BLACK, GRAY, State
 from utils import get_new_size, setting_font, Close
 from manager.sound_manager import sound_manager
 from ui.ui_elements import Button, TextFrameLabel, Label
@@ -182,7 +182,7 @@ class TextFramePanel(UIContainer):
         # Nextボタン
         next_x = self.rect.right - self.PADDING
         next_y = self.rect.bottom - self.PADDING
-        self.next_label = Label(screen=self.screen, font_data=self.font_data, text="▶", x=next_x, y=next_y, anchor=("right", "bottom"), 
+        self.next_label = Label(screen=self.screen, font_data=(FONT_PATH_TRIANGLE, self.font_data[1]), text="▶", x=next_x, y=next_y, anchor=("right", "bottom"), 
                                 text_color=WHITE, result_type="next", row=100, focusable=True)
 
     # テキストフレームのrectを割り出す

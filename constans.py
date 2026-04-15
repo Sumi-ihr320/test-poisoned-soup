@@ -100,6 +100,7 @@ SCENARIO_FILES = [
 
 # フォント
 FONT_PATH = os.path.join(PATH,"HGRKK.TTC")
+FONT_PATH_TRIANGLE = os.path.join(PATH, "YuGothM.ttc")
 TITLE_FONT_PATH = os.path.join(PATH,"genkai-mincho.ttf")
 FONT_SIZ = 22   # 基本サイズ
 SMALL_SIZ = 18  # 小さいサイズ

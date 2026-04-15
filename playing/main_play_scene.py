@@ -31,27 +31,27 @@ class MainPlayScene(BaseScene):
         self.focus_manager = FocusManager(self.screen)
 
         # ログ表示機能
-        self.log_view = LogView(self.screen, callback=self.log_view_end)
+        self.log_view = LogView(self.screen)
 
         # テキストフレーム
         self.text_frame_panel = TextFramePanel(self.screen, self.root, next_callback=self.set_state)
 
         # 管理用
-        self.event_manager = EventManager(self.screen, self.root, self.player_status, self.girl_status, self.game_state, self.flags,
-                                          self.text_frame_panel, self.log_view,
-                                          self.handle_next_scenario, self.handle_move_room, self.handle_room_view, self.set_state)
+        self.event_manager = EventManager(self.screen, root=self.root, player=self.player_status, girl=self.girl_status, game_state=self.game_state, flags=self.flags,
+                                          text_frame_panel=self.text_frame_panel, log_view=self.log_view, focus_manager=self.focus_manager,
+                                          next_scenario_call_back=self.handle_next_scenario, move_to_room_call_back=self.handle_move_room, room_new_view=self.handle_room_view, set_state=self.set_state)
         room_id = f"{self.game_state.room}-room"
-        self.scenario_manager = ScenarioManager(self.screen, self.event_manager, room_id, auto_start=False)
+        self.scenario_manager = ScenarioManager(self.screen, event_manager=self.event_manager, scenario_id=room_id, auto_start=False)
         self.scenario_manager.start_scenario(room_id)
  
         # 部屋の管理
-        self.room_manager = RoomManager(self.screen, self.text_frame_panel.rect, self.event_manager, self.flags, self.game_state)
+        self.room_manager = RoomManager(self.screen, frame_rect=self.text_frame_panel.rect, event_manager=self.event_manager, flags=self.flags, game_state=self.game_state)
 
         # ステータス表示
-        self.status_label = PlayerDataView(self.screen, self.room_manager.room.surface_rect, self.player_status, self.girl_status, self.game_state, self.flags)
+        self.status_label = PlayerDataView(self.screen, room_surface_rect=self.room_manager.room.surface_rect, player=self.player_status, girl=self.girl_status, game_state=self.game_state, flags=self.flags)
 
         # ナビゲーションバー
-        self.navigation = MainNavigation(self.screen, self.room_manager.room.surface_rect)
+        self.navigation = MainNavigation(self.screen, surface_rect=self.room_manager.room.surface_rect)
         self.setup_navigetion()
 
         # 選択されたアイテム
@@ -173,6 +173,36 @@ class MainPlayScene(BaseScene):
         self.event_manager.render_manager.handle_mouse_hover(key)
         self.room_manager.handle_mouse_hover(key)
 
+    # フォーカスから帰ってきたアクションの処理
+    def on_action(self, result):
+        action = result["action"]
+        # ナビゲーションの場合
+        if action == "navigation":
+            self.handle_navigation(result["result"])
+
+        # テキストフレームパネルのメニューの場合
+        elif action == "menu":
+            pass
+
+        # テキストフレームパネルのネクストボタンの場合
+        elif action == "next":
+            self.scenario_manager.on_click()
+ 
+        elif action == "next_scenario":
+            self.event_manager.render_manager.close_command_menu()
+            self.scenario_manager.start_scenario(result["next"])
+
+        elif action == "decide":
+            # ログ表示画面のボタンの場合
+            if result["target"] == self.log_view.close_image:
+                self.log_view.is_open = False
+                self.register_focus_with_close_log()
+
+        # VirtualCursorのクリックイベント
+        elif action == "cursor_click":
+            pos = result["pos"]
+            self.handle_click(pos)
+
     # イベントハンドラ
     def handle_events(self):
         for event in pygame.event.get():
@@ -183,29 +213,7 @@ class MainPlayScene(BaseScene):
             result = self.focus_manager.handle_event(event)
 
             if result:
-                # ナビゲーションの場合
-                if result["action"] == "navigation":
-                    self.handle_navigation(result["result"])
-
-                if result["action"] == "scenario":
-                    self.event_manager.render_manager.close_command_menu()
-                    self.scenario_manager.start_scenario(result["result"])
-
-                if result["action"] == "decide":
-                    # ログ表示画面のボタンの場合
-                    if result["target"] == self.log_view.close_image:
-                        self.log_view.is_open = False
-                        self.register_focus_with_close_log()
-
-                    # テキストフレームパネルのアイテムの場合
-                    if result["target"] in self.text_frame_panel.children:
-                        return
-
-                # VirtualCursorのクリックイベント
-                elif result["action"] == "cursor_click":
-                    pos = result["pos"]
-                    self.handle_click(pos)
-
+                self.on_action(result)
             else:
                 # マウスクリック時
                 if event.type == MOUSEBUTTONDOWN:
@@ -257,22 +265,23 @@ class MainPlayScene(BaseScene):
 
     # 表示
     def draw(self):
-        #create_frame(self.screen)       # テキストフレームの表示
-        #self.text_frame_panel.draw()
-
         self.room_manager.draw()        # 部屋の表示
 
         self.navigation.draw()          # ナビゲーションバーの表示
 
         # ステータスの表示
         self.status_label.update(self.player_status, self.girl_status, self.game_state, self.flags)
+        self.status_label.draw()
         
         # シナリオマネージャーの表示
         self.scenario_manager.draw()
 
         # ログ表示
         self.log_view.draw()
-            
+
+        # フォーカスマネージャーの表示
+        self.focus_manager.draw()
+
     # 更新
     def update(self):
 

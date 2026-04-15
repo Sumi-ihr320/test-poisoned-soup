@@ -26,7 +26,6 @@ class CommandButton(Button):
                 sound_manager.play("クリック")
             else:
                 sound_manager.play("選択")
-            self.on_click() # コールバック関数を呼び出す
             return self.next_scenario
         return None
 

@@ -112,6 +112,7 @@ class CharacterSheetScene(BaseScene):
 
         self.navigation.draw(self.current_page)
         self.text_frame_panel.draw()
+        self.focus_manager.draw()
 
     # ページを表示してSurfaceとRectを返す
     def draw_page_get_surface_and_rect(self, page: int) -> Tuple[pygame.Surface, pygame.Rect]:

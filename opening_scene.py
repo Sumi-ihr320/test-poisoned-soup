@@ -32,6 +32,18 @@ class OpeningScene(BaseScene):
         event_manager = EventManager(self.screen, self.root, log_view=self.log_view, text_frame_panel=self.text_frame_panel)
         self.scenario_manager = ScenarioManager(self.screen, event_manager=event_manager, scenario_id="opening")
 
+        # フォーカス登録
+        self.register_all()
+
+    # ログ表示開始時にセットするフォーカス登録
+    def register_focus_with_display_log(self):
+        # ログ表示のフォーカス登録
+        self.log_view.register_all(self.focus_manager)
+
+    # ログ表示終了時にセットするフォーカス登録
+    def register_focus_with_close_log(self):
+        # ログ表示のフォーカス削除
+        self.log_view.unregister_all(self.focus_manager)
 
     def register_all(self):
         if self.log_view.is_open:
@@ -89,8 +101,14 @@ class OpeningScene(BaseScene):
                     if self.log_view.is_open:
                         if result["target"] == self.log_view.close_image:
                             self.log_view.is_open = False
+                            self.register_focus_with_close_log()
+
+                elif result["action"] == "cursor_click":
+                    self.advance_scenario()
             else:
-                self.advance_scenario()
+                # クリックした場合
+                if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                    self.advance_scenario()
 
     def relayout(self, screen):
         super().relayout(screen)
@@ -99,14 +117,13 @@ class OpeningScene(BaseScene):
     def draw(self):
         #self.text_frame_panel.draw()
         self.scenario_manager.draw()
-        self.focus_manager.draw()
         self.log_view.draw()
+        self.focus_manager.draw()
 
     def update(self):
         self.handle_events()
         if self.scenario_manager.is_active:
             self.scenario_manager.update()
-        self.handle_mouse_hover()
         self.draw()
         return self.next_state()
 
@@ -120,6 +137,8 @@ class OpeningScene(BaseScene):
         elif self.state == State.LOG:
             self.state = State.NONE
             self.log_view.is_open = True
+            self.register_focus_with_display_log()
+
         elif self.state == State.CLOSE:
             self.state = State.NONE
             return "charasheet"

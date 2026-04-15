@@ -103,14 +103,22 @@ class FocusManager:
     def _handle_click(self, pos, element):
         result = element.handle_click(pos)
         result_type = getattr(element, "result_type", None)
+        # 次のシナリオを返すタイプ
         if result_type == "scenario":
             return {"action": "next_scenario", "next": result}
+        
+        # ナビゲーションの結果を返すタイプ
         elif result_type == "navigation":
             return {"action": "navigation", "result": result}
+
+        # メニューボタン
         elif result_type == "menu":
             return {"action": "menu", "result": result}
+
+        # シナリオ進行
         elif result_type == "next":
             return {"action": "next"}
+
         else:
             return {"action": "decide", "target": element, "result": result}
 

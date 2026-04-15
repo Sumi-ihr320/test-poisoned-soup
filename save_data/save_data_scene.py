@@ -57,7 +57,7 @@ class SaveDataScene(BaseScene):
         self.create_labels()
 
         # フォーカス登録
-        self.all_register_focusable()
+        self.register_all()
 
     # フォントの設定
     def set_font_data(self):
@@ -259,12 +259,21 @@ class SaveDataScene(BaseScene):
         # キャラクター名、プレイ中なら現在地、日時でファイル名を作る
         return f"{file_number} {name} {room_name} {str_now}.json"
 
-    # フォーカス登録
-    def all_register_focusable(self):
+    # フォーカス全登録
+    def register_all(self):
         for button in self.button_list:
             self.focus_manager.register(button)
         for data in self.data_label_list:
             self.focus_manager.register(data["label"])
+
+    # フォーカス全削除
+    def unregister_all(self):
+        for button in self.button_list:
+            if button in self.focus_manager.elements:
+                self.focus_manager.elements.remove(button)
+        for data in self.data_label_list:
+            if data["label"] in self.focus_manager.elements:
+                self.focus_manager.elements.remove(data["label"])
 
     # セーブデータのリストを取得し重複チェックする
     def fetch_and_validate_save_data_list(self):
@@ -311,33 +320,6 @@ class SaveDataScene(BaseScene):
 
         self.set_save_data_rect()
 
-    # 画面サイズ変更時のアイテム表示位置の変更
-    def relayout(self, screen):
-        super().relayout(screen)
-        self.setting_window_rect()
-        for label in self.label_list:
-            label.relayout(screen)
-        for data in self.data_label_list:
-            data["label"].relayout(screen)
-        self.set_save_data_rect()
-
-    # データ表示ボックスを表示
-    def draw_window(self):
-        pygame.draw.rect(self.screen, SHEET_COLOR, self.window_rect)
-        pygame.draw.rect(self.screen, GRAY, self.window_rect, 2)
-
-    # 画面を描画
-    def draw(self):
-        self.draw_window()
-        if self.top:
-            self.top.draw()
-        if self.button_list:
-            for item in self.button_list:
-                item.draw()
-        if self.data_label_list:
-            for data in self.data_label_list:
-                data["label"].draw()
-
     def handle_event(self):
         for event in pygame.event.get():
             # 閉じるボタンで終了
@@ -373,6 +355,34 @@ class SaveDataScene(BaseScene):
                 if data["label"] == element:
                     self.select_file_name = data["file"]
                     print(self.select_file_name)
+
+    # 画面サイズ変更時のアイテム表示位置の変更
+    def relayout(self, screen):
+        super().relayout(screen)
+        self.setting_window_rect()
+        for label in self.label_list:
+            label.relayout(screen)
+        for data in self.data_label_list:
+            data["label"].relayout(screen)
+        self.set_save_data_rect()
+
+    # データ表示ボックスを表示
+    def draw_window(self):
+        pygame.draw.rect(self.screen, SHEET_COLOR, self.window_rect)
+        pygame.draw.rect(self.screen, GRAY, self.window_rect, 2)
+
+    # 画面を描画
+    def draw(self):
+        self.draw_window()
+        if self.top:
+            self.top.draw()
+        if self.button_list:
+            for item in self.button_list:
+                item.draw()
+        if self.data_label_list:
+            for data in self.data_label_list:
+                data["label"].draw()
+        self.focus_manager.draw()
 
     def update(self):
         self.draw()

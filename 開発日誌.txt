@@ -844,3 +844,8 @@
 2026/4/14
 	render_managerにclose_command_menuを作成。
 	main_play_sceneにregister_focus_with_display_logを作成。
+
+2026/4/15
+	元々使っていたフォントでは ▶ が表示できなかったので游ゴシックを登録
+	main_play_sceneにon_actionを追加
+	いろんな箇所にfocus_managerのdrawの記述が無かったので追加

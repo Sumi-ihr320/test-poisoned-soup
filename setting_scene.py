@@ -5,6 +5,7 @@ from constans import SIZE_MAP, FONT_PATH, SMALL_SIZ, CONTENTS_SIZ, TITLE_SIZ, SE
 from utils import get_new_size
 from ui.ui_elements import Label, Image
 from ui.ui_pull_down import PullDown
+from input.focus_manager import FocusManager
 from manager.sound_manager import sound_manager
 from base_scene import BaseScene
 
@@ -26,7 +27,9 @@ class SettingScene(BaseScene):
 
         self.create_surface()
         self.create_window()
-        self.create_item()
+        self.build()
+
+        self.focus_manager = FocusManager(self.screen)
 
         # ホバー状態を管理するフラグ
         self.hovered = False
@@ -55,14 +58,16 @@ class SettingScene(BaseScene):
         pygame.draw.rect(self.window_surface, GRAY, pygame.Rect(4, 4, self.window_rect.w-8, self.window_rect.h-8), 2)
 
     # 画面のUIを描画する
-    def create_item(self):
+    def build(self):
         # タイトル
         title = Label(self.screen, font_data=self.title_font_data, text="設定", x=self.window_rect.x+30, y=self.window_rect.top+30, text_color=BLACK)
 
         # サイズ
         size_label = Label(self.screen, font_data=self.contents_font_data, text="・画面サイズ", x=self.window_rect.x+50, y=self.window_rect.top+110, text_color=BLACK)
         puludown_label = "フルスクリーン" if self.is_fullscreen() else (self.select_size if self.select_size else "800x600")
-        self.size_pulldown = PullDown(self.screen, font_data=self.font_data, rect=Rect(size_label.rect.right+50, size_label.rect.top, 200, 45), item_list=list(SIZE_MAP), label_text=puludown_label, pd_h=500)
+        self.size_pulldown = PullDown(self.screen, font_data=self.font_data, rect=Rect(size_label.rect.right+50, size_label.rect.top, 200, 45), 
+                                      item_list=list(SIZE_MAP), label_text=puludown_label, pd_h=500, 
+                                      focusable=True, row=0)
 
         # 音量
         volume_label = Label(self.screen, font_data=self.contents_font_data, text="・音量", x=self.window_rect.x+50, y=self.window_rect.top+200, text_color=BLACK)
@@ -75,14 +80,22 @@ class SettingScene(BaseScene):
 
         self.other_label = Label(self.screen, font_data=self.contents_font_data, text="・他",x=self.window_rect.x+50, y=self.window_rect.top+370, text_color=BLACK)
         
-        self.set = Label(self.screen, font_data=self.contents_font_data, text="決定", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx - 50, text_color=BLACK, sound_type="select")
-        self.close = Label(self.screen, font_data=self.contents_font_data, text="戻る", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx + 50, text_color=BLACK, sound_type="select")
+        self.set = self.create_button_label(text="決定", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx - 50, col=0)
+        self.close = self.create_button_label(text="戻る", y=self.window_rect.bottom-50, centerx=self.window_rect.centerx + 50, col=1)
 
         self.label_list = [title, size_label, volume_label, main_volume_label, self.music_volume_label, se_volume_label, self.other_label]
         self.label_list += volume_int_labels
         self.image_list = self.music_volume_list + self.se_volume_list
         self.button_list = [self.set, self.close]
         self.item_list = self.label_list + self.button_list + [self.size_pulldown] + self.image_list
+
+    # ボタンラベルの作成
+    def create_button_label(self, text: str, y: int, centerx: int, col: int=0):
+        label = Label(self.screen, font_data=self.contents_font_data, 
+                      text=text, y=y, centerx=centerx, 
+                      text_color=BLACK, hover_type="line", hover_back_color=WHITE, 
+                      sound_type="select", focusable=True, row=100, col=col)
+        return label
 
     # 音量用imageリストの作成
     def create_img_list(self):
@@ -131,32 +144,17 @@ class SettingScene(BaseScene):
                 self.setting_manager.set("resolution", list(screen_size))
                 self.setting_manager.set("str_resolution", self.select_size)
 
-    # 画面サイズ変更時にポジションを更新する
-    def relayout(self, screen):
-        super().relayout(screen)
-        self.create_surface()
-        self.create_window()
-        for item in self.item_list:
-            item.relayout(screen)
-
-    def draw(self):
-        # ウィンドウを描画
-        self.screen.blit(self.window_surface, self.window_rect.topleft)
-
-        # ラベルを描画
-        for label in self.label_list:
-            label.draw()
-
-        # 画像を描画
-        self.music_volume_list[self.music_volume_value].draw()
-        self.se_volume_list[self.se_volume_value].draw()
-
-        # ボタンを描画
+    def register_all(self):
+        self.focus_manager.register(self.size_pulldown)
         for button in self.button_list:
-            button.draw(type="line", back_color=WHITE)
+            self.focus_manager.register(button)
 
-        # プルダウンを描画
-        self.size_pulldown.draw(self.is_pulldown_open)
+    def unregister_all(self):
+        if self.size_pulldown in self.focus_manager.elements:
+            self.focus_manager.elements.remove(self.size_pulldown)
+        for button in self.button_list:
+            if button in self.focus_manager.elements:
+                self.focus_manager.elements.remove(button)
 
     def handle_mouse_hover(self):
         # マウスオーバーで枠を表示するよ
@@ -196,7 +194,34 @@ class SettingScene(BaseScene):
                     return self.before_event, self.setting_manager
 
         return "setting", self.setting_manager
-            
+
+    # 画面サイズ変更時にポジションを更新する
+    def relayout(self, screen):
+        super().relayout(screen)
+        self.create_surface()
+        self.create_window()
+        for item in self.item_list:
+            item.relayout(screen)
+
+    def draw(self):
+        # ウィンドウを描画
+        self.screen.blit(self.window_surface, self.window_rect.topleft)
+
+        # ラベルを描画
+        for label in self.label_list:
+            label.draw()
+
+        # 画像を描画
+        self.music_volume_list[self.music_volume_value].draw()
+        self.se_volume_list[self.se_volume_value].draw()
+
+        # ボタンを描画
+        for button in self.button_list:
+            button.draw()
+
+        # プルダウンを描画
+        self.size_pulldown.draw(self.is_pulldown_open)
+
     def update(self):
         self.draw()
         self.handle_mouse_hover()        

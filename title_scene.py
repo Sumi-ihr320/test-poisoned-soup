@@ -30,12 +30,6 @@ class TitleScene(BaseScene):
         # サウンド設定
         self.sound()
 
-        # ホバー状態を管理するフラグ
-        self.hovered = False
-
-        # マウスが何かアイテムを選択しているかどうか
-        self.mouse_focus = None
-
         # キーボードモードかマウスモードか
         input_mode_manager.load_mode(self.setting_manager)
         self.focus_manager.setting_mode(input_mode_manager.get_mode())
@@ -69,7 +63,7 @@ class TitleScene(BaseScene):
         label = Label(self.screen, font_data=self.contents_font_data, text=text, 
                       centerx=center_x, centery=centery, anchor=("center","center"), 
                       text_color=WHITE, background_color=BLACK, 
-                      hover_type="line",
+                      hover_type="line", hover_back_color=WHITE,
                       sound_type="select", focusable=True)
         self.focus_manager.register(label)
         self.contents_list.append(label)
@@ -92,14 +86,6 @@ class TitleScene(BaseScene):
 
         # 再生
         sound_manager.play("タイトル")
-
-    def draw(self):
-        # タイトルとメニューを描画
-        self.title.draw()
-        for content in self.contents_list:
-            content.draw()
-
-        self.focus_manager.draw()
 
     # クリックでdecideされた時の処理
     def on_focus_decide(self, element):
@@ -133,10 +119,18 @@ class TitleScene(BaseScene):
             if result and result["action"] == "decide": 
                 self.on_focus_decide(result["target"])
 
+    # 描画
+    def draw(self):
+        # タイトルとメニューを描画
+        self.title.draw()
+        for content in self.contents_list:
+            content.draw()
+
+        self.focus_manager.draw()
+
     # 更新            
     def update(self):
         self.draw()
-        self.handle_mouse_hover()
         self.handle_events()
         return self.next_state()
 
