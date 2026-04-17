@@ -302,15 +302,6 @@ class RenderManager:
                 self.blackout_images[self.blackout_index].draw()
             return
 
-        #if step["type"] == "text":
-        #    self.text_frame_panel.set_text(step["text"])
-        #    self.log_view.append(step["text"])
-
-        # 結果を表示する
-        #elif step["type"] == "result_text" and result_text:
-        #    self.text_frame_panel.set_text(result_text)
-        #    self.log_view.append(result_text)
-
         # コマンドメニューを表示する
         if self.command_menu:
             self.command_menu.draw()

@@ -20,7 +20,8 @@ class RoomManager:
     # 部屋の作成
     def create_room(self):
         room_change_flag = self.room_change_flag_check()
-        self.room = Room(self.screen, self.frame_rect, self.game_state.room, self.game_state.direction, room_change_flag, self.image_cache)
+        self.room = Room(self.screen, frame_rect=self.frame_rect, room=self.game_state.room, direction=self.game_state.direction, 
+                         room_change_flag=room_change_flag, image_cache=self.image_cache)
 
     # フラグによって変化する部屋の表示チェック
     def room_change_flag_check(self):
@@ -82,6 +83,9 @@ class RoomManager:
 
     def handle_mouse_hover(self, pos):
         self.room.handle_mouse_hover(pos)
+
+    def handle_click(self, pos):
+        self.room.handle_click(pos)
 
     def draw(self):
         self.room.draw()            # 部屋の表示

@@ -113,7 +113,7 @@ class FocusManager:
 
         # メニューボタン
         elif result_type == "menu":
-            return {"action": "menu", "result": result}
+            return {"action": "menu"}
 
         # シナリオ進行
         elif result_type == "next":

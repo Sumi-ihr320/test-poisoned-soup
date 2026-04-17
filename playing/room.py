@@ -4,8 +4,53 @@ from pygame.locals import *
 
 from constans import BLACK, SHEET_COLOR, SHEET_SIZE
 from utils import get_new_size, get_scales, create_file_path
+from ui.ui_base import UIElement
 from ui.ui_elements import Image
 from ui.ui_cache import ImageCache
+
+# アイテムの型を作るよ
+class RoomItem(UIElement):
+
+    # アイテム画像の縮小パーセンテージ
+    SIZE = 0.19
+    def __init__(self, screen, parent: Any, room_change_flag: Dict[str, Any], shrink_percent: float,
+                 name: str, room: str, direction: str, x: int, y: int, anchor: Tuple[str, str]=("left", "top"), image_cache: ImageCache=None, 
+                 result_type: Optional[str]="item", sound_type: str="click", **kwargs):
+        super().__init__(screen, parent=parent, result_type=result_type, sound_type=sound_type, click_rect=None, row=0, col=0, focusable=False, hover_text=None, **kwargs)
+
+        self.name = name    # アイテム名
+
+        # アイテムの基本情報
+        self.path = create_file_path(name, room, direction, room_change_flag)   # ファイルパス
+
+        self.img = Image(self.screen, path=self.path, cache=image_cache, scale=shrink_percent, 
+                         x=x, y=y, anchor=anchor, parent=self.parent)       # 画像
+
+    # 指定した点が描画内かをチェック
+    def collidepoint(self, pos) -> bool:
+        return self.img.collidepoint(pos)
+
+    # マウスオーバー時
+    def handle_mouse_hover(self, pos):
+        self.hovered = self.collidepoint(pos)
+
+    # クリックした時にはクリック音を鳴らす
+    def handle_click(self, pos) -> bool:
+        if self.collidepoint(pos):
+            self.on_decide()
+            return self.name
+        return None
+
+    def relayout(self, screen, parent=None):
+        self.screen = screen
+        self.parent = parent
+        self.img.relayout(screen, parent)
+
+    def draw(self):
+        self.img.draw()
+        if self.hovered:
+            pygame.draw.rect(self.screen, BLACK, self.img.rect, 1)  # デバッグ用
+
 
 # 部屋の型を作るよ
 class Room:
@@ -30,42 +75,19 @@ class Room:
         # 部屋画像表示用surface
         self.create_surface()
         
-        # ファイル名一覧
+        # 部屋画像のファイルパス
         self.room_path = create_file_path("room", room, direction, self.room_change_flag)
 
         # 部屋画像の作成
         self.shrink_percent = self.get_shrink_percentage()
-        self.room_img = Image(self.screen, self.room_path, self.image_cache, scale=self.shrink_percent, x="center", y="center", parent=self)
+        self.room_img = Image(self.screen, path=self.room_path, cache=self.image_cache, 
+                              scale=self.shrink_percent, x="center", y="center", parent=self)
 
         # 部屋にあるアイテムの作成
-        self.items = []
-        self.items_draw_list = []
-        self.items_select_list= []
-        self.create_room_item()
+        self.create_room_items_dict()
+        self.build_room_items()
+        self.organize_item_lists()
         
-    # 画像表示するよ
-    def draw(self):
-        self.screen.blit(self.surface, self.surface_rect.topleft)
-        # 部屋表示
-        self.room_img.draw()
-        # アイテム表示
-        if self.items_draw_list:
-            for item in self.items_draw_list:
-                item.draw()
-
-    def relayout(self, screen):
-        self.screen = screen
-        self.screen_size = screen.get_size()
-        self.create_surface()
-        self.room_img.relayout(screen, self.surface)
-
-    def handle_mouse_hover(self, pos):
-        if self.items_select_list:
-            for item in self.items_select_list:
-                pos_x, pos_y = pos
-                new_pos = (pos_x - self.surface_rect.x, pos_y - self.surface_rect.y)
-                item.handle_mouse_hover(new_pos)
-
     # 部屋用のsurfaceを作成
     def create_surface(self):
         self.room_size = get_new_size(self.screen_size, SHEET_SIZE, True)
@@ -88,15 +110,16 @@ class Room:
         _, _, aspect_scale = get_scales(self.screen_size)
         return self.SIZE * aspect_scale
 
-    # 部屋のアイテムを作成する
-    def create_room_item(self):
+    # 部屋のアイテム辞書を作成する
+    def create_room_items_dict(self):
+        self.room_items = {}
         soup_name = self.check_flag_item_name("Soup")
         light_name = self.check_flag_item_name("Light")
         book_shelf_name = self.check_flag_item_name("BookShelf")
 
         center_order = self.check_flag_item_order("center")
         west_order = self.check_flag_item_order("west")
-        room_items = {
+        self.room_items = {
             "center":{
                 "items":[
                     [f"{self.direction}Door", "center", self.direction, "center", 58],
@@ -151,27 +174,35 @@ class Room:
             }
         }
 
+    # 部屋のアイテムを作成する
+    def build_room_items(self):
         # 該当する部屋のアイテムを作成
-        if self.room in room_items:
+        if self.room in self.room_items:
             scale_x, scale_y, _ = get_scales(self.screen_size)
             
-            items_list = []
+            self.items = []
             # アイテムを作成
-            for item in room_items[self.room]["items"]:
+            for item in self.room_items[self.room]["items"]:
                 item[3] = int(item[3] * scale_x) if type(item[3]) == int else item[3]
                 item[4] = int(item[4] * scale_y) if type(item[4]) == int else item[4]
-                items_list.append(RoomItem(self.screen, self, self.room_change_flag, self.shrink_percent, *item, image_cache=self.image_cache))
+                self.items.append(RoomItem(self.screen, parent=self, room_change_flag=self.room_change_flag, 
+                                           shrink_percent=self.shrink_percent, image_cache=self.image_cache,
+                                           name=item[0], room=item[1], direction=item[2], x=item[3], y=item[4]))
+                
+    # アイテムの表示順と選択順のリストをそれぞれ作成する
+    def organize_item_lists(self):
+        # 表示順にアイテムを格納
+        self.items_draw_list = []
+        item_dict = {obj.name: obj for obj in self.items}     # 作成済みオブジェクトを辞書に
+        for item_name in self.room_items[self.room]["draw_order"]:
+            if item_name in item_dict:
+                self.items_draw_list.append(item_dict[item_name])
 
-            # 表示順にアイテムを格納
-            item_dict = {obj.name: obj for obj in items_list}     # 作成済みオブジェクトを辞書に
-            for item_name in room_items[self.room]["draw_order"]:
-                if item_name in item_dict:
-                    self.items_draw_list.append(item_dict[item_name])
-
-            # 選択順にアイテムを格納
-            for item_name in room_items[self.room]["select_order"]:
-                if item_name in item_dict:
-                    self.items_select_list.append(item_dict[item_name])
+        # 選択順にアイテムを格納
+        self.items_select_list = []
+        for item_name in self.room_items[self.room]["select_order"]:
+            if item_name in item_dict:
+                self.items_select_list.append(item_dict[item_name])
 
     #　フラグによるアイテム名を取得する
     def check_flag_item_name(self, item: str) -> str:
@@ -248,36 +279,35 @@ class Room:
             "west": ("center", 205)
         }
         return memo_positions.get(self.direction, (306, 217))
-    
-
-# アイテムの型を作るよ
-class RoomItem:
-    # アイテム画像の縮小パーセンテージ
-    SIZE = 0.19
-    def __init__(self, screen, parent, room_change_flag: Dict[str, Any], shrink_percent: float, 
-                 name: str, room: str, direction: Optional[str], 
-                 x: int, y: int, anchor: Tuple[str, str]=("left", "top"), image_cache: ImageCache=None):
-        self.screen = screen
-        self.parent = parent
-        self.name = name    # アイテム名
-
-        # アイテムの基本情報
-        self.path = create_file_path(name, room, direction, room_change_flag)   # ファイルパス
-
-        self.img = Image(self.screen, self.path, image_cache, scale=shrink_percent, x=x, y=y, anchor=anchor, parent=self.parent)       # 画像
-
-    def relayout(self, screen, parent=None):
-        self.screen = screen
-        self.parent = parent
-        self.img.relayout(screen, parent)
-
-    def draw(self):
-        self.img.draw()
 
     def handle_mouse_hover(self, pos):
-        if self.img.collidepoint(pos):
-            pygame.draw.rect(self.screen, BLACK, self.img.rect, 1)  # デバッグ用
+        for item in self.items_select_list:
+            item.handle_mouse_hover(pos)
 
     def handle_click(self, pos):
-        return self.img.collidepoint(pos)
-    
+        for item in self.items_select_list:
+            result = item.handle_click(pos)
+            if result:
+                return result
+        return None
+
+    def relayout(self, screen):
+        self.screen = screen
+        self.screen_size = screen.get_size()
+        self.create_surface()
+        self.room_img.relayout(screen, self)
+        for item in self.items:
+            item.relayout(screen, self)
+        self.organize_item_lists()
+
+    # 画像表示するよ
+    def draw(self):
+        # surfaceを表示
+        self.screen.blit(self.surface, self.surface_rect.topleft)
+        # 部屋画像表示
+        self.room_img.draw()
+        # アイテム表示
+        if self.items_draw_list:
+            for item in self.items_draw_list:
+                item.draw()
+

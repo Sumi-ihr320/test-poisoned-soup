@@ -849,3 +849,8 @@
 	元々使っていたフォントでは ▶ が表示できなかったので游ゴシックを登録
 	main_play_sceneにon_actionを追加
 	いろんな箇所にfocus_managerのdrawの記述が無かったので追加
+
+2026/4/17
+	RoomItemをUIElementからの継承に変更
+	roomのcreate_room_itemsをcreate_room_items_dict、build_room_items、organize_item_listsに分離
+	main_play_sceneのhandle_mouse_hoverにvirtual_cursorの場合を追加。

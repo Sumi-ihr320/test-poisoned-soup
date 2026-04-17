@@ -165,13 +165,20 @@ class MainPlayScene(BaseScene):
 
     # マウスオーバー
     def handle_mouse_hover(self):
-        #if self.use_virtual_cursor:
-        #    key = self.cursor.get_pos()
-        #else:
-        key = pygame.mouse.get_pos()
-        #self.menu_controller.handle_mouse_hover(key)
-        self.event_manager.render_manager.handle_mouse_hover(key)
-        self.room_manager.handle_mouse_hover(key)
+        if self.focus_manager.virtual_cursor.visible:
+            if self.event_manager.render_manager.command_menu:
+                if self.focus_manager.virtual_cursor.check_hover(self.event_manager.render_manager.command_menu.children):
+                    return
+            if self.focus_manager.virtual_cursor.check_hover(self.room_manager.room.items_select_list):
+                return
+        else:
+            #if self.use_virtual_cursor:
+            #    key = self.cursor.get_pos()
+            #else:
+            key = pygame.mouse.get_pos()
+            #self.menu_controller.handle_mouse_hover(key)
+            self.event_manager.render_manager.handle_mouse_hover(key)
+            self.room_manager.handle_mouse_hover(key)
 
     # フォーカスから帰ってきたアクションの処理
     def on_action(self, result):
