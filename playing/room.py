@@ -15,7 +15,7 @@ class RoomItem(UIElement):
     SIZE = 0.19
     def __init__(self, screen, parent: Any, room_change_flag: Dict[str, Any], shrink_percent: float,
                  name: str, room: str, direction: str, x: int, y: int, anchor: Tuple[str, str]=("left", "top"), image_cache: ImageCache=None, 
-                 result_type: Optional[str]="item", sound_type: str="click", **kwargs):
+                 result_type: Optional[str]="item", sound_type: str="select", **kwargs):
         super().__init__(screen, parent=parent, result_type=result_type, sound_type=sound_type, click_rect=None, row=0, col=0, focusable=False, hover_text=None, **kwargs)
 
         self.name = name    # アイテム名

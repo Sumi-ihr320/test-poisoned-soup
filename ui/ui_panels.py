@@ -161,7 +161,7 @@ class MenuBar(UIContainer):
 class TextFramePanel(UIContainer):
     PADDING = 10
     def __init__(self, screen, root, parent: Optional[Any]=None, font_data: Tuple[str, int]=(FONT_PATH, FONT_SIZ), frame_size: Tuple[int, int]=FRAME_SIZE, 
-                 next_callback: Optional[Callable]=None, enabled_flags: Dict[str, bool]={"セーブ":True, "ロード":True, "ログ":True}):
+                 on_scene_state_change_callback: Optional[Callable]=None, enabled_flags: Dict[str, bool]={"セーブ":True, "ロード":True, "ログ":True}):
         super().__init__(screen, parent)
         self.root = root
 
@@ -174,7 +174,7 @@ class TextFramePanel(UIContainer):
         self.font_data = font_data
 
         # メニューバー
-        self.menu_bar = MenuBar(screen=self.screen, root=self.root, frame_rect=self.rect, font_data=self.font_data, callback=next_callback, enabled_flags=enabled_flags)
+        self.menu_bar = MenuBar(screen=self.screen, root=self.root, frame_rect=self.rect, font_data=self.font_data, callback=on_scene_state_change_callback, enabled_flags=enabled_flags)
 
         # 内部ラベル
         self.text_label = TextFrameLabel(screen=self.screen, frame_rect=self.rect, font_data=self.font_data)

@@ -34,7 +34,7 @@ class CharacterSheetScene(BaseScene):
         
         # テキストフレーム
         enabled_flags = {"セーブ": False, "ロード": True, "ログ": False}
-        self.text_frame_panel = TextFramePanel(self.screen, self.root, enabled_flags=enabled_flags, next_callback=self.set_state)
+        self.text_frame_panel = TextFramePanel(self.screen, self.root, enabled_flags=enabled_flags, on_scene_state_change_callback=self.on_scene_state_change_requested)
         frame_rect = self.text_frame_panel.rect
 
         # ページ管理
@@ -68,7 +68,7 @@ class CharacterSheetScene(BaseScene):
         self.status_page.load_status_items()
         self.profession_page = ProfessionPage(self.screen, self.root, frame_rect, self.player)
         self.profession_page.load_selector()
-        self.confirm_page = ConfirmPage(self.screen, self.root, frame_rect, self.player, self.save_data, self.set_state)
+        self.confirm_page = ConfirmPage(self.screen, self.root, frame_rect, self.player, self.save_data, on_scene_state_change_callback=self.on_scene_state_change_requested)
 
         self.pages.append(self.status_page)
         self.pages.append(self.profession_page)
@@ -176,10 +176,10 @@ class CharacterSheetScene(BaseScene):
             else:
                 self.text_frame_panel.set_text("")                
                             
-    def set_state(self, state=State.NONE, save_data=None):
+    def on_scene_state_change_requested(self, state=State.NONE, save_data=None):
         if save_data:
             self.save_data = save_data
-        super().set_state(state)
+        super().on_scene_state_change_requested(state)
 
     # 画面サイズ更新時にポジションを変更する
     def relayout(self, screen: pygame.Surface):

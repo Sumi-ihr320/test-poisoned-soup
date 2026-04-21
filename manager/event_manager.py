@@ -19,7 +19,8 @@ from .event_processors.display_processor import DisplayProcessor
 class EventManager:
     def __init__(self, screen, root, player=None, girl=None, game_state=None, flags=None, 
                  text_frame_panel: Optional[TextFramePanel]=None, log_view: Optional[LogView]=None, focus_manager: Optional[FocusManager]=None,
-                 next_scenario_call_back: Optional[Callable]=None, move_to_room_call_back: Optional[Callable]=None, room_new_view: Optional[Callable]=None, set_state: Optional[Callable]=None):
+                 on_scenario_start_callback: Optional[Callable]=None, 
+                 on_room_transition_callback: Optional[Callable]=None, on_room_refresh_callback: Optional[Callable]=None, on_scene_state_change_callback: Optional[Callable]=None):
         self.screen = screen
         self.screen_size = self.screen.get_size()
         self.root = root
@@ -31,10 +32,10 @@ class EventManager:
         self.skill_list = load_json(SKILL_DATA_PATH, JSON_FOLDER)
 
         # コールバック関数
-        self.next_scenario_call_back = next_scenario_call_back
-        self.move_to_room_call_back = move_to_room_call_back
-        self.room_new_view_call_back = room_new_view
-        self.set_state_call_back = set_state
+        self.on_scenario_start_callback = on_scenario_start_callback
+        self.on_room_transition_callback = on_room_transition_callback
+        self.on_room_refresh_callback = on_room_refresh_callback
+        self.on_scene_state_callback = on_scene_state_change_callback
 
         # 表示関連
         self.image_cache = ImageCache()
@@ -197,7 +198,7 @@ class EventManager:
                         room_id = room
                         break
             if room_id:
-                self.room_new_view(room_id)
+                self.on_room_refresh_requested()
 
         # アイテムを取得する
         elif action == "get_item":
@@ -402,7 +403,7 @@ class EventManager:
 
     # コールバック関数に次のシナリオ名を渡す
     def to_callback_next_scenario(self, next_scenario: str):
-        self.next_scenario_call_back(next_scenario)
+        self.on_scenario_start_callback(next_scenario)
 
     # 部屋移動イベント
     def move_to_room(self, room_id: str):
@@ -411,13 +412,13 @@ class EventManager:
         self.move_to_room_call_back(room_id)
 
     # 部屋の状態変化による再描画
-    def room_new_view(self, room_id: str):
+    def on_room_refresh_requested(self):
         self.render_manager.hidden_item_image()
-        self.room_new_view_call_back(room_id)
+        self.on_room_refresh_callback()
         
     # エンディングに移行するためにコールバック関数にステータスを渡す
     def set_ending(self):
-        self.set_state_call_back(State.CLOSE)
+        self.on_scene_state_change_callback(State.CLOSE)
 
     # フラグをセットするイベント
     def set_flag(self, category: str, flag: str, value: Any):

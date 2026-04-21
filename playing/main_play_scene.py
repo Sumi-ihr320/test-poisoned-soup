@@ -34,12 +34,15 @@ class MainPlayScene(BaseScene):
         self.log_view = LogView(self.screen)
 
         # テキストフレーム
-        self.text_frame_panel = TextFramePanel(self.screen, self.root, next_callback=self.set_state)
+        self.text_frame_panel = TextFramePanel(self.screen, self.root, on_scene_state_change_callback=self.on_scene_state_change_requested)
 
         # 管理用
         self.event_manager = EventManager(self.screen, root=self.root, player=self.player_status, girl=self.girl_status, game_state=self.game_state, flags=self.flags,
                                           text_frame_panel=self.text_frame_panel, log_view=self.log_view, focus_manager=self.focus_manager,
-                                          next_scenario_call_back=self.handle_next_scenario, move_to_room_call_back=self.handle_move_room, room_new_view=self.handle_room_view, set_state=self.set_state)
+                                          on_scenario_start_callback=self.on_scenario_start_requested, 
+                                          on_room_transition_callback=self.on_room_transition_requested, 
+                                          on_room_refresh_callback=self.on_room_refresh_requested, 
+                                          on_scene_state_change_callback=self.on_scene_state_change_requested)
         room_id = f"{self.game_state.room}-room"
         self.scenario_manager = ScenarioManager(self.screen, event_manager=self.event_manager, scenario_id=room_id, auto_start=False)
         self.scenario_manager.start_scenario(room_id)
@@ -53,6 +56,8 @@ class MainPlayScene(BaseScene):
         # ナビゲーションバー
         self.navigation = MainNavigation(self.screen, surface_rect=self.room_manager.room.surface_rect)
         self.setup_navigetion()
+
+        self.register_all()
 
         # 選択されたアイテム
         self.selected_item = None
@@ -89,33 +94,28 @@ class MainPlayScene(BaseScene):
         self.navigation.update_register(self.focus_manager)
     
     # イベントマネージャーから次のシナリオを受け取るためのコールバック関数
-    def handle_next_scenario(self, next_scenario: str):
+    def on_scenario_start_requested(self, next_scenario: str):
         self.scenario_manager.start_scenario(next_scenario)
 
     # イベントマネージャーから次の部屋に移るためのコールバック関数
-    def handle_move_room(self, room_id: str):
+    def on_room_transition_requested(self, room_id: str):
         next_room = room_id.split("-")[0]
-        self.handle_room_view(next_room)
+        self.room_manager.move_to_room(next_room=next_room)
+        self.setup_navigetion()
         self.scenario_manager.start_scenario(room_id)
         
     # 部屋の再作成をする（コールバック関数としても使う)
-    def handle_room_view(self, room_id: str):
-        next_room = room_id.split("-")[0] if "-room" in room_id else room_id
-        self.room_manager.move_to_room(next_room=next_room)
-        self.setup_navigetion()
+    def on_room_refresh_requested(self):
+        self.room_manager.create_room()
 
     # アイテムクリック時のイベント
     def handle_item_click_event(self, pos):
         for item in self.room_manager.room.items_select_list:
-            surface_rect = self.room_manager.room.surface_rect
-            pos_x, pos_y = pos
-
-            new_pos = (pos_x - surface_rect.x, pos_y - surface_rect.y)
-            if item.handle_click(new_pos):
-                sound_manager.play("選択")
+            result = item.handle_click(pos)
+            if result:
                 self.selected_item = item
-                print(item.name)                # デバッグ用
-                self.scenario_manager.start_scenario(item.name)
+                print(result)                # デバッグ用
+                self.scenario_manager.start_scenario(result)
                 return True
         self.selected_item = None
         return False
@@ -166,19 +166,12 @@ class MainPlayScene(BaseScene):
     # マウスオーバー
     def handle_mouse_hover(self):
         if self.focus_manager.virtual_cursor.visible:
-            if self.event_manager.render_manager.command_menu:
-                if self.focus_manager.virtual_cursor.check_hover(self.event_manager.render_manager.command_menu.children):
-                    return
-            if self.focus_manager.virtual_cursor.check_hover(self.room_manager.room.items_select_list):
-                return
+            key = self.focus_manager.virtual_cursor.get_pos()
         else:
-            #if self.use_virtual_cursor:
-            #    key = self.cursor.get_pos()
-            #else:
             key = pygame.mouse.get_pos()
-            #self.menu_controller.handle_mouse_hover(key)
-            self.event_manager.render_manager.handle_mouse_hover(key)
-            self.room_manager.handle_mouse_hover(key)
+
+        self.event_manager.render_manager.handle_mouse_hover(key)
+        self.room_manager.handle_mouse_hover(key)
 
     # フォーカスから帰ってきたアクションの処理
     def on_action(self, result):

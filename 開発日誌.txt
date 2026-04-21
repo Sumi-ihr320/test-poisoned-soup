@@ -854,3 +854,7 @@
 	RoomItemをUIElementからの継承に変更
 	roomのcreate_room_itemsをcreate_room_items_dict、build_room_items、organize_item_listsに分離
 	main_play_sceneのhandle_mouse_hoverにvirtual_cursorの場合を追加。
+
+2026/4/21
+	main_play_sceneのhandle_mouse_hoverにvirtual_cursorの場合を修正。
+	event_managerに渡すcallback関数の名前を修正。それに伴い各sceneを修正。

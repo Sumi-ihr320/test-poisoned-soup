@@ -17,7 +17,7 @@ class BaseScene:
         self.screen_size = self.screen.get_size()
 
     # メニューボタン用のコールバック関数
-    def set_state(self, state=State.NONE):
+    def on_scene_state_change_requested(self, state=State.NONE):
         self.state = state
 
     def draw(self):

@@ -24,7 +24,7 @@ class EndingScene(BaseScene):
         
         # メニューボタン
         enabled_flags = {"セーブ": False, "ロード": True, "ログ": True}
-        self.text_frame_panel = TextFramePanel(self.screen, next_callback=self.set_state, enabled_flags=enabled_flags)
+        self.text_frame_panel = TextFramePanel(self.screen, on_scene_state_change_callback=self.on_scene_state_change_requested, enabled_flags=enabled_flags)
 
         # フォーカスマネージャー
         self.focus_manager = FocusManager(self.screen)
@@ -60,10 +60,6 @@ class EndingScene(BaseScene):
         #self.handle_mouse_hover()
         self.handle_events()
         return self.next_state()
-
-    # メニューボタン用のコールバック関数
-    def set_state(self, state=State.NONE):
-        self.state = state
 
     def next_state(self):
         if self.state == State.LOAD:

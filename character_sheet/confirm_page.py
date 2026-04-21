@@ -12,10 +12,10 @@ from utils import load_json
 from character_sheet.base_page import BasePage
 
 class ConfirmPage(BasePage):
-    def __init__(self, screen, root, text_frame_rect, player: Player, save_data: Dict[str, Any], callback: Callable, offset: Optional[Tuple[int, int]]=None):
+    def __init__(self, screen, root, text_frame_rect, player: Player, save_data: Dict[str, Any], on_scene_state_change_callback: Callable, offset: Optional[Tuple[int, int]]=None):
         super().__init__(screen, root, text_frame_rect, player, offset)
         self.save_data = save_data
-        self.callback = callback
+        self.on_scene_state_change_callback = on_scene_state_change_callback
         
         self.status_dict = {}
         self.set_player_data()
@@ -162,7 +162,7 @@ class ConfirmPage(BasePage):
     def handle_click(self, result: str):
         if result == "finalize":
             if self.validate_and_finalize():
-                self.callback(State.SAVE, self.save_data)
+                self.on_scene_state_change_callback(State.SAVE, self.save_data)
 
     def relayout(self, screen):
         super().relayout(screen)
