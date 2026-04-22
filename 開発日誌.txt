@@ -858,3 +858,6 @@
 2026/4/21
 	main_play_sceneのhandle_mouse_hoverにvirtual_cursorの場合を修正。
 	event_managerに渡すcallback関数の名前を修正。それに伴い各sceneを修正。
+
+2026/4/22
+	play_scene_controllerの作成

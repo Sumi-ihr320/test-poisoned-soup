@@ -20,7 +20,9 @@ class EventManager:
     def __init__(self, screen, root, player=None, girl=None, game_state=None, flags=None, 
                  text_frame_panel: Optional[TextFramePanel]=None, log_view: Optional[LogView]=None, focus_manager: Optional[FocusManager]=None,
                  on_scenario_start_callback: Optional[Callable]=None, 
-                 on_room_transition_callback: Optional[Callable]=None, on_room_refresh_callback: Optional[Callable]=None, on_scene_state_change_callback: Optional[Callable]=None):
+                 on_room_transition_callback: Optional[Callable]=None, 
+                 on_room_refresh_callback: Optional[Callable]=None, 
+                 on_scene_state_change_callback: Optional[Callable]=None):
         self.screen = screen
         self.screen_size = self.screen.get_size()
         self.root = root
@@ -418,7 +420,7 @@ class EventManager:
         
     # エンディングに移行するためにコールバック関数にステータスを渡す
     def set_ending(self):
-        self.on_scene_state_change_callback(State.CLOSE)
+        self.on_scene_state_callback(State.CLOSE)
 
     # フラグをセットするイベント
     def set_flag(self, category: str, flag: str, value: Any):

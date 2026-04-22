@@ -2,7 +2,7 @@ from playing.room import Room
 from ui.ui_cache import ImageCache
 
 class RoomManager:
-    def __init__(self, screen, frame_rect, event_manager, flags, game_state):
+    def __init__(self, screen, frame_rect, flags, game_state):
         self.screen = screen
 
         self.frame_rect = frame_rect
@@ -10,8 +10,6 @@ class RoomManager:
         self.flags = flags
         self.game_state = game_state
 
-        self.event_manager = event_manager
-        
         self.image_cache = ImageCache()
 
         self.room = None
