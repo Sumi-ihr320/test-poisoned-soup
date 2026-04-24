@@ -81,7 +81,7 @@ class ScenarioManager:
             return
 
         if not self.current_steps or self.current_index >= len(self.current_steps):
-            print("シナリオ終了")               # デバッグ用
+            print(f"{self.current_scenario_id}：シナリオ終了")               # デバッグ用
             self.current_scenario_id = ""
             self.current_steps = None
             self.is_active = False

@@ -861,3 +861,11 @@
 
 2026/4/22
 	play_scene_controllerの作成
+
+2026/4/23
+	event_manager、handle_scenario_eventの記述を更新
+	event_managerからhandle_actionを切り出し、action_processor.pyを作成。
+	dice_processorにbuild_result_textを追加
+	何故かコマンドメニューがfocus_managerに残ってしまうことがあるため、
+	コマンドを閉じる設定に追加でfocus登録されているコマンドボタンを全て削除するようにした。
+

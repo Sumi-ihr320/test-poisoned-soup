@@ -58,3 +58,28 @@ class DiceProcessor:
         result_text = f"{character.name}：成功！ <color=blue>{dice_result}<color/>/{threshold}" if check_result == True else f"{character.name}：失敗！ <color=red>{dice_result}<color/>/{threshold}"
 
         return {"status": status, "ok": check_result, "value": dice_result, "text": result_text}
+    
+    def build_result_text(self, step, check_status, result_text, branch_flag=False, success=None):
+        status_text = ""
+
+        # ダイス結果表示の《〇〇》の部分のテキストを取得する
+        if step["check_type"] == "毒対抗ロール":
+            status_text = step["check_type"]
+        else:
+            check_list = {"Idea":"アイデア",
+                          "Dodge":"回避",
+                          "Luck":"幸運"}
+            status_text = check_list.get(check_status, check_status)
+
+        # 半分の値で計算した場合は《〇〇 ÷ 2》と表示する
+        if step.get("half", False):
+            status_text += " ÷ 2"
+
+        if branch_flag:
+            if success is not None:
+                result_text = f"《{status_text}》 ⇒ {'成功' if success else '失敗'}！\n{result_text}"
+        else:
+            result_text = f"《{status_text}》⇒ {result_text}"
+
+        return result_text        
+

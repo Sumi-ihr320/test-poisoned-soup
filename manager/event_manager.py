@@ -15,6 +15,7 @@ from .event_processors.damage_processor import DamageProcessor
 from .event_processors.conditional_processor import ConditionalProcessor
 from .event_processors.status_effect_processor import StatusEffectProcessor
 from .event_processors.display_processor import DisplayProcessor
+from .event_processors.action_processor import ActionProcessor
 
 class EventManager:
     def __init__(self, screen, root, player=None, girl=None, game_state=None, flags=None, 
@@ -59,6 +60,7 @@ class EventManager:
         self.conditional_processor = ConditionalProcessor(self.flags, self.game_state, self.to_callback_next_scenario)
         self.status_effect_processor = StatusEffectProcessor(self.dice_service, self.take_damage)
         self.display_processor = DisplayProcessor(self.render_manager)
+        self.action_processor = ActionProcessor(self.player, self.girl, self.flags, self.on_room_refresh_callback, self.move_to_room)
 
         self.pending_result_display = False # 結果表示待ちフラグ
         self.pending_dice_check = None      # 分岐情報
@@ -69,159 +71,60 @@ class EventManager:
         self.girl_roll_result = None
 
         self.state_record = {}              # キャラクターの特殊状態の記録
-        self.is_blackout_active = False     # ブラックアウト状態かどうか
+
+        self.event_handlers = {
+            "text": self.handle_text,
+            "sound": self.display_processor.process_display,
+            "image_display": self.display_processor.process_display,
+            "image_hidden": self.display_processor.process_display,
+            "girl_display": self.display_processor.process_display,
+            "girl_hidden": self.display_processor.process_display,
+            "next_step": self.handle_next_step,
+            "action": self.action_processor.process_action,
+            "time_passage": self.handle_time_passage,
+            "dice_check": self.handle_dice_check,
+            "damage": self.handle_damage,
+            "status_effect": self.handle_status_effect,
+            "girl_check": self.handle_girl_check,
+            "conditional": self.handle_conditional,
+            "interaction": self.handle_interaction,
+            "ending": self.handle_ending
+        }
+
+        self.delete_display_text_action = ["image_hidden", "girl_hidden", "action", "conditional", "time_passage", "status_effect"]
 
     # シナリオから受け取ったイベントを進行する
     def handle_scenario_event(self, step: Dict[str, Any]):
-        # 表示関連のステップ処理
-        if step["type"] == "text":
-            # display_processor で処理
-            text = self.display_processor.process_display(step)
+        handler = self.event_handlers.get(step["type"], None)
+        if handler:
+            handler(step)
 
-            # テキストが返ってきた場合のみ特殊処理
-            if text is not None:
-                self.current_display_text = text
-
-                # 結果表示中でない場合のみ通常テキストを使用
-                if self.pending_result_display:
-                    return
-
-        elif step["type"] in ["sound", "image_display", "image_hidden", "girl_display", "girl_hidden"]:
-            # display_processor で処理
-            self.display_processor.process_display(step)
-
-            # 画像非表示のタイミングでテキストもクリア
-            if step["type"] in ["image_hidden", "girl_hidden"]:
+            if step["type"] in self.delete_display_text_action:
                 self.current_display_text = None
 
-        # 次のシナリオに進む
-        elif step["type"] == "next_step":
-            self.current_display_text = None
-            self.to_callback_next_scenario(step["next"])
-        
-        # アクションを起こす
-        elif step["type"] == "action":
-            action = step["action"]
-            self.handle_action(action, step)
-            # アクション実行時はテキストをクリア
-            self.current_display_text = None
+    # テキストの処理
+    def handle_text(self, step: Dict[str, Any]):
+        # display_processor で処理
+        text = self.display_processor.process_display(step)
 
-        # 時間経過を行う
-        elif step["type"] == "time_passage":
-            self.handle_time_passage(step)
-            self.current_display_text = None
+        # テキストが返ってきた場合のみ特殊処理
+        if text is not None:
+            self.current_display_text = text
 
-        # ダイスチェックを行う
-        elif step["type"] == "dice_check":
-            self.handle_dice_check(step)
+            # 結果表示中でない場合のみ通常テキストを使用
+            if self.pending_result_display:
+                return
 
-        # ダメージを計算したり適用する
-        elif step["type"] == "damage":
-            self.handle_damage(step)
-
-        # 状態変化を行う
-        elif step["type"] == "status_effect":
-            self.handle_status_effect()
-            self.current_display_text = None
-
-        # 少女が一緒にいるかのチェック
-        elif step["type"] == "girl_check":
-            result = "true" if self.girl_fellow_check() else "false"
-            self.current_display_text = None
-            self.to_callback_next_scenario(step[result])
-
-        # フラグによる分岐をおこなう
-        elif step["type"] == "conditional":
-            self.conditional_processor.process_conditional(step["conditions"])
-            self.current_display_text = None
-
-        # コマンドを表示する
-        elif step["type"] == "interaction":
-            commands = []
-            for cmd in step["interactions"]:
-                commands.append(Command(cmd["text"], cmd["next"]))
-            target = step.get("target", None)
-            self.render_manager.set_command_menu(commands, target)
-
-        # 毒摂取の画面効果を表示する
-        elif step["type"] == "poison_start":
-            pass
-
-        # 毒摂取の画面効果表示を終了する
-        elif step["type"] == "poison_stop":
-            pass
-        
-        # エンディングに移行する
-        elif step["type"] == "ending":
-            self.current_display_text = None
-            self.set_ending()
-
-    # 少女が一緒にいるかどうかのフラグチェック
-    def girl_fellow_check(self):
-        return self.flags.get_flag("girl", "fellow")
-
-    # 少女に参加してもらうかのフラグチェック
-    def girl_flag_check(self):
-        return self.flags.get_flag("girl", "dice_check")
-
-    # アクションを実行する
-    def handle_action(self, action: str, step: Dict[str, Any]):
-        # 部屋移動
-        if action == "move_to_room":
-            self.game_state.time -= 2
-            room_id = step.get("room_id", None)
-            self.move_to_room(room_id)
-
-        # フラグセット
-        elif action == "set_flag":
-            # どのフラグがどの部屋の表示に変更を与えるか
-            room_flag_map = {"center-room":["light_remove",
-                                            "soup_in_poison",
-                                            "soup_drink",
-                                            "soup_destruction",
-                                            "soup_bowl_get"],
-                             "east-room":["east_room_visivle"],
-                             "west-room":["book_found",
-                                          "book_get",
-                                          "candle_get",
-                                          "candle_goes_out"]}
-
-            # フラグをセットする
-            category = step["category"]
-            flag = step["flag"]
-            value = step["value"]
-            self.set_flag(category, flag, value)
-
-            # もしroom_flag_mapのフラグに該当していたら部屋情報を更新する
-            room_id = None
-            for room, key_flags in room_flag_map.items():
-                for key_flag in key_flags:
-                    if flag == key_flag:
-                        room_id = room
-                        break
-            if room_id:
-                self.on_room_refresh_requested()
-
-        # アイテムを取得する
-        elif action == "get_item":
-            target = step.get("target", None)
-            item = ITEM_LIST[step["item"]]
-            character = self.girl if target == "girl" else self.player
-            character.add_item(item)
-
-        # アイテムを手放す
-        elif action == "lost_item":
-            target = step.get("target", None)
-            item = ITEM_LIST[step["item"]]
-            character = self.girl if target == "girl" else self.player
-            character.remove_item(item)
+    # 次のシナリオに進む
+    def handle_next_step(self, step: Dict[str, Any]):
+        self.current_display_text = None
+        self.to_callback_next_scenario(step["next"])
 
     # ダイスチェックをする
     def handle_dice_check(self, step: Dict[str, Any]):
         check_status = None
         player_check_result, girl_check_result = None, None
         result_text = ""
-        status_text = ""
 
         # ダイスチェックのターゲット指定がもしあればそのキャラクターだけ行う
         target = step.get("target", None)
@@ -244,31 +147,22 @@ class EventManager:
             else:
                 result_text = text
 
-        # ダイス結果表示の《〇〇》の部分のテキストを取得する
-        if step["check_type"] == "毒対抗ロール":
-            status_text = step["check_type"]
-        else:
-            check_list = {"Idea":"アイデア",
-                          "Dodge":"回避",
-                          "Luck":"幸運"}
-            status_text = check_list.get(check_status, check_status)
-
-        # 半分の値で計算した場合は《〇〇 ÷ 2》と表示する
-        if step.get("half", False):
-            status_text += " ÷ 2"
-
         # SANチェックと毒対抗ロールとショックロールは各キャラクター毎に結果が異なるので成功、失敗の結果分岐をしない
-        if step["check_type"] == "SANチェック" or step["check_type"] == "毒対抗ロール" or step["check_type"] == "shock_roll":        
+        if step["check_type"] in ["SANチェック", "毒対抗ロール", "shock_roll"]:
             self.player_roll_result = player_check_result
             self.girl_roll_result = girl_check_result
+
+            result_text = self.dice_processor.build_result_text(step, check_status, result_text)
+
             self.pending_dice_check = None  # 分岐情報なし
+
             # 結果表示フラグを立てる
             self.pending_result_display = True
             self.current_display_text = result_text
         else:
             # どちらかのダイス結果が成功していれば成功の結果表示、どちらも失敗していれば失敗の結果表示をする
             success = player_check_result or girl_check_result
-            result_text = f"《{status_text}》 ⇒ {'成功' if success else '失敗'}！\n{result_text}"
+            result_text = self.dice_processor.build_result_text(step, check_status, result_text, branch_flag=True, success=success)
 
             # 分岐情報を保存
             self.pending_dice_check = {
@@ -312,31 +206,13 @@ class EventManager:
         print(f" state_record: {self.state_record}")
         print(f" display_text: {self.current_display_text}")
 
-    # 保留中の分岐情報を取得してクリアする      
-    def get_and_clear_pending_branch(self):
-        if self.pending_dice_check:
-            branch = self.pending_dice_check
-            self.pending_dice_check = None
-            return branch
-        return None
-
-    # 結果表示フラグをクリアする
-    def clear_result_display(self):
-        self.pending_result_display = False
-        self.current_display_text = None
-
-    # 結果表示フラグをセットする
-    def set_result_display(self, text: str):
-        self.pending_result_display = True
-        self.current_display_text = text
-
     # 時間を経過させる
     def handle_time_passage(self, step: Dict[str, Any]):
         minutes = int(step["value"])
         self.game_state.time -= minutes
 
     # 状態異常に対応
-    def handle_status_effect(self):
+    def handle_status_effect(self, step: Dict[str, Any]):
         characters = {"player": self.player,
                       "girl": self.girl}
         results = self.status_effect_processor.process_status_effects(self.state_record, characters, self.game_state)
@@ -391,12 +267,45 @@ class EventManager:
         self.state_record = {}
 
     # フラグチェックを処理
-    def handle_conditional(self, conditions: List[Dict[str, Any]]):
-        for condition in conditions:
-            # 全部のフラグがtrueだったら次のシナリオ
-            if all(self.flag_check(flag) for flag in condition["flags"]):
-                self.to_callback_next_scenario(condition["next"])
-                break
+    def handle_conditional(self, step: Dict[str, Any]):
+        conditions = step["conditions"]
+        self.conditional_processor.process_conditional(conditions)
+
+    # コマンドメニューを作成
+    def handle_interaction(self, step: Dict[str, Any]):
+        commands = []
+        for cmd in step["interactions"]:
+            commands.append(Command(cmd["text"], cmd["next"]))
+        target = step.get("target", None)
+        self.render_manager.set_command_menu(commands, target)
+
+    # 少女の同行チェック
+    def handle_girl_check(self, step: Dict[str, Any]):
+        result = "true" if self.girl_fellow_check() else "false"
+        self.current_display_text = None
+        self.to_callback_next_scenario(step[result])
+
+    def handle_ending(self, step: Dict[str, Any]=None):
+        self.current_display_text = None
+        self.set_ending()
+
+    # 保留中の分岐情報を取得してクリアする      
+    def get_and_clear_pending_branch(self):
+        if self.pending_dice_check:
+            branch = self.pending_dice_check
+            self.pending_dice_check = None
+            return branch
+        return None
+
+    # 結果表示フラグをクリアする
+    def clear_result_display(self):
+        self.pending_result_display = False
+        self.current_display_text = None
+
+    # 結果表示フラグをセットする
+    def set_result_display(self, text: str):
+        self.pending_result_display = True
+        self.current_display_text = text
 
     # テキストを表示するステップを作成して表示する
     def create_text_step(self, text: str):
@@ -409,9 +318,10 @@ class EventManager:
 
     # 部屋移動イベント
     def move_to_room(self, room_id: str):
+        self.game_state.time -= 2
         self.render_manager.hidden_item_image()
         self.render_manager.hidden_girl_image()
-        self.move_to_room_call_back(room_id)
+        self.on_room_transition_callback(room_id)
 
     # 部屋の状態変化による再描画
     def on_room_refresh_requested(self):
@@ -422,19 +332,13 @@ class EventManager:
     def set_ending(self):
         self.on_scene_state_callback(State.CLOSE)
 
-    # フラグをセットするイベント
-    def set_flag(self, category: str, flag: str, value: Any):
-        if type(value) == str:
-            obj = re.match(r"\+|-", value)
-            if obj:
-                int_value = int(value[1:])
-                flag_value = self.flags.get_flag(category, flag)
-                if value[0] == "+":
-                    value = flag_value + int_value
-                else:
-                    value = flag_value - int_value
+    # 少女が一緒にいるかどうかのフラグチェック
+    def girl_fellow_check(self):
+        return self.flags.get_flag("girl", "fellow")
 
-        self.flags.update_flag(category, flag, value)
+    # 少女に参加してもらうかのフラグチェック
+    def girl_flag_check(self):
+        return self.flags.get_flag("girl", "dice_check")
 
     # ターゲットが誰かのチェック
     def target_check(self, target: str) -> Tuple[bool, bool]:

@@ -56,6 +56,14 @@ class DisplayProcessor:
             # 直接実行型：返り値なし
             self.handle_girl_hidden()
 
+       # 毒摂取の画面効果を表示する
+        elif step["type"] == "poison_start":
+            pass
+
+        # 毒摂取の画面効果表示を終了する
+        elif step["type"] == "poison_stop":
+            pass
+ 
         return result
 
     # テキスト処理

@@ -11,6 +11,7 @@ from base_scene import BaseScene
 from ui.ui_panels import TextFramePanel
 from ui.navigation import MainNavigation
 from ui.log_view import LogView
+from ui.ui_command import CommandButton
 from input.focus_manager import FocusManager
 from playing.room_manager import RoomManager
 from playing.play_scene_controller import PlaySceneController
@@ -41,7 +42,7 @@ class MainPlayScene(BaseScene):
         self.room_manager = RoomManager(self.screen, frame_rect=self.text_frame_panel.rect, flags=self.flags, game_state=self.game_state)
 
         # コントローラー
-        self.controller = PlaySceneController(self.room_manager)
+        self.controller = PlaySceneController(self.room_manager, self.setup_navigetion)
 
         # イベントマネージャー
         self.event_manager = EventManager(self.screen, root=self.root, player=self.player_status, girl=self.girl_status, game_state=self.game_state, flags=self.flags,
@@ -172,6 +173,10 @@ class MainPlayScene(BaseScene):
  
         elif action == "next_scenario":
             self.event_manager.render_manager.close_command_menu()
+            # 何故かコマンドメニューがfocus_managerに残ってしまうことがあるため、コマンドボタンを全て削除するようにする。
+            for element in self.focus_manager.elements:
+                if isinstance(element, CommandButton):
+                    self.focus_manager.elements.remove(element)
             self.scenario_manager.start_scenario(result["next"])
 
         elif action == "decide":

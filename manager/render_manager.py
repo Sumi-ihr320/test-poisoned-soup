@@ -183,6 +183,7 @@ class RenderManager:
         if self.command_menu:
             self.command_menu.unregister_all(self.focus_manager)
             self.command_menu = None
+            self.command_menu_rect = None
 
     # テキスト描画領域にテキストをセットする
     def set_text(self, text):
@@ -225,25 +226,6 @@ class RenderManager:
             if self.girl_image.collidepoint(pos):
                 pass
         pass
-
-    # コマンドメニューのマウスオーバー
-    def handle_mouse_hover(self, pos):
-        if self.command_menu:
-            self.command_menu.handle_mouse_hover(pos)
-
-    # コマンドメニューがクリックされた際に実行
-    def handle_command_click(self, pos):
-        if self.command_menu:
-            next_scenario = self.command_menu.handle_click(pos)
-            if next_scenario:
-                if self.next_scenario_cb:
-                    self.next_scenario_cb(next_scenario)
-            
-            self.command_menu = None    # コマンドメニューを閉じる
-
-    def handle_click(self, pos):
-        if self.text_frame_panel.handle_click(pos):
-            return
 
     def register_all(self, focus_manager: FocusManager):
         self.text_frame_panel.register_all(focus_manager)
