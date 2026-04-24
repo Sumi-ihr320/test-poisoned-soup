@@ -1,6 +1,7 @@
+from typing import Optional, Sequence, Tuple, Callable
+
 import pygame
 from pygame import Rect
-from typing import Optional, Sequence, Tuple, Callable
 
 from constans import FONT_PATH, SMALL_SIZ
 from utils import get_scales, setting_font, get_room_rect
@@ -238,6 +239,18 @@ class RenderManager:
         self.command_menu.unregister_all(focus_manager) if self.command_menu else None
         if self.girl_image in focus_manager.elements:
             focus_manager.elements.remove(self.girl_image)
+
+    def relayout(self, screen, parent=None):
+        self.screen = screen
+        self.screen_size = screen.get_size()
+        self.text_frame_panel.relayout(screen, parent)
+        self.log_view.relayout(screen, parent)
+        if self.command_menu:
+            self.command_menu.relayout(screen, parent)
+        if self.girl_image:
+            self.girl_image.relayout(screen, parent)
+        if self.item_image:
+            self.item_image.relayout(screen, parent)
 
     # テキストを表示する
     def draw_text(self, text):

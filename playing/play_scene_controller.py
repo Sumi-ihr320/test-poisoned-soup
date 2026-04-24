@@ -25,7 +25,7 @@ class PlaySceneController:
         self.on_setup_navigation_callback()
         self.scenario_manager.start_scenario(room_id)
         
-    # 部屋の再作成をする（コールバック関数としても使う)
+    # 部屋の再作成をする
     def on_room_refresh_requested(self):
         self.room_manager.create_room()
 

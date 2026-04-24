@@ -85,5 +85,10 @@ class RoomManager:
     def handle_click(self, pos):
         self.room.handle_click(pos)
 
+    def relayout(self, screen, frame_rect):
+        self.screen = screen
+        self.frame_rect = frame_rect
+        self.create_room()
+
     def draw(self):
         self.room.draw()            # 部屋の表示

@@ -135,7 +135,7 @@ class Room:
             },
             "north":{
                 "items":[
-                    ["UnderSinkStorage", "north", "", 290, 204],
+                    ["UnderSinkStorage", "north", "", 290, 190],
                     ["Cooktop", "north", "", 186, 179],
                     ["Sink", "north", "", 441, 168],
                     ["TopSinkStorage", "north", "", 291, 47],

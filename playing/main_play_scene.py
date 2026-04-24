@@ -17,6 +17,7 @@ from playing.room_manager import RoomManager
 from playing.play_scene_controller import PlaySceneController
 from manager.scenario_manager import ScenarioManager
 from manager.event_manager import EventManager
+from manager.event_callbacks import EventCallbacks
 
 # プレイ画面
 class MainPlayScene(BaseScene):
@@ -45,12 +46,15 @@ class MainPlayScene(BaseScene):
         self.controller = PlaySceneController(self.room_manager, self.setup_navigetion)
 
         # イベントマネージャー
+        callbacks = EventCallbacks(
+            on_scenario_start=self.controller.on_scenario_start_requested,
+            on_room_transition=self.controller.on_room_transition_requested,
+            on_room_refresh=self.controller.on_room_refresh_requested,
+            on_scene_state_change=self.on_scene_state_change_requested
+        )
         self.event_manager = EventManager(self.screen, root=self.root, player=self.player_status, girl=self.girl_status, game_state=self.game_state, flags=self.flags,
                                           text_frame_panel=self.text_frame_panel, log_view=self.log_view, focus_manager=self.focus_manager,
-                                          on_scenario_start_callback=self.controller.on_scenario_start_requested, 
-                                          on_room_transition_callback=self.controller.on_room_transition_requested, 
-                                          on_room_refresh_callback=self.controller.on_room_refresh_requested, 
-                                          on_scene_state_change_callback=self.on_scene_state_change_requested)
+                                          callbacks=callbacks)
         
         # シナリオマネージャー
         self.scenario_manager = ScenarioManager(self.screen, event_manager=self.event_manager, scenario_id=room_id, auto_start=False)
@@ -249,6 +253,17 @@ class MainPlayScene(BaseScene):
         self.log_view.unregister_all(self.focus_manager)
         self.scenario_manager.unregister_all(self.focus_manager)
         self.navigation.unregister_all(self.focus_manager) 
+
+    def relayout(self, screen):
+        super().relayout(screen)
+        self.text_frame_panel.relayout(screen)
+        self.scenario_manager.relayout(screen)
+        frame_rect = self.text_frame_panel.rect
+        self.room_manager.relayout(screen, frame_rect)
+        self.navigation.relayout(screen, self.room_manager.room.surface_rect)
+        self.log_view.relayout(screen)
+        self.unregister_all()
+        self.register_all()
 
     # 表示
     def draw(self):

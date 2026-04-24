@@ -131,18 +131,19 @@ class SettingScene(BaseScene):
 
     # データを設定する
     def set_data(self):
-        if self.select_size == "フルスクリーン":
+        select_size = self.size_pulldown.selected_item 
+        if select_size == "フルスクリーン":
             if not self.is_fullscreen():
                 screen_size = self.screen.get_size()
                 pygame.display.set_mode(screen_size, pygame.FULLSCREEN)
                 self.setting_manager.set("fullscreen", True)
         else:
-            screen_size = SIZE_MAP.get(self.select_size, (800, 600))
+            screen_size = SIZE_MAP.get(select_size, (800, 600))
             if self.fullscreen or screen_size != self.screen.get_size():
                 pygame.display.set_mode(screen_size)
                 self.setting_manager.set("fullscreen", False)
                 self.setting_manager.set("resolution", list(screen_size))
-                self.setting_manager.set("str_resolution", self.select_size)
+                self.setting_manager.set("str_resolution", select_size)
 
     def register_all(self):
         self.focus_manager.register(self.size_pulldown)
@@ -159,13 +160,7 @@ class SettingScene(BaseScene):
     def handle_mouse_hover(self):
         # マウスオーバーで枠を表示するよ
         pos = pygame.mouse.get_pos()
-
-        if self.is_pulldown_open:
-            self.size_pulldown.handle_mouse_hover(pos, self.is_pulldown_open)
-        
-        if self.size_pulldown.box.collidepoint(pos):
-            #hovering = True
-            pygame.draw.rect(self.screen, BLACK, self.size_pulldown.box.rect, 2)
+        self.size_pulldown.handle_mouse_hover(pos)
 
         for button in self.button_list:
             button.handle_mouse_hover(pos)
@@ -175,18 +170,8 @@ class SettingScene(BaseScene):
             # 左マウスクリック時
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 # プルダウンのクリック処理
-                if self.size_pulldown.collidepoint(event.pos):
-                    sound_manager.play("クリック")
-                    self.is_pulldown_open = not self.is_pulldown_open
-                
-                # プルダウンが開いている時
-                if self.is_pulldown_open:
-                    self.select_size = self.size_pulldown.handle_click(event.pos, self.is_pulldown_open)
-                    if self.select_size:
-                        sound_manager.play("クリック")
-                        self.size_pulldown.update_label(self.select_size)
-                        self.is_pulldown_open = False
-
+                if self.size_pulldown.handle_click(event.pos):
+                    return "setting", self.setting_manager
                 if self.close.handle_click(event.pos):
                     return self.before_event, self.setting_manager
                 elif self.set.handle_click(event.pos):
@@ -220,7 +205,7 @@ class SettingScene(BaseScene):
             button.draw()
 
         # プルダウンを描画
-        self.size_pulldown.draw(self.is_pulldown_open)
+        self.size_pulldown.draw()
 
     def update(self):
         self.draw()

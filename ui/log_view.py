@@ -158,7 +158,7 @@ class LogView:
         self._entry_font()
         self.cache.clear()
         self.rebuild_all()
-        self.close_image.relayout()
+        self.close_image.relayout(screen)
 
     def draw(self):
         if not self.is_open:

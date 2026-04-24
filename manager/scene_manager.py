@@ -84,7 +84,7 @@ class SceneManager:
                 self.event_map[event_name].manager = self.setting_manager
             
             # 表示位置更新
-            if event_name in ["title", "setting", "charasheet"]:
+            if event_name in ["title", "setting", "opening", "charasheet", "play", "ending"]:
                 # スクリーンサイズに変更があった場合は更新
                 if self.event_map[event_name].screen_size != self.screen.get_size():
                     self.event_map[event_name].relayout(self.screen)

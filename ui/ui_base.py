@@ -116,7 +116,7 @@ class UIElement:
         self.screen = screen
         self.screen_size = screen.get_size()
         self.parent = parent
-        self.parent_surface = parent.surface if parent is not None else screen
+        self.parent_surface = parent.surface if parent is not None and hasattr(parent, "surface") else screen
 
 # テキスト表示クラス
 class TextBase:

@@ -1,8 +1,9 @@
 from constans import SCENARIO_FILES
 from utils import load_and_normalize_json
+from manager.event_manager import EventManager
 
 class ScenarioManager:
-    def __init__(self, screen, event_manager, scenario_id, auto_start=True):
+    def __init__(self, screen, event_manager: EventManager, scenario_id: str, auto_start: bool=True):
         self.screen = screen
 
         self.event_manager = event_manager
@@ -135,6 +136,10 @@ class ScenarioManager:
 
     def unregister_all(self, focus_manager):
         self.event_manager.unregister_all(focus_manager)
+
+    def relayout(self, screen):
+        self.screen = screen
+        self.event_manager.relayout(screen)
 
     # 現在のステップの描画をイベントマネージャーに依頼
     def draw(self):

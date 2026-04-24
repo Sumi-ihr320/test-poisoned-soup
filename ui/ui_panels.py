@@ -157,6 +157,10 @@ class MenuBar(UIContainer):
         if 0 < idx < len(self.children):
             self.children[idx].set_enabled(enabled)
 
+    def relayout(self, screen, frame_rect, parent=None):
+        self.frame_rect = frame_rect
+        return super().relayout(screen, parent)
+
 # テキストフレーム本体
 class TextFramePanel(UIContainer):
     PADDING = 10
@@ -211,7 +215,8 @@ class TextFramePanel(UIContainer):
 
     def relayout(self, screen, parent=None):
         super().relayout(screen, parent)
-        self.menu_bar.relayout(screen, self)
+        self.rect = self.calc_frame_rect()
+        self.menu_bar.relayout(screen, self.rect, self)
         self.text_label.relayout(screen, self.rect, self)
         self.next_label.relayout(screen, self)
 

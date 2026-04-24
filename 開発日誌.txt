@@ -869,3 +869,6 @@
 	何故かコマンドメニューがfocus_managerに残ってしまうことがあるため、
 	コマンドを閉じる設定に追加でfocus登録されているコマンドボタンを全て削除するようにした。
 
+2026/4/24
+	event_callbacks.pyを作成
+	setting_sceneのpulldown周辺の修正、各sceneのrelayoutの未記述等の修正

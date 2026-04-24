@@ -59,10 +59,6 @@ class UIContainer:
         self.screen = screen
         self.screen_size = screen.get_size()
         self.parent = parent
-        self.parent_surface = parent.surface if parent else screen
+        self.parent_surface = parent.surface if parent and hasattr(parent, "surface") else screen
         for c in self.children:
             c.relayout(screen, parent)
-    
-        
-                    
-        

@@ -114,7 +114,7 @@ def parse_color_tags(text: str, default_color: Tuple[int, int, int]=WHITE) -> Li
 
 # parentを確認してオフセットを取得する
 def parent_check(parent):
-    if parent is not None:
+    if parent is not None and hasattr(parent, "get_global_offset"):
         ox, oy = parent.get_global_offset()
         return ox, oy
     return 0, 0

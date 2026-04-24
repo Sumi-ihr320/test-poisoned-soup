@@ -1,7 +1,6 @@
-import re
-from typing import List, Dict, Tuple, Any, Optional, Callable
+from typing import Dict, Tuple, Any, Optional
 
-from constans import SKILL_DATA_PATH, JSON_FOLDER, ITEM_LIST, State
+from constans import SKILL_DATA_PATH, JSON_FOLDER, State
 from utils import load_json
 from ui.ui_cache import ImageCache
 from ui.ui_panels import TextFramePanel
@@ -9,6 +8,7 @@ from ui.ui_command import Command
 from ui.log_view import LogView
 from input.focus_manager import FocusManager
 from .render_manager import RenderManager
+from .event_callbacks import EventCallbacks
 from .dice_service import DiceService
 from .event_processors.dice_processor import DiceProcessor
 from .event_processors.damage_processor import DamageProcessor
@@ -20,10 +20,7 @@ from .event_processors.action_processor import ActionProcessor
 class EventManager:
     def __init__(self, screen, root, player=None, girl=None, game_state=None, flags=None, 
                  text_frame_panel: Optional[TextFramePanel]=None, log_view: Optional[LogView]=None, focus_manager: Optional[FocusManager]=None,
-                 on_scenario_start_callback: Optional[Callable]=None, 
-                 on_room_transition_callback: Optional[Callable]=None, 
-                 on_room_refresh_callback: Optional[Callable]=None, 
-                 on_scene_state_change_callback: Optional[Callable]=None):
+                 callbacks: Optional[EventCallbacks]=None):
         self.screen = screen
         self.screen_size = self.screen.get_size()
         self.root = root
@@ -35,10 +32,7 @@ class EventManager:
         self.skill_list = load_json(SKILL_DATA_PATH, JSON_FOLDER)
 
         # コールバック関数
-        self.on_scenario_start_callback = on_scenario_start_callback
-        self.on_room_transition_callback = on_room_transition_callback
-        self.on_room_refresh_callback = on_room_refresh_callback
-        self.on_scene_state_callback = on_scene_state_change_callback
+        self.callbacks = callbacks if callbacks else EventCallbacks()
 
         # 表示関連
         self.image_cache = ImageCache()
@@ -60,7 +54,7 @@ class EventManager:
         self.conditional_processor = ConditionalProcessor(self.flags, self.game_state, self.to_callback_next_scenario)
         self.status_effect_processor = StatusEffectProcessor(self.dice_service, self.take_damage)
         self.display_processor = DisplayProcessor(self.render_manager)
-        self.action_processor = ActionProcessor(self.player, self.girl, self.flags, self.on_room_refresh_callback, self.move_to_room)
+        self.action_processor = ActionProcessor(self.player, self.girl, self.flags, self.callbacks.on_room_refresh, self.move_to_room)
 
         self.pending_result_display = False # 結果表示待ちフラグ
         self.pending_dice_check = None      # 分岐情報
@@ -314,23 +308,23 @@ class EventManager:
 
     # コールバック関数に次のシナリオ名を渡す
     def to_callback_next_scenario(self, next_scenario: str):
-        self.on_scenario_start_callback(next_scenario)
+        self.callbacks.on_scenario_start(next_scenario)
 
     # 部屋移動イベント
     def move_to_room(self, room_id: str):
         self.game_state.time -= 2
         self.render_manager.hidden_item_image()
         self.render_manager.hidden_girl_image()
-        self.on_room_transition_callback(room_id)
+        self.callbacks.on_room_transition(room_id)
 
     # 部屋の状態変化による再描画
     def on_room_refresh_requested(self):
         self.render_manager.hidden_item_image()
-        self.on_room_refresh_callback()
+        self.callbacks.on_room_refresh()
         
     # エンディングに移行するためにコールバック関数にステータスを渡す
     def set_ending(self):
-        self.on_scene_state_callback(State.CLOSE)
+        self.callbacks.on_scene_state_change(State.CLOSE)
 
     # 少女が一緒にいるかどうかのフラグチェック
     def girl_fellow_check(self):
@@ -365,11 +359,6 @@ class EventManager:
 
         return player_flag, girl_flag
 
-    # ダメージ計算
-    def damage_calculator(self, dice_text: str) -> int:
-        result = self.dice_service.roll(dice_text)
-        return result
-
     # ダメージを受けるイベント
     def take_damage(self, character, status: str, damage: int|str) -> Optional[str]:
         if status == "SAN":
@@ -378,8 +367,6 @@ class EventManager:
             state = character.take_damage("event", int(damage))
 
         return state
-        #if state:
-        #    self.to_callback_next_scenario(state)
 
     # イベントを処理（未完成※使用するか不明）
     def handle_event(self, event_name: str, event_data: Dict[str, Any]):
@@ -418,6 +405,11 @@ class EventManager:
     # フォーカス削除
     def unregister_all(self, focus_manager):
         self.render_manager.unregister_all(focus_manager)
+
+    def relayout(self, screen):
+        self.screen = screen
+        self.screen_size = screen.get_size()
+        self.render_manager.relayout(screen)
 
     # 表示する
     def draw(self):
