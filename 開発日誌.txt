@@ -872,3 +872,6 @@
 2026/4/24
 	event_callbacks.pyを作成
 	setting_sceneのpulldown周辺の修正、各sceneのrelayoutの未記述等の修正
+
+2026/4/29
+	シナリオの記述方法見直し、Soup.jsonのみ
