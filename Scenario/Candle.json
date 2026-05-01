@@ -4,57 +4,55 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "candle_goes_out",
-              "value": 1
-            }
-          ],
+          "if": {"candle_goes_out": 1},
           "next": "Candle_goes_out_time1"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "candle_goes_out",
-              "value": 2
-            }
-          ],
+          "if": {"candle_goes_out": 2},
           "next": "Candle_goes_out_time2"
         },
         {
-          "requirements": [
-            {
-              "category": "game_state",
-              "flag": "time",
-              "value": 45,
-              "operator": "greater_than"
-            }
-          ],
+          "if": {"time": {">": 45}},
           "next": "Candle_time1"
         },
         {
-          "requirements": [
-            {
-              "category": "game_state",
-              "flag": "time",
-              "value": 15,
-              "operator":"greater_than"
-            }
-          ],
+          "if": {"time": {">": 15}},
           "next": "Candle_time2"
         },
         {
-          "requirements": [
-            {
-              "category": "game_state",
-              "flag": "time",
-              "value": 0,
-              "operator": "greater_than"
-            }
-          ],
+          "if": {"time": {">": 0}},
           "next": "Candle_time3"
+        }
+      ]
+    }
+  ],
+  "Cabdle_goes_out": [
+    {
+      "type": "image_by_conditional",
+      "conditions": [
+        {
+          "if": {"candle_goes_out": 1},
+          "image": "Candle1_goes_out.png",
+          "item": "candle_goes_out1"
+        },
+        {
+          "if": {"candle_goes_out": 2},
+          "image": "Candle2_goes_out.png",
+          "item": "candle_goes_out2"
+        }
+      ],
+      "text": "火が消えたろうそくがある。"
+    },
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "目星",
+          "next": "Candle_goes_out_objective"
+        },
+        {
+          "text": "持っていく",
+          "next": "Candle_goes_out_take_it"
         }
       ]
     }

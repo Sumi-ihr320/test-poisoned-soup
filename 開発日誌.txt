@@ -875,3 +875,6 @@
 
 2026/4/29
 	シナリオの記述方法見直し、Soup.jsonのみ
+
+2026/5/1
+	シナリオを修正、Book.json、BlackLiquid.json、BookShelf.json、Candle.json(途中)

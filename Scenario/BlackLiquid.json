@@ -56,6 +56,12 @@
       "progression": "click"
     },
     {
+      "type": "next_step", 
+      "next": "Black_liquid_to_hand_interaction"
+    }
+  ],
+  "Black_liquid_to_hand_interaction": [
+    {
       "type": "interaction",
       "interactions": [
         {
@@ -68,7 +74,8 @@
         },
         {
           "text": "調べる",
-          "next": "Black_liquid_check_up"
+          "next": "Black_liquid_check_up",
+          "show_if": {"black_liquid_know": false}
         },
         {
           "text": "そのままにする",
@@ -176,21 +183,8 @@
       "progression": "click"
     },
     {
-      "type": "interaction",
-      "interactions": [
-        {
-          "text": "拭う",
-          "next": "Black_liquid_wipe"
-        },
-        {
-          "text": "舐める",
-          "next": "Black_liquid_lick_question"
-        },
-        {
-          "text": "そのままにする",
-          "next": "Black_liquid_nothing"
-        }
-      ]
+      "type": "next_step",
+      "next": "Black_liquid_to_hand_interaction"
     }
   ],
   "Black_liquid_check_failure": [
@@ -208,23 +202,11 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "girl",
-              "flag": "fellow",
-              "value": true
-            }
-          ],
+          "if": {"fellow": true},
           "next": "Black_liquid_lick_question_with_girl"
         },
         {
-          "requirements": [
-            {
-              "category": "girl",
-              "flag": "fellow",
-              "value": false
-            }
-          ],
+          "if": {"fellow": false},
           "next": "Black_liquid_lick_question_only_me"
         }
       ]

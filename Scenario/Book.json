@@ -5,71 +5,21 @@
       "image": "Book.png"
     },
     {
-      "type": "conditional",
+      "type": "text_by_conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "black_liquid_to_hand",
-              "value": true
-            }
-          ],
-          "next": "Book_liquid_to_hand"
+          "if": {"black_liquid_to_hand": true},
+          "text": "『スープの夢について』と書かれた本だ。"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "black_liquid_know",
-              "value": true
-            }
-          ],
-          "next": "Book_liquid_is_poison"
+          "if": {"black_liquid_know": true},
+          "text": "『スープの夢について』と書かれた本だ。\n表面には猛毒が付いていて、\n触ると手に付いてしまうだろう。"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "black_liquid_know",
-              "value": false
-            }
-          ],
-          "next": "Book_liquid_not_know"
+          "if": {"black_liquid_know": false},
+          "text": "『スープの夢について』と書かれた本だ。\n表面には黒い液体が付いていて、\n触ると手に付いてしまうだろう。"
         }
-      ]
-    }
-  ],
-  "Book_liquid_to_hand": [
-    {
-      "type": "text",
-      "text": "『スープの夢について』と書かれた本だ。",
-      "progression": "click"
-    },
-    {
-      "type": "next_step",
-      "next": "Book_interaction"
-    }
-  ],
-  "Book_liquid_not_know": [
-    {
-      "type": "text",
-      "text": "『スープの夢について』と書かれた本だ。\n表面には黒い液体が付いていて、\n触ると手に付いてしまうだろう。",
-      "progression": "click"
-    },
-    {
-      "type": "next_step",
-      "next": "Book_interaction"
-    }
-  ],
-  "Book_liquid_is_poison": [
-    {
-      "type": "text",
-      "text": "『スープの夢について』と書かれた本だ。\n表面には猛毒が付いていて、\n触ると手に付いてしまうだろう。",
-      "progression": "click"
-    },
-    {
-      "type": "next_step",
+      ],
       "next": "Book_interaction"
     }
   ],
@@ -146,23 +96,11 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "black_liquid_know",
-              "value": true
-            }
-          ],
+          "if": {"black_liquid_know": true},
           "next": "Book_is_poison"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "black_liquid_know",
-              "value": false
-            }
-          ],
+          "if": {"black_liquid_know": false},
           "next": "Book_not_know"
         }
       ]
@@ -231,8 +169,6 @@
       "skill": "薬学",
       "dice": "1d100",
       "progression": "click",
-      "success": "Black_liquid_check_success",
-      "failure": "Black_liquid_check_failure",
       "on_success": {
           "type": "next_step",
           "next": "Black_liquid_check_success"
@@ -317,52 +253,6 @@
       "progression": "click"
     },
     {
-      "type": "conditional",
-      "conditions": [
-        {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "black_liquid_know",
-              "value": true
-            }
-          ],
-          "next": "Book_black_liquid_to_hand_know"
-        },
-        {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "black_liquid_know",
-              "value": false
-            }
-          ],
-          "next": "Book_black_liquid_to_hand_unknow"
-        }
-      ]
-    }
-  ],
-  "Book_black_liquid_to_hand_know": [
-    {
-      "type": "interaction",
-      "interactions": [
-        {
-          "text": "拭う",
-          "next": "Black_liquid_wipe"
-        },
-        {
-          "text": "舐める",
-          "next": "Black_liquid_lick"
-        },
-        {
-          "text": "そのままにする",
-          "next": "Black_liquid_nothing"
-        }
-      ]
-    }
-  ],
-  "Book_black_liquid_to_hand_unknow": [
-    {
       "type": "interaction",
       "interactions": [
         {
@@ -375,7 +265,8 @@
         },
         {
           "text": "調べる",
-          "next": "Black_liquid_check_up"
+          "next": "Black_liquid_check_up",
+          "show_if": {"black_liquid_know": false}
         },
         {
           "text": "そのままにする",
