@@ -29,23 +29,11 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "center_memo_objective",
-              "value": true
-            }
-          ],
+          "if": {"center_memo_objective": true},
           "next": "centerMemo_obj_true"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "center_memo_objective",
-              "value": false
-            }
-          ],
+          "if": {"center_memo_objective": false},
           "next": "centerMemo_obj_false"
         }
       ]
@@ -101,9 +89,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "center_memo_objective",
-      "value": true
+      "flag": {"center_memo_objective": true}
     },
     {
       "type": "text",
@@ -137,9 +123,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "soup_know",
-      "value": true
+      "flag": {"soup_know": true}
     },
     {
       "type": "text",

@@ -6,7 +6,8 @@
       "progression": "click"
     },
     {
-      "type": "text_by_conditional",
+      "type": "conditional",
+      "conditional_type": "text",
       "conditions": [
         {
           "if": {"bookshelf_objective": true},
@@ -105,9 +106,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "bookshelf_objective",
-      "value": true
+      "flag": {"bookshelf_objective": true}
     },
     {
       "type": "text",
@@ -200,9 +199,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "book_found",
-      "value": true
+      "flag": {"book_found": true}
     },
     {
       "type": "next_step",

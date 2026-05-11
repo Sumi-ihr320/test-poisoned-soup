@@ -37,8 +37,8 @@ class Flags:
             "dice_check":False,
             "carry":False,
             "like_ability":0,
-            "pot_looked":False,
-            "hunting_horrors_look":False,
+            "pot_looked_g":False,
+            "hunting_horrors_look_g":False,
             "faint":0,
             "alive":True
         }
@@ -121,20 +121,32 @@ class Flags:
         }
 
         self.ending = {
-            1:False,
-            2:False,
-            3:False,
-            4:False,
-            5:False
+            "ending1": False,
+            "ending2": False,
+            "ending3": False,
+            "ending4": False,
+            "ending5": False
         }
 
-    def update_flag(self, categry, key, value):
-        if categry in self.__dict__ and isinstance(self.__dict__[categry], dict):
-            self.__dict__[categry][key] = value
+    def update_flag(self, category, key, value):
+        if category in self.__dict__ and isinstance(self.__dict__[category], dict):
+            self.__dict__[category][key] = value
+
+    def update_flag_key_only(self, key, value):
+        for category in self.__dict__.values():
+            if isinstance(category, dict) and key in category:
+                category[key] = value
+                break
         
-    def get_flag(self, categry, key):
-        if categry in self.__dict__:
-            return self.__dict__[categry].get(key, None)
+    def get_flag(self, category, key):
+        if category in self.__dict__:
+            return self.__dict__[category].get(key, None)
+        return None
+
+    def get_flag_key_only(self, key):
+        for category in self.__dict__.values():
+            if isinstance(category, dict) and key in category:
+                return category[key]
         return None
 
     def to_dict(self):

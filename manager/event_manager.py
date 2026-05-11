@@ -263,13 +263,40 @@ class EventManager:
     # フラグチェックを処理
     def handle_conditional(self, step: Dict[str, Any]):
         conditions = step["conditions"]
-        self.conditional_processor.process_conditional(conditions)
+        result = self.conditional_processor.process_conditional(conditions, step.get("conditional_type", None))
+        if result is not None:
+            if "text" in result:
+                self.pending_result_display = True
+                self.current_display_text = result["text"]
+
+            if "image" in result:
+                self.render_manager.show_item_image(result["image"])
+
+            if "girl_image" in result:
+                self.render_manager.show_girl_image(result["state"], result["position"])
+
+            if "item" in result:
+                self.action_processor.process_action({"action": "get_item", "item": result["item"], "target": "player"})
+
+            if "flag" in result:
+                self.action_processor.process_action({"action": "set_flag", "flag": result["flag"]})
+
+            if "next" is not None:
+                self.to_callback_next_scenario(result["next"])
+
+        if step.get("next", None):
+            self.to_callback_next_scenario(step["next"])
 
     # コマンドメニューを作成
     def handle_interaction(self, step: Dict[str, Any]):
         commands = []
         for cmd in step["interactions"]:
-            commands.append(Command(cmd["text"], cmd["next"]))
+            if "show_if" in cmd:
+                flag = cmd["show_if"]
+                if all(self.conditional_processor.check_flag(key, value) for key, value in flag.items()):
+                    commands.append(Command(cmd["text"], cmd["next"]))
+            else:
+                commands.append(Command(cmd["text"], cmd["next"]))
         target = step.get("target", None)
         self.render_manager.set_command_menu(commands, target)
 

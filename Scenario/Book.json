@@ -183,9 +183,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "black_liquid_know",
-      "value": true
+      "flag": {"black_liquid_know": true}
     },
     {
       "type": "text",
@@ -220,9 +218,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "book_get",
-      "value": true
+      "flag": {"book_get": true}
     },
     {
       "type": "text",
@@ -243,9 +239,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "black_liquid_to_hand",
-      "value": true
+      "flag": {"black_liquid_to_hand": true}
     },
     {
       "type": "text",

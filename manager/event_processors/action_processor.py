@@ -39,12 +39,18 @@ class ActionProcessor:
 
         # フラグセット
         elif action == "set_flag":
-
-            # フラグをセットする
-            category = step["category"]
+            # フラグをセットする            
+            category = step.get("category", None)
+            value = step.get("value", None)
             flag = step["flag"]
-            value = step["value"]
-            self.set_flag(category, flag, value)
+            if category and value is not None:
+                self.set_flag(category, flag, value)
+            else:
+                if isinstance(flag, dict):
+                    for key, val in flag.items():
+                        self.set_flag_key_only(key, val)
+                else:
+                    self.set_flag_key_only(flag, value)
 
             # もしroom_flag_listのフラグに該当していたら部屋情報を更新する
             for key_flag in self.room_flag_list:
@@ -66,7 +72,7 @@ class ActionProcessor:
             character = self.girl if target == "girl" else self.player
             character.remove_item(item)
 
-    # フラグをセットするイベント
+    # フラグをセットする
     def set_flag(self, category: str, flag: str, value: Any):
         if type(value) == str:
             obj = re.match(r"\+|-", value)
@@ -79,3 +85,17 @@ class ActionProcessor:
                     value = flag_value - int_value
 
         self.flags.update_flag(category, flag, value)
+
+    # キーのみでフラグをセットする
+    def set_flag_key_only(self, key: str, value: Any):
+        if isinstance(value, dict):
+            sign, val = list(value.items())[0]
+            if sign in ["+", "-"]:
+                int_value = int(val)
+                current_value = self.flags.get_flag_key_only(key)
+                if sign == "+":
+                    value = current_value + int_value
+                else:
+                    value = current_value - int_value
+        
+        self.flags.update_flag_key_only(key, value)

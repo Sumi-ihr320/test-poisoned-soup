@@ -9,136 +9,41 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "rooms",
-              "flag": "east_room_visible",
-              "value": false
-            },
-            {
-              "category": "rooms",
-              "flag": "east_room_listen",
-              "value": false
-            },
-            {
-              "category": "girl",
-              "flag": "meet",
-              "value": false
-            }
-          ],
-          "next": "east-room_first"
-        },
-        {
-          "requirements": [
-            {
-              "category": "rooms",
-              "flag": "east_room_visible",
-              "value": false
-            },
-            {
-              "category": "girl",
-              "flag": "meet",
-              "value": true
-            }
-          ],
-          "next": "east-room_girl_meet_after"
-        },
-        {
-          "requirements": [
-            {
-              "category": "rooms",
-              "flag": "east_room_visible",
-              "value": true
-            },
-            {
-              "category": "rooms",
-              "flag": "east_room_listen",
-              "value": false
-            },
-            {
-              "category": "girl",
-              "flag": "meet",
-              "value": false
-            }
-          ],
-          "next": "east-room_visible_not_meet"
-        },
-        {
-          "requirements": [
-            {
-              "category": "rooms",
-              "flag": "east_room_visible",
-              "value": true
-            },
-            {
-              "category": "rooms",
-              "flag": "east_room_listen",
-              "value": true
-            },
-            {
-              "category": "girl",
-              "flag": "meet",
-              "value": false
-            }
-          ],
+          "if": {
+            "east_room_visible": true,
+            "east_room_listen": true,
+            "meet": false
+          },
           "next": "east-room_visible_listen_not_meet"
         },
         {
-          "requirements": [
-            {
-              "category": "girl",
-              "flag": "meet",
-              "value": true
-            },
-            {
-              "category": "girl",
-              "flag": "fellow",
-              "value": false
-            },
-            {
-              "category": "girl",
-              "flag": "room",
-              "value": "east"
-            }
-          ],
+          "if": {
+            "meet": true,
+            "fellow": false,
+            "room": "east"
+          },
           "next": "Girl_room_wait"
+        },
+        {
+          "if": "else",
+          "next": "east_room_interaction"
         }
       ]
     }
   ],
-  "east-room_first": [
+  "east-room_interaction": [
     {
       "type": "interaction",
       "interactions": [
         {
           "text": "聞き耳",
-          "next": "east-room_listen"
+          "next": "east-room_listen",
+          "show_if": {"east_room_listen": false}
         },
         {
           "text": "目星",
-          "next": "east-room_objective"
-        }
-      ]
-    }
-  ],
-  "east-room_girl_meet_after": [
-    {
-      "type": "interaction",
-      "interactions": [
-        {
-          "text": "目星",
-          "next": "east-room_objective"
-        }
-      ]
-    }
-  ],
-  "east-room_visible_not_meet": [
-    {
-      "type": "interaction",
-      "interactions": [
-        {
-          "text": "聞き耳",
-          "next": "east-room_listen"
+          "next": "east-room_objective",
+          "show_if": {"east_room_visible": false}
         }
       ]
     }
@@ -151,7 +56,7 @@
     },
     {
       "type": "next_step",
-      "next": "east-room_girl_no_meet_interaction"
+      "next": "east-room_footsteps_interaction"
     }
   ],
   "east-room_objective": [
@@ -192,21 +97,13 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "rooms",
-      "flag": "east_room_visible",
-      "value": true
+      "flag": {"east_room_visible": true}
     },
     {
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "girl",
-              "flag": "meet",
-              "value": false
-            }
-          ],
+          "if": {"meet": false},
           "next": "east-room_girl_no_meet"
         }
       ]
@@ -220,10 +117,10 @@
     },
     {
       "type": "next_step",
-      "next": "east-room_girl_no_meet_interaction"
+      "next": "east-room_footsteps_interaction"
     }
   ],
-  "east-room_girl_no_meet_interaction": [
+  "east-room_footsteps_interaction": [
     {
       "type": "interaction",
       "interactions": [
@@ -314,9 +211,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "rooms",
-      "flag": "east_room_listen",
-      "value": true
+      "flag": {"east_room_listen": true}
     },
     {
       "type": "sound",
@@ -416,13 +311,7 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "corpse_look",
-              "value": false
-            }
-          ],
+          "if": {"corpse_look": false},
           "next": "Corpse_first"
         }
       ]
@@ -432,9 +321,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "corpse_look",
-      "value": true
+      "flag": {"corpse_look": true}
     },
     {
       "type": "text",

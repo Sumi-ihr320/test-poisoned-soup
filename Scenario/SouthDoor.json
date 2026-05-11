@@ -13,23 +13,11 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "enemys",
-              "flag": "hunting_horrors_there",
-              "value": true
-            }
-          ],
+          "if": {"hunting_horrors_there": true},
           "next": "southDoor_enemy_there"
         },
         {
-          "requirements": [
-            {
-              "category": "enemys",
-              "flag": "hunting_horrors_there",
-              "value": false
-            }
-          ],
+          "if": {"hunting_horrors_there": false},
           "next": "southDoor_enemy_none"
         }
       ]
@@ -46,11 +34,11 @@
         },
         {
           "text": "聞き耳",
-          "next": "southDoor_enemy_none_listen"
+          "next": "Door_meaningless_listen"
         },
         {
           "text": "叩く",
-          "next": "southDoor_enemy_none_knock"
+          "next": "IronDoor_knock"
         },
         {
           "text": "開ける",
@@ -73,38 +61,6 @@
       "type": "text",
       "text": "部屋の中は薄暗くてよく見えない。",
       "progression": "click"
-    }
-  ],
-  "southDoor_enemy_none_listen": [
-    {
-      "type": "time_passage",
-      "value": 2
-    },
-    {
-      "type": "text",
-      "text": "何も聞こえなかった。",
-      "progression": "click"
-    },
-    {
-      "type": "image_hidden"
-    }
-  ],
-  "southDoor_enemy_none_knock": [
-    {
-      "type": "time_passage",
-      "value": 1
-    },
-    {
-      "type": "sound",
-      "name": "鉄の扉をノック"
-    },
-    {
-      "type": "text",
-      "text": "何の反応もない。",
-      "progression": "click"
-    },
-    {
-      "type": "image_hidden"
     }
   ],
   "southDoor_enemy_none_open": [
@@ -192,29 +148,17 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "enemys",
-              "flag": "hunting_horrors_look",
-              "value": false
-            }
-          ],
-          "next": "southDoor_look_window_only_first"
+          "if": {"hunting_horrors_look": false},
+          "next": "southDoor_look_window_first_player"
         },
         {
-          "requirements": [
-            {
-              "category": "enemys",
-              "flag": "hunting_horrors_look",
-              "value": true
-            }
-          ],
+          "if": {"hunting_horrors_look": true},
           "next": "southDoor_look_window_done"
         }
       ]
     }
   ],
-  "southDoor_look_window_only_first": [
+  "southDoor_look_window_first_player": [
     {
       "type": "text",
       "text": "この怪物を目撃したあなたは0/1d10のSANチェックだ。",
@@ -247,9 +191,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "enemys",
-      "flag": "hunting_horrors_look",
-      "value": true
+      "flag": {"hunting_horrors_look": true}
     },
     {
       "type": "image_hidden"
@@ -282,29 +224,17 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "girl",
-              "flag": "hunting_horrors_look",
-              "value": false
-            }
-          ],
-          "next": "southDoor_look_window_only_girl_first"
+          "if": {"hunting_horrors_look_g": false},
+          "next": "southDoor_look_window_first_girl"
         },
         {
-          "requirements": [
-            {
-              "category": "girl",
-              "flag": "hunting_horrors_look",
-              "value": true
-            }
-          ],
+          "if": {"hunting_horrors_look_g": true},
           "next": "southDoor_look_window_done"
         }
       ]
     }
   ],
-  "southDoor_look_window_only_girl_first": [
+  "southDoor_look_window_first_girl": [
     {
       "type": "text",
       "text": "恐ろしいものを目撃した少女は0/1d10のSANチェックだ。",
@@ -337,9 +267,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "girl",
-      "flag": "hunting_horrors_look",
-      "value": true
+      "flag": {"hunting_horrors_look_g": true}
     },
     {
       "type": "image_hidden"
@@ -368,69 +296,37 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "enemys",
-              "flag": "hunting_horrors_look",
-              "value": false
-            },
-            {
-              "category": "girl",
-              "flag": "hunting_horrors_look",
-              "value": false
-            }
-          ],
-          "next": "southDoor_look_window_with_girl_first"
+          "if": {
+            "hunting_horrors_look": false,
+            "hunting_horrors_look_g": false
+          },
+          "next": "southDoor_look_window_first_with_girl"
         },
         {
-          "requirements": [
-            {
-              "category": "enemys",
-              "flag": "hunting_horrors_look",
-              "value": false
-            },
-            {
-              "category": "girl",
-              "flag": "hunting_horrors_look",
-              "value": true
-            }
-          ],
-          "next": "southDoor_look_window_with_girl_player_first"
+          "if": {
+            "hunting_horrors_look": false,
+            "hunting_horrors_look_g": true
+          },
+          "next": "southDoor_look_window_first_player"
         },
         {
-          "requirements": [
-            {
-              "category": "enemys",
-              "flag": "hunting_horrors_look",
-              "value": true
-            },
-            {
-              "category": "girl",
-              "flag": "hunting_horrors_look",
-              "value": false
-            }
-          ],
-          "next": "southDoor_look_window_with_girl_girl_first"
+          "if": {
+            "hunting_horrors_look": true,
+            "hunting_horrors_look_g": false
+          },
+          "next": "southDoor_look_window_first_girl"
         },
         {
-          "requirements": [
-            {
-              "category": "enemys",
-              "flag": "hunting_horrors_look",
-              "value": true
-            },
-            {
-              "category": "girl",
-              "flag": "hunting_horrors_look",
-              "value": true
-            }
-          ],
+          "if": {
+            "hunting_horrors_look": true,
+            "hunting_horrors_look_g": true
+          },
           "next": "southDoor_look_window_done"
         }
       ]
     }
   ],
-  "southDoor_look_window_with_girl_first": [
+  "southDoor_look_window_first_with_girl": [
     {
       "type": "text",
       "text": "この怪物を目撃したあなたたちは0/1d10のSANチェックだ。",
@@ -461,94 +357,10 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "enemys",
-      "flag": "hunting_horrors_look",
-      "value": true
-    },
-    {
-      "type": "action",
-      "action": "set_flag",
-      "category": "girl",
-      "flag": "hunting_horrors_look",
-      "value": true
-    },
-    {
-      "type": "image_hidden"
-    }
-  ],
-  "southDoor_look_window_with_girl_player_first": [
-    {
-      "type": "text",
-      "text": "この怪物を初めて目撃したあなたは0/1d10のSANチェックだ。",
-      "progression": "click"
-    },
-    {
-      "type": "dice_check",
-      "check_type": "SANチェック",
-      "target": "player"
-    },
-    {
-      "type": "damage",
-      "target": "player",
-      "text": "おぞましい怪物を目撃してしまった",
-      "damage": {
-        "type": "branch",
-        "target": "SAN",
-        "success": {
-          "type": "fixed",
-          "value": 0
-        },
-        "failure": {
-          "type": "dice",
-          "spec": "1d10"
-        }
+      "flag": {
+        "hunting_horrors_look": true,
+        "hunting_horrors_look_g": true
       }
-    },
-    {
-      "type": "action",
-      "action": "set_flag",
-      "category": "enemys",
-      "flag": "hunting_horrors_look",
-      "value": true
-    },
-    {
-      "type": "image_hidden"
-    }
-  ],
-  "southDoor_look_window_with_girl_girl_first": [
-    {
-      "type": "text",
-      "text": "この怪物を初めて目撃した少女は0/1d10のSANチェックだ。",
-      "progression": "click"
-    },
-    {
-      "type": "dice_check",
-      "check_type": "SANチェック",
-      "target": "girl"
-    },
-    {
-      "type": "damage",
-      "target": "girl",
-      "text": "おぞましい怪物を目撃してしまった",
-      "damage": {
-        "type": "branch",
-        "target": "SAN",
-        "success": {
-          "type": "fixed",
-          "value": 0
-        },
-        "failure": {
-          "type": "dice",
-          "spec": "1d10"
-        }
-      }
-    },
-    {
-      "type": "action",
-      "action": "set_flag",
-      "category": "girl",
-      "flag": "hunting_horrors_look",
-      "value": true
     },
     {
       "type": "image_hidden"
@@ -612,9 +424,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "enemys",
-      "flag": "hunting_horrors_knock",
-      "value": true
+      "flag": {"hunting_horrors_knock": true}
     },
     {
       "type": "image_hidden"

@@ -14,9 +14,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "girl",
-      "flag": "meet",
-      "value": true
+      "flag": {"meet": true}
     }
   ],
   "Girl_room_wait": [
@@ -26,49 +24,19 @@
     },
     {
       "type": "conditional",
+      "conditional_type": "girl_image",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "girl",
-              "flag": "gun",
-              "value": true
-            }
-          ],
-          "next": "Girl_room_wait_have_gun"
+          "if": {"gun": true},
+          "state": "gun",
+          "position": "center"
         },
         {
-          "requirements": [
-            {
-              "category": "girl",
-              "flag": "gun",
-              "value": false
-            }
-          ],
-          "next": "Girl_room_wait_not_have_gun"
+          "if": {"gun": false},
+          "position": "center"
         }
-      ]
-    }
-  ],
-  "Girl_room_wait_have_gun": [
-    {
-      "type": "girl_display",
-      "state": "gun",
-      "position": "center"
-    },
-    {
-      "type": "next_step",
-      "next": "east-room_wait_girl_text"
-    }
-  ],
-  "Girl_room_wait_not_have_gun": [
-    {
-      "type": "girl_display",
-      "position": "center"
-    },
-    {
-      "type": "next_step",
-      "next": "east-room_wait_girl_text"
+      ],
+      "next": "Girl_room_wait_text"
     }
   ],
   "Girl_room_wait_text": [
@@ -161,9 +129,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "ending",
-      "flag": 1,
-      "value": true
+      "flag": {"ending1": true}
     },
     {
       "type": "ending",
@@ -200,7 +166,6 @@
     },
     {
       "type": "interaction",
-      "item": "Soup",
       "interactions": [
         {
           "text": "連れていく",
@@ -208,7 +173,7 @@
         },
         {
           "text": "置いていく",
-          "next": "Faint_var_girl_leave"
+          "next": "Faint_ver_girl_leave"
         }
       ]
     }
@@ -222,9 +187,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "girl",
-      "flag": "carry",
-      "value": true
+      "flag": {"carry": true}
     }
   ],
   "Faint_ver_girl_leave": [
@@ -236,9 +199,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "girl",
-      "flag": "fellow",
-      "value": false
+      "flag": {"fellow": false}
     }
   ],
   "Wake_up": [

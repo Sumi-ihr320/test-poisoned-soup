@@ -878,3 +878,10 @@
 
 2026/5/1
 	シナリオを修正、Book.json、BlackLiquid.json、BookShelf.json、Candle.json(途中)
+
+2026/5/7
+	シナリオ修正、Soup.json、Candle.json、CenterMemo.json、CenterRoom.json、Door.json
+	game_stateにkey_onlyの操作を追加
+	conditional_processerを修正、check_flagをkeyとvalueのみに修正、get_item_by_time、resolve_condition_resultを追加
+	action_processorのset_flagを修正
+	event_managerのhandle_conditionalとhandle_interactionを修正

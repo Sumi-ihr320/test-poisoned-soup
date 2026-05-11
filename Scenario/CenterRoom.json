@@ -4,23 +4,11 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "rooms",
-              "flag": "center_room_scenario",
-              "value": false
-            }
-          ],
+          "if": {"center_room_scenario": false},
           "next": "center-room_first"
         },
         {
-          "requirements": [
-            {
-              "category": "rooms",
-              "flag": "center_room_scenario",
-              "value": true
-            }
-          ],
+          "if": {"center_room_scenario": true},
           "next": "center-room_second"
         }
       ]
@@ -50,10 +38,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "rooms",
-      "flag": "center_room_scenario",
-      "value": true,
-      "progression": "auto"
+      "flag": {"center_room_scenario": true}
     }
   ],
   "center-room_second": [

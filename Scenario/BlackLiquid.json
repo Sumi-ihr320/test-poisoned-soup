@@ -46,9 +46,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "black_liquid_to_hand",
-      "value": true
+      "flag": {"black_liquid_to_hand": true}
     },
     {
       "type": "text",
@@ -93,9 +91,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "black_liquid_to_hand",
-      "value": false
+      "flag": {"black_liquid_to_hand": false}
     },
     {
       "type": "image_hidden"
@@ -173,9 +169,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "black_liquid_know",
-      "value": true
+      "flag": {"black_liquid_know": true}
     },
     {
       "type": "text",

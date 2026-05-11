@@ -4,33 +4,15 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "enemys",
-              "flag": "hunting_horrors_there",
-              "value": true
-            }
-          ],
+          "if": {"hunting_horrors_there": true},
           "next": "south-room_enemy_there"
         },
         {
-          "requirements": [
-            {
-              "category": "enemys",
-              "flag": "hunting_horrors_offered_sacrifice",
-              "value": true
-            }
-          ],
+          "if": {"hunting_horrors_offered_sacrifice": true},
           "next": "south-room_blood"
         },
         {
-          "requirements": [
-            {
-              "category": "enemys",
-              "flag": "hunting_horrors_there",
-              "value": false
-            }
-          ],
+          "if": {"hunting_horrors_there": false},
           "next": "south-room_none"
         }
       ]

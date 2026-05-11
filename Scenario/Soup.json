@@ -5,23 +5,24 @@
       "image": "Soup.png"
     },
     {
-      "type": "text_by_condition",
+      "type": "conditional",
+      "conditional_type": "text",
       "conditions":[
         {
           "if": {"soup_know": true},
           "texts":[
-            {"min_time": 45, "text": "人間の血のスープ。温かく湯気が立っている。\n鉄錆に似た悪臭がスープから漂ってくる…"},
-            {"min_time": 30, "text": "人間の血のスープ。ほのかに温かい。\n鉄錆に似た悪臭がスープから漂ってくる…"},
-            {"min_time": 15, "text": "人間の血のスープ。冷めてきているようだ。\n鉄錆に似た悪臭がスープから漂ってくる…"},
+            {"min_time": 450, "text": "人間の血のスープ。温かく湯気が立っている。\n鉄錆に似た悪臭がスープから漂ってくる…"},
+            {"min_time": 300, "text": "人間の血のスープ。ほのかに温かい。\n鉄錆に似た悪臭がスープから漂ってくる…"},
+            {"min_time": 150, "text": "人間の血のスープ。冷めてきているようだ。\n鉄錆に似た悪臭がスープから漂ってくる…"},
             {"min_time": 0, "text": "人間の血のスープ。すっかり冷たくなっている。\n鉄錆に似た悪臭がスープから漂ってくる…"}
           ]
         },
         {
           "if": {"soup_know": false},
           "texts":[
-            {"min_time": 45, "text": "赤い無臭のスープ。温かく湯気が立っている。"},
-            {"min_time": 30, "text": "赤い無臭のスープ。ほのかに温かい。"},
-            {"min_time": 15, "text": "赤い無臭のスープ。冷めてきているようだ。"},
+            {"min_time": 450, "text": "赤い無臭のスープ。温かく湯気が立っている。"},
+            {"min_time": 300, "text": "赤い無臭のスープ。ほのかに温かい。"},
+            {"min_time": 150, "text": "赤い無臭のスープ。冷めてきているようだ。"},
             {"min_time": 0, "text": "赤い無臭のスープ。すっかり冷たくなっている。"}
           ]
         }
@@ -35,7 +36,8 @@
       "image": "Soup_none.png"
     },
     {
-      "type": "text_by_condition",
+      "type": "conditional",
+      "conditional_type": "text",
       "conditions": [
         {
           "if": {"soup_drink": true},
@@ -222,10 +224,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "item": "soup",
-      "flag": "know",
-      "value": true
+      "flag": {"soup_know": true}
     },
     {
       "type": "text",
@@ -291,16 +290,10 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "soup_destruction",
-      "value": true
-    },
-    {
-      "type": "action",
-      "action": "set_flag",
-      "category": "items",
-      "flag": "soup_in_poison",
-      "value": false
+      "flag": {
+        "soup_destruction": true,
+        "soup_in_poison": false
+      }
     },
     {
       "type": "text",

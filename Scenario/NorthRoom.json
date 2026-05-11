@@ -25,7 +25,7 @@
         },
         {
           "text": "蓋を開けない",
-          "next": "Pot_no_open"
+          "next": "Pot_image_close"
         }
       ]
     }
@@ -75,63 +75,31 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "pot_looked",
-              "value": false
-            },
-            {
-              "category": "girl",
-              "flag": "pot_looked",
-              "value": false
-            }
-          ],
+          "if": {
+            "pot_looked": false,
+            "pot_looked_g": false
+          },
           "next": "Pot_open_no_look_with_girl"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "pot_looked",
-              "value": false
-            },
-            {
-              "category": "girl",
-              "flag": "pot_looked",
-              "value": true
-            }
-          ],
+          "if": {
+            "pot_looked": false,
+            "pot_looked_g": true
+          },
           "next": "Pot_open_no_look"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "pot_looked",
-              "value": true
-            },
-            {
-              "category": "girl",
-              "flag": "pot_looked",
-              "value": false
-            }
-          ],
+          "if": {
+            "pot_looked": true,
+            "pot_looked_g": false
+          },
           "next": "Pot_open_no_look_girl"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "pot_looked",
-              "value": true
-            },
-            {
-              "category": "girl",
-              "flag": "pot_looked",
-              "value": true
-            }
-          ],
+          "if": {
+            "pot_looked": true,
+            "pot_looked_g": true
+          },
           "next": "Pot_open_conditions"
         }
       ]
@@ -160,23 +128,11 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "pot_looked",
-              "value": false
-            }
-          ],
+          "if": {"pot_looked": false},
           "next": "Pot_open_no_look"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "pot_looked",
-              "value": true
-            }
-          ],
+          "if": {"pot_looked": true},
           "next": "Pot_open_conditions"
         }
       ]
@@ -186,9 +142,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "pot_looked",
-      "value": true
+      "flag": {"pot_looked": true}
     },
     {
       "type": "text",
@@ -227,9 +181,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "pot_looked",
-      "value": true
+      "flag": {"pot_looked_g": true}
     },
     {
       "type": "text",
@@ -268,9 +220,10 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "pot_looked",
-      "value": true
+      "flag": {
+        "pot_looked": true,
+        "pot_looked_g": true
+      }
     },
     {
       "type": "text",
@@ -310,54 +263,24 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "soup_bowl_get",
-              "value": true
-            },
-            {
-              "category": "items",
-              "flag": "soup_bowl_in_soup",
-              "value": false
-            },
-            {
-              "category": "items",
-              "flag": "pot_in_nothing",
-              "value": false
-            }
-          ],
+          "if": {
+            "soup_bowl_get": true,
+            "soup_bowl_in_soup": false,
+            "pot_in_nothing": false
+          },
           "next": "Pot_open_get_bowl_no_soup"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "pot_in_nothing",
-              "value": true
-            }
-          ],
+          "if": {"pot_in_nothing": true},
           "next": "Pot_in_nothing"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "soup_bowl_in_soup",
-              "value": true
-            }
-          ],
-          "next": "Pot_open_no_bowl"
+          "if": {"soup_bowl_in_soup": true},
+          "next": "Pot_image_close"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "soup_bowl_get",
-              "value": false
-            }
-          ],
-          "next": "Pot_open_no_bowl"
+          "if": {"soup_bowl_get": false},
+          "next": "Pot_image_close"
         }
       ]
     }
@@ -382,7 +305,7 @@
         },
         {
           "text": "血を入れない",
-          "next": "Pot_soup_not_to_bowl"
+          "next": "Pot_image_close"
         }
       ]
     }
@@ -408,9 +331,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "soup_bowl_in_soup",
-      "value": true
+      "flag": {"soup_bowl_in_soup": true}
     },
     {
       "type": "text",
@@ -420,9 +341,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "pot_in_nothing",
-      "value": true
+      "flag": {"pot_in_nothing": true}
     },
     {
       "type": "image_hidden"
@@ -438,70 +357,29 @@
       "type": "image_hidden"
     }
   ],
-  "Pot_soup_not_to_bowl": [
-    {
-      "type": "image_hidden"
-    }
-  ],
-  "Pot_open_no_bowl": [
-    {
-      "type": "image_hidden"
-    }
-  ],
-  "Pot_no_open": [
+  "Pot_image_close":[
     {
       "type": "image_hidden"
     }
   ],
   "UnderSinkStorage": [
     {
-      "type": "conditional",
-      "conditions": [
-        {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "north_memo_discovery",
-              "value": false
-            }
-          ],
-          "next": "UnderSinkStorage_no_objctive"
-        },
-        {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "north_memo_discovery",
-              "value": true
-            }
-          ],
-          "next": "UnderSinkStorage_true_objctive"
-        }
-      ]
-    }
-  ],
-  "UnderSinkStorage_no_objctive": [
+      "type": "text",
+      "text": "調理台だ。下には収納があるようだ。",
+      "progression": "click"
+    },
     {
       "type": "interaction",
       "interactions": [
         {
           "text": "目星",
-          "next": "UnderSinkStorage_objctive"
+          "next": "UnderSinkStorage_objctive",
+          "sho_if": {"north_memo_discovery": false}
         },
         {
-          "text": "何か持って行く",
-          "next": "UnderSinkStorage_get_item"
-        }
-      ]
-    }
-  ],
-  "UnderSinkStorage_true_objctive": [
-    {
-      "type": "interaction",
-      "interactions": [
-        {
           "text": "紙切れを確認する",
-          "next": "northMemo"
+          "next": "northMemo",
+          "sho_if": {"north_memo_discovery": true}
         },
         {
           "text": "何か持って行く",
@@ -548,9 +426,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "north_memo_discovery",
-      "value": true
+      "flag": {"north_memo_discovery": true}
     },
     {
       "type": "image_hidden"

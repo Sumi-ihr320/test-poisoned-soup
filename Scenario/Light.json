@@ -4,23 +4,11 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "light_remove",
-              "value": false
-            }
-          ],
+          "if": {"light_remove": false},
           "next": "Light_illuminating"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "light_remove",
-              "value": true
-            }
-          ],
+          "if": {"light_remove": true},
           "next": "Light_nothing"
         }
       ]
@@ -35,23 +23,11 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "light_objective",
-              "value": false
-            }
-          ],
+          "if": {"light_objective": false},
           "next": "Light_not_objective"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "light_objective",
-              "value": true
-            }
-          ],
+          "if": {"light_objective": true},
           "next": "Light_spotted"
         }
       ]
@@ -64,11 +40,34 @@
       "progression": "click"
     },
     {
+      "type": "next_step",
+      "next": "Light_interaction"
+    }
+  ],
+  "Light_spotted": [
+    {
+      "type": "text",
+      "text": "薄暗い豆電球が部屋を照らしている。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "薄暗いのは、中に何か入っているからのようだ。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Light_interaction"
+    }
+  ],
+  "Light_interaction": [
+    {
       "type": "interaction",
       "interactions": [
         {
           "text": "目星",
-          "next": "Light_objective"
+          "next": "Light_objective",
+          "show_if": {"light_objective": false}
         },
         {
           "text": "外す",
@@ -105,9 +104,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "light_objective",
-      "value": true
+      "flag": {"light_objective": true}
     },
     {
       "type": "text",
@@ -128,31 +125,6 @@
       "type": "image_hidden"
     }
   ],
-  "Light_spotted": [
-    {
-      "type": "text",
-      "text": "薄暗い豆電球が部屋を照らしている。",
-      "progression": "click"
-    },
-    {
-      "type": "text",
-      "text": "薄暗いのは、中に何か入っているからのようだ。",
-      "progression": "click"
-    },
-    {
-      "type": "interaction",
-      "interactions": [
-        {
-          "text": "外す",
-          "next": "Light_remove"
-        },
-        {
-          "text": "壊す",
-          "next": "Light_break"
-        }
-      ]
-    }
-  ],
   "Light_remove": [
     {
       "type": "text",
@@ -162,9 +134,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "light_remove",
-      "value": true
+      "flag": {"light_remove": true}
     },
     {
       "type": "text",
@@ -178,9 +148,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "light_get",
-      "value": true
+      "flag": {"light_get": true}
     },
     {
       "type": "action",
@@ -245,29 +213,17 @@
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "light_get",
-              "value": true
-            }
-          ],
-          "next": "Light_have"
+          "if": {"light_get": true},
+          "next": "Light_have_interaction"
         },
         {
-          "requirements": [
-            {
-              "category": "items",
-              "flag": "light_break",
-              "value": true
-            }
-          ],
+          "if": {"light_break": true},
           "next": "Light_broken"
         }
       ]
     }
   ],
-  "Light_have": [
+  "Light_have_interaction": [
     {
       "type": "interaction",
       "interactions": [
@@ -299,16 +255,10 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "items",
-      "flag": "light_get",
-      "value": false
-    },
-    {
-      "type": "action",
-      "action": "set_flag",
-      "category": "items",
-      "flag": "light_remove",
-      "value": false
+      "flag": {
+        "light_get": false,
+        "light_remove": false
+      }
     },
     {
       "type": "action",

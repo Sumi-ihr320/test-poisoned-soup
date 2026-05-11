@@ -16,67 +16,21 @@
       "interactions": [
         {
           "text": "目星",
-          "next": "northDoor_objective"
+          "next": "Door_meaningless_objective"
         },
         {
           "text": "聞き耳",
-          "next": "northDoor_listen"
+          "next": "Door_meaningless_listen"
         },
         {
           "text": "叩く",
-          "next": "northDoor_knock"
+          "next": "WoodDoor_knock"
         },
         {
           "text": "開ける",
           "next": "northDoor_open"
         }
       ]
-    }
-  ],
-  "northDoor_objective": [
-    {
-      "type": "time_passage",
-      "value": 2
-    },
-    {
-      "type": "text",
-      "text": "特に分かることはなかった。",
-      "progression": "click"
-    },
-    {
-      "type": "image_hidden"
-    }
-  ],
-  "northDoor_listen": [
-    {
-      "type": "time_passage",
-      "value": 2
-    },
-    {
-      "type": "text",
-      "text": "何も聞こえなかった。",
-      "progression": "click"
-    },
-    {
-      "type": "image_hidden"
-    }
-  ],
-  "northDoor_knock": [
-    {
-      "type": "time_passage",
-      "value": 1
-    },
-    {
-      "type": "sound",
-      "name": "木の扉をノック"
-    },
-    {
-      "type": "text",
-      "text": "何の反応もない。",
-      "progression": "click"
-    },
-    {
-      "type": "image_hidden"
     }
   ],
   "northDoor_open": [
@@ -103,15 +57,15 @@
       "interactions": [
         {
           "text": "目星",
-          "next": "eastDoor_objective"
+          "next": "Door_meaningless_objective"
         },
         {
           "text": "聞き耳",
-          "next": "eastDoor_listen"
+          "next": "Door_meaningless_listen"
         },
         {
           "text": "叩く",
-          "next": "eastDoor_knock"
+          "next": "IronDoor_knock"
         },
         {
           "text": "開ける",
@@ -120,74 +74,16 @@
       ]
     }
   ],
-  "eastDoor_objective": [
-    {
-      "type": "time_passage",
-      "value": 2
-    },
-    {
-      "type": "text",
-      "text": "特に分かることはなかった",
-      "progression": "click"
-    },
-    {
-      "type": "image_hidden"
-    }
-  ],
-  "eastDoor_listen": [
-    {
-      "type": "time_passage",
-      "value": 2
-    },
-    {
-      "type": "text",
-      "text": "何も聞こえなかった。",
-      "progression": "click"
-    },
-    {
-      "type": "image_hidden"
-    }
-  ],
-  "eastDoor_knock": [
-    {
-      "type": "time_passage",
-      "value": 1
-    },
-    {
-      "type": "sound",
-      "name": "鉄の扉をノック"
-    },
-    {
-      "type": "text",
-      "text": "何の反応もない。",
-      "progression": "click"
-    },
-    {
-      "type": "image_hidden"
-    }
-  ],
   "eastDoor_open": [
     {
       "type": "conditional",
       "conditions": [
         {
-          "requirements": [
-            {
-              "category": "rooms",
-              "flag": "east_room_open",
-              "value": false
-            }
-          ],
+          "if": {"east_room_open": false},
           "next": "eastDoor_locked"
         },
         {
-          "requirements": [
-            {
-              "category": "rooms",
-              "flag": "east_room_open",
-              "value": true
-            }
-          ],
+          "if": {"east_room_open": true},
           "next": "eastDoor_unlocked"
         }
       ]
@@ -244,18 +140,11 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "rooms",
-      "flag": "east_room_open",
-      "value": true
+      "flag": {"east_room_open": true}
     },
     {
-      "type": "sound",
-      "name": "古いドアを開ける"
-    },
-    {
-      "type": "action",
-      "action": "move_to_room",
-      "room_id": "east-room"
+      "type": "next_step",
+      "next": "eastDoor_unlocked"
     }
   ],
   "eastDoor_vs_str_failure": [
@@ -312,18 +201,11 @@
     {
       "type": "action",
       "action": "set_flag",
-      "category": "rooms",
-      "flag": "east_room_open",
-      "value": true
+      "flag": {"east_room_open": true}
     },
     {
-      "type": "sound",
-      "name": "古いドアを開ける"
-    },
-    {
-      "type": "action",
-      "action": "move_to_room",
-      "room_id": "east-room"
+      "type": "next_step",
+      "next": "eastDoor_unlocked"
     }
   ],
   "eastDoor_locksmith_failure": [
@@ -352,15 +234,15 @@
       "interactions": [
         {
           "text": "目星",
-          "next": "westDoor_objective"
+          "next": "Door_meaningless_objective"
         },
         {
           "text": "聞き耳",
-          "next": "westDoor_listen"
+          "next": "Door_meaningless_listen"
         },
         {
           "text": "叩く",
-          "next": "westDoor_knock"
+          "next": "WoodDoor_knock"
         },
         {
           "text": "開ける",
@@ -369,7 +251,18 @@
       ]
     }
   ],
-  "westDoor_objective": [
+  "westDoor_open": [
+    {
+      "type": "sound",
+      "name": "木のドアを開ける"
+    },
+    {
+      "type": "action",
+      "action": "move_to_room",
+      "room_id": "west-room"
+    }
+  ],
+  "Door_meaningless_objective": [
     {
       "type": "time_passage",
       "value": 2
@@ -383,7 +276,7 @@
       "type": "image_hidden"
     }
   ],
-  "westDoor_listen": [
+  "Door_meaningless_listen":[
     {
       "type": "time_passage",
       "value": 2
@@ -397,7 +290,7 @@
       "type": "image_hidden"
     }
   ],
-  "westDoor_knock": [
+  "WoodDoor_knock":[
     {
       "type": "time_passage",
       "value": 1
@@ -407,23 +300,32 @@
       "name": "木の扉をノック"
     },
     {
+      "type": "next_step",
+      "next": "Door_meaningless_knock"
+    }
+  ],
+  "IronDoor_knock":[
+    {
+      "type": "time_passage",
+      "value": 1
+    },
+    {
+      "type": "sound",
+      "name": "鉄の扉をノック"
+    },
+    {
+      "type": "next_step",
+      "next": "Door_meaningless_knock"
+    }    
+  ],
+  "Door_meaningless_knock":[
+    {
       "type": "text",
       "text": "何の反応もない。",
       "progression": "click"
     },
     {
       "type": "image_hidden"
-    }
-  ],
-  "westDoor_open": [
-    {
-      "type": "sound",
-      "name": "木のドアを開ける"
-    },
-    {
-      "type": "action",
-      "action": "move_to_room",
-      "room_id": "west-room"
     }
   ]
 }
