@@ -885,3 +885,12 @@
 	conditional_processerを修正、check_flagをkeyとvalueのみに修正、get_item_by_time、resolve_condition_resultを追加
 	action_processorのset_flagを修正
 	event_managerのhandle_conditionalとhandle_interactionを修正
+
+2026/5/11
+	シナリオ修正、残り全部
+
+2026/5/13
+	シナリオの打ち間違いの修正、conditional_processorとaction_processorとevent_managerの修正
+	scenario_managerのbranch_info[on_success]をdictからstrに変更してevent_managerのstepを開始するのではなく直接シナリオを開始する形に。
+	それに伴いシナリオの修正
+	Soupシナリオの更新（途中）

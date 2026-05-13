@@ -113,11 +113,11 @@
       "interactions": [
         {
           "text": "目星",
-          "next": "Soup_in_poison_objctive"
+          "next": "Soup_in_poison_objective"
         },
         {
           "text": "触る",
-          "next": "Soup_in_poison_touch"
+          "next": "Soup_in_poison_feel"
         },
         {
           "text": "飲む",
@@ -130,13 +130,8 @@
       ]
     }
   ],
-  "Soup_in_poison_objctive": [
-    {
-      "type": "time_passage",
-      "value": 5
-    }
-  ],
-  "Soup_in_poison_touch": [],
+  "Soup_in_poison_objective": [],
+  "Soup_in_poison_feel": [],
   "Soup_in_poison_drink": [
     {
       "type": "girl_check",
@@ -151,7 +146,7 @@
       "interactions": [
         {
           "text": "目星",
-          "next": "Soup_objctive"
+          "next": "Soup_objective"
         },
         {
           "text": "医学",
@@ -160,16 +155,16 @@
         },
         {
           "text": "触る",
-          "next": ""
+          "next": "Soup_feel"
         },
         {
           "text": "毒を入れる",
-          "next": "",
+          "next": "Soup_poison_in",
           "show_if": {"poison_get": true}
         },
         {
           "text": "飲む",
-          "next": ""
+          "next": "Soup_drink"
         },
         {
           "text": "捨てる",
@@ -178,7 +173,7 @@
       ]
     }
   ],
-  "Soup_objctive": [
+  "Soup_objective": [
     {
       "type": "time_passage",
       "value": 2
@@ -188,18 +183,20 @@
       "check_type": "skill",
       "skill": "目星",
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "Soup_objctive_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "Soup_objctive_failure"
-      }
+      "on_success": "Soup_objective_success",
+      "on_failure": "Soup_objective_failure"
     }
   ],
-  "Soup_objctive_success": [],
-  "Soup_objctive_failure": [],
+  "Soup_objective_success": [
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Soup_objective_failure": [
+    {
+      "type": "image_hidden"
+    }
+  ],
   "Soup_medicine": [
     {
       "type": "time_passage",
@@ -210,14 +207,8 @@
       "check_type": "skill",
       "skill": "医学",
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "Soup_medicine_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "Soup_medicine_failure"
-      }
+      "on_success": "Soup_medicine_success",
+      "on_failure": "Soup_medicine_failure"
     }
   ],
   "Soup_medicine_success": [
@@ -268,6 +259,47 @@
     },
     {
       "type": "image_hidden"
+    }
+  ],
+  "Soup_feel":[
+    {
+      "type": "conditional",
+      "conditions":[
+        {
+          "if": {"soup_know": true},
+          "next": "Soup_feel_know_soup"
+        },
+        {
+          "if": {"soup_know": false},
+          "next": "Soup_feel_unknown"
+        }
+      ]
+    }
+  ],
+  "Soup_feel_know_soup":[
+    {
+      "type": "conditional",
+      "conditional_type": "text",
+      "conditions": [
+        {
+          "if": {"soup_know": true},
+          "texts": [
+            {"min_time": 450, "text": "\n温かい。"},
+            {"min_time": 300, "text": "\nほのかに温かい。"},
+            {"min_time": 150, "text": "\nぬるい。"},
+            {"min_time": 0, "text": "\n冷たい。"}
+          ]
+        },
+        {
+          "if": {"soup_know": false},
+          "texts":[
+            {"min_time": 450, "text": "\n温かい。"},
+            {"min_time": 300, "text": "\nほのかに温かい。"},
+            {"min_time": 150, "text": "\nぬるい。"},
+            {"min_time": 0, "text": "\n冷たい。"}
+          ]
+        }
+      ]
     }
   ],
   "Soup_destruction": [

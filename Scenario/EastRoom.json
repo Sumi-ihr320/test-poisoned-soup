@@ -26,7 +26,7 @@
         },
         {
           "if": "else",
-          "next": "east_room_interaction"
+          "next": "east-room_interaction"
         }
       ]
     }
@@ -71,14 +71,8 @@
       "dice": "1d100",
       "half": true,
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "east-room_objective_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "east-room_objective_failure"
-      }
+      "on_success": "east-room_objective_success",
+      "on_failure": "east-room_objective_failure"
     }
   ],
   "east-room_objective_failure": [
@@ -190,14 +184,8 @@
       "skill": "聞き耳",
       "dice": "1d100",
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "east-room_listen_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "east-room_listen_failure"
-      }
+      "on_success": "east-room_listen_success",
+      "on_failure": "east-room_listen_failure"
     }
   ],
   "east-room_listen_failure": [
@@ -244,14 +232,8 @@
       "dice": "1d100",
       "half": true,
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "east-room_listen_objective_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "east-room_listen_objective_failure"
-      }
+      "on_success": "east-room_listen_objective_success",
+      "on_failure": "east-room_listen_objective_failure"
     }
   ],
   "east-room_girl_objective_success": [

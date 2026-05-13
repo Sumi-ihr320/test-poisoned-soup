@@ -42,7 +42,7 @@
   "centerMemo_obj_true": [
     {
       "type": "image_display",
-      "image": "centerMemo_objctive.png"
+      "image": "centerMemo_objective.png"
     },
     {
       "type": "text",
@@ -75,14 +75,8 @@
       "check_type": "skill",
       "skill": "目星",
       "dice": "1d100",
-      "on_success": {
-          "type": "next_step",
-          "next": "centerMemo_objective_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "centerMemo_objective_failure"
-      }
+      "on_success": "centerMemo_objective_success",
+      "on_failure": "centerMemo_objective_failure"
     }
   ],
   "centerMemo_objective_success": [
@@ -98,7 +92,7 @@
     },
     {
       "type": "image_display",
-      "image": "centerMemo_objctive.png"
+      "image": "centerMemo_objective.png"
     },
     {
       "type": "text",
@@ -109,14 +103,8 @@
       "type": "dice_check",
       "check_type": "status",
       "status": "Idea",
-      "on_success": {
-          "type": "next_step",
-          "next": "centerMemo_objective_idea_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "centerMemo_objective_idea_failure"
-      }
+      "on_success": "centerMemo_objective_idea_success",
+      "on_failure": "centerMemo_objective_idea_failure"
     }
   ],
   "centerMemo_objective_idea_success": [

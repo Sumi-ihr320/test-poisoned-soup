@@ -373,7 +373,7 @@
       "interactions": [
         {
           "text": "目星",
-          "next": "UnderSinkStorage_objctive",
+          "next": "UnderSinkStorage_objective",
           "sho_if": {"north_memo_discovery": false}
         },
         {
@@ -388,7 +388,7 @@
       ]
     }
   ],
-  "UnderSinkStorage_objctive": [
+  "UnderSinkStorage_objective": [
     {
       "type": "time_passage",
       "value": 2
@@ -398,17 +398,11 @@
       "check_type": "skill",
       "skill": "目星",
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "UnderSinkStorage_objective_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "UnderSinkStorage_objective_failure"
-      }
+      "on_success": "UnderSinkStorage_objective_success",
+      "on_failure": "UnderSinkStorage_objective_failure"
     }
   ],
-  "UnderSinkStorage_objctive_success": [
+  "UnderSinkStorage_objective_success": [
     {
       "type": "text",
       "text": "隅の方に紙切れを発見した。",
@@ -432,7 +426,7 @@
       "type": "image_hidden"
     }
   ],
-  "UnderSinkStorage_objctive_failure": [
+  "UnderSinkStorage_objective_failure": [
     {
       "type": "text",
       "text": "何も見つからなかった。",

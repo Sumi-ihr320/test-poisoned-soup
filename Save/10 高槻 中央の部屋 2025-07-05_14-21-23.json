@@ -95,7 +95,7 @@
     ]
   },
   "game_state": {
-    "time": 60,
+    "time": 600,
     "room": "center",
     "direction": "north"
   },

@@ -115,8 +115,8 @@ class ScenarioManager:
                 branch_info = self.event_manager.get_and_clear_pending_branch()
                 if branch_info:
                     # 分岐処理
-                    next_step = branch_info["on_success"] if branch_info["success"] else branch_info["on_failure"]
-                    self.event_manager.handle_scenario_event(next_step)
+                    next_scenario_id = branch_info["on_success"] if branch_info["success"] else branch_info["on_failure"]
+                    self.start_scenario(next_scenario_id)
                     return
 
             # ダメージによって状態異常が起こった場合

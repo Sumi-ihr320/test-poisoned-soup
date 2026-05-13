@@ -73,14 +73,8 @@
       "POT": 25,
       "target": "player",
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "Poison_ingestion_for_lick_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "Poison_ingestion_for_lick_failure"
-      }
+      "on_success": "Poison_ingestion_for_lick_success",
+      "on_failure": "Poison_ingestion_for_lick_failure"
     }
   ],
   "Poison_ingestion_for_lick_success": [

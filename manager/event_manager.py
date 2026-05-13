@@ -281,7 +281,7 @@ class EventManager:
             if "flag" in result:
                 self.action_processor.process_action({"action": "set_flag", "flag": result["flag"]})
 
-            if "next" is not None:
+            if "next" in result and result["next"] is not None:
                 self.to_callback_next_scenario(result["next"])
 
         if step.get("next", None):

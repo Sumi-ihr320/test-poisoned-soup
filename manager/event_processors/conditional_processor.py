@@ -24,8 +24,12 @@ class ConditionalProcessor:
             # 全部のフラグがOKだったら
             if all(self.check_flag(key, value) for key, value in cond.items()):
 
+                # タイプが無い場合(普通の場合)
+                if conditional_type is None:
+                    return {"next": condition["next"]}
+
                 # 複数のタイプが組み合わさってる場合
-                if "and" in conditional_type:
+                elif "and" in conditional_type:
                     types = conditional_type.split("_and_")
                     result = {}
                     for key in types:
@@ -44,13 +48,9 @@ class ConditionalProcessor:
                     return {"girl_image": True, "state": condition.get("state", None), "position": condition.get("position", "right"), "next": condition.get("next", None)}
 
                 # 単一のタイプの場合
-                elif conditional_type is not None:
-                    return self.resolve_condition_result(conditional_type)
-                
-                # タイプが無い場合(普通の場合)
                 else:
-                    # 次のシナリオ
-                    return {"next": condition["next"]}
+                    return self.resolve_condition_result(condition, conditional_type)
+                
         return None
 
     def resolve_condition_result(self, condition: Dict[str, Any], key: str):
@@ -58,7 +58,10 @@ class ConditionalProcessor:
         if plural in condition:
             result = self.get_item_by_time(condition[plural], key)
             if result is not None:
-                return {key: result[0], "next": result[1]}
+                if result[1] is not None:
+                    return {key: result[0], "next": result[1]}
+                else:
+                    return {key: result[0], "next": condition.get("next", None)}
             else:
                 return None
         else:

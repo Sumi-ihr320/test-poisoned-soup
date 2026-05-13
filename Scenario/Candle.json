@@ -86,14 +86,8 @@
       "skill": "目星",
       "dice": "1d100",
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "Candle_objective_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "Candle_objective_failure"
-      }
+      "on_success": "Candle_objective_success",
+      "on_failure": "Candle_objective_failure"
     }
   ],
   "Candle_goes_out_objective": [
@@ -104,14 +98,8 @@
       "dice": "1d100",
       "half": true,
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "Candle_objective_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "Candle_objective_failure"
-      }
+      "on_success": "Candle_objective_success",
+      "on_failure": "Candle_objective_failure"
     }
   ],
   "Candle_objective_success": [

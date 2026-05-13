@@ -148,14 +148,8 @@
       "half": true,
       "dice": "1d100",
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "Black_liquid_check_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "Black_liquid_check_failure"
-      }
+      "on_success": "Black_liquid_check_success",
+      "on_failure": "Black_liquid_check_failure"
     }
   ],
   "Book_check_pharmacology": [
@@ -169,14 +163,8 @@
       "skill": "薬学",
       "dice": "1d100",
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "Black_liquid_check_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "Black_liquid_check_failure"
-      }
+      "on_success": "Black_liquid_check_success",
+      "on_failure": "Black_liquid_check_failure"
     }
   ],
   "Book_check_success": [

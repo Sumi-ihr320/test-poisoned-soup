@@ -90,14 +90,8 @@
       "check_type": "skill",
       "skill": "目星",
       "dice": "1d100",
-      "on_success": {
-          "type": "next_step",
-          "next": "Light_objective_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "Light_objective_failure"
-      }
+      "on_success": "Light_objective_success",
+      "on_failure": "Light_objective_failure"
     }
   ],
   "Light_objective_success": [

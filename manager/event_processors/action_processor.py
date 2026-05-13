@@ -54,9 +54,13 @@ class ActionProcessor:
 
             # もしroom_flag_listのフラグに該当していたら部屋情報を更新する
             for key_flag in self.room_flag_list:
-                if flag == key_flag:
-                    self.on_room_refresh_cb()
-                    break
+                if isinstance(flag, dict):
+                    if key_flag in flag:
+                        self.on_room_refresh_cb()
+                else:
+                    if flag == key_flag:
+                        self.on_room_refresh_cb()
+                        break
 
         # アイテムを取得する
         elif action == "get_item":

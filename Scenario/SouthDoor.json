@@ -377,14 +377,8 @@
       "skill": "聞き耳",
       "dice": "1d100",
       "progression": "click",
-      "on_success": {
-          "type": "next_step",
-          "next": "southDoor_listen_success"
-      },
-      "on_failure": {
-          "type": "next_step",
-          "next": "southDoor_listen_failure"
-      }
+      "on_success": "southDoor_listen_success",
+      "on_failure": "southDoor_listen_failure"
     }
   ],
   "southDoor_listen_success": [
