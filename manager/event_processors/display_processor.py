@@ -1,6 +1,7 @@
 from typing import Dict
 from ..sound_manager import sound_manager
 from ..render_manager import RenderManager
+from ..display_text import DisplayText
 
 class DisplayProcessor:
     """
@@ -17,11 +18,12 @@ class DisplayProcessor:
     入力：step (dict)
     出力：None (直接実行型なので返り値なし)
     """
-    def __init__(self, render_manager: RenderManager):
+    def __init__(self, render_manager: RenderManager, display_text: DisplayText):
         """
         :render_manager: 画面描画を担当するマネージャー
         """
         self.render_manager = render_manager
+        self.display_text = display_text
 
     def process_display(self, step: Dict):
         """
@@ -34,7 +36,7 @@ class DisplayProcessor:
 
         if step_type == "text":
             # テキストの場合のみ返り値を使用（EventManager が状態管理に使用）
-            result = self.handle_text(step)
+            self.handle_text(step)
 
         elif step_type == "sound":
             # 直接実行型：返り値なし
@@ -69,7 +71,8 @@ class DisplayProcessor:
     # テキスト処理
     def handle_text(self, step: Dict):
         text = step.get("text", None)
-        return text
+        self.display_text.set_text(text)
+        #self.render_manager.show_current_text(text)
 
     # サウンド処理
     def handle_sound(self, step: Dict):

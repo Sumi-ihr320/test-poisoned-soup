@@ -47,6 +47,14 @@ class RenderManager:
         self.blackout_wait = None       # ブラックアウトの待ち時間
         self.blackout_done = False      # ブラックアウトの完了フラグ
 
+
+    def show_current_text(self, text=str):
+        self.text_frame_panel.set_text(text)
+        self.log_view.append(text)
+
+    def hidden_current_text(self):
+        self.text_frame_panel.set_text("")
+
     # 少女の立ち絵を表示する
     def show_girl_image(self, state=None, position="right"):
         if state:

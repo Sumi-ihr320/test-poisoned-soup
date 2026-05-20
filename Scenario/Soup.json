@@ -11,19 +11,15 @@
         {
           "if": {"soup_know": true},
           "texts":[
-            {"min_time": 450, "text": "人間の血のスープ。温かく湯気が立っている。\n鉄錆に似た悪臭がスープから漂ってくる…"},
-            {"min_time": 300, "text": "人間の血のスープ。ほのかに温かい。\n鉄錆に似た悪臭がスープから漂ってくる…"},
-            {"min_time": 150, "text": "人間の血のスープ。冷めてきているようだ。\n鉄錆に似た悪臭がスープから漂ってくる…"},
-            {"min_time": 0, "text": "人間の血のスープ。すっかり冷たくなっている。\n鉄錆に似た悪臭がスープから漂ってくる…"}
+            {"min_time": 450, "text": "人間の血のスープだ。湯気が立っている。\n鉄錆に似た悪臭がスープから漂ってくる…"},
+            {"min_time": 0, "text": "人間の血のスープだ。\n鉄錆に似た悪臭がスープから漂ってくる…"}
           ]
         },
         {
           "if": {"soup_know": false},
           "texts":[
-            {"min_time": 450, "text": "赤い無臭のスープ。温かく湯気が立っている。"},
-            {"min_time": 300, "text": "赤い無臭のスープ。ほのかに温かい。"},
-            {"min_time": 150, "text": "赤い無臭のスープ。冷めてきているようだ。"},
-            {"min_time": 0, "text": "赤い無臭のスープ。すっかり冷たくなっている。"}
+            {"min_time": 450, "text": "赤い無臭のスープだ。湯気が立っている。"},
+            {"min_time": 0, "text": "赤い無臭のスープだ。"}
           ]
         }
       ],
@@ -76,7 +72,7 @@
     {
       "type": "action",
       "action": "set_flag",
-      "flag": {"Soup_bowl_get": true}
+      "flag": {"soup_bowl_get": true}
     },
     {
       "type": "action",
@@ -130,8 +126,60 @@
       ]
     }
   ],
-  "Soup_in_poison_objective": [],
-  "Soup_in_poison_feel": [],
+  "Soup_in_poison_objective": [
+    {
+      "type": "text",
+      "text": "黒く染まったスープ。\n表面はどろりと重く、光を吸い込むような色をしている。\n甘い香りが、かすかに漂っている。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }    
+  ],
+  "Soup_in_poison_feel": [
+    {
+      "type": "text",
+      "text": "指先に触れると、黒い液体がぬるりと絡みついてくる。\n粘度が高く、指を離しても糸を引く。\n甘い香りが鼻先をかすめる。",
+      "progression": "click"
+    },
+    {
+      "type": "interaction",
+      "target": "item",
+      "interactions": [
+        {
+          "text": "舐める",
+          "next": "Soup_poison_feel_lick"
+        },
+        {
+          "text": "拭う",
+          "next": "Soup_poison_feel_wipe"
+        },
+        {
+          "text": "そのままにする",
+          "next": "Soup_poison_feel_leave"
+        }
+      ]
+    }    
+  ],
+ "Soup_poison_feel_lick": [
+    {
+      "type": "text",
+      "text": "指に付いた黒いスープを舐めてみた。"
+    },
+    {
+      "type": "text",
+      "text": "舌先に触れた瞬間、花の蜜に似た甘さが広がる。",
+      "progression": "click"
+    },
+    {
+      "type": "poison_ingestion",
+      "target": "player"
+    },
+    {
+      "type": "next_step",
+      "next": "Poison_ingestion"
+    }
+  ], 
   "Soup_in_poison_drink": [
     {
       "type": "girl_check",
@@ -151,7 +199,7 @@
         {
           "text": "医学",
           "next": "Soup_medicine",
-          "show_if": {"soup_know": true}
+          "show_if": {"soup_know": false}
         },
         {
           "text": "触る",
@@ -175,37 +223,71 @@
   ],
   "Soup_objective": [
     {
-      "type": "time_passage",
-      "value": 2
+      "type": "conditional",
+      "conditional_type": "text",
+      "conditions": [
+        {
+          "if": {"soup_know": true},
+          "texts": [
+            {"min_time": 450, "text": "木製の器に入った、真っ赤なスープ。\n湯気が立ち、表面はとろりとしている。\n鉄錆に似た臭いが鼻をつく。"},
+            {"min_time": 300, "text": "木製の器に入った、真っ赤なスープ。\n表面はもったりと重く、粘度がある。\n鉄錆に似た臭いが鼻をつく。"},
+            {"min_time": 150, "text": "木製の器に入った、真っ赤なスープ。\n表面に粘り気があり、冷めてきているようだ。\n鉄錆に似た臭いが鼻をつく。"},
+            {"min_time": 0, "text": "木製の器に入った、真っ赤なスープ。\n表面に薄い膜が張り、すっかり冷たくなっている。\n鉄錆に似た臭いが鼻をつく。"}
+          ]
+        },
+        {
+          "if": {"soup_know": false},
+          "texts": [
+            {"min_time": 450, "text": "木製の器に入った、真っ赤なスープ。\n湯気が立ち、表面はとろりとしている。\n不思議なことに、匂いはまったくしない。"},
+            {"min_time": 300, "text": "木製の器に入った、真っ赤なスープ。\n表面はもったりと重く、粘度がある。\n匂いはまったくしない。"},
+            {"min_time": 150, "text": "木製の器に入った、真っ赤なスープ。\n表面に粘り気があり、冷めてきているようだ。\n匂いはまったくしない。"},
+            {"min_time": 0, "text": "木製の器に入った、真っ赤なスープ。\n表面に薄い膜が張り、すっかり冷たくなっている。\n匂いはまったくしない。"}
+          ]
+        }
+      ]
     },
     {
-      "type": "dice_check",
-      "check_type": "skill",
-      "skill": "目星",
-      "progression": "click",
-      "on_success": "Soup_objective_success",
-      "on_failure": "Soup_objective_failure"
-    }
-  ],
-  "Soup_objective_success": [
-    {
       "type": "image_hidden"
-    }
-  ],
-  "Soup_objective_failure": [
-    {
-      "type": "image_hidden"
-    }
+    }  
   ],
   "Soup_medicine": [
     {
-      "type": "time_passage",
-      "value": 2
-    },
+      "type": "conditional",
+      "conditions":[
+        {
+          "if": {"light_remove": false},
+          "next": "Soup_medicine_clear"
+        },
+        {
+          "if": {
+            "candle_get": true,
+            "candle_goes_out": 0
+          },
+          "next": "Soup_medicine_clear"
+        },
+        {
+          "if": "else",
+          "next": "Soup_medicine_dark"
+        }
+      ]
+    }
+  ],
+  "Soup_medicine_clear":[
     {
       "type": "dice_check",
       "check_type": "skill",
       "skill": "医学",
+      "progression": "click",
+      "on_success": "Soup_medicine_success",
+      "on_failure": "Soup_medicine_failure"
+    }
+  ],
+  "Soup_medicine_dark":[
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "医学",
+      "half": true,
       "progression": "click",
       "on_success": "Soup_medicine_success",
       "on_failure": "Soup_medicine_failure"
@@ -264,42 +346,30 @@
   "Soup_feel":[
     {
       "type": "conditional",
+      "conditional_type": "text",
       "conditions":[
         {
           "if": {"soup_know": true},
-          "next": "Soup_feel_know_soup"
-        },
-        {
-          "if": {"soup_know": false},
-          "next": "Soup_feel_unknown"
-        }
-      ]
-    }
-  ],
-  "Soup_feel_know_soup":[
-    {
-      "type": "conditional",
-      "conditional_type": "text",
-      "conditions": [
-        {
-          "if": {"soup_know": true},
-          "texts": [
-            {"min_time": 450, "text": "\n温かい。"},
-            {"min_time": 300, "text": "\nほのかに温かい。"},
-            {"min_time": 150, "text": "\nぬるい。"},
-            {"min_time": 0, "text": "\n冷たい。"}
+          "texts":[
+            {"min_time": 450, "text": "指先に伝わる熱が、妙に生々しく感じる。\nとろりと重く指に絡みつくそれは——\n温かいまま、ここに置かれていたのだ。"},
+            {"min_time": 300, "text": "まだ温かい。\nそれがかえって、直視したくない事実を突きつけてくる。\n指に纏わりつく粘度が、じわりと不快感を呼び起こす。"},
+            {"min_time": 150, "text": "ぬるい。体温に近い温度が、余計に気持ち悪い。\n指を離すと糸を引く——これがかつて\n誰かの体の中にあったものだと思うと、手を洗いたくなる。"},
+            {"min_time": 0, "text": "表面を覆う膜に触れると、ずるりと指が沈む。\n冷たく固まりかけたそれは、もうスープですらない。\n触れたくないという本能が、じわりと湧き上がる。"}
           ]
         },
         {
           "if": {"soup_know": false},
           "texts":[
-            {"min_time": 450, "text": "\n温かい。"},
-            {"min_time": 300, "text": "\nほのかに温かい。"},
-            {"min_time": 150, "text": "\nぬるい。"},
-            {"min_time": 0, "text": "\n冷たい。"}
+            {"min_time": 450, "text": "指先に伝わる熱と、とろりとした重さ。\n水よりも粘り気があり、ゆっくりと指に絡みついてくる。\n……スープにしては、少し重いかもしれない。"},
+            {"min_time": 300, "text": "かすかな温もりと、もったりとした重さが指に伝わる。\n粘り気があり、水とは明らかに違う感触だ"},
+            {"min_time": 150, "text": "ぬるく、纏わりつくような粘度がある。\n指を離すと糸を引くように感じる。妙に、重い。"},
+            {"min_time": 0, "text": "表面に薄い膜が張っている。指で触れると、ずるりと破れて沈む。\n冷たく、重い——\nもはやスープとは呼びにくい何かになっている。"}
           ]
         }
       ]
+    },
+    {
+      "type": "image_hidden"
     }
   ],
   "Soup_destruction": [

@@ -241,6 +241,11 @@
       "progression": "click"
     },
     {
+      "type": "text",
+      "text": "舌先に触れた瞬間、花の蜜に似た甘さが広がる。",
+      "progression": "click"
+    },
+    {
       "type": "poison_ingestion",
       "target": "player"
     },

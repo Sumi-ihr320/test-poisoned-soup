@@ -10,6 +10,7 @@ from input.focus_manager import FocusManager
 from .render_manager import RenderManager
 from .event_callbacks import EventCallbacks
 from .dice_service import DiceService
+from .display_text import DisplayText
 from .event_processors.dice_processor import DiceProcessor
 from .event_processors.damage_processor import DamageProcessor
 from .event_processors.conditional_processor import ConditionalProcessor
@@ -47,18 +48,19 @@ class EventManager:
             self.focus_manager,
             next_scenario_cb=self.to_callback_next_scenario)
 
+        self.display_text = DisplayText(self.render_manager)    # 描画用のtext
+
         # プロセッサー
         self.dice_service = DiceService()
         self.dice_processor = DiceProcessor(self.dice_service, self.skill_list, self.flags)
         self.damage_processor = DamageProcessor(self.dice_service, self.take_damage)
         self.conditional_processor = ConditionalProcessor(self.flags, self.game_state, self.to_callback_next_scenario)
         self.status_effect_processor = StatusEffectProcessor(self.dice_service, self.take_damage)
-        self.display_processor = DisplayProcessor(self.render_manager)
+        self.display_processor = DisplayProcessor(self.render_manager, self.display_text)
         self.action_processor = ActionProcessor(self.player, self.girl, self.flags, self.callbacks.on_room_refresh, self.move_to_room)
 
         self.pending_result_display = False # 結果表示待ちフラグ
         self.pending_dice_check = None      # 分岐情報
-        self.current_display_text = None    # 描画用の処理済みデータ
         
         # handle_damageで使用
         self.player_roll_result = None      # ダイスロールの結果
@@ -94,24 +96,16 @@ class EventManager:
             handler(step)
 
             if step["type"] in self.delete_display_text_action:
-                self.current_display_text = None
+                self.display_text.clear_text()
 
     # テキストの処理
     def handle_text(self, step: Dict[str, Any]):
         # display_processor で処理
-        text = self.display_processor.process_display(step)
-
-        # テキストが返ってきた場合のみ特殊処理
-        if text is not None:
-            self.current_display_text = text
-
-            # 結果表示中でない場合のみ通常テキストを使用
-            if self.pending_result_display:
-                return
+        self.display_processor.process_display(step)
 
     # 次のシナリオに進む
     def handle_next_step(self, step: Dict[str, Any]):
-        self.current_display_text = None
+        self.display_text.clear_text()
         self.to_callback_next_scenario(step["next"])
 
     # ダイスチェックをする
@@ -152,7 +146,7 @@ class EventManager:
 
             # 結果表示フラグを立てる
             self.pending_result_display = True
-            self.current_display_text = result_text
+            self.display_text.set_text(result_text)
         else:
             # どちらかのダイス結果が成功していれば成功の結果表示、どちらも失敗していれば失敗の結果表示をする
             success = player_check_result or girl_check_result
@@ -167,7 +161,7 @@ class EventManager:
 
             # 結果表示フラグをON
             self.pending_result_display = True
-            self.current_display_text = result_text
+            self.display_text.set_text(result_text)
 
         print(f"[DEBUG] ダイスチェック完了")
         print(f" 結果: {result_text}")
@@ -192,7 +186,7 @@ class EventManager:
 
         # 結果表示フラグを立てる
         self.pending_result_display =True
-        self.current_display_text = result_text
+        self.display_text.set_text(result_text)
 
         print(f"[DEBUG] ダメージ処理完了")
         print(f" player_roll_result: {self.player_roll_result}")
@@ -215,7 +209,7 @@ class EventManager:
             text = result.get("text", None)
             if text:
                 self.pending_result_display = True
-                self.current_display_text = text
+                self.display_text.set_text(text)
             
             if result["action"] == "black_out":
                 self.render_manager.handle_black_out(result["wait_duration"])
@@ -267,7 +261,7 @@ class EventManager:
         if result is not None:
             if "text" in result:
                 self.pending_result_display = True
-                self.current_display_text = result["text"]
+                self.display_text.set_text(result["text"])
 
             if "image" in result:
                 self.render_manager.show_item_image(result["image"])
@@ -303,11 +297,11 @@ class EventManager:
     # 少女の同行チェック
     def handle_girl_check(self, step: Dict[str, Any]):
         result = "true" if self.girl_fellow_check() else "false"
-        self.current_display_text = None
+        self.display_text.clear_text()
         self.to_callback_next_scenario(step[result])
 
     def handle_ending(self, step: Dict[str, Any]=None):
-        self.current_display_text = None
+        self.display_text.clear_text()
         self.set_ending()
 
     # 保留中の分岐情報を取得してクリアする      
@@ -321,12 +315,12 @@ class EventManager:
     # 結果表示フラグをクリアする
     def clear_result_display(self):
         self.pending_result_display = False
-        self.current_display_text = None
+        self.display_text.clear_text()
 
     # 結果表示フラグをセットする
     def set_result_display(self, text: str):
         self.pending_result_display = True
-        self.current_display_text = text
+        self.display_text.set_text(text)
 
     # テキストを表示するステップを作成して表示する
     def create_text_step(self, text: str):
@@ -440,9 +434,9 @@ class EventManager:
 
     # 表示する
     def draw(self):
-        if self.current_display_text:
-            self.render_manager.draw_text(self.current_display_text)
-        else:
-            self.text_frame_panel.set_text("")
+        #if self.current_display_text:
+        #    self.render_manager.draw_text(self.current_display_text)
+        #else:
+        #    self.render_manager.draw_text("")
 
         self.render_manager.draw()

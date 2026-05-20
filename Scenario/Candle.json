@@ -44,7 +44,7 @@
   "Candle_goes_out": [
     {
       "type": "text",
-      "text": "火が消えたろうそくがある。",
+      "text": "火の消えたろうそくが残っている。",
       "progression": "click"
     },
     { 
@@ -80,29 +80,6 @@
     }
   ],
   "Candle_objective": [
-    {
-      "type": "dice_check",
-      "check_type": "skill",
-      "skill": "目星",
-      "dice": "1d100",
-      "progression": "click",
-      "on_success": "Candle_objective_success",
-      "on_failure": "Candle_objective_failure"
-    }
-  ],
-  "Candle_goes_out_objective": [
-    {
-      "type": "dice_check",
-      "check_type": "skill",
-      "skill": "目星",
-      "dice": "1d100",
-      "half": true,
-      "progression": "click",
-      "on_success": "Candle_objective_success",
-      "on_failure": "Candle_objective_failure"
-    }
-  ],
-  "Candle_objective_success": [
     {
       "type": "conditional",
       "conditional_type": "text",
@@ -216,16 +193,6 @@
     {
       "type": "text",
       "text": "ろうそくは燃え尽きてしまっている。",
-      "progression": "click"
-    },
-    {
-      "type": "image_hidden"
-    }
-  ],
-  "Candle_objective_failure": [
-    {
-      "type": "text",
-      "text": "普通のろうそくだ。",
       "progression": "click"
     },
     {

@@ -894,3 +894,9 @@
 	scenario_managerのbranch_info[on_success]をdictからstrに変更してevent_managerのstepを開始するのではなく直接シナリオを開始する形に。
 	それに伴いシナリオの修正
 	Soupシナリオの更新（途中）
+
+2026/5/15
+	Soupシナリオの更新、Candleシナリオの修正、BlackLiquidシナリオの調整
+
+2026/5/19
+	display_textクラスを作成、event_managerのcurrent_display_textを置き換え。
