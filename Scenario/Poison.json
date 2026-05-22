@@ -1,0 +1,292 @@
+{
+  "Poison_adhere_to_hand":[
+    {
+      "type": "action",
+      "action": "set_flag",
+      "flag": {"black_liquid_to_hand": true}
+    },
+    {
+      "type": "text",
+      "text": "手に付いた黒い液体をあなたは……",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Poison_adhere_interaction"
+    }
+  ],
+  "Poison_adhere_to_finger":[
+    {
+      "type": "action",
+      "action": "set_flag",
+      "flag": {"soup_in_poison_to_finger": true}
+    },    
+    {
+      "type": "text",
+      "text": "指に付いた黒い液体をあなたは……",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Poison_adhere_interaction"
+    }
+  ],
+  "Poison_adhere_interaction": [
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "拭う",
+          "next": "Poison_wipe"
+        },
+        {
+          "text": "舐める",
+          "next": "Poison_lick_question"
+        },
+        {
+          "text": "調べる",
+          "next": "Black_liquid_check_up",
+          "show_if": {
+            "black_liquid_to_hand": true,
+            "black_liquid_know": false
+          }
+        },
+        {
+          "text": "そのままにする",
+          "next": "Poison_leave"
+        }
+      ]
+    }
+  ],
+  "Poison_wipe": [
+    {
+      "type": "conditional",
+      "conditional_type": "text_and_flag",
+      "conditions": [
+        {
+          "if": {"black_liquid_to_hand": true},
+          "text": "ローブの端で手を拭う。\n黒い染みが残ったが、液体の感触はなくなった。",
+          "flag": {"black_liquid_to_hand": false}
+        },
+        {
+          "if": {"soup_in_poison_to_finger": true},
+          "text": "ローブの端で指を拭う。\n黒い染みが残ったが、指先の感触はなくなった。",
+          "flag": {"soup_in_poison_to_finger": false}
+        }
+      ]
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Poison_lick_question": [
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "if": {"fellow": true},
+          "next": "Poison_lick_question_with_girl"
+        },
+        {
+          "if": {"fellow": false},
+          "next": "Poison_lick_question_alone"
+        }
+      ]
+    }
+  ],
+  "Poison_lick_question_with_girl": [
+    {
+      "type": "text",
+      "text": "少女がじっとあなたを見ている。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "本当に舐めるのか？と問うているようだ。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Poison_lick_question_command"
+    }
+  ],
+  "Poison_lick_question_alone": [
+    {
+      "type": "text",
+      "text": "本当に舐めますか？",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Black_liquid_lick_question_command"
+    }
+  ],
+  "Black_liquid_lick_question_command": [
+    {
+      "type": "interaction",
+      "interactions": [
+        {
+          "text": "舐める",
+          "next": "Poison_lick"
+        },
+        {
+          "text": "舐めずに拭う",
+          "next": "Poison_wipe"
+        },
+        {
+          "text": "舐めずにそのままにしておく",
+          "next": "Poison_leave"
+        }
+      ]
+    }
+  ],
+  "Poison_lick": [
+    {
+      "type": "text",
+      "text": "黒い液体を舐めてみた。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "舌先に触れた瞬間、花の蜜に似た甘さが広がる。",
+      "progression": "click"
+    },
+    {
+      "type": "poison_ingestion",
+      "target": "player"
+    },
+    {
+      "type": "next_step",
+      "next": "Poison_ingestion"
+    }
+  ],
+  "Poison_leave": [
+    {
+      "type": "conditional",
+      "conditions": [
+        {
+          "if": {"hp_damaged": true},
+          "next": "Poison_leave_wound_check"
+        },
+        {
+          "if": {"hp_damaged": false},
+          "next": "Poison_leave_end"
+        }
+      ]
+    }
+  ],
+  "Poison_leave_end": [
+    {
+      "type": "text",
+      "text": "特に問題はなさそうだ。\n付着した黒い液体はそのまま気にしないことにした。",
+      "progression": "click"
+    },
+    {
+      "type": "image_hidden"
+    }
+  ],
+  "Poison_leave_wound_check": [
+    {
+      "type": "dice_check",
+      "check_type": "skill",
+      "skill": "幸運",
+      "on_success": "Poison_leave_end",
+      "on_failure": "Poison_leave_wounded"
+    }
+  ],
+  "Poison_leave_wounded": [
+    {
+      "type": "text",
+      "text": "手のどこかに小さな傷があったようで、\nそこから黒い液体がじわりと染み込んでいく。",
+      "progression": "click"
+    },
+    {
+      "type": "next_step",
+      "next": "Poison_ingestion"
+    }
+  ],
+  "Poison_ingestion": [
+    {
+      "type": "image_hidden"
+    },
+    {
+      "type": "poison_start"
+    },
+    {
+      "type": "time_passage",
+      "value": 10
+    },
+    {
+      "type": "text",
+      "text": "突然呼吸と脈拍が早くなり、\n幻覚が見えだした。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "猛毒を摂取してしまったあなたは\n毒対抗ロールに成功しなければ死んでしまう。",
+      "progression": "click"
+    },
+    {
+      "type": "dice_check",
+      "check_type": "毒対抗ロール",
+      "POT": 25,
+      "target": "player",
+      "progression": "click",
+      "on_success": "Poison_ingestion_success",
+      "on_failure": "Poison_ingestion_failure"
+    }
+  ],
+  "Poison_ingestion_success": [
+    {
+      "type": "text",
+      "text": "あなたはHPとCONの1/2を無くしながらも\n命からがら生き残ることができた。",
+      "progression": "click"
+    },
+    {
+      "type": "dice_check",
+      "check_type": "SANチェック"
+    },
+    {
+      "type": "damage",
+      "status": "SAN",
+      "value": "0/1",
+      "text": "しかし猛毒の引き起こす幻覚から",
+      "damage": {
+        "type": "branch",
+        "target": "SAN",
+        "success": {
+          "type": "fixed", 
+          "value": 0
+        },
+        "failure": {
+          "type": "fixed", 
+          "value": 1
+        }
+      }
+    },
+    {
+      "type": "poison_end"
+    }
+  ],
+  "Poison_ingestion_failure": [
+    {
+      "type": "text",
+      "text": "幻覚があなたを襲い、\nどんどん呼吸と鼓動が激しくなっていく。",
+      "progression": "click"
+    },
+    {
+      "type": "text",
+      "text": "やがて鼓動は疲れ果て、あなたは死んでしまった。",
+      "progression": "click"
+    },
+    {
+      "type": "action",
+      "action": "set_flag",
+      "flag": {"ending1": true}
+    },
+    {
+      "type": "ending",
+      "next": "ending1"
+    }
+  ]    
+}

@@ -94,6 +94,7 @@ SCENARIO_FILES = [
     "Book.json",
     "BlackLiquid.json",
     "Candle.json",
+    "Poison.json",
     "Other.json",
     "Ending.json"
 ]

@@ -900,3 +900,7 @@
 
 2026/5/19
 	display_textクラスを作成、event_managerのcurrent_display_textを置き換え。
+
+2026/5/22
+	Other.jsonからPoison関係を分離、Poison.jsonの作成
+	Soup.json、BlackLiquid.jsonの重複内容をPoison.jsonにまとめ

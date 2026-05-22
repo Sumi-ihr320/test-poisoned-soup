@@ -78,9 +78,10 @@ class Flags:
 
         # アイテムの状態フラグ
         self.items = {
-            # スープに関するフラグ  (毒が入っているか、血だと知っているか、飲んだか、捨てたか)
+            # スープに関するフラグ  (毒が入っているか、それが指に付いているか、血だと知っているか、飲んだか、捨てたか)
             "soup_know":False,
             "soup_in_poison":False,
+            "soup_in_poison_to_finger":False,
             "soup_drink": False,
             "soup_destruction": False,
             # スープの器に関するフラグ（手に入れたか、中身があるか(新しいスープを補充したか)、毒を入れたか）

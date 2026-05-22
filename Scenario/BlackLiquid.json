@@ -22,7 +22,7 @@
     },
     {
       "type": "next_step",
-      "next": "Black_liquid_to_hand"
+      "next": "Poison_adhere_to_hand"
     }
   ],
   "Black_liquid_failure": [
@@ -33,72 +33,7 @@
     },
     {
       "type": "next_step",
-      "next": "Black_liquid_to_hand"
-    }
-  ],
-  "Black_liquid_to_hand": [
-    {
-      "type": "action",
-      "action": "set_flag",
-      "flag": {"black_liquid_to_hand": true}
-    },
-    {
-      "type": "text",
-      "text": "手に付いた黒い液体をあなたは……",
-      "progression": "click"
-    },
-    {
-      "type": "next_step", 
-      "next": "Black_liquid_to_hand_interaction"
-    }
-  ],
-  "Black_liquid_to_hand_interaction": [
-    {
-      "type": "interaction",
-      "interactions": [
-        {
-          "text": "拭う",
-          "next": "Black_liquid_wipe"
-        },
-        {
-          "text": "舐める",
-          "next": "Black_liquid_lick"
-        },
-        {
-          "text": "調べる",
-          "next": "Black_liquid_check_up",
-          "show_if": {"black_liquid_know": false}
-        },
-        {
-          "text": "そのままにする",
-          "next": "Black_liquid_nothing"
-        }
-      ]
-    }
-  ],
-  "Black_liquid_wipe": [
-    {
-      "type": "text",
-      "text": "黒い液体を服で拭った。",
-      "progression": "click"
-    },
-    {
-      "type": "action",
-      "action": "set_flag",
-      "flag": {"black_liquid_to_hand": false}
-    },
-    {
-      "type": "image_hidden"
-    }
-  ],
-  "Black_liquid_nothing": [
-    {
-      "type": "text",
-      "text": "そのまま気にしないことにした。",
-      "progression": "click"
-    },
-    {
-      "type": "image_hidden"
+      "next": "Poison_adhere_to_hand"
     }
   ],
   "Black_liquid_check_up": [
@@ -171,87 +106,6 @@
     },
     {
       "type": "image_hidden"
-    }
-  ],
-  "Black_liquid_lick_question": [
-    {
-      "type": "conditional",
-      "conditions": [
-        {
-          "if": {"fellow": true},
-          "next": "Black_liquid_lick_question_with_girl"
-        },
-        {
-          "if": {"fellow": false},
-          "next": "Black_liquid_lick_question_only_me"
-        }
-      ]
-    }
-  ],
-  "Black_liquid_lick_question_with_girl": [
-    {
-      "type": "text",
-      "text": "少女がじっとあなたを見ている。",
-      "progression": "click"
-    },
-    {
-      "type": "text",
-      "text": "本当に舐めるのか？と問うているようだ。",
-      "progression": "click"
-    },
-    {
-      "type": "next_step",
-      "next": "Black_liquid_lick_question_command"
-    }
-  ],
-  "Black_liquid_lick_question_only_me": [
-    {
-      "type": "text",
-      "text": "本当に舐めますか？",
-      "progression": "click"
-    },
-    {
-      "type": "next_step",
-      "next": "Black_liquid_lick_question_command"
-    }
-  ],
-  "Black_liquid_lick_question_command": [
-    {
-      "type": "interaction",
-      "interactions": [
-        {
-          "text": "舐める",
-          "next": "Black_liquid_lick"
-        },
-        {
-          "text": "舐めずに拭う",
-          "next": "Black_liquid_wipe"
-        },
-        {
-          "text": "舐めずにそのままにしておく",
-          "next": "Black_liquid_nothing"
-        }
-      ]
-    }
-  ],
-  "Black_liquid_lick": [
-    {
-      "type": "text",
-      "text": "黒い液体を舐めてみた。",
-      "progression": "click"
-    },
-    {
-      "type": "text",
-      "text": "舌先に触れた瞬間、花の蜜に似た甘さが広がる。",
-      "progression": "click"
-    },
-    {
-      "type": "poison_ingestion",
-      "target": "player"
-    },
-    {
-      "type": "next_step",
-      "next": "Poison_ingestion"
     }
   ]
 }
