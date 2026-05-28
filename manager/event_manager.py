@@ -2,6 +2,8 @@ from typing import Dict, Tuple, Any, Optional
 
 from constans import SKILL_DATA_PATH, JSON_FOLDER, State
 from utils import load_json
+from models.characters import Player, Human
+from core.game_state import GameStatus, Flags
 from ui.ui_cache import ImageCache
 from ui.ui_panels import TextFramePanel
 from ui.ui_command import Command
@@ -19,7 +21,7 @@ from .event_processors.display_processor import DisplayProcessor
 from .event_processors.action_processor import ActionProcessor
 
 class EventManager:
-    def __init__(self, screen, root, player=None, girl=None, game_state=None, flags=None, 
+    def __init__(self, screen, root, player: Optional[Player]=None, girl: Optional[Human]=None, game_state: Optional[GameStatus]=None, flags: Optional[Flags]=None, 
                  text_frame_panel: Optional[TextFramePanel]=None, log_view: Optional[LogView]=None, focus_manager: Optional[FocusManager]=None,
                  callbacks: Optional[EventCallbacks]=None):
         self.screen = screen
@@ -116,7 +118,7 @@ class EventManager:
 
         # ダイスチェックのターゲット指定がもしあればそのキャラクターだけ行う
         target = step.get("target", None)
-        player_flag, girl_flag = self.target_check(target)
+        player_flag, girl_flag = self.check_target(target)
 
         if player_flag:
             res = self.dice_processor.process_dice_roll(step, self.player)
@@ -173,7 +175,7 @@ class EventManager:
         # 誰がダメージを受けるのか
         target = step.get("target", None)
         characters = {}
-        player_flag, girl_flag = self.target_check(target)
+        player_flag, girl_flag = self.check_target(target)
         if player_flag:
             characters[self.player] = self.player_roll_result
         if girl_flag:
@@ -296,7 +298,7 @@ class EventManager:
 
     # 少女の同行チェック
     def handle_girl_check(self, step: Dict[str, Any]):
-        result = "true" if self.girl_fellow_check() else "false"
+        result = "true" if self.check_with_girl() else "false"
         self.display_text.clear_text()
         self.to_callback_next_scenario(step[result])
 
@@ -348,15 +350,15 @@ class EventManager:
         self.callbacks.on_scene_state_change(State.CLOSE)
 
     # 少女が一緒にいるかどうかのフラグチェック
-    def girl_fellow_check(self):
+    def check_with_girl(self):
         return self.flags.get_flag("girl", "fellow")
 
     # 少女に参加してもらうかのフラグチェック
-    def girl_flag_check(self):
+    def check_girl_participates_dice_check(self):
         return self.flags.get_flag("girl", "dice_check")
 
     # ターゲットが誰かのチェック
-    def target_check(self, target: str) -> Tuple[bool, bool]:
+    def check_target(self, target: str) -> Tuple[bool, bool]:
         player_flag, girl_flag = False, False
 
         # ターゲット指定が主人公のみの場合は主人公のみ
@@ -375,7 +377,7 @@ class EventManager:
         # 指定が無い場合プレイヤーは固定、少女はフラグの状態によって決定する
         else:
             player_flag = True
-            if self.girl_flag_check():
+            if self.check_girl_participates_dice_check():
                 girl_flag = True
 
         return player_flag, girl_flag
@@ -387,6 +389,18 @@ class EventManager:
         elif status == "HP":
             state = character.take_damage("event", int(damage))
 
+            # 1以上のダメージを受けた場合
+            if int(damage) > 0:
+                # 主人公ならgame_stateのhp_damagedをtrueに
+                if character == self.player:
+                    if not getattr(self.game_state, "hp_damaged"):
+                        setattr(self.game_state, "hp_damaged", True)
+
+                # 少女ならflagsのhp_damaged_gをtrueに
+                else:
+                    if not self.flags.get_flag_key_only("hp_damaged_g"):
+                        self.action_processor.set_flag_key_only("hp_damaged_g", True)
+                
         return state
 
     # イベントを処理（未完成※使用するか不明）

@@ -81,7 +81,7 @@ class ConfirmPage(BasePage):
         self.save_data["player_status"] = self.player.to_dict()
 
         # セーブデータに少女のデータを入れる
-        girl = Human("下僕の少女", "Girl.png", 4, 6, 10, 5, 10, 10,"-1d4", 8, 10, 10,
+        girl = Human("下僕の少女", "Girl.png", 4, 6, 10, 5, 10, 10,"-1d4", 10, 8, 8, 10, 10,
                         {"目星":55, "聞き耳":55, "忍び歩き":40,"隠れる":40,"応急手当":50, "中国語（母国語）":40, "追跡":50, "その他言語（主人公の母国語）":31,"クトゥルフ神話":15, "拳銃":20},
                         17, "woman", 13, 6, 50, 50, 30, 0, 0, "放浪者")
         girl.add_item(ITEM_LIST["bloody_robe"])

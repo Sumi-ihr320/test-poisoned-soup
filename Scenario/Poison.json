@@ -188,7 +188,7 @@
   "Poison_leave_wound_check": [
     {
       "type": "dice_check",
-      "check_type": "skill",
+      "check_type": "status",
       "skill": "幸運",
       "on_success": "Poison_leave_end",
       "on_failure": "Poison_leave_wounded"

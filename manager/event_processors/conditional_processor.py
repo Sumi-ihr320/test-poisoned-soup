@@ -86,7 +86,7 @@ class ConditionalProcessor:
             operator = "=="
             val = value
 
-        if key == "time":
+        if key in ["time", "hp_damaged"]:
             current = getattr(self.game_state, key)
         else:
             current = self.flags.get_flag_key_only(key)

@@ -3,10 +3,12 @@ import pygame
 from constans import FONT_PATH, SMALL_SIZ, BLACK, WHITE, ROOM_NAME
 from utils import setting_font, get_new_size, get_scales
 from ui.ui_elements import Image, Label
+from models.characters import Player, Human
+from core.game_state import GameStatus, Flags
 
 # 主人公の名前・HP・MPを左上、現在地を右上に表示する
 class PlayerDataView:
-    def __init__(self, screen, room_surface_rect, player, girl, game_state, flags):
+    def __init__(self, screen, room_surface_rect, player: Player, girl: Human, game_state: GameStatus, flags: Flags):
         self.screen = screen
         self.screen_size = screen.get_size()
         self.room_surface_rect = room_surface_rect
@@ -24,7 +26,7 @@ class PlayerDataView:
 
         self.create_surface()
 
-        self.create_image()
+        self.create_images()
 
         self.status_labels = None
         self.setting_labels()
@@ -47,10 +49,7 @@ class PlayerDataView:
         self.bg_surface.set_alpha(100)
 
     # imageを作成する
-    def create_image(self):
-        _, _, aspect_scale = get_scales(self.screen_size)
-        size = 0.4 * aspect_scale
-
+    def create_images(self):
         self.player_img = Image(screen=self.screen, path=self.player.image, scale=size, x=self.rect.x+10, y=self.rect.y+10, line_flag=True, bg_flag=True)
         self.player_img.cat_image(pygame.Rect(100, 50, 200, 300))
 
@@ -63,9 +62,14 @@ class PlayerDataView:
 
         #self.girl_img.set_rect(x=self.player_img.rect.x+self.player_img.rect.w+100, y=self.player_img.rect.y, centerx=None, centery=None)
 
+    def create_image(self, path, x, y):
+        _, _, aspect_scale = get_scales(self.screen_size)
+        size = 0.4 * aspect_scale
+        image = Image(screen=self.screen, path=path, scale=size, x=x)
+
     def setting_labels(self):
-        player_labels = self.create_label(self.player, self.player_img)
-        girl_labels = self.create_label(self.girl, self.girl_img)
+        player_labels = self.create_labels(self.player, self.player_img)
+        girl_labels = self.create_labels(self.girl, self.girl_img)
 
         current_room_label = Label(self.screen, font_data=self.font_data, text=ROOM_NAME[self.room_flag], x=self.room_surface_rect.right, y=self.room_surface_rect.y - 30, anchor=("right", "top"), text_color=WHITE)
         current_time_label = Label(self.screen, font_data=self.font_data, text=self.time, x=current_room_label.rect.x - 10, y=current_room_label.rect.y, anchor=("right", "top"), text_color=WHITE)   # デバッグ用
@@ -75,12 +79,18 @@ class PlayerDataView:
             self.status_labels += girl_labels
         self.status_labels += [current_room_label, current_time_label]
 
-    def create_label(self, character, character_img):
+    def create_labels(self, character: Player|Human, character_img):
         margin = 5
-        name_label = Label(self.screen, font_data=self.font_data, text=character.name, x=character_img.rect.x + character_img.rect.w + 10, y=character_img.rect.y + margin, text_color=WHITE)
-        hp_label = Label(self.screen, font_data=self.font_data, text=f"HP/{character.HP}", x=name_label.rect.x, y=name_label.rect.y + name_label.rect.h + margin, text_color=WHITE)
-        mp_label = Label(self.screen, font_data=self.font_data, text=f"MP/{character.MP}", x=name_label.rect.x, y=hp_label.rect.y + hp_label.rect.h + margin, text_color=WHITE)
-        return [name_label, hp_label, mp_label]
+        lbl_name = self.create_label(character.name, x=character_img.rect.x + character_img.rect.w + 10, y=character_img.rect.y + margin)
+        lbl_hp = self.create_label("HP/ ", x=lbl_name.rect.x, y=lbl_name.rect.y + lbl_name.rect.h + margin)
+        lbl_currenthp = self.create_label(f"{character.currentHP}", x=lbl_hp.rect.right, y=lbl_hp.rect.y)
+        lbl_slash = self.create_label(" / ", x=lbl_currenthp.rect.right, y=lbl_hp.rect.y)
+        lbl_maxhp = self.create_label(f"{character.maxHP}", x=lbl_slash.rect.right, y=lbl_hp.rect.y)
+        return [lbl_name, lbl_hp, lbl_currenthp, lbl_slash, lbl_maxhp]
+    
+    def create_label(self, text, x, y):
+        label = Label(self.screen, font_data=self.font_data, text=text, x=x, y=y, text_color=WHITE)
+        return label
 
     def draw(self):
         self.screen.blit(self.bg_surface, self.rect.topleft)

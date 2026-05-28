@@ -5,12 +5,14 @@ class GameStatus:
         self.time = 600
         self.room = "center"
         self.direction = "north"
+        self.hp_damaged = False
 
     def to_dict(self):
         return {
             "time": self.time,
             "room": self.room,
-            "direction": self.direction
+            "direction": self.direction,
+            "hp_damaged": self.hp_damaged
         }
 
     # 辞書からクラスインスタンスを作成    
@@ -20,7 +22,6 @@ class GameStatus:
         for key, value in data.items():
             if hasattr(state, key):
                 setattr(state, key, value)
-        
         return state
 
 
@@ -30,12 +31,13 @@ class Flags:
         # 少女のフラグ 
         self.girl = {
             # 少女のフラグ (会ったか、置いてきているなら現在地、付いてきているか、一緒にダイスチェックをしてもらうか、
-            #              担いでいるか、好感度、ポットの中を見ているか、狩りたてる恐怖を見ているか、気絶しているか、生きているか)
+            #              担いでいるか、HPが減っているか、好感度、ポットの中を見ているか、狩りたてる恐怖を見ているか、気絶しているか、生きているか)
             "meet":False,
             "room":"east",
             "fellow":False,
             "dice_check":False,
             "carry":False,
+            "hp_damaged_g": False,
             "like_ability":0,
             "pot_looked_g":False,
             "hunting_horrors_look_g":False,

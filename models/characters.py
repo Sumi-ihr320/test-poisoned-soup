@@ -3,7 +3,7 @@ from models.character_item import *
 
 # キャラクタークラス
 class Character:
-    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: Dict[str, Any]={}):
+    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", Dodge: int=0, maxHP: int=0, currentHP: int=0, maxMP: int=0, currentMP: int=0, skill: Dict[str, Any]={}):
         # 基本情報
         self.name = name
         self.image = image
@@ -17,9 +17,11 @@ class Character:
         self.POW = POW
         
         self.DB = DB
-        self.HP = HP
-        self.MP = MP
         self.Dodge = Dodge
+        self.maxHP = maxHP
+        self.currentHP = currentHP
+        self.maxMP = maxMP
+        self.currentMP = currentMP
  
         # 技能
         self.skill = skill
@@ -40,21 +42,29 @@ class Character:
             effective_damage = damage
 
         # HPが半分以上削られたかどうか判定
-        if (self.hp / 2) < effective_damage:
+        if (self.currentHP / 2) < effective_damage:
             state = "Shock"
 
-        self.hp = max(self.hp - effective_damage, 0)            # HPを減らす (0未満にならない)
+        self.currentHP = max(self.currentHP - effective_damage, 0)            # HPを減らす (0未満にならない)
 
         # 瀕死判定
-        if self.hp == 0:
+        if self.currentHP == 0:
             state = "Dying"
 
         # 気絶判定
-        elif self.hp <= 2:
+        elif self.currentHP <= 2:
             state = "Faint"
 
         return state
-    
+
+    # HPの回復処理
+    def recovery_HP(self, recovery_point: int):
+        self.currentHP = min(self.currentHP + recovery_point, self.maxHP)
+
+    # MPの回復処理
+    def recovery_MP(self, recovery_point: int):
+        self.currentMP = min(self.currentMP + recovery_point, self.maxMP)
+        
     # 辞書型に変換
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -63,7 +73,9 @@ class Character:
             "image":self.image,
             "STR":self.STR, "CON":self.CON, "SIZ":self.SIZ,
             "DEX":self.DEX, "INT":self.INT, "POW":self.POW,
-            "DB":self.DB, "HP":self.HP, "MP":self.MP, "Dodge":self.Dodge,
+            "DB":self.DB, "Dodge":self.Dodge, 
+            "maxHP": self.maxHP, "currentHP":self.currentHP, 
+            "maxMP":self.maxMP, "currentMP": self.currentMP,
             "skill": self.skill
         }
     
@@ -73,30 +85,31 @@ class Character:
         if data["type"] == "Player":
             character = Player(data["name"], data["image"], data["age"], data["sex"], data["STR"], data["CON"], data["SIZ"],
                                data["DEX"], data["APP"], data["EDU"], data["INT"], data["POW"], data["Luck"],
-                               data["Idea"], data["Know"], data["DB"], data["HP"], data["MP"], data["Dodge"],
-                               data["SAN"], data["max_SAN"], data["Profession"], data["skill"], [], data["Hobby"], data["girl_like_ability"])
+                               data["Idea"], data["Know"], data["DB"], data["Dodge"],
+                               data["maxHP"], data["currentHP"], data["maxMP"], data["currentMP"],
+                               data["currentSAN"], data["maxSAN"], data["Profession"], data["skill"], [], data["Hobby"], data["girl_like_ability"])
 
         elif data["type"] == "Human":
             character = Human(data["name"], data["image"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
-                            data["DB"], data["HP"], data["MP"], data["Dodge"], data["skill"],
+                            data["DB"], data["Dodge"], data["maxHP"], data["currentHP"], data["maxMP"], data["currentMP"], data["skill"],
                             data["age"], data["sex"], data["APP"], data["EDU"], data["Luck"], data["Idea"], data["Know"],
-                            data["SAN"], data["max_SAN"], data["Profession"], [])
+                            data["currentSAN"], data["maxSAN"], data["Profession"], [])
             character.inventory = [CharacterItem.from_dict(item) for item in data["inventory"]]
 
         elif data["type"] == "Enemy":
             character = Enemy(data["name"], data["image"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
-                            data["DB"], data["HP"], data["MP"], data["Dodge"], data["skill"], data["armor"])
+                            data["DB"], data["Dodge"], data["maxHP"], data["currentHP"], data["maxMP"], data["currentMP"], data["skill"], data["armor"])
 
         else:
             character = cls(data["name"], data["image"], data["STR"], data["CON"], data["SIZ"], data["DEX"], data["INT"], data["POW"],
-                            data["DB"], data["HP"], data["MP"], data["Dodge"], data["skill"])
+                            data["DB"], data["Dodge"], data["maxHP"], data["currentHP"], data["maxMP"], data["currentMP"], data["skill"])
 
         return character
 
 # 敵クラス
 class Enemy(Character):
-    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: Dict[str, Any]={}, armor: int=0):
-        super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
+    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", Dodge: int=0, maxHP: int=0, currentHP: int=0, maxMP: int=0, currentMP: int=0, skill: Dict[str, Any]={}, armor: int=0):
+        super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, Dodge, maxHP, currentHP, maxMP, currentHP, skill)
         self.armor = armor
 
     def check_armor(self):
@@ -109,9 +122,9 @@ class Enemy(Character):
 
 # 人間クラス
 class Human(Character):
-    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", HP: int=0, MP: int=0, Dodge: int=0, skill: Dict[str, Any]={}, age: int=0, sex: str="man",
-                 APP: int=0, EDU: int=0, Luck: int=0, Idea: int=0, Know: int=0, SAN: int=0, max_SAN: int=0, Profession: str="", inventory: List['CharacterItem']=[]):
-        super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill)
+    def __init__(self, name: str="", image: str="", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, INT: int=0, POW: int=0, DB: str="", Dodge: int=0, maxHP: int=0, currentHP: int=0, maxMP: int=0, currentMP: int=0, skill: Dict[str, Any]={}, age: int=0, sex: str="man",
+                 APP: int=0, EDU: int=0, Luck: int=0, Idea: int=0, Know: int=0, currentSAN: int=0, maxSAN: int=0, Profession: str="", inventory: List['CharacterItem']=[]):
+        super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, Dodge, maxHP, currentHP, maxMP, currentMP, skill)
         
         # 基本情報
         self.age = age
@@ -123,8 +136,8 @@ class Human(Character):
         self.Luck = Luck
         self.Idea = Idea
         self.Know = Know
-        self.SAN = SAN
-        self.max_SAN = max_SAN
+        self.currentSAN = currentSAN
+        self.maxSAN = maxSAN
         
         # 職業
         self.Profession = Profession
@@ -160,14 +173,14 @@ class Human(Character):
         if damage >= 5:
             state = "Temporary_madness"
 
-        self.SAN = max(self.SAN - damage, 0)
+        self.currentSAN = max(self.currentSAN - damage, 0)
 
         # 不定の狂気の判定
-        if (self.max_SAN - self.SAN) > (int(self.max_SAN / 0.2)):
+        if (self.maxSAN - self.currentSAN) > (int(self.maxSAN / 0.2)):
             state = "Indeterminate_madness"
 
         return state
-
+    
     def to_dict(self) -> Dict[str, Any]:
         data = super().to_dict()
         data["age"] = self.age
@@ -177,8 +190,8 @@ class Human(Character):
         data["Luck"] = self.Luck
         data["Idea"] = self.Idea
         data["Know"] = self.Know
-        data["SAN"] = self.SAN
-        data["max_SAN"] = self.max_SAN
+        data["currentSAN"] = self.currentSAN
+        data["maxSAN"] = self.maxSAN
         data["Profession"] = self.Profession
         data["inventory"] = [item.to_dict() for item in self.inventory]
         return data
@@ -186,9 +199,9 @@ class Human(Character):
 # 主人公クラス
 class Player(Human):
     def __init__(self, name: str="", image: str="silhouette_man.png", age: int=0, sex: str="man", STR: int=0, CON: int=0, SIZ: int=0, DEX: int=0, APP: int=0, EDU: int=0, INT: int=0, POW: int=0, Luck: int=0, Idea: int=0, Know: int=0, 
-                 DB: str="", HP: int=0, MP: int=0, Dodge: int=0, SAN: int=0, max_SAN: int=0, profession: str="", skill: Dict[str, Any]={}, inventory: List['CharacterItem']=[], hobby: str="", girl_like_ability: int=0):
-        super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, HP, MP, Dodge, skill,
-                         age, sex, APP, EDU, Luck, Idea, Know, SAN, max_SAN, profession, inventory)
+                 DB: str="", Dodge: int=0, maxHP: int=0, currentHP: int=0, maxMP: int=0, currentMP: int=0, currentSAN: int=0, maxSAN: int=0, profession: str="", skill: Dict[str, Any]={}, inventory: List['CharacterItem']=[], hobby: str="", girl_like_ability: int=0):
+        super().__init__(name, image, STR, CON, SIZ, DEX, INT, POW, DB, Dodge, maxHP, currentHP, maxMP, currentMP, skill,
+                         age, sex, APP, EDU, Luck, Idea, Know, currentSAN, maxSAN, profession, inventory)
         self.Hobby = hobby
         self.girl_like_ability = girl_like_ability
 

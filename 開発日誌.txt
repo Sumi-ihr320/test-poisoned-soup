@@ -904,3 +904,10 @@
 2026/5/22
 	Other.jsonからPoison関係を分離、Poison.jsonの作成
 	Soup.json、BlackLiquid.jsonの重複内容をPoison.jsonにまとめ
+
+2026/5/28
+	game_stateとflagsにhp_damagedを追加
+	event_managerのtake_damageにhp_damagedフラグの記述を追加
+	charactersのHP、MPをmaxとcurrentに変更。HPとMPの回復処理を追加。
+	status_pageを修正。MP表示を無しに。
+	player_data_viewの修正途中

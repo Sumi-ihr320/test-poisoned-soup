@@ -21,6 +21,8 @@ class StatusPage(BasePage):
     def create_status_items(self):
         font_data = self.font_datas[0]
         for status, items in self.status_data.items():
+            if status == "maxMP":
+                continue
             item = Status(self.screen, self, self.root, font_data=font_data, name=items["name"], status_name=status, label_name=items["view_name"], status=getattr(self.player, status),
                         x=items["x"], y=items["y"], w=items["w"], h=items["h"], hover_text=items["text"],
                         button_flag=items["button_flag"], input_flag=items["input_flag"], box_flag=items["box_flag"], dice_text=items["dice_text"],
@@ -38,7 +40,16 @@ class StatusPage(BasePage):
     
     # 更新されたデータをステータスに入力＋自動計算する
     def insert_data(self, status: Status):
-        setattr(self.player, status.status_name, status.input.get_value())
+        name = status.status_name
+        value = status.input.get_value()
+        setattr(self.player, name, value)
+
+        # HPとMPはcurrentの方も一緒に更新する
+        if name == "maxHP":
+            setattr(self.player, "currentHP", value)
+        elif name == "maxMP":
+            setattr(self.player, "currentMP", value)
+
         self.auto_calculation(status.status_name)
 
     # ステータスの自動計算
@@ -55,8 +66,8 @@ class StatusPage(BasePage):
 
         # 計算結果により変化するステータス
         response_status = {calculation_damage_bonus: ["DB"],
-                          calculation_health_point: ["HP"],
-                          calculation_power_related: ["MP","Luck","SAN"],
+                          calculation_health_point: ["maxHP"],
+                          calculation_power_related: ["maxMP","Luck","SAN"],
                           calculation_idea: ["Idea"],
                           calculation_educated_point: ["Know"],
                           calculation_avoid_point: ["Dodge"]}
