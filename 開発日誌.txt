@@ -911,3 +911,7 @@
 	charactersのHP、MPをmaxとcurrentに変更。HPとMPの回復処理を追加。
 	status_pageを修正。MP表示を無しに。
 	player_data_viewの修正途中
+
+2026/5/29
+	dice_processorのSANチェックを修正
+	player_data_viewの修正途中

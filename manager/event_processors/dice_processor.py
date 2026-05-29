@@ -38,7 +38,7 @@ class DiceProcessor:
 
         elif check_type == "SANチェック":
             status = "SAN"
-            threshold = getattr(character, status)
+            threshold = getattr(character, "currentSAN")
 
         elif check_type == "skill":
             #skill = step["skill"]
