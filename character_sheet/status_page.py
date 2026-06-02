@@ -44,12 +44,6 @@ class StatusPage(BasePage):
         value = status.input.get_value()
         setattr(self.player, name, value)
 
-        # HPとMPはcurrentの方も一緒に更新する
-        if name == "maxHP":
-            setattr(self.player, "currentHP", value)
-        elif name == "maxMP":
-            setattr(self.player, "currentMP", value)
-
         self.auto_calculation(status.status_name)
 
     # ステータスの自動計算
@@ -85,6 +79,10 @@ class StatusPage(BasePage):
                 for status in response_status[calculation]:
                     if name != "POW":
                         setattr(self.player, status, val)
+                    if status == "maxHP":
+                        setattr(self.player, "currentHP", val)
+                    elif status == "maxMP":
+                        setattr(self.player, "currentMP", val)
                     self.update_status_label(status, getattr(self.player, status))
     
     # ステータスラベルの更新

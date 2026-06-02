@@ -11,4 +11,4 @@ class DisplayText:
 
     def clear_text(self):
         self.text = ""
-        self.render_manager.hidden_current_text
+        self.render_manager.hide_current_text()

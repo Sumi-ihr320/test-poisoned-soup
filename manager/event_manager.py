@@ -194,7 +194,7 @@ class EventManager:
         print(f" player_roll_result: {self.player_roll_result}")
         print(f" girl_roll_result: {self.girl_roll_result}")
         print(f" state_record: {self.state_record}")
-        print(f" display_text: {self.current_display_text}")
+        print(f" display_text: {self.display_text.text}")
 
     # 時間を経過させる
     def handle_time_passage(self, step: Dict[str, Any]):
@@ -249,7 +249,7 @@ class EventManager:
                     self.set_flag(flag["category"], flag["flag"], flag["value"])
                 question = result.get("if_question", None)
                 if question and question == "player_fainted":
-                    if not self.render_manager.is_player_blackout_active():
+                    if not self.render_manager.is_blackout_active():
                         self.to_callback_next_scenario(result["next"])
 
             elif result["action"] == "next_scenario":
@@ -336,13 +336,13 @@ class EventManager:
     # 部屋移動イベント
     def move_to_room(self, room_id: str):
         self.game_state.time -= 2
-        self.render_manager.hidden_item_image()
-        self.render_manager.hidden_girl_image()
+        self.render_manager.hide_item_image()
+        self.render_manager.hide_girl_image()
         self.callbacks.on_room_transition(room_id)
 
     # 部屋の状態変化による再描画
     def on_room_refresh_requested(self):
-        self.render_manager.hidden_item_image()
+        self.render_manager.hide_item_image()
         self.callbacks.on_room_refresh()
         
     # エンディングに移行するためにコールバック関数にステータスを渡す

@@ -61,7 +61,7 @@ class MainPlayScene(BaseScene):
         self.controller.set_scenario_manager(self.scenario_manager)
  
         # ステータス表示
-        self.status_label = PlayerDataView(self.screen, room_surface_rect=self.room_manager.room.surface_rect, player=self.player_status, girl=self.girl_status, game_state=self.game_state, flags=self.flags)
+        self.status_view = PlayerDataView(self.screen, room_surface_rect=self.room_manager.room.surface_rect, player=self.player_status, girl=self.girl_status, game_state=self.game_state, flags=self.flags)
 
         # ナビゲーションバー
         self.navigation = MainNavigation(self.screen, surface_rect=self.room_manager.room.surface_rect)
@@ -267,13 +267,14 @@ class MainPlayScene(BaseScene):
 
     # 表示
     def draw(self):
-        self.room_manager.draw()        # 部屋の表示
+        # 部屋の表示
+        self.room_manager.draw()
 
-        self.navigation.draw()          # ナビゲーションバーの表示
+        # ナビゲーションバーの表示
+        self.navigation.draw()
 
         # ステータスの表示
-        self.status_label.update(self.player_status, self.girl_status, self.game_state, self.flags)
-        self.status_label.draw()
+        self.status_view.draw()
         
         # シナリオマネージャーの表示
         self.scenario_manager.draw()
@@ -286,9 +287,12 @@ class MainPlayScene(BaseScene):
 
     # 更新
     def update(self):
-
+        # シナリオマネージャーの更新
         if self.scenario_manager.is_active:
             self.scenario_manager.update()
+
+        # ステータス表示の更新
+        self.status_view.update(self.player_status, self.girl_status, self.game_state, self.flags)
 
         self.draw()
 

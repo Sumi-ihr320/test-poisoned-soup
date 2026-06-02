@@ -915,3 +915,8 @@
 2026/5/29
 	dice_processorのSANチェックを修正
 	player_data_viewの修正途中
+
+2025/6/2
+	player_data_viewの修正
+	細かな入力ミスの修正
+	paurse_menu.pyの作成、PauseMenuクラスの作成

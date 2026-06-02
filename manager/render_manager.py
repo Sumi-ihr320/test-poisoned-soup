@@ -52,7 +52,7 @@ class RenderManager:
         self.text_frame_panel.set_text(text)
         self.log_view.append(text)
 
-    def hidden_current_text(self):
+    def hide_current_text(self):
         self.text_frame_panel.set_text("")
 
     # 少女の立ち絵を表示する
@@ -71,7 +71,7 @@ class RenderManager:
                                 focusable=True)
         self.focus_manager.register(self.girl_image)
 
-    def hidden_girl_image(self):
+    def hide_girl_image(self):
         if self.girl_image and self.girl_image in self.focus_manager.elements:
             self.focus_manager.elements.remove(self.girl_image)
         self.girl_image = None
@@ -82,7 +82,7 @@ class RenderManager:
         self.item_image = Image(screen=self.screen, path=file_name, cache=self.image_cache, scale=scale, x="center", centery=200, line_flag=True, bg_flag=True)
 
     # 画像イメージを消す
-    def hidden_item_image(self):
+    def hide_item_image(self):
         self.item_image = None
 
     # コマンドメニューの生成
@@ -281,7 +281,7 @@ class RenderManager:
 
                     # 画像が最後の1枚になったら
                     if self.blackout_index <= 0:
-                        self.blackout_phase == "black"
+                        self.blackout_phase = "black"
                         self.blackout_timer = now
 
                 self.blackout_images[self.blackout_index].draw()

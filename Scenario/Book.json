@@ -5,7 +5,8 @@
       "image": "Book.png"
     },
     {
-      "type": "text_by_conditional",
+      "type": "conditional",
+      "conditional_type": "text",
       "conditions": [
         {
           "if": {"black_liquid_to_hand": true},
