@@ -160,6 +160,10 @@ class LogView:
         self.rebuild_all()
         self.close_image.relayout(screen)
 
+    def handle_click(self, element):
+        if element == self.close_image:
+            self.close()
+
     def draw(self):
         if not self.is_open:
             return

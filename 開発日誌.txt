@@ -920,3 +920,11 @@
 	player_data_viewの修正
 	細かな入力ミスの修正
 	paurse_menu.pyの作成、PauseMenuクラスの作成
+
+2025/6/3
+	pause_menuの更新
+	main_play_sceneに導入、それに伴うhandle_right_click周りの修正
+	focus_managerが右クリックを認識するように修正
+	x, yが"center"の場合にLabelでRectの作成ができなかった点を修正
+	RectSettingBaseのset_rectでx,yがcenterやcenterx,centeryに記述の場合はx,yにも値を入れるように修正、anchorがcenterの場合を追加
+	main_play_sceneで直接log_viewのis_openを弄っていた問題を修正、handle_clickを呼ぶ形に。

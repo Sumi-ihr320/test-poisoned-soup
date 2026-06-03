@@ -130,21 +130,26 @@ class FocusManager:
             result = self._handle_hover(pos)
             return result
         
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            pos = event.pos
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                pos = event.pos
 
-            # 展開中オーバーレイ優先
-            overlay = self._find_open_overlay(pos)
-            if overlay:
-                self._set_focus(overlay)
-                return self._handle_click(pos, overlay)
-            
-            # 通常判定
-            for el in self.elements:
-                if el.collidepoint(pos):
-                    self._set_focus(el)
-                    result = self._handle_click(pos, el)
-                    return result
+                # 展開中オーバーレイ優先
+                overlay = self._find_open_overlay(pos)
+                if overlay:
+                    self._set_focus(overlay)
+                    return self._handle_click(pos, overlay)
+                
+                # 通常判定
+                for el in self.elements:
+                    if el.collidepoint(pos):
+                        self._set_focus(el)
+                        result = self._handle_click(pos, el)
+                        return result
+
+            elif event.button == 3:
+                return {"action": "right_click", "pos": event.pos}
+                    
         return result
 
     # 仮想カーソル処理

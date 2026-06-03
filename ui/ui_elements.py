@@ -28,7 +28,21 @@ class Label(UIElement, RectSettingBase, TextBase):
 
     def update_text_surface(self, color: Optional[Tuple[int, int, int]]=None):
         super().update_text_surface(color)
-        self.rect = Rect(self.x, self.y, self.max_width, self.max_height)
+
+        # x, y が"center"の場合Rectが作れないので計算する
+        if self.x == "center":
+            centerx = self.parent_surface.get_rect().centerx
+            x = centerx - self.max_width // 2
+        else:
+            x = self.x
+
+        if self.y == "center":
+            centery = self.parent_surface.get_rect().centery
+            y = centery - self.max_height // 2
+        else:
+            y = self.y
+        
+        self.rect = Rect(x, y, self.max_width, self.max_height)
         self.rect = self.set_rect(self.rect)
         self.set_base_rect(self.rect)
 

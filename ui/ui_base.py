@@ -230,10 +230,13 @@ class RectSettingBase(ResizableMixin):
         
         if self.centerx:
             rect.centerx = self.centerx
+            self.x = rect.x
         
         else:
             if self.anchor[0] == "right":
                 rect.right = self.x
+            elif self.anchor[0] == "center":
+                rect.centerx = self.x
             else:
                 rect.left = self.x
 
@@ -242,9 +245,13 @@ class RectSettingBase(ResizableMixin):
 
         if self.centery:
             rect.centery = self.centery
+            self.y = rect.y
+            
         else:
             if self.anchor[1] == "bottom":
                 rect.bottom = self.y
+            elif self.anchor[1] == "center":
+                rect.centery = self.y
             else:
                 rect.top = self.y
         return rect

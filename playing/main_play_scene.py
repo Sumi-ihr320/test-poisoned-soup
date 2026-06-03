@@ -11,6 +11,7 @@ from base_scene import BaseScene
 from ui.ui_panels import TextFramePanel
 from ui.navigation import MainNavigation
 from ui.log_view import LogView
+from ui.pause_menu import PauseMenu
 from ui.ui_command import CommandButton
 from input.focus_manager import FocusManager
 from playing.room_manager import RoomManager
@@ -66,6 +67,9 @@ class MainPlayScene(BaseScene):
         # ナビゲーションバー
         self.navigation = MainNavigation(self.screen, surface_rect=self.room_manager.room.surface_rect)
         self.setup_navigetion()
+
+        # 右クリックメニュー
+        self.pause_menu = PauseMenu(self.screen, self.flags)
 
         self.register_all()
 
@@ -132,32 +136,45 @@ class MainPlayScene(BaseScene):
         return False
 
     # 右クリックイベント
-    def handle_click_right(self, event):
+    def handle_right_click(self):
         # シナリオ進行中は反応しない
-        if not self.scenario_manager.is_active:
-            # コマンドメニュー表示中は反応しない
-            if not self.event_manager.render_manager.command_menu:
-                pass
+        if self.scenario_manager.is_active:
+            return
+        
+        # コマンドメニュー表示中は反応しない
+        if self.event_manager.render_manager.command_menu:
+            return
+        
+        self.pause_menu.open()
+        self.register_focus_with_display_pause_menu()
 
     # クリックイベント
     def handle_click(self, pos):
         # シナリオ進行
         self.scenario_manager.on_click()
 
-        # シナリオ進行中ではない場合
-        if not self.scenario_manager.is_active:
-            # アイテムクリックイベント
-            if self.handle_item_click_event(pos):
-                return
+        # シナリオ進行中は反応しない
+        if self.scenario_manager.is_active:
+            return
+        
+        # 右クリックメニュー中は反応しない
+        if self.pause_menu.is_open:
+            return
+        
+        # アイテムクリックイベント
+        self.handle_item_click_event(pos)
 
     # マウスオーバー(デバッグ用)
     def handle_mouse_hover(self):
+        # 右クリックメニュー表示中は反応しない
+        if self.pause_menu.is_open:
+            return
+        
         if self.focus_manager.virtual_cursor.visible:
             key = self.focus_manager.virtual_cursor.get_pos()
         else:
             key = pygame.mouse.get_pos()
 
-        #self.event_manager.render_manager.handle_mouse_hover(key)
         self.room_manager.handle_mouse_hover(key)
 
     # フォーカスから帰ってきたアクションの処理
@@ -186,13 +203,26 @@ class MainPlayScene(BaseScene):
         elif action == "decide":
             # ログ表示画面のボタンの場合
             if result["target"] == self.log_view.close_image:
-                self.log_view.is_open = False
-                self.register_focus_with_close_log()
+                self.log_view.handle_click(result["target"])
+                
+                if not self.log_view.is_open:
+                    self.register_focus_with_close_log()
+            
+            # 右クリックメニューの場合
+            elif self.pause_menu.is_open:
+                self.pause_menu.handle_click(result["target"])
+
+                if not self.pause_menu.is_open:
+                    self.register_focus_with_close_pause_menu()
 
         # VirtualCursorのクリックイベント
         elif action == "cursor_click":
             pos = result["pos"]
             self.handle_click(pos)
+
+        # 右クリックだった場合
+        elif action == "right_click":
+            self.handle_right_click()
 
     # イベントハンドラ
     def handle_events(self):
@@ -212,11 +242,25 @@ class MainPlayScene(BaseScene):
                     if event.button == 1:
                         self.handle_click(event.pos)
                     
-                    """
                     # 右クリック
-                    elif event.button == 3:
-                        self.handle_click_right(event)
-                    """
+                    #elif event.button == 3:
+                    #    self.handle_right_click()                    
+
+    # 右クリックメニュー開始時のフォーカス登録
+    def register_focus_with_display_pause_menu(self):
+        # 全てのフォーカス削除
+        self.unregister_all()
+
+        # 右クリックメニューのフォーカス登録
+        self.pause_menu.register_all(self.focus_manager)
+
+    # 右クリックメニュー終了時のフォーカス登録
+    def register_focus_with_close_pause_menu(self):
+        # 右クリックメニューのフォーカス削除
+        self.pause_menu.unregister_all(self.focus_manager)
+
+        # 全てのフォーカス登録
+        self.register_all()
 
     # ログ表示開始時にセットするフォーカス登録
     def register_focus_with_display_log(self):
@@ -239,18 +283,21 @@ class MainPlayScene(BaseScene):
         # 1. LogView
         if self.log_view.is_open:
             self.log_view.register_all(self.focus_manager)
-        else:
-            self.log_view.unregister_all(self.focus_manager)
-        
-        # 2. TextFramePanel
+
+        # 2. PauseMenu
+        if self.pause_menu.is_open:
+            self.pause_menu.register_all(self.focus_manager)
+
+        # 3. TextFramePanel
         self.scenario_manager.register_all(self.focus_manager)
 
-        # 3.Navigation
+        # 4. Navigation
         self.navigation.update_register(self.focus_manager)
 
     # フォーカス全削除
     def unregister_all(self):
         self.log_view.unregister_all(self.focus_manager)
+        self.pause_menu.unregister_all(self.focus_manager)
         self.scenario_manager.unregister_all(self.focus_manager)
         self.navigation.unregister_all(self.focus_manager) 
 
@@ -278,6 +325,9 @@ class MainPlayScene(BaseScene):
         
         # シナリオマネージャーの表示
         self.scenario_manager.draw()
+
+        # 右クリックメニューの表示
+        self.pause_menu.draw()
 
         # ログ表示
         self.log_view.draw()

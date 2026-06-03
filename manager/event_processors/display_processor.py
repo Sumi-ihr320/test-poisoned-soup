@@ -90,7 +90,7 @@ class DisplayProcessor:
 
     # アイテム画像の非表示
     def handle_image_hidden(self):
-        self.render_manager.hidden_item_image()
+        self.render_manager.hide_item_image()
 
     # 少女立ち絵の表示
     def handle_girl_display(self, step: Dict):
@@ -100,4 +100,4 @@ class DisplayProcessor:
     
     # 少女立ち絵の非表示
     def handle_girl_hidden(self):
-        self.render_manager.hidden_girl_image()
+        self.render_manager.hide_girl_image()
