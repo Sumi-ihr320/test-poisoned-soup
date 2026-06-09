@@ -69,6 +69,7 @@ class MainPlayScene(BaseScene):
         self.setup_navigetion()
 
         # 右クリックメニュー
+        self.current_overlay = None
         self.pause_menu = PauseMenu(self.screen, self.flags)
 
         self.register_all()
@@ -145,7 +146,8 @@ class MainPlayScene(BaseScene):
         if self.event_manager.render_manager.command_menu:
             return
         
-        self.pause_menu.open()
+        self.pause_menu.open(self.flags)
+        self.current_overlay = "pause_menu"
         self.register_focus_with_display_pause_menu()
 
     # クリックイベント
@@ -210,9 +212,15 @@ class MainPlayScene(BaseScene):
             
             # 右クリックメニューの場合
             elif self.pause_menu.is_open:
-                self.pause_menu.handle_click(result["target"])
+                selected_action = self.pause_menu.handle_click(result["result"])
+                if selected_action == "status":
+                    self.current_overlay = "status"
+                    
+                elif selected_action == "inventry":
+                    self.current_overlay = "inventry"
 
-                if not self.pause_menu.is_open:
+                elif selected_action == "close":
+                    self.current_overlay = None
                     self.register_focus_with_close_pause_menu()
 
         # VirtualCursorのクリックイベント

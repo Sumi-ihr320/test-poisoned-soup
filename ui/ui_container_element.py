@@ -17,7 +17,7 @@ class ContainerLabel(Label):
         if self.collidepoint(pos):
             self.on_decide()
             return self.parent_container
-        return False
+        return None
 
 # コンテナ用のボタン（クリックした際に親コンテナを返す）
 class ContainerButton(Button):
