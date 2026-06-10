@@ -3,8 +3,8 @@ import pygame
 from constans import FONT_SIZ, FONT_PATH, BLACK, WHITE, GRAY
 from utils import get_scales
 from core.game_state import Flags
-from ui.ui_container import UIContainer
 from ui.ui_elements import Label
+from ui.overlays.overlay_view import OverlayView
 
 class PauseMenuLabel(Label):
     def __init__(self, screen, font_data, text, x="center", y = 0, centerx = None, centery = None, anchor=("center", "center"), 
@@ -21,16 +21,12 @@ class PauseMenuLabel(Label):
             return self.action
         return None
     
-class PauseMenu(UIContainer):
-    def __init__(self, screen, flags: Flags):
+class PauseMenu(OverlayView):
+    def __init__(self, screen):
         super().__init__(screen)
 
-        self.is_open = False
-
-        self.decide_options(flags)
-
-        self.create_surface()
-        self.build_menu()
+        self.menu_options = None
+        self.font_size = FONT_SIZ
 
     # メニューの選択肢を確認する
     def decide_options(self, flags: Flags):
@@ -47,13 +43,6 @@ class PauseMenu(UIContainer):
                     self.menu_options.append(menu)
             else:
                 self.menu_options.append(menu)
-
-    # surfaceを作成する
-    def create_surface(self):
-        self.size = self.screen.get_size()
-        self.surface = pygame.Surface(self.size)
-        self.surface.fill(BLACK)
-        self.surface.set_alpha(200)
 
     # フォントサイズを計算する
     def calculate_font_size(self):
@@ -73,13 +62,10 @@ class PauseMenu(UIContainer):
             self.add(lbl_menu)
 
     def open(self, flags: Flags):
-        self.is_open = True
+        super().open()
         self.clear()
         self.decide_options(flags)
         self.build_menu()
-
-    def close(self):
-        self.is_open = False
 
     def handle_click(self, result: str):
         selected_action = result
@@ -95,15 +81,9 @@ class PauseMenu(UIContainer):
 
         return selected_action
 
-    def relayout(self, screen, parent=None):
-        super().relayout(screen, parent)
-        self.create_surface()
+    def relayout(self, screen):
+        super().relayout(screen, parent=None)
+
         self.clear()
         self.build_menu()
 
-    def draw(self):
-        if not self.is_open:
-            return
-        
-        self.screen.blit(self.surface, (0, 0))
-        super().draw()

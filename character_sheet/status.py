@@ -13,6 +13,7 @@ from input.focus_manager import FocusManager
 from manager.dice_service import DiceService
 
 # ステータス作るよ
+# 名称変更候補：StatusInputItem
 class Status(UIContainer):
     MAX_STATUS_VALUE = 99
 

@@ -11,7 +11,7 @@ from base_scene import BaseScene
 from ui.ui_panels import TextFramePanel
 from ui.navigation import MainNavigation
 from ui.log_view import LogView
-from ui.pause_menu import PauseMenu
+from ui.overlays.pause_menu import PauseMenu
 from ui.ui_command import CommandButton
 from input.focus_manager import FocusManager
 from playing.room_manager import RoomManager
