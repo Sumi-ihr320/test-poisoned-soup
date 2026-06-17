@@ -2,7 +2,7 @@ import pygame
 
 from constans import FONT_PATH, SMALL_SIZ
 from utils import get_new_size, get_scales
-from ui.overlays.overlay_view import OverlayView
+from ui.overlays.overlay_view import OverlayView, OverlayCloseButton
 from ui.ui_elements import Image, Label
 from models.characters import Player, Human
 from core.game_state import Flags
@@ -15,7 +15,9 @@ class CharacterStatusView(OverlayView):
         self.girl = None
         self.flags = None
 
-        self.font_data = (FONT_PATH, self.calculate_font_size)
+        self.create_close_button()
+
+        self.font_data = (FONT_PATH, self.calculate_font_size())
 
         # キャラクターシートのサイズ
         self.sheet_size = self.calculate_sheet_size()
@@ -44,12 +46,12 @@ class CharacterStatusView(OverlayView):
         startx = x
         title_y = y
         character_status_dict = self.set_status(character)
-        for status in character_status_dict:
+        for key, status in character_status_dict.items():
             lbl_title = self.create_label(text=status["text"], x=x, y=y)
             x += lbl_title.max_width
             title_y = y
             lbl_status = self.create_label(text=str(status["status"]), x=x, y=y)
-            status_items[status] = {"title": lbl_title, "status": lbl_status}
+            status_items[key] = {"title": lbl_title, "status": lbl_status}
             if status in ["name", "currentHP", "currentSAN", "STR", "DEX", "INT", "Idea", "DB"]:
                 x = startx
                 y += lbl_status.max_height + margeny
@@ -91,6 +93,11 @@ class CharacterStatusView(OverlayView):
     # キャラクターシートたちを構成する
     def build_character_sheets(self):
         pass
+
+    def create_close_button(self):
+        screen_rect = self.screen.get_rect()
+        self.close_button = OverlayCloseButton(self.screen, x=screen_rect.right-20, y=20)
+        self.add(self.close_button)
 
     def open(self, player: Player, girl: Human, flags: Flags):
         super().open()

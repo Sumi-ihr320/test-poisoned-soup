@@ -7,7 +7,7 @@ from core.game_state import GameStatus, Flags
 from ui.ui_cache import ImageCache
 from ui.ui_panels import TextFramePanel
 from ui.ui_command import Command
-from ui.log_view import LogView
+from ui.overlays.log_view import LogView
 from input.focus_manager import FocusManager
 from .render_manager import RenderManager
 from .event_callbacks import EventCallbacks

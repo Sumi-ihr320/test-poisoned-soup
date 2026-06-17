@@ -84,6 +84,6 @@ class PauseMenu(OverlayView):
     def relayout(self, screen):
         super().relayout(screen, parent=None)
 
-        self.clear()
-        self.build_menu()
-
+        if self.is_open:
+            self.clear()
+            self.build_menu()

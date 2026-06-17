@@ -10,8 +10,10 @@ from models.characters import Player, Human
 from base_scene import BaseScene
 from ui.ui_panels import TextFramePanel
 from ui.navigation import MainNavigation
-from ui.log_view import LogView
+from ui.overlays.log_view import LogView
+from ui.overlays.overlay_view import OverlayView
 from ui.overlays.pause_menu import PauseMenu
+from ui.overlays.character_status_view import CharacterStatusView
 from ui.ui_command import CommandButton
 from input.focus_manager import FocusManager
 from playing.room_manager import RoomManager
@@ -70,7 +72,8 @@ class MainPlayScene(BaseScene):
 
         # 右クリックメニュー
         self.current_overlay = None
-        self.pause_menu = PauseMenu(self.screen, self.flags)
+        self.pause_menu = PauseMenu(self.screen)
+        self.character_status_view = CharacterStatusView(self.screen)
 
         self.register_all()
 
@@ -136,6 +139,12 @@ class MainPlayScene(BaseScene):
                 return True        
         return False
 
+    # 右クリックメニューを開く
+    def handle_pause_menu_open(self):
+        self.pause_menu.open(self.flags)
+        self.current_overlay = "pause_menu"
+        self.register_focus_with_display_overlay(self.pause_menu)
+
     # 右クリックイベント
     def handle_right_click(self):
         # シナリオ進行中は反応しない
@@ -146,9 +155,7 @@ class MainPlayScene(BaseScene):
         if self.event_manager.render_manager.command_menu:
             return
         
-        self.pause_menu.open(self.flags)
-        self.current_overlay = "pause_menu"
-        self.register_focus_with_display_pause_menu()
+        self.handle_pause_menu_open()
 
     # クリックイベント
     def handle_click(self, pos):
@@ -204,24 +211,30 @@ class MainPlayScene(BaseScene):
 
         elif action == "decide":
             # ログ表示画面のボタンの場合
-            if result["target"] == self.log_view.close_image:
-                self.log_view.handle_click(result["target"])
-                
-                if not self.log_view.is_open:
-                    self.register_focus_with_close_log()
+            if self.log_view.is_open:
+                selected_action = self.log_view.handle_click(result["result"])
+                if selected_action == "close":
+                    self.register_focus_with_close_overlay(self.log_view)
             
             # 右クリックメニューの場合
             elif self.pause_menu.is_open:
                 selected_action = self.pause_menu.handle_click(result["result"])
                 if selected_action == "status":
+                    self.character_status_view.open(self.player_status, self.girl_status, self.flags)
+                    self.register_focus_with_display_overlay(self.character_status_view)
                     self.current_overlay = "status"
                     
-                elif selected_action == "inventry":
-                    self.current_overlay = "inventry"
+                elif selected_action == "inventory":
+                    self.current_overlay = "inventory"
 
                 elif selected_action == "close":
                     self.current_overlay = None
-                    self.register_focus_with_close_pause_menu()
+                    self.register_focus_with_close_overlay(self.pause_menu)
+
+            elif self.character_status_view.is_open:
+                selected_action = self.character_status_view.handle_click(result["result"])
+                if selected_action == "close":
+                    self.handle_pause_menu_open()
 
         # VirtualCursorのクリックイベント
         elif action == "cursor_click":
@@ -254,18 +267,18 @@ class MainPlayScene(BaseScene):
                     #elif event.button == 3:
                     #    self.handle_right_click()                    
 
-    # 右クリックメニュー開始時のフォーカス登録
-    def register_focus_with_display_pause_menu(self):
+    # オーバーレイ関連を開いた時のフォーカス登録
+    def register_focus_with_display_overlay(self, page: OverlayView):
         # 全てのフォーカス削除
         self.unregister_all()
 
-        # 右クリックメニューのフォーカス登録
-        self.pause_menu.register_all(self.focus_manager)
+        # 各ページのフォーカス登録
+        page.register_all(self.focus_manager)
 
-    # 右クリックメニュー終了時のフォーカス登録
-    def register_focus_with_close_pause_menu(self):
-        # 右クリックメニューのフォーカス削除
-        self.pause_menu.unregister_all(self.focus_manager)
+    # オーバーレイ関連を閉じた時のフォーカス登録
+    def register_focus_with_close_overlay(self, page: OverlayView):
+        # 各ページのフォーカス削除
+        page.unregister_all(self.focus_manager)
 
         # 全てのフォーカス登録
         self.register_all()
@@ -288,24 +301,17 @@ class MainPlayScene(BaseScene):
 
     # フォーカス全登録
     def register_all(self):
-        # 1. LogView
-        if self.log_view.is_open:
-            self.log_view.register_all(self.focus_manager)
-
-        # 2. PauseMenu
-        if self.pause_menu.is_open:
-            self.pause_menu.register_all(self.focus_manager)
-
-        # 3. TextFramePanel
+        # 1. TextFramePanel
         self.scenario_manager.register_all(self.focus_manager)
 
-        # 4. Navigation
+        # 2. Navigation
         self.navigation.update_register(self.focus_manager)
 
     # フォーカス全削除
     def unregister_all(self):
         self.log_view.unregister_all(self.focus_manager)
         self.pause_menu.unregister_all(self.focus_manager)
+        self.character_status_view.unregister_all(self.focus_manager)
         self.scenario_manager.unregister_all(self.focus_manager)
         self.navigation.unregister_all(self.focus_manager) 
 
@@ -336,6 +342,9 @@ class MainPlayScene(BaseScene):
 
         # 右クリックメニューの表示
         self.pause_menu.draw()
+
+        # キャラクター情報確認ページの表示
+        self.character_status_view.draw()
 
         # ログ表示
         self.log_view.draw()
@@ -370,8 +379,8 @@ class MainPlayScene(BaseScene):
             return "setting", self.save_data
         elif self.state == State.LOG:
             self.state = State.NONE
-            self.log_view.is_open = True
-            self.register_focus_with_display_log()
+            self.log_view.open()
+            self.register_focus_with_display_overlay(self.log_view)
         elif self.state == State.CLOSE:
             self.state = State.NONE
             return "ending", self.save_data

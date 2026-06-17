@@ -4,7 +4,7 @@ from pygame.locals import *
 from constans import State
 from utils import Close
 from ui.ui_panels import TextFramePanel
-from ui.log_view import LogView
+from ui.overlays.log_view import LogView
 from input.focus_manager import FocusManager
 from manager.event_manager import EventManager
 from manager.scenario_manager import ScenarioManager
@@ -136,7 +136,7 @@ class OpeningScene(BaseScene):
             return "setting"
         elif self.state == State.LOG:
             self.state = State.NONE
-            self.log_view.is_open = True
+            self.log_view.open()
             self.register_focus_with_display_log()
 
         elif self.state == State.CLOSE:

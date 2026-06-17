@@ -9,7 +9,7 @@ from ui.ui_elements import Image
 from ui.ui_cache import ImageCache
 from ui.ui_command import CommandMenu, Command
 from ui.ui_panels import TextFramePanel
-from ui.log_view import LogView
+from ui.overlays.log_view import LogView
 from input.focus_manager import FocusManager
 
 class RenderManager:

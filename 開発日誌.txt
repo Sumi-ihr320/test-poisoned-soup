@@ -938,3 +938,9 @@
 	pause_menuをoverlaysフォルダへ。
 	overlayの基礎クラスであるoverlay_view.pyを作成。PauseMenuをOverlayViewを継承したものに変更。
 	character_status_view.pyを作成。途中。
+
+2026/6/16
+	overlay_view.pyにOverlayCloseButtonを作成。
+	character_status_viewの更新。close_buttonを作成。
+	main_play_sceneでregister_focus_with_display_overlayとclose_overlayを作成。どのoverlayでも同じ動作に。
+	log_viewをoverlaysフォルダに移動。OverlayViewを継承したものに変更。修正は途中。

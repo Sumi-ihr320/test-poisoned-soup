@@ -7,7 +7,7 @@ from utils import get_new_size, setting_font, Close
 from manager.sound_manager import sound_manager
 from ui.ui_elements import Button, TextFrameLabel, Label
 from ui.ui_container import UIContainer
-from ui.log_view import LogView
+from ui.overlays.log_view import LogView
 from input.focus_manager import FocusManager
 
 # メニュー用のボタン

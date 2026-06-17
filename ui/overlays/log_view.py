@@ -2,19 +2,15 @@ import pygame
 
 from constans import FONT_PATH, FONT_SIZ, WHITE, BLACK_ALPHA
 from utils import setting_font
-from ui.ui_elements import Image
 from ui.ui_cache import SurfaceCache
 from ui.ui_base import RichTextRenderer
+from ui.overlays.overlay_view import OverlayView, OverlayCloseButton
 
-class LogView:
+class LogView(OverlayView):
     def __init__(self, screen, parent=None, font_data=(FONT_PATH, FONT_SIZ), padding=12, text_color=WHITE,
                  max_entries=500, block_spacing=8):
-        self.screen = screen
-        self.screen_size = screen.get_size()
-
-        self.parent = parent
-        self.parent_surface = parent.surface if parent is not None else screen
-
+        super().__init__(screen, parent)
+ 
         self.frame_rect = None
         self._setting_rect()
         self.padding = padding
@@ -40,16 +36,15 @@ class LogView:
         self.scroll_y = 0
 
         # ×ボタン
-        self.close_image = Image(self.screen, path="close_button.png", scale=0.5, 
-                                 x=self.frame_rect.right - 10, y=self.frame_rect.y + 10, anchor=("right", "top"),
-                                 focusable=True)
-
-        # 表示フラグ
-        self.is_open = False
+        self.create_close_button()
 
         # options
         self.show_background = True
         self.background_color = BLACK_ALPHA
+
+    def create_close_button(self):
+        self.close_button = OverlayCloseButton(self.screen, x=self.frame_rect.right - 10, y=self.frame_rect.y + 10)
+        self.add(self.close_button)
 
     # 描画領域ののrectを設定する
     def _setting_rect(self):
@@ -131,42 +126,18 @@ class LogView:
         self._recompute_layout()
         self.scroll_to_bottom()
 
-    # フォーカスマネージャーに登録
-    def register_all(self, focus_manager):
-        focus_manager.register(self.close_image)
-
-    # フォーカスマネージャーから削除
-    def unregister_all(self, focus_manager):
-        if self.close_image in focus_manager.elements:
-            focus_manager.elements.remove(self.close_image)
-
-    # ログ表示を終了
-    def close(self):
-        self.is_open = False
-
-    def handle_click(self, pos):
-        if self.close_image.handle_click(pos):
-            self.close()
-
     # 画面サイズ変更時の全アイテム更新
     def relayout(self, screen, parent=None):
-        self.screen = screen
-        self.screen_size = screen.get_size()
-        self.parent = parent
-        self.parent_surface = parent.surface if parent is not None else screen
+        super().relayout(screen, parent)
         self._setting_rect()
         self._entry_font()
         self.cache.clear()
         self.rebuild_all()
-        self.close_image.relayout(screen)
+        self.close_button.relayout(screen)
 
-    def handle_click(self, element):
-        if element == self.close_image:
-            self.close()
-
+    #def draw(self):
     def draw(self):
-        if not self.is_open:
-            return
+        super().draw()
         
         # 背景
         if self.show_background:
@@ -198,5 +169,3 @@ class LogView:
                     continue
                 self.parent_surface.blit(surf, (ox + x, oy + vy))
 
-        # 閉じるボタン
-        self.close_image.draw()
