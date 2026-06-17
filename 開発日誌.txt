@@ -944,3 +944,8 @@
 	character_status_viewの更新。close_buttonを作成。
 	main_play_sceneでregister_focus_with_display_overlayとclose_overlayを作成。どのoverlayでも同じ動作に。
 	log_viewをoverlaysフォルダに移動。OverlayViewを継承したものに変更。修正は途中。
+
+2026/6/17
+	main_play_sceneにswitch_overlayを作成。
+	overlay_viewにOverlayViewsを作成。
+	character_status_viewにImage追加。

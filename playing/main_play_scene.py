@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pygame
 from pygame.locals import *
 
@@ -11,7 +13,7 @@ from base_scene import BaseScene
 from ui.ui_panels import TextFramePanel
 from ui.navigation import MainNavigation
 from ui.overlays.log_view import LogView
-from ui.overlays.overlay_view import OverlayView
+from ui.overlays.overlay_view import OverlayView, OverlayViews
 from ui.overlays.pause_menu import PauseMenu
 from ui.overlays.character_status_view import CharacterStatusView
 from ui.ui_command import CommandButton
@@ -75,6 +77,8 @@ class MainPlayScene(BaseScene):
         self.pause_menu = PauseMenu(self.screen)
         self.character_status_view = CharacterStatusView(self.screen)
 
+        self.overlay_views = OverlayViews(self.pause_menu, self.character_status_view, None, None)
+
         self.register_all()
 
         self.scenario_manager.start_scenario(room_id)
@@ -109,7 +113,34 @@ class MainPlayScene(BaseScene):
             position_list = [Position.UNDER]
         self.navigation.setup_navigation(position_list)
         self.navigation.update_register(self.focus_manager)
-    
+
+    # オーバーレイのページ変更処理
+    def switch_overlay(self, prev_page: Optional[OverlayViews], next_page: Optional[OverlayViews]):
+        if prev_page is None and next_page is None:
+            return
+
+        if prev_page:
+            if next_page is None:
+                self.register_focus_with_close_overlay(prev_page)
+            else:
+                prev_page.close()
+                prev_page.unregister_all(self.focus_manager)
+                    
+        if next_page:
+            if next_page is self.overlay_views.menu:
+                next_page.open(self.flags)
+
+            elif next_page is self.overlay_views.status:
+                next_page.open(self.player_status, self.girl_status, self.flags)
+                
+            else:
+                next_page.open()
+            
+            if prev_page is None:
+                self.register_focus_with_display_overlay(next_page)
+            else:
+                next_page.register_all(self.focus_manager)
+
     # アイテムクリック時のイベント
     def handle_item_click_event(self, pos):
         for item in self.room_manager.room.items_select_list:
@@ -139,12 +170,6 @@ class MainPlayScene(BaseScene):
                 return True        
         return False
 
-    # 右クリックメニューを開く
-    def handle_pause_menu_open(self):
-        self.pause_menu.open(self.flags)
-        self.current_overlay = "pause_menu"
-        self.register_focus_with_display_overlay(self.pause_menu)
-
     # 右クリックイベント
     def handle_right_click(self):
         # シナリオ進行中は反応しない
@@ -155,7 +180,7 @@ class MainPlayScene(BaseScene):
         if self.event_manager.render_manager.command_menu:
             return
         
-        self.handle_pause_menu_open()
+        self.switch_overlay(None, self.overlay_views.menu)
 
     # クリックイベント
     def handle_click(self, pos):
@@ -220,21 +245,20 @@ class MainPlayScene(BaseScene):
             elif self.pause_menu.is_open:
                 selected_action = self.pause_menu.handle_click(result["result"])
                 if selected_action == "status":
-                    self.character_status_view.open(self.player_status, self.girl_status, self.flags)
-                    self.register_focus_with_display_overlay(self.character_status_view)
                     self.current_overlay = "status"
+                    self.switch_overlay(self.overlay_views.menu, self.overlay_views.status)
                     
                 elif selected_action == "inventory":
                     self.current_overlay = "inventory"
 
                 elif selected_action == "close":
                     self.current_overlay = None
-                    self.register_focus_with_close_overlay(self.pause_menu)
+                    self.switch_overlay(self.overlay_views.menu, None)
 
             elif self.character_status_view.is_open:
                 selected_action = self.character_status_view.handle_click(result["result"])
                 if selected_action == "close":
-                    self.handle_pause_menu_open()
+                    self.switch_overlay(self.overlay_views.status, self.overlay_views.menu)
 
         # VirtualCursorのクリックイベント
         elif action == "cursor_click":
@@ -282,22 +306,6 @@ class MainPlayScene(BaseScene):
 
         # 全てのフォーカス登録
         self.register_all()
-
-    # ログ表示開始時にセットするフォーカス登録
-    def register_focus_with_display_log(self):
-        # ログ表示のフォーカス登録
-        self.log_view.register_all(self.focus_manager)
-
-        # ナビゲーションのフォーカス削除
-        self.navigation.unregister_all(self.focus_manager)
-
-    # ログ表示終了時にセットするフォーカス登録
-    def register_focus_with_close_log(self):
-        # ログ表示のフォーカス削除
-        self.log_view.unregister_all(self.focus_manager)
-
-        # ナビゲーションのフォーカス登録
-        self.navigation.update_register(self.focus_manager)
 
     # フォーカス全登録
     def register_all(self):

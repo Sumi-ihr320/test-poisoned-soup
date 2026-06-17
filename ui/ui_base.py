@@ -19,7 +19,13 @@ class UIElement:
 
         self.parent = parent
 
-        self.parent_surface = parent.surface if parent is not None else screen
+        if parent is not None:
+            if hasattr(parent, "surface"):
+                self.parent_surface = parent.surface
+            elif isinstance(parent, pygame.Surface):
+                self.parent_surface = parent
+        else:
+            self.parent_surface = screen
 
         self.result_type = result_type
 

@@ -46,7 +46,7 @@ class LogView(OverlayView):
         self.close_button = OverlayCloseButton(self.screen, x=self.frame_rect.right - 10, y=self.frame_rect.y + 10)
         self.add(self.close_button)
 
-    # 描画領域ののrectを設定する
+    # 描画領域のrectを設定する
     def _setting_rect(self):
         screen_rect = self.screen.get_rect()
         x, y, w, h = screen_rect.x + 10, screen_rect.y + 10, screen_rect.w - 20, screen_rect.h - 20
@@ -92,6 +92,7 @@ class LogView(OverlayView):
         self.scroll_to_bottom()
 
     def clear(self):
+        self.children.clear()
         self.entries.clear()
         self.total_h = 0
         self.scroll_y = 0
@@ -137,7 +138,10 @@ class LogView(OverlayView):
 
     #def draw(self):
     def draw(self):
-        super().draw()
+        if not self.is_open:
+            return
+        
+        self.screen.blit(self.surface, (0, 0))
         
         # 背景
         if self.show_background:
@@ -169,3 +173,5 @@ class LogView(OverlayView):
                     continue
                 self.parent_surface.blit(surf, (ox + x, oy + vy))
 
+        for c in self.children:
+            c.draw()

@@ -1,8 +1,11 @@
+from typing import Optional
+from dataclasses import dataclass
+
 import pygame
 
 from constans import BLACK
 from ui.ui_container import UIContainer
-from ui.ui_elements import Image
+from ui.ui_elements import Image    
 
 class OverlayCloseButton(Image):
     def __init__(self, screen, path="close_button.png", cache = None, scale = 0.2, x = 0, y = 0, centerx = None, centery = None, line_flag = False, line_width = 1, bg_flag = False, size_wh = None, anchor = ("right", "top"), 
@@ -59,3 +62,10 @@ class OverlayView(UIContainer):
         
         self.screen.blit(self.surface, (0, 0))
         super().draw()
+
+@dataclass()
+class OverlayViews:
+    menu: Optional[OverlayView]
+    status: Optional[OverlayView]
+    inventory: Optional[OverlayView]
+    talk_girl: Optional[OverlayView]

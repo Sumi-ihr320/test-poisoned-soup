@@ -211,7 +211,8 @@ class TextFramePanel(UIContainer):
 
     def unregister_all(self, focus_manager: FocusManager):
         self.menu_bar.unregister_all(focus_manager)
-        focus_manager.elements.remove(self.next_label)
+        if self.next_label in focus_manager.elements:
+            focus_manager.elements.remove(self.next_label)
 
     def relayout(self, screen, parent=None):
         super().relayout(screen, parent)
