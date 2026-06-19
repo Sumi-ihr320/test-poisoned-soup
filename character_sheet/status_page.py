@@ -61,7 +61,7 @@ class StatusPage(BasePage):
         # 計算結果により変化するステータス
         response_status = {calculation_damage_bonus: ["DB"],
                           calculation_health_point: ["maxHP"],
-                          calculation_power_related: ["maxMP","Luck","SAN"],
+                          calculation_power_related: ["maxMP","Luck","maxSAN"],
                           calculation_idea: ["Idea"],
                           calculation_educated_point: ["Know"],
                           calculation_avoid_point: ["Dodge"]}
@@ -76,13 +76,15 @@ class StatusPage(BasePage):
                 if name == "POW":
                     for status, value in val.items():
                         setattr(self.player, status, value)
+                        if status == "maxMP":
+                            setattr(self.player, "currentMP", value)
+                        elif status == "maxSAN":
+                            setattr(self.player, "currentSAN", value)
                 for status in response_status[calculation]:
                     if name != "POW":
                         setattr(self.player, status, val)
-                    if status == "maxHP":
-                        setattr(self.player, "currentHP", val)
-                    elif status == "maxMP":
-                        setattr(self.player, "currentMP", val)
+                        if status == "maxHP":
+                            setattr(self.player, "currentHP", val)
                     self.update_status_label(status, getattr(self.player, status))
     
     # ステータスラベルの更新

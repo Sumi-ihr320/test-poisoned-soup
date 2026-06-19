@@ -115,7 +115,7 @@ class MainPlayScene(BaseScene):
         self.navigation.update_register(self.focus_manager)
 
     # オーバーレイのページ変更処理
-    def switch_overlay(self, prev_page: Optional[OverlayViews], next_page: Optional[OverlayViews]):
+    def switch_overlay(self, prev_page: Optional[OverlayView], next_page: Optional[OverlayView]):
         if prev_page is None and next_page is None:
             return
 

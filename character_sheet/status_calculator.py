@@ -22,7 +22,7 @@ def calculation_health_point(player: Player) -> int:
 def calculation_power_related(player: Player) -> Dict[str, int]:
     # MP、幸運、SAN値の計算
     pow_val = player.POW
-    return {"MP":pow_val, "Luck":pow_val * 5, "SAN":pow_val * 5}
+    return {"maxMP":pow_val, "Luck":pow_val * 5, "maxSAN":pow_val * 5}
 
 # アイデアの計算
 def calculation_idea(player: Player) -> int:

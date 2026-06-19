@@ -949,3 +949,7 @@
 	main_play_sceneにswitch_overlayを作成。
 	overlay_viewにOverlayViewsを作成。
 	character_status_viewにImage追加。
+
+2026/6/19
+	各キャラクターの顔画像作成。
+	dataclass CharacterStatusElements作成
