@@ -121,12 +121,14 @@ class MainPlayScene(BaseScene):
 
         if prev_page:
             if next_page is None:
+                self.current_overlay = None
                 self.register_focus_with_close_overlay(prev_page)
             else:
                 prev_page.close()
                 prev_page.unregister_all(self.focus_manager)
                     
         if next_page:
+            self.current_overlay = next_page
             if next_page is self.overlay_views.menu:
                 next_page.open(self.flags)
 
@@ -192,7 +194,7 @@ class MainPlayScene(BaseScene):
             return
         
         # 右クリックメニュー中は反応しない
-        if self.pause_menu.is_open:
+        if self.current_overlay is not None:
             return
         
         # アイテムクリックイベント
@@ -201,7 +203,7 @@ class MainPlayScene(BaseScene):
     # マウスオーバー(デバッグ用)
     def handle_mouse_hover(self):
         # 右クリックメニュー表示中は反応しない
-        if self.pause_menu.is_open:
+        if self.current_overlay is not None:
             return
         
         if self.focus_manager.virtual_cursor.visible:
@@ -256,7 +258,7 @@ class MainPlayScene(BaseScene):
                     self.switch_overlay(self.overlay_views.menu, None)
 
             elif self.character_status_view.is_open:
-                selected_action = self.character_status_view.handle_click(result["result"])
+                selected_action = self.character_status_view.handle_click(result["target"], result["result"])
                 if selected_action == "close":
                     self.switch_overlay(self.overlay_views.status, self.overlay_views.menu)
 

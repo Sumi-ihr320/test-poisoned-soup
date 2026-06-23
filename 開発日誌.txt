@@ -953,3 +953,9 @@
 2026/6/19
 	各キャラクターの顔画像作成。
 	dataclass CharacterStatusElements作成
+
+2026/6/23
+	SheetTransitionButtonの作成
+	CaracterStatusElementsを2ページに対応できるように修正
+	各アイテムのparentをrectに変更したり等修正
+	各シートに2ページ目（技能一覧ページ）作りたい。
