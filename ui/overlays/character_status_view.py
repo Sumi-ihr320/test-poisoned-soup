@@ -8,18 +8,19 @@ from utils import get_new_size, get_scales
 from ui.overlays.overlay_view import OverlayView, OverlayCloseButton
 from ui.ui_elements import Image, Label
 from ui.ui_cache import ImageCache
+from ui.sheet_slide_system import SheetSlideSystem
 from models.characters import Player, Human
 from core.game_state import Flags
 
 @dataclass
 class CharacterStatusElements:
-    surface_1: pygame.Surface
-    rect_1: pygame.Rect
-    background_image_1: Image
+    status_surface: pygame.Surface
+    status_rect: pygame.Rect
+    status_background_image: Image
 
-    surface_2: Optional[pygame.Surface]
-    rect_2: Optional[pygame.Rect]
-    background_image_2: Optional[Image]
+    skill_surface: Optional[pygame.Surface]
+    skill_rect: Optional[pygame.Rect]
+    skill_background_image: Optional[Image]
 
     character_image: Image
 
@@ -28,7 +29,7 @@ class CharacterStatusElements:
     status_labels: List[Label]
     next_skill_button: Label
     prev_status_button: Label
-
+        
 class SheetTransitionButton(Label):
     def __init__(self, screen, font_data, text, sheet_rect, x = 0, y = 0, centerx = None, centery = None, anchor = ("right", "bottom"), 
                  text_color = BLACK, background_color = None, 
@@ -182,9 +183,10 @@ class CharacterStatusView(OverlayView):
         character_image = self.create_character_image(character, character_sheet_rect)
         character_status_labels = self.create_status_labels(character, character_image.rect, character_sheet_surface, ofset=character_sheet_rect.topleft)
         character_sheet_buttons = self.create_transition_buttons(character_sheet_rect, row)
-        sheet = CharacterStatusElements(surface_1=character_sheet_surface, rect_1=character_sheet_rect, 
-                                        background_image_1=character_sheet_bg, 
-                                        surface_2=None, rect_2=None, background_image_2=None,
+
+        sheet = CharacterStatusElements(status_surface=character_sheet_surface, status_rect=character_sheet_rect, 
+                                        status_background_image=character_sheet_bg, 
+                                        skill_surface=None, skill_rect=None, skill_background_image=None,
                                         character_image=character_image,
                                         current_hp_label=character_status_labels["currentHP"], current_san_label=character_status_labels["currentSAN"], 
                                         status_labels=character_status_labels["labels"], 
@@ -193,13 +195,18 @@ class CharacterStatusView(OverlayView):
 
     # キャラクターシートたちを構成する
     def build_character_sheets(self):
+        player_rect_height = self.player_sheet.status_rect.height
+
         x = self.screen_size[0] // 2 - self.sheet_size[0] // 2
         self.player_sheet = self.build_character_sheet(self.player, (x, 15), row=1)
-        girl_y = 15 + self.player_sheet.rect_1.height + 15
+        
+        girl_y = 15 + player_rect_height + 15
         self.girl_sheet = self.build_character_sheet(self.girl, (x, girl_y), row=2)
 
     def create_close_button(self):
-        self.close_button = OverlayCloseButton(self.screen, x=self.player_sheet.rect_1.right-10, y=self.player_sheet.rect_1.y+10)
+        player_sheet_rect = self.player_sheet.status_rect
+
+        self.close_button = OverlayCloseButton(self.screen, x=player_sheet_rect.right-10, y=player_sheet_rect.y+10)
         self.add(self.close_button)        
 
     def open(self, player: Player, girl: Human, flags: Flags):
@@ -231,6 +238,53 @@ class CharacterStatusView(OverlayView):
         
         return selected_action
 
+    """
+    # ページを表示する
+    def draw_page(self):
+        current, current_rect = self.draw_page_get_surface_and_rect(self.current_page)
+        current_x = current_rect.x - self.slide_offset
+        self.screen.blit(current, (current_x, current_rect.y))
+
+        if self.is_sliding:
+            target, target_rect = self.draw_page_get_surface_and_rect(self.target_page)
+            target_x = self.screen_size[0] - self.slide_offset if self.target_page > self.current_page else - self.screen_size[0] - self.slide_offset
+            self.screen.blit(target, (target_x, target_rect.y))
+
+        self.navigation.draw(self.current_page)
+        self.text_frame_panel.draw()
+        self.focus_manager.draw()
+
+    # ページを表示してSurfaceとRectを返す
+    def draw_page_get_surface_and_rect(self, page: int) -> Tuple[pygame.Surface, pygame.Rect]:
+        return self.pages[page].draw()
+
+    # 次のページを表示
+    def next_page(self):
+        if self.current_page < len(self.pages) - 1:
+            self.target_page = self.current_page + 1
+            self.is_sliding = True
+            self.change_register_page(self.target_page)
+    
+    # 前のページを表示
+    def prev_page(self):
+        if self.current_page > 0:
+            self.target_page = self.current_page - 1
+            self.is_sliding = True
+            self.change_register_page(self.target_page)
+
+    def update(self):
+        # スライドアニメーションの進行
+        if self.is_sliding:
+            direction = 1 if self.target_page > self.current_page else -1
+            self.slide_offset += self.slide_speed * direction
+
+            # 1ページ分スライドしきったら
+            if abs(self.slide_offset) >= self.screen_size[0]:
+                self.current_page = self.target_page
+                self.slide_offset = 0
+                self.is_sliding = False
+    """
+                
     def relayout(self, screen):
         super().relayout(screen, parent=None)
 
@@ -240,15 +294,15 @@ class CharacterStatusView(OverlayView):
             c.relayout(screen, parent=None)
 
     def draw_sheet(self, elements: CharacterStatusElements):
-        self.screen.blit(elements.surface_1, elements.rect_1)
-        elements.background_image_1.draw()
+        self.screen.blit(elements.status_surface, elements.status_rect)
+        elements.status_background_image.draw()
 
         elements.character_image.draw()
         elements.current_hp_label.draw()
         elements.current_san_label.draw()
         for label in elements.status_labels:
             label.draw()
-        elements.next_skill_button.draw()
+        #elements.next_skill_button.draw()
         
     def draw(self):
         if not self.is_open:

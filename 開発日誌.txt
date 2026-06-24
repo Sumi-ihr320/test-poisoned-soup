@@ -959,3 +959,7 @@
 	CaracterStatusElementsを2ページに対応できるように修正
 	各アイテムのparentをrectに変更したり等修正
 	各シートに2ページ目（技能一覧ページ）作りたい。
+
+2023/6/24
+	character_sheet_sceneのスライドシステムをuiに分離。SheetSlideSystemを作成
+	character_status_viewで使いたい。
