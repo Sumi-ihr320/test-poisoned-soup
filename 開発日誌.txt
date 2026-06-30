@@ -960,6 +960,11 @@
 	各アイテムのparentをrectに変更したり等修正
 	各シートに2ページ目（技能一覧ページ）作りたい。
 
-2023/6/24
+2026/6/24
 	character_sheet_sceneのスライドシステムをuiに分離。SheetSlideSystemを作成
 	character_status_viewで使いたい。
+
+2026/6/30
+	sheet_slide_system.pyをsheet_slide.pyに変更
+	SheetSlideSystemをSheetSlideStateとSheetSlideRendererに分割
+	SlideSheetクラスを作成。

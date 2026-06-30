@@ -8,7 +8,7 @@ from utils import get_new_size, get_scales
 from ui.overlays.overlay_view import OverlayView, OverlayCloseButton
 from ui.ui_elements import Image, Label
 from ui.ui_cache import ImageCache
-from ui.sheet_slide_system import SheetSlideSystem
+from ui.sheet_slide import SlideSheet, SheetSlideState, SheetSlideRenderer
 from models.characters import Player, Human
 from core.game_state import Flags
 
@@ -59,6 +59,9 @@ class CharacterStatusView(OverlayView):
 
         # キャラクターシートのサイズ
         self.sheet_size = self.calculate_sheet_size()
+
+        self.sheet_slide_state = None
+        self.sheet_slide_renderer = SheetSlideRenderer(self.screen)
 
     # シートサイズの計算
     def calculate_sheet_size(self) -> Tuple[int, int]:
@@ -195,11 +198,10 @@ class CharacterStatusView(OverlayView):
 
     # キャラクターシートたちを構成する
     def build_character_sheets(self):
-        player_rect_height = self.player_sheet.status_rect.height
-
         x = self.screen_size[0] // 2 - self.sheet_size[0] // 2
         self.player_sheet = self.build_character_sheet(self.player, (x, 15), row=1)
-        
+
+        player_rect_height = self.player_sheet.status_rect.height
         girl_y = 15 + player_rect_height + 15
         self.girl_sheet = self.build_character_sheet(self.girl, (x, girl_y), row=2)
 
@@ -253,36 +255,6 @@ class CharacterStatusView(OverlayView):
         self.navigation.draw(self.current_page)
         self.text_frame_panel.draw()
         self.focus_manager.draw()
-
-    # ページを表示してSurfaceとRectを返す
-    def draw_page_get_surface_and_rect(self, page: int) -> Tuple[pygame.Surface, pygame.Rect]:
-        return self.pages[page].draw()
-
-    # 次のページを表示
-    def next_page(self):
-        if self.current_page < len(self.pages) - 1:
-            self.target_page = self.current_page + 1
-            self.is_sliding = True
-            self.change_register_page(self.target_page)
-    
-    # 前のページを表示
-    def prev_page(self):
-        if self.current_page > 0:
-            self.target_page = self.current_page - 1
-            self.is_sliding = True
-            self.change_register_page(self.target_page)
-
-    def update(self):
-        # スライドアニメーションの進行
-        if self.is_sliding:
-            direction = 1 if self.target_page > self.current_page else -1
-            self.slide_offset += self.slide_speed * direction
-
-            # 1ページ分スライドしきったら
-            if abs(self.slide_offset) >= self.screen_size[0]:
-                self.current_page = self.target_page
-                self.slide_offset = 0
-                self.is_sliding = False
     """
                 
     def relayout(self, screen):

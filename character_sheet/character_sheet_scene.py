@@ -1,5 +1,4 @@
-from typing import Tuple, List
-from dataclasses import dataclass
+from typing import Tuple
 
 import pygame
 from pygame.locals import *
@@ -11,7 +10,7 @@ from input.focus_manager import FocusManager
 
 from ui.ui_panels import TextFramePanel
 from ui.navigation import CharasheetNavigation
-from ui.sheet_slide_system import SheetSlideSystem
+from ui.sheet_slide import SlideSheet, SheetSlideState, SheetSlideRenderer
 from character_sheet.status_page import StatusPage
 from character_sheet.profession_page import ProfessionPage
 from character_sheet.confirm_page import ConfirmPage
@@ -43,17 +42,9 @@ class CharacterSheetScene(BaseScene):
         self.pages = []
         self.create_pages(frame_rect)
 
-        self.sheet_slide_system = SheetSlideSystem(self.screen, self.pages)
-
-        # 現在のページ
-        #self.current_page = 0
-        # 次のページ
-        #self.target_page = 1
-
         # スライド関係
-        #self.is_sliding = False
-        #self.slide_offset = 0
-        #self.slide_speed = 40
+        self.sheet_slide_state = SheetSlideState(len(self.pages), self.screen_size[0])
+        self.sheet_slide_renderer = SheetSlideRenderer(self.screen)
 
         # ナビゲーション
         surface_rect = self.status_page.rect
@@ -100,47 +91,28 @@ class CharacterSheetScene(BaseScene):
         
     # すべての要素をフォーカスマネージャーに登録する
     def register_all(self):
-        self.change_register_page(self.sheet_slide_system.get_current_page())
+        self.change_register_page(self.sheet_slide_state.get_current_page())
         self.text_frame_panel.register_all(self.focus_manager)
 
     # ページを表示する
     def draw_page(self):
-        """
-        current, current_rect = self.draw_page_get_surface_and_rect(self.current_page)
-        current_x = current_rect.x - self.slide_offset
-        self.screen.blit(current, (current_x, current_rect.y))
+        current_sheet = self.draw_page_get_sheet(self.sheet_slide_state.get_current_page())
+        target_sheet = None
 
-        if self.is_sliding:
-            target, target_rect = self.draw_page_get_surface_and_rect(self.target_page)
-            target_x = self.screen_size[0] - self.slide_offset if self.target_page > self.current_page else - self.screen_size[0] - self.slide_offset
-            self.screen.blit(target, (target_x, target_rect.y))
-        """
-        current_surface_and_rect = self.draw_page_get_surface_and_rect(self.sheet_slide_system.get_current_page())
-        target_surface_and_rect = self.draw_page_get_surface_and_rect(self.sheet_slide_system.get_target_page())
-        self.sheet_slide_system.draw(current_surface_and_rect, target_surface_and_rect)
-        self.navigation.draw(self.sheet_slide_system.current_page)
+        if self.sheet_slide_state.is_sliding:
+            target_sheet = self.draw_page_get_sheet(self.sheet_slide_state.get_target_page())
+
+        self.sheet_slide_renderer.draw(self.sheet_slide_state, current_sheet, target_sheet)
+
+        self.navigation.draw(self.sheet_slide_state.current_page)
         self.text_frame_panel.draw()
         self.focus_manager.draw()
-
-    # ページを表示してSurfaceとRectを返す
-    def draw_page_get_surface_and_rect(self, page: int) -> Tuple[pygame.Surface, pygame.Rect]:
-        return self.pages[page].draw()
-
-    """
-    # 次のページを表示
-    def next_page(self):
-        if self.current_page < len(self.pages) - 1:
-            self.target_page = self.current_page + 1
-            self.is_sliding = True
-            self.change_register_page(self.target_page)
-    
-    # 前のページを表示
-    def prev_page(self):
-        if self.current_page > 0:
-            self.target_page = self.current_page - 1
-            self.is_sliding = True
-            self.change_register_page(self.target_page)
-    """
+        
+    # ページを表示してsheetを返す
+    def draw_page_get_sheet(self, page: int) -> Tuple[pygame.Surface, pygame.Rect]:
+        surface, rect = self.pages[page].draw()
+        sheet = SlideSheet(surface, rect)
+        return sheet
             
     # イベントハンドラ
     def handle_events(self):
@@ -167,19 +139,19 @@ class CharacterSheetScene(BaseScene):
                         result_text = result["result"]
                         if result_text in ["next", "prev"]:
                             if result_text == "next":
-                                self.sheet_slide_system.next_page()
+                                self.sheet_slide_state.next_page()
                             elif result_text == "prev":
-                                self.sheet_slide_system.prev_page()
-                            self.change_register_page(self.sheet_slide_system.get_target_page())
+                                self.sheet_slide_state.prev_page()
+                            self.change_register_page(self.sheet_slide_state.get_target_page())
                         elif result_text == "finalize":
-                            if self.sheet_slide_system.get_current_page() == 1 and self.is_pulldown_open:
+                            if self.sheet_slide_state.get_current_page() == 1 and self.is_pulldown_open:
                                 self.is_pulldown_open = False
                             self.confirm_page.handle_click(result_text)
 
                     # その他の場合
                     if result["action"] == "decide":                        
                         # ステータスページの場合
-                        current_page = self.sheet_slide_system.get_current_page()
+                        current_page = self.sheet_slide_state.get_current_page()
                         if current_page == 0:
                             self.status_page.handle_click(result["target"], result["result"])
 
@@ -209,7 +181,7 @@ class CharacterSheetScene(BaseScene):
 
     def update(self):
         # スライドアニメーションの進行
-        self.sheet_slide_system.update()
+        self.sheet_slide_state.update()
         """
         if self.is_sliding:
             direction = 1 if self.target_page > self.current_page else -1
