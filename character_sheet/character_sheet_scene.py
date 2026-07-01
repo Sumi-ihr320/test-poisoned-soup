@@ -43,7 +43,7 @@ class CharacterSheetScene(BaseScene):
         self.create_pages(frame_rect)
 
         # スライド関係
-        self.sheet_slide_state = SheetSlideState(len(self.pages), self.screen_size[0])
+        self.sheet_slide_state = SheetSlideState(self.screen_size[0], len(self.pages))
         self.sheet_slide_renderer = SheetSlideRenderer(self.screen)
 
         # ナビゲーション

@@ -1,3 +1,4 @@
+from typing import Optional
 from dataclasses import dataclass
 
 import pygame
@@ -8,7 +9,7 @@ class SlideSheet:
     rect: pygame.Rect
 
 class SheetSlideState:
-    def __init__(self, page_count: int, slide_width: int):
+    def __init__(self, slide_width: int, page_count: Optional[int] = 0):
 
         self.page_count = page_count
         self.slide_width = slide_width
@@ -50,7 +51,7 @@ class SheetSlideState:
         return False
 
     def reset_page(self):
-        self.current_page = 0
+        self.set_current_page(0)
 
     def set_sliding(self, flag: bool):
         self.is_sliding = flag
@@ -58,13 +59,13 @@ class SheetSlideState:
     # 次のページを表示
     def next_page(self):
         if self.current_page < self.page_count - 1:
-            self.target_page = self.current_page + 1
+            self.set_target_page(self.current_page + 1)
             self.is_sliding = True
     
     # 前のページを表示
     def prev_page(self):
         if self.current_page > 0:
-            self.target_page = self.current_page - 1
+            self.set_target_page(self.current_page - 1)
             self.is_sliding = True
 
     def update(self):
@@ -75,7 +76,7 @@ class SheetSlideState:
 
             # 1ページ分スライドしきったら
             if abs(self.slide_offset) >= self.slide_width:
-                self.current_page = self.target_page
+                self.set_current_page(self.target_page)
                 self.slide_offset = 0
                 self.is_sliding = False
 

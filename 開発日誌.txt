@@ -968,3 +968,8 @@
 	sheet_slide_system.pyをsheet_slide.pyに変更
 	SheetSlideSystemをSheetSlideStateとSheetSlideRendererに分割
 	SlideSheetクラスを作成。
+
+2026/7/1
+	character_sheet_viewにSheetSlideControllerを作成
+	CharacterStatusElementsにSlideSheetの保持とsheetsとbuttonsを作成
+	build_character_sheetにskill_sheetの作成を追加

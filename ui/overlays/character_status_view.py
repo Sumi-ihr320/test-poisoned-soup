@@ -9,6 +9,7 @@ from ui.overlays.overlay_view import OverlayView, OverlayCloseButton
 from ui.ui_elements import Image, Label
 from ui.ui_cache import ImageCache
 from ui.sheet_slide import SlideSheet, SheetSlideState, SheetSlideRenderer
+from input.focus_manager import FocusManager
 from models.characters import Player, Human
 from core.game_state import Flags
 
@@ -18,9 +19,15 @@ class CharacterStatusElements:
     status_rect: pygame.Rect
     status_background_image: Image
 
+    status_sheet: SlideSheet
+
     skill_surface: Optional[pygame.Surface]
     skill_rect: Optional[pygame.Rect]
     skill_background_image: Optional[Image]
+
+    skill_sheet: Optional[SlideSheet]
+
+    sheets: List[SlideSheet]
 
     character_image: Image
 
@@ -29,7 +36,33 @@ class CharacterStatusElements:
     status_labels: List[Label]
     next_skill_button: Label
     prev_status_button: Label
-        
+
+    buttons: List[Label]
+
+class SheetSlideController:
+    def __init__(self, screen, focus_manager: FocusManager, character_sheet: Optional[CharacterStatusElements]=None):
+        self.screen = screen
+        self.screen_width = screen.get_width()
+        self.focus_manager = focus_manager
+
+        self.character_sheet = character_sheet
+
+        self.sheet_slide_state = SheetSlideState(self.screen_width, len(self.character_sheet.sheets))
+        self.sheet_slide_renderer = SheetSlideRenderer(self.screen)
+
+    def handle_slide(self, action: str):
+        if action == "next":
+            self.sheet_slide_state.next_page()
+        elif action == "prev":
+            self.sheet_slide_state.prev_page()
+
+    def draw(self):
+        if self.character_sheet:
+            self.sheet_slide_renderer.draw(self.sheet_slide_state, self.character_sheet.sheets[self.sheet_slide_state.get_current_page()], self.character_sheet.sheets[self.sheet_slide_state.get_target_page()])
+
+    def update(self):
+        self.sheet_slide_state.update()
+
 class SheetTransitionButton(Label):
     def __init__(self, screen, font_data, text, sheet_rect, x = 0, y = 0, centerx = None, centery = None, anchor = ("right", "bottom"), 
                  text_color = BLACK, background_color = None, 
@@ -53,15 +86,13 @@ class CharacterStatusView(OverlayView):
         self.player = None
         self.girl = None
         self.flags = None
+        self.focus_manager = None
 
         self.font_data = (FONT_PATH, self.calculate_font_size())
         self.cache = ImageCache()
 
         # キャラクターシートのサイズ
         self.sheet_size = self.calculate_sheet_size()
-
-        self.sheet_slide_state = None
-        self.sheet_slide_renderer = SheetSlideRenderer(self.screen)
 
     # シートサイズの計算
     def calculate_sheet_size(self) -> Tuple[int, int]:
@@ -135,7 +166,7 @@ class CharacterStatusView(OverlayView):
 
     def create_transition_buttons(self, sheet_rect: pygame.Rect, row:int):
         next_skill_button = self.create_button("技能一覧へ ＞＞", "next", sheet_rect, row)
-        self.add(next_skill_button)
+        #self.add(next_skill_button)
         prev_status_button = self.create_button("＜＜ ステータス一覧へ", "prev", sheet_rect, row)
         return {"next": next_skill_button, "prev": prev_status_button}
 
@@ -182,18 +213,23 @@ class CharacterStatusView(OverlayView):
 
     # 各キャラクターのキャラシを作成する
     def build_character_sheet(self, character: Player|Human, pos: Tuple[int, int], row: int) -> CharacterStatusElements:
-        character_sheet_surface, character_sheet_rect, character_sheet_bg = self.create_sheet_surface(pos)
-        character_image = self.create_character_image(character, character_sheet_rect)
-        character_status_labels = self.create_status_labels(character, character_image.rect, character_sheet_surface, ofset=character_sheet_rect.topleft)
-        character_sheet_buttons = self.create_transition_buttons(character_sheet_rect, row)
+        status_sheet_surface, status_sheet_rect, status_sheet_bg = self.create_sheet_surface(pos)
+        status_sheet = SlideSheet(status_sheet_surface, status_sheet_rect)
+        character_image = self.create_character_image(character, status_sheet_rect)
+        status_labels = self.create_status_labels(character, character_image.rect, status_sheet_surface, ofset=status_sheet_rect.topleft)
+        skill_surface, skill_rect, skill_bg = self.create_sheet_surface(pos)
+        skill_sheet = SlideSheet(skill_surface, skill_rect)
+        sheet_buttons = self.create_transition_buttons(status_sheet_rect, row)
 
-        sheet = CharacterStatusElements(status_surface=character_sheet_surface, status_rect=character_sheet_rect, 
-                                        status_background_image=character_sheet_bg, 
-                                        skill_surface=None, skill_rect=None, skill_background_image=None,
+        sheet = CharacterStatusElements(status_surface=status_sheet_surface, status_rect=status_sheet_rect, 
+                                        status_background_image=status_sheet_bg, status_sheet=status_sheet,
+                                        skill_surface=skill_surface, skill_rect=skill_rect, 
+                                        skill_background_image=skill_bg, skill_sheet=skill_sheet,
                                         character_image=character_image,
-                                        current_hp_label=character_status_labels["currentHP"], current_san_label=character_status_labels["currentSAN"], 
-                                        status_labels=character_status_labels["labels"], 
-                                        next_skill_button=character_sheet_buttons["next"], prev_status_button=character_sheet_buttons["prev"])
+                                        current_hp_label=status_labels["currentHP"], current_san_label=status_labels["currentSAN"], 
+                                        status_labels=status_labels["labels"], 
+                                        next_skill_button=sheet_buttons["next"], prev_status_button=sheet_buttons["prev"],
+                                        sheets=[status_sheet, skill_sheet], buttons=list(sheet_buttons.values()))
         return sheet
 
     # キャラクターシートたちを構成する
@@ -201,9 +237,13 @@ class CharacterStatusView(OverlayView):
         x = self.screen_size[0] // 2 - self.sheet_size[0] // 2
         self.player_sheet = self.build_character_sheet(self.player, (x, 15), row=1)
 
+        self.player_slide_controller = SheetSlideController(screen=self.screen, focus_manager=self.focus_manager, character_sheet=self.player_sheet)
+
         player_rect_height = self.player_sheet.status_rect.height
         girl_y = 15 + player_rect_height + 15
         self.girl_sheet = self.build_character_sheet(self.girl, (x, girl_y), row=2)
+
+        self.girl_slide_controller = SheetSlideController(screen=self.screen, focus_manager=self.focus_manager, character_sheet=self.girl_sheet)
 
     def create_close_button(self):
         player_sheet_rect = self.player_sheet.status_rect
@@ -211,11 +251,12 @@ class CharacterStatusView(OverlayView):
         self.close_button = OverlayCloseButton(self.screen, x=player_sheet_rect.right-10, y=player_sheet_rect.y+10)
         self.add(self.close_button)        
 
-    def open(self, player: Player, girl: Human, flags: Flags):
+    def open(self, player: Player, girl: Human, flags: Flags, focus_manager: FocusManager):
         super().open()
         self.player = player
         self.girl = girl
         self.flags = flags
+        self.focus_manager = focus_manager
         self.clear()
         self.build_character_sheets()
         self.create_close_button()
@@ -226,36 +267,36 @@ class CharacterStatusView(OverlayView):
         if selected_action == "close":
             self.close()
 
-        elif selected_action == "next":
-            if element == self.player_sheet.next_skill_button:
-                pass
-            elif element == self.girl_sheet.next_skill_button:
-                pass
-
-        elif selected_action == "prev":
-            if element == self.player_sheet.prev_status_button:
-                pass
-            elif element == self.girl_sheet.prev_status_button:
-                pass
+        if element in self.player_sheet.buttons:
+            self.player_slide_controller.handle_slide(selected_action)
+            self.register_sheet_changes(self.focus_manager)
         
+        elif element in self.girl_sheet.buttons:
+            self.girl_slide_controller.handle_slide(selected_action)
+            self.register_sheet_changes(self.focus_manager)
+
         return selected_action
 
-    """
-    # ページを表示する
-    def draw_page(self):
-        current, current_rect = self.draw_page_get_surface_and_rect(self.current_page)
-        current_x = current_rect.x - self.slide_offset
-        self.screen.blit(current, (current_x, current_rect.y))
+    # シート切り替え時のフォーカス登録変更
+    def register_sheet_changes(self, focus_manager: FocusManager):
+        player_current_page = self.player_slide_controller.sheet_slide_state.get_current_page()
+        if player_current_page == 0:
+            self.register_transition(focus_manager, self.player_sheet.prev_status_button, self.player_sheet.next_skill_button)
+        elif player_current_page == 1:
+            self.register_transition(focus_manager, self.player_sheet.next_skill_button, self.player_sheet.prev_status_button)
 
-        if self.is_sliding:
-            target, target_rect = self.draw_page_get_surface_and_rect(self.target_page)
-            target_x = self.screen_size[0] - self.slide_offset if self.target_page > self.current_page else - self.screen_size[0] - self.slide_offset
-            self.screen.blit(target, (target_x, target_rect.y))
+        girl_current_page = self.girl_slide_controller.sheet_slide_state.get_current_page()
+        if girl_current_page == 0:
+            self.register_transition(focus_manager, self.girl_sheet.prev_status_button, self.girl_sheet.next_skill_button)
+        elif girl_current_page == 1:
+            self.register_transition(focus_manager, self.girl_sheet.next_skill_button, self.girl_sheet.prev_status_button)
 
-        self.navigation.draw(self.current_page)
-        self.text_frame_panel.draw()
-        self.focus_manager.draw()
-    """
+    # ページ切り替え時のフォーカス登録変更
+    def register_transition(self, focus_manager: FocusManager, old_button, new_button):
+        if old_button in focus_manager.elements:
+            focus_manager.elements.remove(old_button)
+        if new_button not in focus_manager.elements:
+            focus_manager.register(new_button)
                 
     def relayout(self, screen):
         super().relayout(screen, parent=None)
@@ -265,16 +306,25 @@ class CharacterStatusView(OverlayView):
         for c in self.children:
             c.relayout(screen, parent=None)
 
-    def draw_sheet(self, elements: CharacterStatusElements):
-        self.screen.blit(elements.status_surface, elements.status_rect)
-        elements.status_background_image.draw()
-
+    def draw_sheet(self, elements: CharacterStatusElements, slide_controller: SheetSlideController):
+        current_page = slide_controller.sheet_slide_state.get_current_page()
+        if current_page == 0:
+            elements.status_background_image.draw()
+            elements.current_hp_label.draw()
+            elements.current_san_label.draw()
+            for label in elements.status_labels:
+                label.draw()
+        else:
+            elements.skill_background_image.draw()
+        
+        slide_controller.draw()
+        
         elements.character_image.draw()
-        elements.current_hp_label.draw()
-        elements.current_san_label.draw()
-        for label in elements.status_labels:
-            label.draw()
-        #elements.next_skill_button.draw()
+
+        if current_page == 0: 
+            elements.next_skill_button.draw()
+        elif current_page == 1:
+            elements.prev_status_button.draw()
         
     def draw(self):
         if not self.is_open:
@@ -282,9 +332,9 @@ class CharacterStatusView(OverlayView):
         
         self.screen.blit(self.surface, (0, 0))
 
-        self.draw_sheet(self.player_sheet)
+        self.draw_sheet(self.player_sheet, self.player_slide_controller)
         #if self.flags.get_flag("girl", "fellow"):
-        self.draw_sheet(self.girl_sheet)
+        self.draw_sheet(self.girl_sheet, self.girl_slide_controller)
 
         for c in self.children:
             c.draw()
