@@ -15,7 +15,7 @@ from ui.navigation import MainNavigation
 from ui.overlays.log_view import LogView
 from ui.overlays.overlay_view import OverlayView, OverlayViews
 from ui.overlays.pause_menu import PauseMenu
-from ui.overlays.character_status_view import CharacterStatusView
+from ui.overlays.character_status.character_status_view import CharacterStatusView
 from ui.ui_command import CommandButton
 from input.focus_manager import FocusManager
 from playing.room_manager import RoomManager
@@ -133,7 +133,8 @@ class MainPlayScene(BaseScene):
                 next_page.open(self.flags)
 
             elif next_page is self.overlay_views.status:
-                next_page.open(self.player_status, self.girl_status, self.flags)
+                next_page.open(self.player_status, self.girl_status, 
+                               self.flags, self.focus_manager)
                 
             else:
                 next_page.open()
