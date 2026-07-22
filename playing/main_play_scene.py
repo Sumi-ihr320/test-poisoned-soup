@@ -248,14 +248,13 @@ class MainPlayScene(BaseScene):
             elif self.pause_menu.is_open:
                 selected_action = self.pause_menu.handle_click(result["result"])
                 if selected_action == "status":
-                    self.current_overlay = "status"
                     self.switch_overlay(self.overlay_views.menu, self.overlay_views.status)
                     
                 elif selected_action == "inventory":
-                    self.current_overlay = "inventory"
+                    #self.current_overlay = "inventory"
+                    pass
 
                 elif selected_action == "close":
-                    self.current_overlay = None
                     self.switch_overlay(self.overlay_views.menu, None)
 
             elif self.character_status_view.is_open:
@@ -371,6 +370,9 @@ class MainPlayScene(BaseScene):
 
         # ステータス表示の更新
         self.status_view.update(self.player_status, self.girl_status, self.game_state, self.flags)
+
+        if self.current_overlay is self.character_status_view:
+            self.character_status_view.update()
 
         self.draw()
 

@@ -10,35 +10,7 @@ from ui.sheet_slide import SlideSheet
 from ui.overlays.character_status.status_sheet_builder import StatusSheetBuilder
 from ui.overlays.character_status.skill_sheet_builder import SkillSheetBuilder
 from models.characters import Player, Human
-
-@dataclass
-class CharacterStatusElements:
-    status_surface: pygame.Surface
-    status_rect: pygame.Rect
-    status_background_image: Image
-
-    status_sheet: SlideSheet
-
-    skill_surface: Optional[pygame.Surface]
-    skill_rect: Optional[pygame.Rect]
-    skill_background_image: Optional[Image]
-
-    skill_sheet: Optional[SlideSheet]
-
-    sheets: List[SlideSheet]
-
-    character_image: Image
-
-    current_hp_label: Label
-    current_san_label: Label
-    status_labels: List[Label]
-
-    skill_labels: List[Label]
-
-    next_skill_button: Label
-    prev_status_button: Label
-
-    buttons: List[Label]
+from core.game_state import Flags
 
 class SheetTransitionButton(Label):
     def __init__(self, screen, font_data, text, sheet_rect, x = 0, y = 0, centerx = None, centery = None, anchor = ("right", "bottom"), 
@@ -67,8 +39,8 @@ class CharacterSheetBuilder:
         # キャラクターシートのサイズ
         self.sheet_size = self.calculate_sheet_size()
 
-        self.status_sheet_builder = StatusSheetBuilder()
-        self.skill_sheet_builder = SkillSheetBuilder()
+        self.status_sheet_builder = StatusSheetBuilder(self.screen, self.font_data)
+        self.skill_sheet_builder = SkillSheetBuilder(self.screen, self.font_data)
 
     # シートサイズの計算
     def calculate_sheet_size(self) -> Tuple[int, int]:
@@ -93,15 +65,15 @@ class CharacterSheetBuilder:
         return sheet_bg_img
 
     # キャラクターイメージを作成する
-    def create_character_image(self, character: Player|Human, sheet_rect: pygame.Rect) -> Image:
-        if character is self.player:
-            path = f"silhouette_{self.player.sex}_face.png"
-        elif character is self.girl:
-            if not self.flags.get_flag("girl", "alive"):
+    def create_character_image(self, character: Player|Human, sheet_rect: pygame.Rect, flags: Flags=None) -> Image:
+        if isinstance(character, Player):
+            path = f"silhouette_{character.sex}_face.png"
+        elif isinstance(character, Human):
+            if not flags.get_flag("girl", "alive"):
                 expression = "_pale_downcast_eyes_dark"
-            elif self.flags.get_flag("girl", "faint") > 0:
+            elif flags.get_flag("girl", "faint") > 0:
                 expression = "_pale_downcast_eyes"
-            elif self.flags.get_flag("girl", "hp_damaged_g"):
+            elif flags.get_flag("girl", "hp_damaged_g"):
                 expression = "_pale"
             else:
                 expression = ""
@@ -133,13 +105,15 @@ class CharacterSheetBuilder:
         self.sheet_size = self.calculate_sheet_size()
         
 class CharacterStatusSheet:
-    def __init__(self, screen, character: Player|Human, pos: Tuple[int, int], row: int):
+    def __init__(self, screen, character: Player|Human, pos: Tuple[int, int], row: int, flags: Flags=None):
         self.screen = screen
         self.screen_size = self.screen.get_size()
 
         self.character = character
         self.row = row
         self.pos = pos
+
+        self.flags = flags
 
         self.character_sheet_builder = CharacterSheetBuilder(screen)
 
@@ -150,7 +124,7 @@ class CharacterStatusSheet:
         self.status_surface, self.status_rect = self.character_sheet_builder.create_sheet_surface(self.pos)
         self.status_background_image = self.character_sheet_builder.create_sheet_background_image(self.status_surface)
         
-        self.character_image = self.character_sheet_builder.create_character_image(self.character, self.status_rect)
+        self.character_image = self.character_sheet_builder.create_character_image(self.character, self.status_rect, self.flags)
         
         status_labels = self.character_sheet_builder.status_sheet_builder.create_status_labels(self.character, self.character_image.rect, self.status_surface, ofset=self.status_rect.topleft)
 
@@ -178,3 +152,22 @@ class CharacterStatusSheet:
         self.screen = screen
         self.character_sheet_builder.relayout(screen)
         self.build()
+
+    def update(self, character:Player|Human, flags: Flags=None):
+        self.current_hp_label.set_text(str(character.currentHP))
+        self.current_san_label.set_text(str(character.currentSAN))
+
+        self.flags = flags
+        if isinstance(character, Human):
+            self.character_image = self.character_sheet_builder.create_character_image(character, self.status_rect, flags)
+
+    def draw(self):
+        self.status_background_image.draw()
+        self.current_hp_label.draw()
+        self.current_san_label.draw()
+        for label in self.status_labels:
+            label.draw()
+
+        self.skill_background_image.draw()
+        for label in self.skill_labels:
+            label.draw()

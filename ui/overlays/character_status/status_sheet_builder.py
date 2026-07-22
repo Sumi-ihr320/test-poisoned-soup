@@ -5,8 +5,9 @@ from models.characters import Player, Human
 from ui.ui_elements import Label
 
 class StatusSheetBuilder:
-    def __init__(self):
-        pass
+    def __init__(self, screen, font_data):
+        self.screen = screen
+        self.font_data = font_data
 
     def set_status_data(self, character: Player|Human) -> Dict[str, Dict[str, Any]]:
         sex_map = {"man": "男", "woman": "女", "neuter": "その他"}

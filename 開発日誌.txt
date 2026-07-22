@@ -979,3 +979,9 @@
 	そこにcharacter_sheet_view.pyを移動
 	character_sheet_builder.py、status_sheet_builder.py、skill_sheet_builder.pyを作成
 	character_sheet_view.pyからそれぞれにコードを分離
+
+2026/7/15
+	CharacterStatusSheetクラスを作成
+
+2026/7/22
+	slide関連の調整

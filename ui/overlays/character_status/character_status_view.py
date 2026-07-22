@@ -1,14 +1,14 @@
 from typing import Optional
 
 from ui.overlays.overlay_view import OverlayView, OverlayCloseButton
-from ui.overlays.character_status.character_sheet_builder import CharacterSheetBuilder, CharacterStatusElements
+from ui.overlays.character_status.character_sheet_builder import CharacterSheetBuilder, CharacterStatusSheet
 from ui.sheet_slide import SheetSlideState, SheetSlideRenderer
 from input.focus_manager import FocusManager
 from models.characters import Player, Human
 from core.game_state import Flags
 
 class SheetSlideController:
-    def __init__(self, screen, focus_manager: FocusManager, character_sheet: Optional[CharacterStatusElements]=None):
+    def __init__(self, screen, focus_manager: FocusManager, character_sheet: Optional[CharacterStatusSheet]=None):
         self.screen = screen
         self.screen_width = screen.get_width()
         self.focus_manager = focus_manager
@@ -26,7 +26,22 @@ class SheetSlideController:
 
     def draw(self):
         if self.character_sheet:
+            # まずはシートに記述してる内容を表示する
+            self.character_sheet.draw()
+
+            # シートのsurfaceを表示する
             self.sheet_slide_renderer.draw(self.sheet_slide_state, self.character_sheet.sheets[self.sheet_slide_state.get_current_page()], self.character_sheet.sheets[self.sheet_slide_state.get_target_page()])
+
+            # surfaceより上に表示されているイメージを表示する            
+            self.character_sheet.character_image.draw()
+            
+            # 1ページ目なら次へのボタンを表示
+            if self.sheet_slide_state.get_current_page() == 0:
+                self.character_sheet.next_skill_button.draw()
+            
+            # 2ページ目なら戻るのボタンを表示
+            elif self.sheet_slide_state.get_current_page() == 1:
+                self.character_sheet.prev_status_button.draw()
 
     def update(self):
         self.sheet_slide_state.update()
@@ -43,18 +58,17 @@ class CharacterStatusView(OverlayView):
 
         self.character_sheet_builder = CharacterSheetBuilder(self.screen)
         
-
     # キャラクターシートたちを構成する
     def build_character_sheets(self):
         sheet_width = self.character_sheet_builder.sheet_size[0]
         x = self.screen_size[0] // 2 - sheet_width // 2
-        self.player_sheet = self.character_sheet_builder.build_character_sheet(self.player, (x, 15), row=1)
+        self.player_sheet = CharacterStatusSheet(self.screen, self.player, pos=(x, 15), row=1)
 
         self.player_slide_controller = SheetSlideController(screen=self.screen, focus_manager=self.focus_manager, character_sheet=self.player_sheet)
 
         player_rect_height = self.player_sheet.status_rect.height
         girl_y = 15 + player_rect_height + 15
-        self.girl_sheet = self.character_sheet_builder.build_character_sheet(self.girl, (x, girl_y), row=2)
+        self.girl_sheet = CharacterStatusSheet(self.screen, self.girl, pos=(x, girl_y), row=2, flags=self.flags)
 
         self.girl_slide_controller = SheetSlideController(screen=self.screen, focus_manager=self.focus_manager, character_sheet=self.girl_sheet)
 
@@ -116,38 +130,22 @@ class CharacterStatusView(OverlayView):
         super().relayout(screen, parent=None)
         for c in self.children:
             c.relayout(screen, parent=None)
-
-    def draw_sheet(self, elements: CharacterStatusElements, slide_controller: SheetSlideController):
-        current_page = slide_controller.sheet_slide_state.get_current_page()
-        if current_page == 0:
-            elements.status_background_image.draw()
-            elements.current_hp_label.draw()
-            elements.current_san_label.draw()
-            for label in elements.status_labels:
-                label.draw()
-        elif current_page == 1:
-            elements.skill_background_image.draw()
-            for label in elements.skill_labels:
-                label.draw()
         
-        slide_controller.draw()
-        
-        elements.character_image.draw()
-
-        if current_page == 0: 
-            elements.next_skill_button.draw()
-        elif current_page == 1:
-            elements.prev_status_button.draw()
-        
+    def update(self):
+        self.player_sheet.update(self.player)
+        self.girl_sheet.update(self.girl, self.flags)
+        self.player_slide_controller.update()
+        self.girl_slide_controller.update()
+    
     def draw(self):
         if not self.is_open:
             return
         
         self.screen.blit(self.surface, (0, 0))
 
-        self.draw_sheet(self.player_sheet, self.player_slide_controller)
+        self.player_slide_controller.draw()
         #if self.flags.get_flag("girl", "fellow"):
-        self.draw_sheet(self.girl_sheet, self.girl_slide_controller)
+        self.girl_slide_controller.draw()
 
         for c in self.children:
             c.draw()

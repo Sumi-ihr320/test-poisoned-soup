@@ -60,13 +60,13 @@ class SheetSlideState:
     def next_page(self):
         if self.current_page < self.page_count - 1:
             self.set_target_page(self.current_page + 1)
-            self.is_sliding = True
+            self.set_sliding(True)
     
     # 前のページを表示
     def prev_page(self):
         if self.current_page > 0:
             self.set_target_page(self.current_page - 1)
-            self.is_sliding = True
+            self.set_sliding(True)
 
     def update(self):
         # スライドアニメーションの進行
@@ -78,7 +78,7 @@ class SheetSlideState:
             if abs(self.slide_offset) >= self.slide_width:
                 self.set_current_page(self.target_page)
                 self.slide_offset = 0
-                self.is_sliding = False
+                self.set_sliding(False)
 
 
 class SheetSlideRenderer:
