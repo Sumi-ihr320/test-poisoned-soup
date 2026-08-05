@@ -29,8 +29,7 @@ class OverlayView(UIContainer):
 
     # surfaceを作成する
     def create_surface(self):
-        self.size = self.screen.get_size()
-        self.surface = pygame.Surface(self.size)
+        self.surface = pygame.Surface(self.screen_size)
         self.surface.fill(BLACK)
         self.surface.set_alpha(200)
 

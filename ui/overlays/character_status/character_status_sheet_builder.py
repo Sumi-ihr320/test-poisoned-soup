@@ -1,12 +1,10 @@
-from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Tuple
 import pygame
 
 from constans import FONT_PATH, SMALL_SIZ, BLACK, RED
 from utils import get_new_size, get_scales
 from ui.ui_cache import ImageCache
 from ui.ui_elements import Image, Label
-from ui.sheet_slide import SlideSheet
 from ui.overlays.character_status.status_sheet_builder import StatusSheetBuilder
 from ui.overlays.character_status.skill_sheet_builder import SkillSheetBuilder
 from models.characters import Player, Human
@@ -28,7 +26,7 @@ class SheetTransitionButton(Label):
             return self.action
         return None    
 
-class CharacterSheetBuilder:
+class CharacterStatusSheetBuilder:
     def __init__(self, screen):
         self.screen = screen
         self.screen_size = self.screen.get_size()
@@ -94,7 +92,9 @@ class CharacterSheetBuilder:
         return button
 
     def create_image(self, path: str, x: int, y: int, parent: pygame.Surface=None) -> Image:
-        image = Image(self.screen, path=path, cache=self.cache, scale=0.56, x=x, y=y, parent=parent,
+        _, _, aspect = get_scales(self.screen_size)
+        scale = 0.56 * aspect 
+        image = Image(self.screen, path=path, cache=self.cache, scale=scale, x=x, y=y, parent=parent,
                       bg_flag=True, line_flag=True)
         return image
 
@@ -103,71 +103,3 @@ class CharacterSheetBuilder:
         self.screen_size = screen.get_size()
         self.font_data = (FONT_PATH, self.calculate_font_size())
         self.sheet_size = self.calculate_sheet_size()
-        
-class CharacterStatusSheet:
-    def __init__(self, screen, character: Player|Human, pos: Tuple[int, int], row: int, flags: Flags=None):
-        self.screen = screen
-        self.screen_size = self.screen.get_size()
-
-        self.character = character
-        self.row = row
-        self.pos = pos
-
-        self.flags = flags
-
-        self.character_sheet_builder = CharacterSheetBuilder(screen)
-
-        self.build()
-
-    # 各キャラクターのキャラシを作成する
-    def build(self):
-        self.status_surface, self.status_rect = self.character_sheet_builder.create_sheet_surface(self.pos)
-        self.status_background_image = self.character_sheet_builder.create_sheet_background_image(self.status_surface)
-        
-        self.character_image = self.character_sheet_builder.create_character_image(self.character, self.status_rect, self.flags)
-        
-        status_labels = self.character_sheet_builder.status_sheet_builder.create_status_labels(self.character, self.character_image.rect, self.status_surface, ofset=self.status_rect.topleft)
-
-        self.status_sheet = SlideSheet(self.status_surface, self.status_rect)
-
-        self.current_hp_label = status_labels["currentHP"]
-        self.current_san_label = status_labels["currentSAN"]
-        self.status_labels = status_labels["labels"]
-
-        self.skill_surface, self.skill_rect = self.character_sheet_builder.create_sheet_surface(self.pos)
-        self.skill_background_image = self.character_sheet_builder.create_sheet_background_image(self.skill_surface)
-        self.skill_labels = self.character_sheet_builder.skill_sheet_builder.create_skill_labels(self.character, self.character_image.rect, self.skill_surface, ofset=self.skill_rect.topleft)
-
-        self.skill_sheet = SlideSheet(self.skill_surface, self.skill_rect)
-
-        self.sheets = [self.status_sheet, self.skill_sheet]
-
-        sheet_buttons = self.character_sheet_builder.create_transition_buttons(self.status_rect, self.row)
-        self.next_skill_button = sheet_buttons["next"]
-        self.prev_status_button = sheet_buttons["prev"]
-
-        self.buttons = [self.next_skill_button, self.prev_status_button]        
-
-    def relayout(self, screen):
-        self.screen = screen
-        self.character_sheet_builder.relayout(screen)
-        self.build()
-
-    def update(self, character:Player|Human, flags: Flags=None):
-        self.current_hp_label.set_text(str(character.currentHP))
-        self.current_san_label.set_text(str(character.currentSAN))
-
-        self.flags = flags
-        if isinstance(character, Human):
-            self.character_image = self.character_sheet_builder.create_character_image(character, self.status_rect, flags)
-
-    def draw(self):
-        self.status_background_image.draw()
-        self.current_hp_label.draw()
-        self.current_san_label.draw()
-        for label in self.status_labels:
-            label.draw()
-
-        self.skill_background_image.draw()
-        for label in self.skill_labels:
-            label.draw()

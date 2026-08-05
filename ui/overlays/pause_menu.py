@@ -55,7 +55,7 @@ class PauseMenu(OverlayView):
         self.calculate_font_size()
         font_data = (FONT_PATH, self.font_size)
 
-        y = self.size[1] // 2 - (len(self.menu_options) * self.font_size + margin * (len(self.menu_options) - 1)) // 2
+        y = self.screen_size[1] // 2 - (len(self.menu_options) * self.font_size + margin * (len(self.menu_options) - 1)) // 2
         for i, menu in enumerate(self.menu_options):
             lbl_menu = PauseMenuLabel(self.screen, font_data=font_data, text=menu["label"], y=y + i * (self.font_size + margin), 
                                       action_text=menu["action"], row=i)
@@ -82,7 +82,10 @@ class PauseMenu(OverlayView):
         return selected_action
 
     def relayout(self, screen):
-        super().relayout(screen, parent=None)
+        self.screen = screen
+        self.screen_size = screen.get_size()
+
+        self.create_surface()
 
         if self.is_open:
             self.clear()

@@ -9,7 +9,7 @@ class StatusSheetBuilder:
         self.screen = screen
         self.font_data = font_data
 
-    def set_status_data(self, character: Player|Human) -> Dict[str, Dict[str, Any]]:
+    def build_status_data(self, character: Player|Human) -> Dict[str, Dict[str, Any]]:
         sex_map = {"man": "男", "woman": "女", "neuter": "その他"}
         status_map = {
             "name":{"text": "名前： ", "status": character.name},
@@ -44,7 +44,7 @@ class StatusSheetBuilder:
         margenx, margeny = 30, 6
         startx = x
         title_y = y
-        character_status_dict = self.set_status_data(character)
+        character_status_dict = self.build_status_data(character)
         status_items["labels"] = []
         for key, status in character_status_dict.items():
             lbl_title = self.create_label(text=status["text"], x=x, y=y, parent=parent)

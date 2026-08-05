@@ -1,7 +1,8 @@
 from typing import Optional
 
 from ui.overlays.overlay_view import OverlayView, OverlayCloseButton
-from ui.overlays.character_status.character_sheet_builder import CharacterSheetBuilder, CharacterStatusSheet
+from ui.overlays.character_status.character_status_sheet_builder import CharacterStatusSheetBuilder
+from ui.overlays.character_status.character_status_sheet import CharacterStatusSheet
 from ui.sheet_slide import SheetSlideState, SheetSlideRenderer
 from input.focus_manager import FocusManager
 from models.characters import Player, Human
@@ -56,11 +57,11 @@ class CharacterStatusView(OverlayView):
         self.flags = None
         self.focus_manager = None
 
-        self.character_sheet_builder = CharacterSheetBuilder(self.screen)
+        self.character_status_sheet_builder = CharacterStatusSheetBuilder(self.screen)
         
     # キャラクターシートたちを構成する
     def build_character_sheets(self):
-        sheet_width = self.character_sheet_builder.sheet_size[0]
+        sheet_width = self.character_status_sheet_builder.sheet_size[0]
         x = self.screen_size[0] // 2 - sheet_width // 2
         self.player_sheet = CharacterStatusSheet(self.screen, self.player, pos=(x, 15), row=1)
 

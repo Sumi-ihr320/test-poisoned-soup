@@ -985,3 +985,11 @@
 
 2026/7/22
 	slide関連の調整
+
+2026/7/29
+	relayout付近の調整
+	character_sheet_sceneのprofession_pageで「※技能値はランダムで決まります」を追記。
+
+2026/8/5
+	character_sheet_builderをcharacter_status_sheet_builderに変更
+	character_status_sheet_builderからcharacter_status_sheetを分離

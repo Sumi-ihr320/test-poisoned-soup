@@ -37,7 +37,7 @@ class Profession(UIContainer):
         big_img_size = 0.35
         self.small_img = ContainerImage(self.screen, parent_container=self, path=self.path, scale=small_img_size, x=self.rect.x, y=self.rect.y, 
                                         line_flag=True, bg_flag=True, 
-                                        parent=self.parent, focusable=True, hover_text=f"あなたの職業を選択してください\n【{self.name}】",
+                                        parent=self.parent, focusable=True, hover_text=f"あなたの職業を選択してください\n【{self.name}】\n\n※技能値はランダムで決まります",
                                         row=self.row, col=self.col)
         self.add(self.small_img)
         self.big_img = Image(self.screen, path=self.path, scale=big_img_size, x=self.view_rect.x, y=self.view_rect.y, 
