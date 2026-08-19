@@ -114,11 +114,12 @@ class CharacterStatusView(OverlayView):
         elif player_current_page == 1:
             self.register_transition(focus_manager, self.player_sheet.next_skill_button, self.player_sheet.prev_status_button)
 
-        girl_current_page = self.girl_slide_controller.sheet_slide_state.get_current_page()
-        if girl_current_page == 0:
-            self.register_transition(focus_manager, self.girl_sheet.prev_status_button, self.girl_sheet.next_skill_button)
-        elif girl_current_page == 1:
-            self.register_transition(focus_manager, self.girl_sheet.next_skill_button, self.girl_sheet.prev_status_button)
+        if self.flags.get_flag("girl", "fellow"):
+            girl_current_page = self.girl_slide_controller.sheet_slide_state.get_current_page()
+            if girl_current_page == 0:
+                self.register_transition(focus_manager, self.girl_sheet.prev_status_button, self.girl_sheet.next_skill_button)
+            elif girl_current_page == 1:
+                self.register_transition(focus_manager, self.girl_sheet.next_skill_button, self.girl_sheet.prev_status_button)
 
     # ページ切り替え時のフォーカス登録変更
     def register_transition(self, focus_manager: FocusManager, old_button, new_button):
@@ -145,8 +146,8 @@ class CharacterStatusView(OverlayView):
         self.screen.blit(self.surface, (0, 0))
 
         self.player_slide_controller.draw()
-        #if self.flags.get_flag("girl", "fellow"):
-        self.girl_slide_controller.draw()
+        if self.flags.get_flag("girl", "fellow"):
+            self.girl_slide_controller.draw()
 
         for c in self.children:
             c.draw()

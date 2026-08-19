@@ -1,4 +1,3 @@
-import pygame
 
 from constans import FONT_SIZ, FONT_PATH, BLACK, WHITE, GRAY
 from utils import get_scales

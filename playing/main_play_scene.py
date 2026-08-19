@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict, Any
 
 import pygame
 from pygame.locals import *
@@ -16,6 +16,7 @@ from ui.overlays.log_view import LogView
 from ui.overlays.overlay_view import OverlayView, OverlayViews
 from ui.overlays.pause_menu import PauseMenu
 from ui.overlays.character_status.character_status_view import CharacterStatusView
+from ui.overlays.inventory_view import InventoryView
 from ui.ui_command import CommandButton
 from input.focus_manager import FocusManager
 from playing.room_manager import RoomManager
@@ -76,8 +77,9 @@ class MainPlayScene(BaseScene):
         self.current_overlay = None
         self.pause_menu = PauseMenu(self.screen)
         self.character_status_view = CharacterStatusView(self.screen)
+        self.inventory_view = InventoryView(self.screen)
 
-        self.overlay_views = OverlayViews(self.pause_menu, self.character_status_view, None, None)
+        self.overlay_views = OverlayViews(self.pause_menu, self.character_status_view, self.inventory_view, None)
 
         self.register_all()
 
@@ -244,15 +246,18 @@ class MainPlayScene(BaseScene):
                 if selected_action == "close":
                     self.register_focus_with_close_overlay(self.log_view)
             
-            # 右クリックメニューの場合
+            # 右クリックメニュー関連の場合
+            elif self.current_overlay is not None:
+                self.on_action_from_pause_menu(self.current_overlay, result)
+
+            """
             elif self.pause_menu.is_open:
                 selected_action = self.pause_menu.handle_click(result["result"])
                 if selected_action == "status":
                     self.switch_overlay(self.overlay_views.menu, self.overlay_views.status)
                     
                 elif selected_action == "inventory":
-                    #self.current_overlay = "inventory"
-                    pass
+                    self.switch_overlay(self.overlay_views.menu, self.overlay_views.inventory)
 
                 elif selected_action == "close":
                     self.switch_overlay(self.overlay_views.menu, None)
@@ -261,6 +266,11 @@ class MainPlayScene(BaseScene):
                 selected_action = self.character_status_view.handle_click(result["target"], result["result"])
                 if selected_action == "close":
                     self.switch_overlay(self.overlay_views.status, self.overlay_views.menu)
+            elif self.inventory_view.is_open:
+                selected_action = self.inventory_view.handle_click(result["result"])
+                if selected_action == "close":
+                    self.switch_overlay(self.overlay_views.inventory, self.overlay_views.menu)
+            """
 
         # VirtualCursorのクリックイベント
         elif action == "cursor_click":
@@ -269,7 +279,29 @@ class MainPlayScene(BaseScene):
 
         # 右クリックだった場合
         elif action == "right_click":
-            self.handle_right_click()
+            if self.current_overlay is None:
+                self.handle_right_click()
+
+    def on_action_from_pause_menu(self, page: OverlayView, result: Dict[str, Any]):
+        if not page.is_open:
+            return
+
+        if page is self.overlay_views.status:
+            selected_action = page.handle_click(result["target"], result["result"])
+        else:
+            selected_action = page.handle_click(result=result["result"])
+
+        if selected_action == "close":
+            if page is self.overlay_views.menu:
+                self.switch_overlay(page, None)
+            else:
+                self.switch_overlay(page, self.overlay_views.menu)
+
+        elif selected_action == "status":
+            self.switch_overlay(page, self.overlay_views.status)
+        
+        elif selected_action == "inventory":
+            self.switch_overlay(page, self.overlay_views.inventory)
 
     # イベントハンドラ
     def handle_events(self):
@@ -322,6 +354,7 @@ class MainPlayScene(BaseScene):
         self.log_view.unregister_all(self.focus_manager)
         self.pause_menu.unregister_all(self.focus_manager)
         self.character_status_view.unregister_all(self.focus_manager)
+        self.inventory_view.unregister_all(self.focus_manager)
         self.scenario_manager.unregister_all(self.focus_manager)
         self.navigation.unregister_all(self.focus_manager) 
 
@@ -355,6 +388,9 @@ class MainPlayScene(BaseScene):
 
         # キャラクター情報確認ページの表示
         self.character_status_view.draw()
+
+        # インベントリページの表示
+        self.inventory_view.draw()
 
         # ログ表示
         self.log_view.draw()
